@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Driver } from "@prisma/client";
 import { Plus } from "lucide-react";
 import { DriverForm } from "./DriverForm";
@@ -10,19 +10,31 @@ export function DriverList() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  async function fetchDrivers() {
+  const fetchDrivers = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/drivers?search=${encodeURIComponent(search)}`);
-    const data = await res.json();
-    setDrivers(data);
-    setLoading(false);
-  }
+    setError("");
+    try {
+      const res = await fetch(`/api/drivers?search=${encodeURIComponent(search)}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || `Fout bij ophalen (${res.status})`);
+      }
+      const data = await res.json();
+      setDrivers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Kon chauffeurs niet laden");
+      setDrivers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [search]);
 
   useEffect(() => {
     fetchDrivers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [fetchDrivers]);
 
   async function handleCreate(data: {
     firstName: string;
@@ -31,16 +43,32 @@ export function DriverList() {
     employeeNumber?: string;
     companyName?: string;
   }) {
-    await fetch("/api/drivers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    setShowForm(false);
-    fetchDrivers();
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/drivers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        const msg =
+          typeof errData?.error === "string"
+            ? errData.error
+            : "Kon chauffeur niet opslaan";
+        throw new Error(msg);
+      }
+      setShowForm(false);
+      fetchDrivers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Opslaan mislukt");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  const typeLabels = {
+  const typeLabels: Record<string, string> = {
     INTERNAL: "Intern",
     CHARTER: "Charter",
     TEMPORARY: "Uitzend",
@@ -65,9 +93,19 @@ export function DriverList() {
         </button>
       </div>
 
+      {error && (
+        <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
       {showForm && (
         <div className="mb-4">
-          <DriverForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
+          <DriverForm
+            onSubmit={handleCreate}
+            onCancel={() => setShowForm(false)}
+            saving={saving}
+          />
         </div>
       )}
 
@@ -95,7 +133,7 @@ export function DriverList() {
                   </td>
                   <td className="p-3 text-sm">
                     <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">
-                      {typeLabels[d.type]}
+                      {typeLabels[d.type] || d.type}
                     </span>
                   </td>
                   <td className="p-3 text-sm text-gray-500">
@@ -114,6 +152,13 @@ export function DriverList() {
                   </td>
                 </tr>
               ))}
+              {drivers.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={4} className="text-center py-8 text-gray-400 text-sm">
+                    Geen chauffeurs gevonden
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

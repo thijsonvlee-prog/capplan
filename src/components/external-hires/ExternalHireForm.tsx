@@ -11,9 +11,10 @@ type Props = {
     companyName?: string;
   }) => void;
   onCancel: () => void;
+  saving?: boolean;
 };
 
-export function ExternalHireForm({ onSubmit, onCancel }: Props) {
+export function ExternalHireForm({ onSubmit, onCancel, saving }: Props) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [type, setType] = useState<"CHARTER" | "TEMPORARY">("CHARTER");
@@ -87,9 +88,10 @@ export function ExternalHireForm({ onSubmit, onCancel }: Props) {
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          disabled={saving}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
-          Toevoegen
+          {saving ? "Toevoegen..." : "Toevoegen"}
         </button>
         <button
           type="button"

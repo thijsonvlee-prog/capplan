@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Driver } from "@prisma/client";
 import { Plus } from "lucide-react";
 import { ExternalHireForm } from "./ExternalHireForm";
@@ -9,18 +9,28 @@ export function ExternalHireList() {
   const [hires, setHires] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  async function fetchHires() {
+  const fetchHires = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/external-hires");
-    const data = await res.json();
-    setHires(data);
-    setLoading(false);
-  }
+    setError("");
+    try {
+      const res = await fetch("/api/external-hires");
+      if (!res.ok) throw new Error(`Fout bij ophalen (${res.status})`);
+      const data = await res.json();
+      setHires(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Kon inhuur niet laden");
+      setHires([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchHires();
-  }, []);
+  }, [fetchHires]);
 
   async function handleCreate(data: {
     firstName: string;
@@ -28,13 +38,29 @@ export function ExternalHireList() {
     type: string;
     companyName?: string;
   }) {
-    await fetch("/api/external-hires", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    setShowForm(false);
-    fetchHires();
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/external-hires", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(
+          typeof errData?.error === "string"
+            ? errData.error
+            : "Kon inhuur niet opslaan"
+        );
+      }
+      setShowForm(false);
+      fetchHires();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Opslaan mislukt");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -49,9 +75,19 @@ export function ExternalHireList() {
         </button>
       </div>
 
+      {error && (
+        <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
       {showForm && (
         <div className="mb-4">
-          <ExternalHireForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
+          <ExternalHireForm
+            onSubmit={handleCreate}
+            onCancel={() => setShowForm(false)}
+            saving={saving}
+          />
         </div>
       )}
 
@@ -87,7 +123,7 @@ export function ExternalHireList() {
                   </td>
                 </tr>
               ))}
-              {hires.length === 0 && (
+              {hires.length === 0 && !loading && (
                 <tr>
                   <td colSpan={4} className="text-center py-8 text-gray-400 text-sm">
                     Geen inhuur chauffeurs gevonden

@@ -13,9 +13,10 @@ type Props = {
   }) => void;
   onCancel: () => void;
   initialType?: DriverType;
+  saving?: boolean;
 };
 
-export function DriverForm({ onSubmit, onCancel, initialType = "INTERNAL" }: Props) {
+export function DriverForm({ onSubmit, onCancel, initialType = "INTERNAL", saving }: Props) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [type, setType] = useState<DriverType>(initialType);
@@ -106,9 +107,10 @@ export function DriverForm({ onSubmit, onCancel, initialType = "INTERNAL" }: Pro
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          disabled={saving}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
-          Opslaan
+          {saving ? "Opslaan..." : "Opslaan"}
         </button>
         <button
           type="button"
