@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { AggregationLevel } from "@/domain/enums";
 import type { PlanningStatus } from "@/domain/enums";
 import { useApiData } from "@/hooks/useApi";
@@ -21,18 +21,15 @@ type ColumnHeader = { key: string; label: string };
 const DEFAULT_CAPACITY_DAYS = 56;
 
 export default function CapacityPage() {
-  const [startDate, setStartDate] = useState("");
-  const [dayCount] = useState(DEFAULT_CAPACITY_DAYS);
-  const [aggregation, setAggregation] = useState<AggregationLevel>("week");
-  const [compareIds, setCompareIds] = useState<string[]>([]);
-
-  useEffect(() => {
+  const [startDate, setStartDate] = useState(() => {
     const today = new Date();
     const dayOfWeek = today.getDay();
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = addDays(today, mondayOffset);
-    setStartDate(monday.toISOString().split("T")[0]);
-  }, []);
+    return addDays(today, mondayOffset).toISOString().split("T")[0];
+  });
+  const [dayCount] = useState(DEFAULT_CAPACITY_DAYS);
+  const [aggregation, setAggregation] = useState<AggregationLevel>("week");
+  const [compareIds, setCompareIds] = useState<string[]>([]);
 
   const activeId = useApiData(() => api.scenarios.getActiveId(), [], "default");
   const scenarios = useApiData(() => api.scenarios.list(), [], []);

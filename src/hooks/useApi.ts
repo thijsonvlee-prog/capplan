@@ -9,23 +9,35 @@ export function invalidate() {
   listeners.forEach((l) => l());
 }
 
-// In-memory cache: stale-while-revalidate
-const cache = new Map<string, unknown>();
+// In-memory cache with freshness tracking
+interface CacheEntry {
+  data: unknown;
+  fetchedAt: number;
+}
+const cache = new Map<string, CacheEntry>();
+const STALE_MS = 30_000; // consider data fresh for 30 seconds
 
 function cacheKey(fetcher: Function, deps: unknown[]): string {
   return fetcher.toString() + "|" + JSON.stringify(deps);
 }
 
-// Hook that fetches data and refetches on invalidation.
-// Returns cached data immediately on re-mount so pages don't flash empty.
+/**
+ * Fetches data from the API with caching and selective refetching.
+ *
+ * - Returns cached data immediately on re-mount (no empty flash).
+ * - Skips refetch if cache is fresh (<30 s) — prevents visible shifting
+ *   when navigating between pages.
+ * - Still refetches on explicit `invalidate()` or when deps change.
+ */
 export function useApiData<T>(
   fetcher: () => Promise<T>,
   deps: unknown[] = [],
   defaultValue: T
 ): T {
   const key = cacheKey(fetcher, deps);
+  const entry = cache.get(key);
   const [data, setData] = useState<T>(
-    () => (cache.has(key) ? (cache.get(key) as T) : defaultValue)
+    () => (entry ? (entry.data as T) : defaultValue)
   );
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
@@ -36,15 +48,19 @@ export function useApiData<T>(
     fetcherRef
       .current()
       .then((result) => {
-        cache.set(keyRef.current, result);
+        cache.set(keyRef.current, { data: result, fetchedAt: Date.now() });
         setData(result);
       })
       .catch(console.error);
   }, []);
 
   useEffect(() => {
-    // Always fetch fresh data on mount / dep change
-    doFetch();
+    // Only fetch if cache is missing or stale
+    const cached = cache.get(key);
+    const isFresh = cached && Date.now() - cached.fetchedAt < STALE_MS;
+    if (!isFresh) doFetch();
+
+    // Listen for explicit invalidation
     const cb = () => doFetch();
     listeners.add(cb);
     return () => {

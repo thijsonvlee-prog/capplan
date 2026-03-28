@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField } from "@/domain/enums";
 import type { DriverWithEntries, StamtabelRecord } from "@/domain/types";
 import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, GROUP_BY_LABELS, DAY_LABELS, EMPLOYMENT_TYPE_LABELS } from "@/domain/constants";
-import { useApiData, mutate } from "@/hooks/useApi";
+import { useApiData } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { groupDrivers, getActiveEmployment, getActiveFunction } from "@/lib/api-helpers";
 import { PeriodSelector } from "./WeekSelector";
@@ -57,8 +57,13 @@ const DENSITY_ICONS: Record<DensityLevel, typeof Maximize2> = {
 type ColumnHeader = { key: string; label: string; sub?: string; dates: string[] };
 
 export function PlanningGrid() {
-  // Start date for the visible range (snapped to Monday)
-  const [startDate, setStartDate] = useState("");
+  // Start date for the visible range (snapped to Monday — computed synchronously to avoid empty first render)
+  const [startDate, setStartDate] = useState(() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    return addDays(today, mondayOffset).toISOString().split("T")[0];
+  });
   const [dayCount] = useState(DEFAULT_DAY_COUNT);
   const [aggregation, setAggregation] = useState<AggregationLevel>("day");
   const [density, setDensity] = useState<DensityLevel>("comfortable");
@@ -76,15 +81,6 @@ export function PlanningGrid() {
     active: boolean;
   } | null>(null);
   const [showBulkSelector, setShowBulkSelector] = useState(false);
-
-  // Initialize start date to current Monday
-  useEffect(() => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const monday = addDays(today, mondayOffset);
-    setStartDate(monday.toISOString().split("T")[0]);
-  }, []);
 
   const activeScenarioId = useApiData(() => api.scenarios.getActiveId(), [], "default");
   const leaveTypes = useApiData(() => api.settings.getLeaveTypes(), [], []);
@@ -188,6 +184,11 @@ export function PlanningGrid() {
 
   const skillMap = useMemo(() => new Map(skills.map((s) => [s.id, s.name])), [skills]);
 
+  // Local data layer: mirrors API data but allows instant optimistic updates.
+  // Resets when the API returns new data (date range / scenario change).
+  const [localData, setLocalData] = useState(data);
+  useEffect(() => { setLocalData(data); }, [data]);
+
   const resolveColumnValue = useCallback((driver: DriverWithEntries, col: DriverColumnKey): string => {
     const emp = getActiveEmployment(driver);
     const pos = getActiveFunction(driver);
@@ -204,7 +205,30 @@ export function PlanningGrid() {
   }, [skillMap, employers, departments, locations]);
 
   function handleUpdate(driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
-    mutate(() => api.planning.upsert({ driverId, date, status, ...options, scenarioId: activeScenarioId }));
+    // Optimistic update — modify local state immediately, no full refetch
+    setLocalData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        drivers: prev.drivers.map(d => {
+          if (d.id !== driverId) return d;
+          const idx = d.planningEntries.findIndex(e => e.date === date);
+          const entry = {
+            id: idx >= 0 ? d.planningEntries[idx].id : `temp-${Date.now()}`,
+            driverId, date, status,
+            leaveTypeId: options?.leaveTypeId,
+            sickPercentage: options?.sickPercentage,
+            notes: options?.notes,
+            scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId,
+          };
+          const entries = [...d.planningEntries];
+          if (idx >= 0) entries[idx] = entry; else entries.push(entry);
+          return { ...d, planningEntries: entries };
+        }),
+      };
+    });
+    // Fire and forget — no invalidation, no refetch storm
+    api.planning.upsert({ driverId, date, status, ...options, scenarioId: activeScenarioId });
   }
 
   function toggleColumn(key: DriverColumnKey) {
@@ -255,7 +279,32 @@ export function PlanningGrid() {
 
   function handleBulkSelect(status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
     if (!dragState) return;
-    mutate(() => api.planning.upsertBulk({ driverId: dragState.driverId, dates: dragState.dates, status, ...options, scenarioId: activeScenarioId }));
+    const { driverId, dates } = dragState;
+    // Optimistic update for all selected dates
+    setLocalData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        drivers: prev.drivers.map(d => {
+          if (d.id !== driverId) return d;
+          const entries = [...d.planningEntries];
+          for (const date of dates) {
+            const idx = entries.findIndex(e => e.date === date);
+            const entry = {
+              id: idx >= 0 ? entries[idx].id : `temp-${date}`,
+              driverId, date, status,
+              leaveTypeId: options?.leaveTypeId,
+              sickPercentage: options?.sickPercentage,
+              notes: options?.notes,
+              scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId,
+            };
+            if (idx >= 0) entries[idx] = entry; else entries.push(entry);
+          }
+          return { ...d, planningEntries: entries };
+        }),
+      };
+    });
+    api.planning.upsertBulk({ driverId, dates, status, ...options, scenarioId: activeScenarioId });
     setDragState(null);
     setShowBulkSelector(false);
   }
@@ -272,7 +321,7 @@ export function PlanningGrid() {
   }, [dragState]);
 
   const filteredDrivers =
-    data?.drivers.filter(
+    localData?.drivers.filter(
       (d) =>
         !filter ||
         `${d.firstName} ${d.lastName}`.toLowerCase().includes(filter.toLowerCase())
@@ -402,7 +451,7 @@ export function PlanningGrid() {
         </div>
       )}
 
-      {!data ? (
+      {!localData ? (
         <div className="text-center py-12 text-gray-500">Laden...</div>
       ) : (
         <div className="overflow-auto bg-white rounded-lg shadow flex-1 min-h-0">
