@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useState, useEffect } from "react";
 import { getWeekDates } from "./utils";
 
 // === Types ===
@@ -105,14 +105,15 @@ export function initializeStore() {
 // === React hook ===
 
 export function useStore<T>(getter: () => T): T {
-  return useSyncExternalStore(
-    (cb) => {
-      listeners.add(cb);
-      return () => listeners.delete(cb);
-    },
-    getter,
-    getter // server snapshot (returns same as client for SSR safety)
-  );
+  const [, rerender] = useState(0);
+
+  useEffect(() => {
+    const cb = () => rerender((v) => v + 1);
+    listeners.add(cb);
+    return () => { listeners.delete(cb); };
+  }, []);
+
+  return getter();
 }
 
 // === Driver CRUD ===
