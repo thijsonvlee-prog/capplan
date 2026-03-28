@@ -326,9 +326,9 @@ export function PlanningGrid() {
   const DensityIcon = DENSITY_ICONS[density];
 
   return (
-    <div className="select-none">
+    <div className="select-none flex flex-col h-full min-h-0">
       {/* Top bar: navigation + aggregation + scenario */}
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2 flex-shrink-0">
         <div className="flex items-center gap-3">
           <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
           <ZoomSelector value={aggregation} onChange={setAggregation} />
@@ -347,7 +347,7 @@ export function PlanningGrid() {
       </div>
 
       {/* Filters bar */}
-      <div className="flex items-center gap-3 mb-3 flex-wrap">
+      <div className="flex items-center gap-3 mb-3 flex-wrap flex-shrink-0">
         <input
           type="text"
           placeholder="Zoek chauffeur..."
@@ -417,12 +417,12 @@ export function PlanningGrid() {
       {!data ? (
         <div className="text-center py-12 text-gray-500">Laden...</div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
+        <div className="overflow-auto bg-white rounded-lg shadow flex-1 min-h-0">
           <table className="border-collapse" style={{ minWidth: `${driverColWidth + extraColumns.length * extraColWidth + columnHeaders.length * dc.minW}px` }}>
-            <thead>
+            <thead className="sticky top-0 z-20">
               <tr className="bg-gray-50">
                 <th
-                  className={`text-left ${dc.cellPad} border border-gray-200 font-semibold ${dc.fontSize} sticky left-0 bg-gray-50 z-10 cursor-pointer whitespace-nowrap`}
+                  className={`text-left ${dc.cellPad} border border-gray-200 font-semibold ${dc.fontSize} sticky left-0 bg-gray-50 z-30 cursor-pointer whitespace-nowrap`}
                   style={{ minWidth: driverColWidth }}
                   onClick={() => handleSort("name")}
                 >
@@ -433,7 +433,7 @@ export function PlanningGrid() {
                   return (
                     <th
                       key={colKey}
-                      className={`text-left ${dc.cellPad} border border-gray-200 font-medium ${dc.fontSize} sticky bg-gray-50 z-10 cursor-pointer whitespace-nowrap`}
+                      className={`text-left ${dc.cellPad} border border-gray-200 font-medium ${dc.fontSize} sticky bg-gray-50 z-30 cursor-pointer whitespace-nowrap`}
                       style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth }}
                       onClick={() => handleSort(colKey)}
                     >
