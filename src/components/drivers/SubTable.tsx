@@ -40,7 +40,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
       <div className="flex justify-end">
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700"
+          className="btn-primary"
         >
           <Plus className="w-3.5 h-3.5" />
           Toevoegen
@@ -48,17 +48,17 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
       </div>
 
       {showForm && (
-        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <div className="bg-surface-secondary rounded-lg p-4 border border-border-default">
           {renderForm(handleSubmit, () => setShowForm(false))}
         </div>
       )}
 
       {sorted.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-4">{emptyMessage}</p>
+        <p className="text-sm text-text-tertiary text-center py-4">{emptyMessage}</p>
       ) : (
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="bg-gray-50 text-xs text-gray-500">
+            <tr className="bg-surface-tertiary text-xs text-text-secondary">
               <th className="text-left p-2 border border-gray-200">#</th>
               <th className="text-left p-2 border border-gray-200">Begindatum</th>
               <th className="text-left p-2 border border-gray-200">Einddatum</th>
@@ -72,7 +72,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
           </thead>
           <tbody>
             {sorted.map((row) => (
-              <tr key={row.id} className={!row.endDate ? "bg-blue-50" : ""}>
+              <tr key={row.id} className={!row.endDate ? "bg-brand-50" : ""}>
                 <td className="p-2 border border-gray-200 text-sm">{row.sequenceNumber}</td>
                 <td className="p-2 border border-gray-200 text-sm">{row.startDate}</td>
                 <td className="p-2 border border-gray-200 text-sm">
@@ -86,7 +86,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
                 <td className="p-1 border border-gray-200 text-center">
                   <button
                     onClick={() => { if (window.confirm(`Weet je zeker dat je het record vanaf ${row.startDate} wilt verwijderen?`)) onDelete(row.id); }}
-                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                    className="btn-icon-danger"
                     title="Verwijderen"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

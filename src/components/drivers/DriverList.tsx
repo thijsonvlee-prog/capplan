@@ -67,7 +67,7 @@ export function DriverList() {
 
       {editingDriver && (
         <div className="mb-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">Chauffeur bewerken: {editingDriver.firstName} {editingDriver.lastName}</h3>
+          <h3 className="text-section-title mb-2">Chauffeur bewerken: {editingDriver.firstName} {editingDriver.lastName}</h3>
           <DriverForm
             onSubmit={handleUpdate}
             onCancel={() => setEditingDriver(null)}
@@ -95,22 +95,22 @@ export function DriverList() {
             {drivers.map((d) => {
               const computed = getComputedFields(d, lookups);
               return (
-                <tr key={d.id} className="border-t border-gray-100 hover:bg-gray-50">
+                <tr key={d.id} className="border-t border-border-subtle hover:bg-surface-secondary">
                   <td className="p-3 text-sm">
                     <div>{d.firstName} {d.lastName}</div>
-                    {d.employeeNumber && <div className="text-gray-400 text-xs">{d.employeeNumber}</div>}
+                    {d.employeeNumber && <div className="text-text-tertiary text-xs">{d.employeeNumber}</div>}
                   </td>
-                  <td className="p-3 text-sm text-gray-600">{computed.currentManager || "-"}</td>
+                  <td className="p-3 text-sm text-text-secondary">{computed.currentManager || "-"}</td>
                   <td className="p-3 text-sm">
                     {computed.currentEmploymentType ? (
-                      <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">
+                      <span className="bg-surface-tertiary px-2 py-0.5 rounded text-xs">
                         {computed.currentEmploymentType}
                       </span>
                     ) : "-"}
                   </td>
-                  <td className="p-3 text-sm text-gray-600">{computed.currentEmployer || "-"}</td>
-                  <td className="p-3 text-sm text-gray-600">{computed.currentDepartment || "-"}</td>
-                  <td className="p-3 text-sm text-gray-600">{computed.currentLocation || "-"}</td>
+                  <td className="p-3 text-sm text-text-secondary">{computed.currentEmployer || "-"}</td>
+                  <td className="p-3 text-sm text-text-secondary">{computed.currentDepartment || "-"}</td>
+                  <td className="p-3 text-sm text-text-secondary">{computed.currentLocation || "-"}</td>
                   <td className="p-3 text-sm">
                     {d.licenseTypes?.length ? (
                       <div className="flex gap-1 flex-wrap">
@@ -134,7 +134,7 @@ export function DriverList() {
                   <td className="p-3">
                     <button
                       onClick={() => startEdit(d)}
-                      className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                      className="btn-icon"
                       title="Bewerken"
                     >
                       <Pencil className="w-4 h-4" />
@@ -145,7 +145,7 @@ export function DriverList() {
             })}
             {drivers.length === 0 && (
               <tr>
-                <td colSpan={9} className="text-center py-8 text-gray-400 text-sm">
+                <td colSpan={9} className="text-center py-8 text-text-tertiary text-sm">
                   {search ? `Geen chauffeurs gevonden voor "${search}"` : "Nog geen chauffeurs. Klik op \"Chauffeur toevoegen\" om te beginnen."}
                 </td>
               </tr>

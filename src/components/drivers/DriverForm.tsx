@@ -87,7 +87,6 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
     });
   }
 
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm";
   const isEdit = !!initialData;
 
   const TABS: { key: TabKey; label: string; editOnly?: boolean }[] = [
@@ -102,9 +101,9 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
   const locationMap = new Map(locations.map((l) => [l.id, l.description]));
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow space-y-4">
+    <div className="bg-surface-primary p-6 rounded-lg shadow-card border border-border-subtle space-y-4">
       {/* Tabs */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-border-default">
         {TABS.filter((t) => !t.editOnly || isEdit).map((tab) => (
           <button
             key={tab.key}
@@ -112,8 +111,8 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
             onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-brand-600 text-brand-600"
+                : "border-transparent text-text-secondary hover:text-text-primary hover:border-border-strong"
             }`}
           >
             {tab.label}
@@ -126,22 +125,22 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Voornaam</label>
-              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClass} required />
+              <label className="form-label">Voornaam</label>
+              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="input-field w-full" required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Achternaam</label>
-              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClass} required />
+              <label className="form-label">Achternaam</label>
+              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className="input-field w-full" required />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Personeelsnummer</label>
-            <input type="text" value={employeeNumber} onChange={(e) => setEmployeeNumber(e.target.value)} className={inputClass} />
+            <label className="form-label">Personeelsnummer</label>
+            <input type="text" value={employeeNumber} onChange={(e) => setEmployeeNumber(e.target.value)} className="input-field w-full" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Rijbewijstype</label>
+            <label className="form-label mb-2">Rijbewijstype</label>
             <div className="flex flex-wrap gap-2">
               {LICENSE_OPTIONS.map((lt) => (
                 <button
@@ -149,7 +148,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
                   type="button"
                   onClick={() => toggleLicense(lt)}
                   className={`px-3 py-1 rounded-md text-sm border transition-colors ${
-                    licenseTypes.includes(lt) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    licenseTypes.includes(lt) ? "bg-brand-600 text-white border-brand-600" : "bg-surface-primary text-text-primary border-border-default hover:bg-surface-secondary"
                   }`}
                 >
                   {lt}
@@ -160,7 +159,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
 
           {skills.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Vaardigheden</label>
+              <label className="form-label mb-2">Vaardigheden</label>
               <div className="flex flex-wrap gap-2">
                 {skills.map((s) => (
                   <button
@@ -168,7 +167,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
                     type="button"
                     onClick={() => toggleSkill(s.id)}
                     className={`px-3 py-1 rounded-md text-sm border transition-colors ${
-                      selectedSkills.includes(s.id) ? "bg-green-600 text-white border-green-600" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                      selectedSkills.includes(s.id) ? "bg-green-600 text-white border-green-600" : "bg-surface-primary text-text-primary border-border-default hover:bg-surface-secondary"
                     }`}
                   >
                     {s.name}
@@ -180,8 +179,8 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
 
           {/* Computed fields (read-only, edit mode only) */}
           {computed && (
-            <div className="border-t border-gray-200 pt-4">
-              <div className="text-xs font-medium text-gray-500 mb-2">Actuele gegevens (op basis van dienstverband, functie en rooster)</div>
+            <div className="border-t border-border-default pt-4">
+              <div className="text-caption font-medium mb-2">Actuele gegevens (op basis van dienstverband, functie en rooster)</div>
               <div className="grid grid-cols-3 gap-3 text-sm">
                 {[
                   { label: "Werkgever", value: computed.currentEmployer },
@@ -192,8 +191,8 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
                   { label: "Roosterprofiel", value: computed.currentRosterProfile },
                 ].map((f) => (
                   <div key={f.label}>
-                    <span className="text-gray-500 text-xs">{f.label}</span>
-                    <div className="text-gray-700">{f.value || "-"}</div>
+                    <span className="text-text-tertiary text-xs">{f.label}</span>
+                    <div className="text-text-secondary">{f.value || "-"}</div>
                   </div>
                 ))}
               </div>
@@ -201,10 +200,10 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           )}
 
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={saving} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" disabled={saving} className="btn-primary">
               {saving ? "Opslaan..." : "Opslaan"}
             </button>
-            <button type="button" onClick={onCancel} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200">
+            <button type="button" onClick={onCancel} className="btn-secondary">
               Annuleren
             </button>
           </div>
@@ -282,24 +281,22 @@ function EmploymentForm({
   const [employmentType, setEmploymentType] = useState<EmploymentType>("FULLTIME");
   const [employerId, setEmployerId] = useState("");
 
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm";
-
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Begindatum</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
+          <label className="form-label">Begindatum</label>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-field w-full" />
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Type</label>
-          <select value={employmentType} onChange={(e) => setEmploymentType(e.target.value as EmploymentType)} className={inputClass}>
+          <label className="form-label">Type</label>
+          <select value={employmentType} onChange={(e) => setEmploymentType(e.target.value as EmploymentType)} className="input-field w-full">
             {EMPLOYMENT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Werkgever</label>
-          <select value={employerId} onChange={(e) => setEmployerId(e.target.value)} className={inputClass}>
+          <label className="form-label">Werkgever</label>
+          <select value={employerId} onChange={(e) => setEmployerId(e.target.value)} className="input-field w-full">
             <option value="">-- Selecteer --</option>
             {employers.map((e) => <option key={e.id} value={e.id}>{e.description}</option>)}
           </select>
@@ -309,11 +306,11 @@ function EmploymentForm({
         <button
           onClick={() => { if (startDate) onSubmit({ startDate, employmentType, employerId: employerId || undefined }); }}
           disabled={!startDate}
-          className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+          className="btn-primary"
         >
           Toevoegen
         </button>
-        <button onClick={onCancel} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-200">
+        <button onClick={onCancel} className="btn-secondary">
           Annuleren
         </button>
       </div>
@@ -338,49 +335,47 @@ function PositionForm({
   const [departmentId, setDepartmentId] = useState("");
   const [manager, setManager] = useState("");
 
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm";
-
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Begindatum</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
+          <label className="form-label">Begindatum</label>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-field w-full" />
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Functie</label>
-          <input type="text" value={position} onChange={(e) => setPosition(e.target.value)} placeholder="Functienaam" className={inputClass} />
+          <label className="form-label">Functie</label>
+          <input type="text" value={position} onChange={(e) => setPosition(e.target.value)} placeholder="Functienaam" className="input-field w-full" />
         </div>
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Standplaats</label>
-          <select value={locationId} onChange={(e) => setLocationId(e.target.value)} className={inputClass}>
+          <label className="form-label">Standplaats</label>
+          <select value={locationId} onChange={(e) => setLocationId(e.target.value)} className="input-field w-full">
             <option value="">-- Selecteer --</option>
             {locations.map((l) => <option key={l.id} value={l.id}>{l.description}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Afdeling</label>
-          <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)} className={inputClass}>
+          <label className="form-label">Afdeling</label>
+          <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)} className="input-field w-full">
             <option value="">-- Selecteer --</option>
             {departments.map((d) => <option key={d.id} value={d.id}>{d.description}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Leidinggevende</label>
-          <input type="text" value={manager} onChange={(e) => setManager(e.target.value)} placeholder="Naam" className={inputClass} />
+          <label className="form-label">Leidinggevende</label>
+          <input type="text" value={manager} onChange={(e) => setManager(e.target.value)} placeholder="Naam" className="input-field w-full" />
         </div>
       </div>
       <div className="flex gap-2">
         <button
           onClick={() => { if (startDate) onSubmit({ startDate, position, locationId: locationId || undefined, departmentId: departmentId || undefined, manager }); }}
           disabled={!startDate}
-          className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+          className="btn-primary"
         >
           Toevoegen
         </button>
-        <button onClick={onCancel} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-200">
+        <button onClick={onCancel} className="btn-secondary">
           Annuleren
         </button>
       </div>
@@ -401,27 +396,25 @@ function RosterForm({
   const [rosterProfileId, setRosterProfileId] = useState("");
   const [weeklyHours, setWeeklyHours] = useState<number | "">("");
 
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm";
-
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Begindatum</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
+          <label className="form-label">Begindatum</label>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-field w-full" />
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Roosterprofiel</label>
-          <select value={rosterProfileId} onChange={(e) => setRosterProfileId(e.target.value)} className={inputClass}>
+          <label className="form-label">Roosterprofiel</label>
+          <select value={rosterProfileId} onChange={(e) => setRosterProfileId(e.target.value)} className="input-field w-full">
             <option value="">-- Selecteer --</option>
             {profiles.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           {profiles.length === 0 && (
-            <p className="text-xs text-gray-400 mt-1">Maak eerst een profiel aan via Instellingen.</p>
+            <p className="text-caption mt-1">Maak eerst een profiel aan via Instellingen.</p>
           )}
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Uren/week (gemiddeld)</label>
+          <label className="form-label">Uren/week (gemiddeld)</label>
           <input
             type="number"
             value={weeklyHours}
@@ -429,7 +422,7 @@ function RosterForm({
             placeholder="40"
             min={0}
             max={60}
-            className={inputClass}
+            className="input-field w-full"
           />
         </div>
       </div>
@@ -441,15 +434,15 @@ function RosterForm({
             }
           }}
           disabled={!startDate || !rosterProfileId}
-          className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+          className="btn-primary"
         >
           Toewijzen
         </button>
-        <button onClick={onCancel} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-200">
+        <button onClick={onCancel} className="btn-secondary">
           Annuleren
         </button>
       </div>
-      <p className="text-xs text-gray-400">Het roosterprofiel wordt voor 1 jaar (364 dagen) cyclisch toegepast. Bestaande verlof- en ziekmeldingen blijven behouden.</p>
+      <p className="text-caption">Het roosterprofiel wordt voor 1 jaar (364 dagen) cyclisch toegepast. Bestaande verlof- en ziekmeldingen blijven behouden.</p>
     </div>
   );
 }

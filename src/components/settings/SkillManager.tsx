@@ -38,63 +38,54 @@ export function SkillManager() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-4 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-700">Vaardigheden</h3>
-        <p className="text-xs text-gray-400 mt-1">Beheer de vaardigheden die aan chauffeurs gekoppeld kunnen worden.</p>
+    <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle">
+      <div className="p-4 border-b border-border-subtle">
+        <h3 className="text-section-title">Vaardigheden</h3>
+        <p className="text-caption mt-1">Beheer de vaardigheden die aan chauffeurs gekoppeld kunnen worden.</p>
       </div>
 
-      <form onSubmit={handleAdd} className="p-4 border-b border-gray-100 flex gap-2">
+      <form onSubmit={handleAdd} className="p-4 border-b border-border-subtle flex gap-2">
         <input
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="Nieuwe vaardigheid..."
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="input-field flex-1"
         />
-        <button
-          type="submit"
-          className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
-        >
+        <button type="submit" className="btn-primary">
           <Plus className="w-4 h-4" />
           Toevoegen
         </button>
       </form>
 
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-border-subtle">
         {skills.map((skill) => (
-          <div key={skill.id} className="flex items-center justify-between p-3 hover:bg-gray-50">
+          <div key={skill.id} className="flex items-center justify-between p-3 hover:bg-surface-secondary">
             {editingId === skill.id ? (
               <div className="flex items-center gap-2 flex-1">
                 <input
                   type="text"
                   value={editingName}
                   onChange={(e) => setEditingName(e.target.value)}
-                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  className="input-field flex-1"
                   autoFocus
                   onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
                 />
-                <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-50 rounded-md">
                   <Check className="w-4 h-4" />
                 </button>
-                <button onClick={() => setEditingId(null)} className="p-1 text-gray-400 hover:bg-gray-100 rounded">
+                <button onClick={() => setEditingId(null)} className="btn-icon">
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
               <>
-                <span className="text-sm text-gray-700">{skill.name}</span>
+                <span className="text-sm text-text-primary">{skill.name}</span>
                 <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => startEdit(skill.id, skill.name)}
-                    className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
-                  >
+                  <button onClick={() => startEdit(skill.id, skill.name)} className="btn-icon">
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => handleDelete(skill.id, skill.name)}
-                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
-                  >
+                  <button onClick={() => handleDelete(skill.id, skill.name)} className="btn-icon-danger">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -103,7 +94,7 @@ export function SkillManager() {
           </div>
         ))}
         {skills.length === 0 && (
-          <div className="p-4 text-center text-gray-400 text-sm">
+          <div className="p-4 text-center text-text-tertiary text-sm">
             Nog geen vaardigheden. Voeg een vaardigheid toe om deze aan chauffeurs te koppelen.
           </div>
         )}

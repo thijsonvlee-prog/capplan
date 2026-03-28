@@ -43,18 +43,18 @@ export function PeriodSelector({ startDate, dayCount, onChangeStart }: Props) {
 
   return (
     <div className="flex items-center gap-2">
-      <button onClick={() => shiftDays(-shiftAmount)} className="p-1 rounded hover:bg-gray-200 transition-colors" title="Eerder">
+      <button onClick={() => shiftDays(-shiftAmount)} className="btn-icon p-1" title="Eerder">
         <ChevronLeft className="w-5 h-5" />
       </button>
       <button
         onClick={goToToday}
-        className="p-1 rounded hover:bg-gray-200 transition-colors text-blue-600"
+        className="p-1 rounded hover:bg-surface-tertiary transition-colors text-brand-600"
         title="Vandaag"
       >
         <Home className="w-4 h-4" />
       </button>
       <span className="text-sm font-semibold min-w-[280px] text-center">{label}</span>
-      <button onClick={() => shiftDays(shiftAmount)} className="p-1 rounded hover:bg-gray-200 transition-colors" title="Later">
+      <button onClick={() => shiftDays(shiftAmount)} className="btn-icon p-1" title="Later">
         <ChevronRight className="w-5 h-5" />
       </button>
     </div>

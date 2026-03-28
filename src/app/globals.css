@@ -127,3 +127,111 @@ body {
   line-height: 1.4;
   color: var(--color-text-tertiary);
 }
+
+/* ===================================================================
+   Form Controls
+   Unified input, select, and label styles using design tokens.
+   =================================================================== */
+
+.input-field {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  background-color: var(--color-surface-primary);
+  color: var(--color-text-primary);
+  transition-property: border-color, box-shadow;
+  transition-duration: 150ms;
+}
+
+.input-field::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.input-field:focus {
+  border-color: var(--color-brand-400);
+  box-shadow: 0 0 0 1px var(--color-brand-400);
+  outline: none;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+/* ===================================================================
+   Button System
+   Primary, secondary, and icon button variants.
+   =================================================================== */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-brand-600);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-xs);
+  transition-property: background-color;
+  transition-duration: 150ms;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-brand-700);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-surface-tertiary);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition-property: background-color;
+  transition-duration: 150ms;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-surface-inset);
+}
+
+.btn-icon {
+  padding: 0.25rem;
+  color: var(--color-text-tertiary);
+  border-radius: var(--radius-md);
+  transition-property: color, background-color;
+  transition-duration: 150ms;
+}
+
+.btn-icon:hover {
+  color: var(--color-brand-600);
+  background-color: var(--color-brand-50);
+}
+
+.btn-icon-danger {
+  padding: 0.25rem;
+  color: var(--color-text-tertiary);
+  border-radius: var(--radius-md);
+  transition-property: color, background-color;
+  transition-duration: 150ms;
+}
+
+.btn-icon-danger:hover {
+  color: #dc2626;
+  background-color: #fef2f2;
+}

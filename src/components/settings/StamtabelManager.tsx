@@ -69,42 +69,42 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
         </button>
       </form>
 
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-border-subtle">
         {records.map((r) => (
-          <div key={r.id} className="flex items-center justify-between p-3 hover:bg-gray-50">
+          <div key={r.id} className="flex items-center justify-between p-3 hover:bg-surface-secondary">
             {editingId === r.id ? (
               <div className="flex items-center gap-2 flex-1">
                 <input
                   type="text"
                   value={editCode}
                   onChange={(e) => setEditCode(e.target.value)}
-                  className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                  className="input-field w-24"
                 />
                 <input
                   type="text"
                   value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
-                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  className="input-field flex-1"
                   onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
                 />
-                <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-50 rounded-md">
                   <Check className="w-4 h-4" />
                 </button>
-                <button onClick={() => setEditingId(null)} className="p-1 text-gray-400 hover:bg-gray-100 rounded">
+                <button onClick={() => setEditingId(null)} className="btn-icon">
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
               <>
                 <div className="flex items-center gap-3">
-                  <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-mono">{r.code}</span>
-                  <span className="text-sm text-gray-700">{r.description}</span>
+                  <span className="bg-surface-tertiary px-2 py-0.5 rounded text-xs font-mono">{r.code}</span>
+                  <span className="text-sm text-text-primary">{r.description}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => startEdit(r)} className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded">
+                  <button onClick={() => startEdit(r)} className="btn-icon">
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => { if (window.confirm(`Weet je zeker dat je "${r.description}" wilt verwijderen?`)) onDelete(r.id); }} className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
+                  <button onClick={() => { if (window.confirm(`Weet je zeker dat je "${r.description}" wilt verwijderen?`)) onDelete(r.id); }} className="btn-icon-danger">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -113,7 +113,7 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
           </div>
         ))}
         {records.length === 0 && (
-          <div className="p-4 text-center text-gray-400 text-sm">Nog geen {title.toLowerCase()} toegevoegd.</div>
+          <div className="p-4 text-center text-text-tertiary text-sm">Nog geen {title.toLowerCase()} toegevoegd.</div>
         )}
       </div>
     </div>

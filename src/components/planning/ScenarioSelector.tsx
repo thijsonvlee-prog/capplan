@@ -45,7 +45,7 @@ export function ScenarioSelector() {
       <select
         value={activeId}
         onChange={(e) => mutate(() => api.scenarios.setActiveId(e.target.value))}
-        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+        className="input-field"
       >
         <option value="default">Actuele planning</option>
         {scenarios.map((s) => (
@@ -63,7 +63,7 @@ export function ScenarioSelector() {
 
       <button
         onClick={() => setShowCreate(true)}
-        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
+        className="btn-icon p-1.5"
         title="Nieuw scenario"
         aria-label="Nieuw scenario"
       >
@@ -71,7 +71,7 @@ export function ScenarioSelector() {
       </button>
       <button
         onClick={handleDuplicate}
-        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
+        className="btn-icon p-1.5"
         title="Dupliceer scenario"
         aria-label="Dupliceer scenario"
       >
@@ -80,7 +80,7 @@ export function ScenarioSelector() {
       {activeId !== "default" && (
         <button
           onClick={handleDelete}
-          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded"
+          className="btn-icon-danger p-1.5"
           title="Verwijder scenario"
           aria-label="Verwijder scenario"
         >
@@ -90,14 +90,14 @@ export function ScenarioSelector() {
 
       {showCreate && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <form onSubmit={handleCreate} className="bg-white rounded-lg shadow-xl p-6 w-96 space-y-3">
-            <h3 className="font-semibold text-sm">Nieuw scenario</h3>
+          <form onSubmit={handleCreate} className="bg-surface-primary rounded-lg shadow-modal p-6 w-96 space-y-3">
+            <h3 className="text-section-title">Nieuw scenario</h3>
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Naam..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="input-field w-full"
               autoFocus
               required
             />
@@ -106,13 +106,13 @@ export function ScenarioSelector() {
               value={newDesc}
               onChange={(e) => setNewDesc(e.target.value)}
               placeholder="Beschrijving (optioneel)..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="input-field w-full"
             />
             <div className="flex gap-2 pt-1">
-              <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
+              <button type="submit" className="btn-primary">
                 Aanmaken
               </button>
-              <button type="button" onClick={() => setShowCreate(false)} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
+              <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary">
                 Annuleren
               </button>
             </div>

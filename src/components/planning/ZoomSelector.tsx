@@ -19,7 +19,7 @@ type Props = {
 
 export function ZoomSelector({ value, onChange }: Props) {
   return (
-    <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+    <div className="flex rounded-lg border border-border-default overflow-hidden">
       {AGGREGATION_OPTIONS.map((opt) => (
         <button
           key={opt.value}
@@ -27,8 +27,8 @@ export function ZoomSelector({ value, onChange }: Props) {
           className={cn(
             "px-3 py-1.5 text-xs font-medium transition-colors",
             value === opt.value
-              ? "bg-blue-600 text-white"
-              : "bg-white text-gray-600 hover:bg-gray-50"
+              ? "bg-brand-600 text-white"
+              : "bg-surface-primary text-text-secondary hover:bg-surface-secondary"
           )}
         >
           {opt.label}

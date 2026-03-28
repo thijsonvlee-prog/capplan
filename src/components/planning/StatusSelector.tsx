@@ -118,7 +118,7 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
                 max={99}
                 value={sickPct}
                 onChange={(e) => setSickPct(Math.min(99, Math.max(0, parseInt(e.target.value) || 0)))}
-                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded"
+                className="input-field flex-1"
                 autoFocus
                 onKeyDown={(e) => { if (e.key === "Enter") handleSickConfirm(); }}
               />

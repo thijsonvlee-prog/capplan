@@ -69,30 +69,30 @@ export function RosterProfileEditor() {
   const showEditor = isNew || editingProfile;
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+    <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle">
+      <div className="p-4 border-b border-border-subtle flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-gray-700">Roosterprofielen</h3>
-          <p className="text-xs text-gray-400 mt-1">Een roosterprofiel van 4 weken kan cyclisch aan chauffeurs worden toegewezen.</p>
+          <h3 className="text-section-title">Roosterprofielen</h3>
+          <p className="text-caption mt-1">Een roosterprofiel van 4 weken kan cyclisch aan chauffeurs worden toegewezen.</p>
         </div>
         {!showEditor && (
-          <button onClick={startNew} className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 text-sm">
+          <button onClick={startNew} className="btn-primary">
             <Plus className="w-4 h-4" /> Nieuw profiel
           </button>
         )}
       </div>
 
       {showEditor && (
-        <div className="p-4 border-b border-gray-100 space-y-3">
+        <div className="p-4 border-b border-border-subtle space-y-3">
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Profielnaam..."
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-64"
+            className="input-field w-64"
             autoFocus
           />
-          <div className="text-xs text-gray-500 mb-1">Klik op een cel om de status te wisselen: Roostervrij → Basisrooster → Aanvullend beschikbaar</div>
+          <div className="text-caption mb-1">Klik op een cel om de status te wisselen: Roostervrij → Basisrooster → Aanvullend beschikbaar</div>
           <div className="overflow-x-auto">
             <table className="border-collapse text-xs">
               <thead>
@@ -131,38 +131,38 @@ export function RosterProfileEditor() {
             </table>
           </div>
           <div className="flex gap-2 pt-1">
-            <button onClick={handleSave} className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+            <button onClick={handleSave} className="btn-primary">
               <Save className="w-4 h-4" /> Opslaan
             </button>
-            <button onClick={() => { setEditingProfile(null); setIsNew(false); }} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-sm">
+            <button onClick={() => { setEditingProfile(null); setIsNew(false); }} className="btn-secondary">
               Annuleren
             </button>
           </div>
         </div>
       )}
 
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-border-subtle">
         {profiles.map((p) => (
-          <div key={p.id} className="flex items-center justify-between p-3 hover:bg-gray-50">
+          <div key={p.id} className="flex items-center justify-between p-3 hover:bg-surface-secondary">
             <div>
-              <span className="text-sm text-gray-700 font-medium">{p.name}</span>
-              <span className="text-xs text-gray-400 ml-2">
+              <span className="text-sm text-text-primary font-medium">{p.name}</span>
+              <span className="text-xs text-text-tertiary ml-2">
                 ({p.entries.filter((e) => e.status === "BASE_ROSTER").length} basisdagen,{" "}
                 {p.entries.filter((e) => e.status === "AVAILABLE_EXTRA").length} aanvullend)
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => startEdit(p)} className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded">
+              <button onClick={() => startEdit(p)} className="btn-icon">
                 <Pencil className="w-4 h-4" />
               </button>
-              <button onClick={() => handleDelete(p.id, p.name)} className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
+              <button onClick={() => handleDelete(p.id, p.name)} className="btn-icon-danger">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
         ))}
         {profiles.length === 0 && !showEditor && (
-          <div className="p-4 text-center text-gray-400 text-sm">Nog geen roosterprofielen. Maak een profiel aan om het aan chauffeurs toe te wijzen.</div>
+          <div className="p-4 text-center text-text-tertiary text-sm">Nog geen roosterprofielen. Maak een profiel aan om het aan chauffeurs toe te wijzen.</div>
         )}
       </div>
     </div>

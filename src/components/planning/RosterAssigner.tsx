@@ -41,15 +41,15 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-[520px] space-y-4 max-h-[80vh] overflow-y-auto">
-        <h3 className="font-semibold text-sm">Roosterprofiel — {driverName}</h3>
+      <div className="bg-surface-primary rounded-lg shadow-modal p-6 w-[520px] space-y-4 max-h-[80vh] overflow-y-auto">
+        <h3 className="text-section-title">Roosterprofiel — {driverName}</h3>
 
         {records.length > 0 && (
           <div>
-            <div className="text-xs font-medium text-gray-500 mb-1">Roosterhistorie</div>
+            <div className="text-caption font-medium mb-1">Roosterhistorie</div>
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="bg-gray-50 text-xs text-gray-500">
+                <tr className="bg-surface-tertiary text-xs text-text-secondary">
                   <th className="text-left p-2 border border-gray-200">#</th>
                   <th className="text-left p-2 border border-gray-200">Profiel</th>
                   <th className="text-left p-2 border border-gray-200">Ingangsdatum</th>
@@ -60,7 +60,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r.id} className={!r.endDate ? "bg-blue-50" : ""}>
+                  <tr key={r.id} className={!r.endDate ? "bg-brand-50" : ""}>
                     <td className="p-2 border border-gray-200 text-sm">{r.sequenceNumber}</td>
                     <td className="p-2 border border-gray-200 text-sm">{r.profileName}</td>
                     <td className="p-2 border border-gray-200 text-sm">{r.startDate}</td>
@@ -71,7 +71,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
                     <td className="p-1 border border-gray-200 text-center">
                       <button
                         onClick={() => handleDelete(r.id)}
-                        className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                        className="btn-icon-danger"
                         title="Verwijderen"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -84,14 +84,14 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
           </div>
         )}
 
-        <div className="border-t border-gray-200 pt-4 space-y-3">
-          <div className="text-xs font-medium text-gray-500">Nieuw roosterprofiel toewijzen</div>
+        <div className="border-t border-border-default pt-4 space-y-3">
+          <div className="text-caption font-medium">Nieuw roosterprofiel toewijzen</div>
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Roosterprofiel</label>
+            <label className="form-label">Roosterprofiel</label>
             <select
               value={profileId}
               onChange={(e) => setProfileId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="input-field w-full"
             >
               <option value="">-- Selecteer --</option>
               {profiles.map((p) => (
@@ -99,22 +99,22 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
               ))}
             </select>
             {profiles.length === 0 && (
-              <p className="text-xs text-gray-400 mt-1">Maak eerst een profiel aan via Instellingen.</p>
+              <p className="text-caption mt-1">Maak eerst een profiel aan via Instellingen.</p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Ingangsdatum</label>
+              <label className="form-label">Ingangsdatum</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="input-field w-full"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Uren/week (gemiddeld)</label>
+              <label className="form-label">Uren/week (gemiddeld)</label>
               <input
                 type="number"
                 value={weeklyHours}
@@ -122,7 +122,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
                 placeholder="40"
                 min={0}
                 max={60}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="input-field w-full"
               />
             </div>
           </div>
@@ -131,15 +131,15 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
             <button
               onClick={handleAssign}
               disabled={!profileId || !startDate}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+              className="btn-primary"
             >
               Toewijzen
             </button>
-            <button onClick={onClose} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
+            <button onClick={onClose} className="btn-secondary">
               Sluiten
             </button>
           </div>
-          <p className="text-xs text-gray-400">Het roosterprofiel wordt voor 1 jaar (364 dagen) cyclisch toegepast. Bestaande verlof- en ziekmeldingen blijven behouden.</p>
+          <p className="text-caption">Het roosterprofiel wordt voor 1 jaar (364 dagen) cyclisch toegepast. Bestaande verlof- en ziekmeldingen blijven behouden.</p>
         </div>
       </div>
     </div>

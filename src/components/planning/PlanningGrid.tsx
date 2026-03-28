@@ -375,7 +375,7 @@ export function PlanningGrid() {
         <div className="flex items-center gap-2">
           <button
             onClick={cycleDensity}
-            className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 px-2 py-1.5 border border-border-default rounded-lg text-sm text-text-secondary hover:bg-surface-secondary transition-colors"
             title={`Dichtheid: ${dc.label}`}
           >
             <DensityIcon className="w-4 h-4" />
@@ -395,11 +395,11 @@ export function PlanningGrid() {
           className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-64 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
         />
         <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-500">Groepeer op:</label>
+          <label className="text-sm text-text-tertiary">Groepeer op:</label>
           <select
             value={groupBy}
             onChange={(e) => setGroupBy(e.target.value as GroupByField)}
-            className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm"
+            className="input-field"
           >
             {Object.entries(GROUP_BY_LABELS).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
@@ -412,7 +412,7 @@ export function PlanningGrid() {
           <button
             onClick={() => setShowColumnPicker(!showColumnPicker)}
             className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
-              extraColumns.length > 0 ? "border-blue-300 bg-blue-50 text-blue-700" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+              extraColumns.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-secondary"
             }`}
             title="Kolommen toevoegen"
           >
@@ -422,9 +422,9 @@ export function PlanningGrid() {
           {showColumnPicker && (
             <>
               <div className="fixed inset-0 z-20" onClick={() => setShowColumnPicker(false)} />
-              <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 py-1 min-w-[200px]">
+              <div className="absolute top-full left-0 mt-1 bg-surface-primary border border-border-default rounded-lg shadow-dropdown z-30 py-1 min-w-[200px]">
                 {DRIVER_COLUMNS.map((col) => (
-                  <label key={col.key} className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer text-sm">
+                  <label key={col.key} className="flex items-center gap-2 px-3 py-1.5 hover:bg-surface-secondary cursor-pointer text-sm">
                     <input
                       type="checkbox"
                       checked={extraColumns.includes(col.key)}
@@ -443,7 +443,7 @@ export function PlanningGrid() {
         <button
           onClick={() => setShowCapacitySummary((v) => !v)}
           className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
-            showCapacitySummary ? "border-blue-300 bg-blue-50 text-blue-700" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+            showCapacitySummary ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-secondary"
           }`}
           title="Capaciteitssamenvatting tonen/verbergen"
         >
@@ -459,7 +459,7 @@ export function PlanningGrid() {
 
       {/* Drag selection info bar */}
       {dragState && dragState.dates.length > 1 && (
-        <div className="mb-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+        <div className="mb-2 px-3 py-1.5 bg-brand-50 border border-brand-200 rounded-lg text-sm text-brand-700">
           {dragState.dates.length} dagen geselecteerd — laat muisknop los om status te kiezen
         </div>
       )}
@@ -554,8 +554,8 @@ export function PlanningGrid() {
       {/* Bulk status selector after drag */}
       {showBulkSelector && dragState && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-4 min-w-[280px]">
-            <div className="text-sm font-semibold mb-2">
+          <div className="bg-surface-primary rounded-lg shadow-modal p-4 min-w-[280px]">
+            <div className="text-section-title mb-2">
               Status instellen voor {dragState.dates.length} dagen
             </div>
             <StatusSelector
