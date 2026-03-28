@@ -32,14 +32,15 @@ export function SkillManager() {
     setEditingName("");
   }
 
-  function handleDelete(id: string) {
+  function handleDelete(id: string, name: string) {
+    if (!window.confirm(`Weet je zeker dat je "${name}" wilt verwijderen?`)) return;
     mutate(() => api.settings.deleteSkill(id));
   }
 
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="p-4 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-700">Vaardigheden (Stamtabel)</h3>
+        <h3 className="text-sm font-semibold text-gray-700">Vaardigheden</h3>
         <p className="text-xs text-gray-400 mt-1">Beheer de vaardigheden die aan chauffeurs gekoppeld kunnen worden.</p>
       </div>
 
@@ -91,7 +92,7 @@ export function SkillManager() {
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(skill.id)}
+                    onClick={() => handleDelete(skill.id, skill.name)}
                     className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
                   >
                     <Trash2 className="w-4 h-4" />

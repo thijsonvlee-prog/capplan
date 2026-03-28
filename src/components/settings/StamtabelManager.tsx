@@ -104,7 +104,7 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
                   <button onClick={() => startEdit(r)} className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded">
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => onDelete(r.id)} className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
+                  <button onClick={() => { if (window.confirm(`Weet je zeker dat je "${r.description}" wilt verwijderen?`)) onDelete(r.id); }} className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

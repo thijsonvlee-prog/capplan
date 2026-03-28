@@ -85,7 +85,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
                 ))}
                 <td className="p-1 border border-gray-200 text-center">
                   <button
-                    onClick={() => onDelete(row.id)}
+                    onClick={() => { if (window.confirm("Weet je zeker dat je dit record wilt verwijderen?")) onDelete(row.id); }}
                     className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
                     title="Verwijderen"
                   >

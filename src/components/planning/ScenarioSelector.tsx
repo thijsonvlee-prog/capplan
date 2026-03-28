@@ -35,6 +35,8 @@ export function ScenarioSelector() {
 
   function handleDelete() {
     if (activeId === "default") return;
+    const scenarioName = scenarios.find((s) => s.id === activeId)?.name || "dit scenario";
+    if (!window.confirm(`Weet je zeker dat je "${scenarioName}" wilt verwijderen? Alle bijbehorende planningsdata gaat verloren.`)) return;
     mutate(() => api.scenarios.remove(activeId));
   }
 

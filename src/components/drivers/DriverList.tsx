@@ -146,7 +146,7 @@ export function DriverList() {
             {drivers.length === 0 && (
               <tr>
                 <td colSpan={9} className="text-center py-8 text-gray-400 text-sm">
-                  Geen chauffeurs gevonden
+                  {search ? `Geen chauffeurs gevonden voor "${search}"` : "Nog geen chauffeurs. Klik op \"Chauffeur toevoegen\" om te beginnen."}
                 </td>
               </tr>
             )}

@@ -20,7 +20,7 @@ export function Sidebar() {
     <aside className="w-64 bg-gray-900 text-white min-h-screen p-4 flex flex-col">
       <div className="mb-8">
         <h1 className="text-xl font-bold">CapPlan</h1>
-        <p className="text-gray-400 text-sm">Driver Planning Tool</p>
+        <p className="text-gray-400 text-sm">Chauffeurplanning</p>
       </div>
 
       <nav className="flex-1 space-y-1">

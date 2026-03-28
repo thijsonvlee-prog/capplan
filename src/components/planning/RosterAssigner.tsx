@@ -33,6 +33,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
   }
 
   function handleDelete(recordId: string) {
+    if (!window.confirm("Weet je zeker dat je dit roosterrecord wilt verwijderen?")) return;
     mutate(() => api.drivers.deleteRosterAssignment(driverId, recordId));
   }
 
@@ -90,7 +91,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
               onChange={(e) => setProfileId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
             >
-              <option value="">-- Selecteer profiel --</option>
+              <option value="">-- Selecteer --</option>
               {profiles.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
@@ -130,12 +131,13 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
               disabled={!profileId || !startDate}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
             >
-              Toewijzen (1 jaar)
+              Toewijzen
             </button>
             <button onClick={onClose} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
               Sluiten
             </button>
           </div>
+          <p className="text-xs text-gray-400">Het roosterprofiel wordt voor 1 jaar (364 dagen) cyclisch toegepast. Bestaande verlof- en ziekmeldingen blijven behouden.</p>
         </div>
       </div>
     </div>

@@ -215,7 +215,12 @@ export default function CapacityPage() {
         )}
       </div>
 
-      {columnHeaders.length > 0 && (
+      {columnHeaders.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">
+          <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mb-2" />
+          <div className="text-sm">Capaciteitsgegevens laden...</div>
+        </div>
+      ) : (
         <>
           <div className="mb-6">
             <CapacityChart

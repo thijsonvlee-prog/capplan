@@ -443,12 +443,13 @@ function RosterForm({
           disabled={!startDate || !rosterProfileId}
           className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
         >
-          Toewijzen (1 jaar)
+          Toewijzen
         </button>
         <button onClick={onCancel} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-200">
           Annuleren
         </button>
       </div>
+      <p className="text-xs text-gray-400">Het roosterprofiel wordt voor 1 jaar (364 dagen) cyclisch toegepast. Bestaande verlof- en ziekmeldingen blijven behouden.</p>
     </div>
   );
 }

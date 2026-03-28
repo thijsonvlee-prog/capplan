@@ -43,7 +43,7 @@ type SortConfig = { key: "name" | DriverColumnKey; direction: "asc" | "desc" } |
 // Density settings
 const DENSITY_CONFIG: Record<DensityLevel, { cellH: string; cellPad: string; fontSize: string; minW: number; label: string }> = {
   spacious: { cellH: "h-10", cellPad: "p-2", fontSize: "text-sm", minW: 80, label: "Ruim" },
-  comfortable: { cellH: "h-8", cellPad: "p-1", fontSize: "text-xs", minW: 50, label: "Gezellig" },
+  comfortable: { cellH: "h-8", cellPad: "p-1", fontSize: "text-xs", minW: 50, label: "Normaal" },
   compact: { cellH: "h-6", cellPad: "p-0.5", fontSize: "text-xs", minW: 32, label: "Compact" },
 };
 
@@ -452,7 +452,10 @@ export function PlanningGrid() {
       )}
 
       {!localData ? (
-        <div className="text-center py-12 text-gray-500">Laden...</div>
+        <div className="text-center py-12 text-gray-500">
+          <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mb-2" />
+          <div className="text-sm">Planning laden...</div>
+        </div>
       ) : (
         <div className="overflow-auto bg-white rounded-lg shadow flex-1 min-h-0">
           <table className="border-collapse" style={{ minWidth: `${driverColWidth + extraColumns.length * extraColWidth + columnHeaders.length * dc.minW}px` }}>
@@ -514,7 +517,7 @@ export function PlanningGrid() {
               {filteredDrivers.length === 0 && (
                 <tr>
                   <td colSpan={columnHeaders.length + 1 + extraColumns.length} className="text-center py-8 text-gray-400 text-sm">
-                    Geen chauffeurs gevonden
+                    {filter ? `Geen chauffeurs gevonden voor "${filter}"` : "Geen chauffeurs beschikbaar. Voeg chauffeurs toe via het Chauffeurs-scherm."}
                   </td>
                 </tr>
               )}
