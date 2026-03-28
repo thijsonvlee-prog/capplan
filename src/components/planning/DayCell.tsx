@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import type { PlanningEntry, PlanningStatus, StamtabelRecord, DensityLevel } from "@/lib/store";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
@@ -25,6 +26,8 @@ type Props = {
 
 export function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypes, density = "comfortable", onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
+  const [selectorPos, setSelectorPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   // Build hover title
   let title = "";
@@ -44,11 +47,21 @@ export function DayCell({ entry, driverId, date, compact, baseRosterHours, leave
 
   const h = DENSITY_HEIGHT[density];
 
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setSelectorPos({ top: rect.bottom, left: rect.left });
+    }
+    setShowSelector(true);
+  }, []);
+
   return (
     <div className="relative">
       <button
+        ref={btnRef}
         onMouseDown={(e) => { e.stopPropagation(); }}
-        onClick={(e) => { e.stopPropagation(); setShowSelector(true); }}
+        onClick={handleClick}
         className={cn(
           "w-full rounded-sm flex items-center justify-center transition-colors cursor-pointer",
           h,
@@ -63,17 +76,20 @@ export function DayCell({ entry, driverId, date, compact, baseRosterHours, leave
         )}
       </button>
 
-      {showSelector && (
-        <StatusSelector
-          currentStatus={entry?.status}
-          currentLeaveTypeId={entry?.leaveTypeId}
-          currentSickPercentage={entry?.sickPercentage}
-          onSelect={(status, options) => {
-            onUpdate(driverId, date, status, options);
-            setShowSelector(false);
-          }}
-          onClose={() => setShowSelector(false)}
-        />
+      {showSelector && createPortal(
+        <div className="fixed z-50" style={{ top: selectorPos.top, left: selectorPos.left }}>
+          <StatusSelector
+            currentStatus={entry?.status}
+            currentLeaveTypeId={entry?.leaveTypeId}
+            currentSickPercentage={entry?.sickPercentage}
+            onSelect={(status, options) => {
+              onUpdate(driverId, date, status, options);
+              setShowSelector(false);
+            }}
+            onClose={() => setShowSelector(false)}
+          />
+        </div>,
+        document.body
       )}
     </div>
   );
