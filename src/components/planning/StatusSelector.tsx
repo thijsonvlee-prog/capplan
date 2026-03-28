@@ -64,8 +64,7 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
   return (
     <div
       ref={ref}
-      className="absolute z-50 bg-white rounded-lg shadow-xl border border-gray-200 p-2 w-56"
-      style={{ left: 0, top: "100%" }}
+      className="bg-white rounded-lg shadow-xl border border-gray-200 p-2 w-56"
     >
       {!showLeaveMenu && !showSickInput && (
         <div className="space-y-1">
