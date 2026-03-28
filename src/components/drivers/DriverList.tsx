@@ -4,27 +4,32 @@ import { useState } from "react";
 import { Plus, Pencil } from "lucide-react";
 import { DriverForm } from "./DriverForm";
 import type { Driver } from "@/domain/types";
-import { useStore } from "@/repositories/localStorage/storage";
-import { services } from "@/services";
+import { useApiData, mutate } from "@/hooks/useApi";
+import { api } from "@/lib/api";
+import { getComputedFields } from "@/lib/api-helpers";
 
 export function DriverList() {
   const [showForm, setShowForm] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [search, setSearch] = useState("");
 
-  const drivers = useStore(() => services.driver.getDrivers({ search: search || undefined }));
-  const skills = useStore(() => services.settings.getSkills());
+  const drivers = useApiData(() => api.drivers.list({ search: search || undefined }), [search], []);
+  const skills = useApiData(() => api.settings.getSkills(), [], []);
+  const employers = useApiData(() => api.settings.getEmployers(), [], []);
+  const departments = useApiData(() => api.settings.getDepartments(), [], []);
+  const locations = useApiData(() => api.settings.getLocations(), [], []);
+  const rosterProfiles = useApiData(() => api.rosterProfiles.list(), [], []);
 
   const skillMap = new Map(skills.map((s) => [s.id, s.name]));
 
   function handleCreate(data: Omit<Driver, "id" | "isActive" | "createdAt" | "updatedAt">) {
-    services.driver.createDriver(data);
+    mutate(() => api.drivers.create(data));
     setShowForm(false);
   }
 
   function handleUpdate(data: Partial<Omit<Driver, "id" | "createdAt">>) {
     if (!editingDriver) return;
-    services.driver.updateDriver(editingDriver.id, data);
+    mutate(() => api.drivers.update(editingDriver.id, data));
     setEditingDriver(null);
   }
 
@@ -32,6 +37,8 @@ export function DriverList() {
     setEditingDriver(driver);
     setShowForm(false);
   }
+
+  const lookups = { employers, departments, locations, rosterProfiles };
 
   return (
     <div>
@@ -86,7 +93,7 @@ export function DriverList() {
           </thead>
           <tbody>
             {drivers.map((d) => {
-              const computed = services.driver.getComputedFields(d);
+              const computed = getComputedFields(d, lookups);
               return (
                 <tr key={d.id} className="border-t border-gray-100 hover:bg-gray-50">
                   <td className="p-3 text-sm">

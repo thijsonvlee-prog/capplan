@@ -1,19 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
-import { initializeStore } from "@/repositories/localStorage/storage";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  useEffect(() => {
-    initializeStore();
-  }, []);
-
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />

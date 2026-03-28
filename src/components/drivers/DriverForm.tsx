@@ -4,8 +4,9 @@ import { useState } from "react";
 import type { EmploymentType } from "@/domain/enums";
 import type { DriverEmploymentRecord, DriverFunctionRecord, DriverRosterAssignment, Driver } from "@/domain/types";
 import { EMPLOYMENT_TYPE_LABELS } from "@/domain/constants";
-import { useStore } from "@/repositories/localStorage/storage";
-import { services } from "@/services";
+import { useApiData, mutate } from "@/hooks/useApi";
+import { api } from "@/lib/api";
+import { getComputedFields } from "@/lib/api-helpers";
 import { SubTable } from "./SubTable";
 
 const LICENSE_OPTIONS = ["B", "C", "C1", "CE", "D", "DE"];
@@ -43,20 +44,29 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
   const [licenseTypes, setLicenseTypes] = useState<string[]>(initialData?.licenseTypes || []);
   const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.skillIds || []);
 
-  const skills = useStore(() => services.settings.getSkills());
-  const employers = useStore(() => services.settings.getEmployers());
-  const departments = useStore(() => services.settings.getDepartments());
-  const locations = useStore(() => services.settings.getLocations());
-  const profiles = useStore(() => services.rosterProfile.getAll());
-  const activeScenarioId = useStore(() => services.scenario.getActiveId());
+  const skills = useApiData(() => api.settings.getSkills(), [], []);
+  const employers = useApiData(() => api.settings.getEmployers(), [], []);
+  const departments = useApiData(() => api.settings.getDepartments(), [], []);
+  const locations = useApiData(() => api.settings.getLocations(), [], []);
+  const profiles = useApiData(() => api.rosterProfiles.list(), [], []);
+  const activeScenarioId = useApiData(() => api.scenarios.getActiveId(), [], "default");
 
   // Sub-table data (only for edit mode)
-  const employmentRecords = useStore(() => initialData ? services.driver.getEmploymentRecords(initialData.id) : []);
-  const functionRecords = useStore(() => initialData ? services.driver.getFunctionRecords(initialData.id) : []);
-  const rosterAssignments = useStore(() => initialData ? services.driver.getRosterAssignments(initialData.id) : []);
+  const employmentRecords = useApiData(
+    () => initialData ? api.drivers.getEmploymentRecords(initialData.id) : Promise.resolve([]),
+    [initialData?.id], []
+  );
+  const functionRecords = useApiData(
+    () => initialData ? api.drivers.getFunctionRecords(initialData.id) : Promise.resolve([]),
+    [initialData?.id], []
+  );
+  const rosterAssignments = useApiData(
+    () => initialData ? api.drivers.getRosterAssignments(initialData.id) : Promise.resolve([]),
+    [initialData?.id], []
+  );
 
   // Computed fields for display
-  const computed = initialData ? services.driver.getComputedFields(initialData) : null;
+  const computed = initialData ? getComputedFields(initialData, { employers, departments, locations, rosterProfiles: profiles }) : null;
 
   function toggleLicense(lt: string) {
     setLicenseTypes((prev) => prev.includes(lt) ? prev.filter((l) => l !== lt) : [...prev, lt]);
@@ -209,8 +219,8 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
             { key: "employmentType", label: "Type", render: (v) => v ? EMPLOYMENT_TYPE_LABELS[v as EmploymentType] : "-" },
             { key: "employerId", label: "Werkgever", render: (v) => (v && employerMap.get(v)) || "-" },
           ]}
-          onAdd={(data) => services.driver.addEmploymentRecord(initialData.id, data)}
-          onDelete={(id) => services.driver.deleteEmploymentRecord(initialData.id, id)}
+          onAdd={(data) => mutate(() => api.drivers.addEmploymentRecord(initialData.id, data))}
+          onDelete={(id) => mutate(() => api.drivers.deleteEmploymentRecord(initialData.id, id))}
           emptyMessage="Geen dienstverbanden"
           renderForm={(onSubmit, onCancel) => (
             <EmploymentForm employers={employers} onSubmit={onSubmit} onCancel={onCancel} />
@@ -228,8 +238,8 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
             { key: "departmentId", label: "Afdeling", render: (v) => (v && departmentMap.get(v)) || "-" },
             { key: "manager", label: "Leidinggevende", render: (v) => v || "-" },
           ]}
-          onAdd={(data) => services.driver.addFunctionRecord(initialData.id, data)}
-          onDelete={(id) => services.driver.deleteFunctionRecord(initialData.id, id)}
+          onAdd={(data) => mutate(() => api.drivers.addFunctionRecord(initialData.id, data))}
+          onDelete={(id) => mutate(() => api.drivers.deleteFunctionRecord(initialData.id, id))}
           emptyMessage="Geen functierecords"
           renderForm={(onSubmit, onCancel) => (
             <PositionForm departments={departments} locations={locations} onSubmit={onSubmit} onCancel={onCancel} />
@@ -245,8 +255,8 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
             { key: "profileName", label: "Roosterprofiel" },
             { key: "weeklyHours", label: "Uren/week", render: (v) => v !== undefined && v !== null ? String(v) : "-" },
           ]}
-          onAdd={(data) => services.driver.addRosterAssignment(initialData.id, data, activeScenarioId === "default" ? undefined : activeScenarioId)}
-          onDelete={(id) => services.driver.deleteRosterAssignment(initialData.id, id)}
+          onAdd={(data) => mutate(() => api.drivers.addRosterAssignment(initialData.id, { ...data, scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId }))}
+          onDelete={(id) => mutate(() => api.drivers.deleteRosterAssignment(initialData.id, id))}
           emptyMessage="Geen roosterrecords"
           renderForm={(onSubmit, onCancel) => (
             <RosterForm profiles={profiles} onSubmit={onSubmit} onCancel={onCancel} />

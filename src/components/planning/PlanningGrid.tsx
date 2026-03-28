@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField } from "@/domain/enums";
 import type { DriverWithEntries, StamtabelRecord } from "@/domain/types";
-import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, GROUP_BY_LABELS, DAY_LABELS } from "@/domain/constants";
-import { useStore } from "@/repositories/localStorage/storage";
-import { services } from "@/services";
+import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, GROUP_BY_LABELS, DAY_LABELS, EMPLOYMENT_TYPE_LABELS } from "@/domain/constants";
+import { useApiData, mutate } from "@/hooks/useApi";
+import { api } from "@/lib/api";
+import { groupDrivers, getActiveEmployment, getActiveFunction } from "@/lib/api-helpers";
 import { PeriodSelector } from "./WeekSelector";
 import { ZoomSelector } from "./ZoomSelector";
 import { ScenarioSelector } from "./ScenarioSelector";
@@ -19,7 +20,7 @@ import {
   getISOWeekNumber,
   cn,
 } from "@/lib/utils";
-import { addDays, startOfWeek, getISOWeek } from "date-fns";
+import { addDays } from "date-fns";
 
 const DEFAULT_DAY_COUNT = 56;
 
@@ -85,9 +86,12 @@ export function PlanningGrid() {
     setStartDate(monday.toISOString().split("T")[0]);
   }, []);
 
-  const activeScenarioId = useStore(() => services.scenario.getActiveId());
-  const leaveTypes = useStore(() => services.settings.getLeaveTypes());
-  const skills = useStore(() => services.settings.getSkills());
+  const activeScenarioId = useApiData(() => api.scenarios.getActiveId(), [], "default");
+  const leaveTypes = useApiData(() => api.settings.getLeaveTypes(), [], []);
+  const skills = useApiData(() => api.settings.getSkills(), [], []);
+  const employers = useApiData(() => api.settings.getEmployers(), [], []);
+  const departments = useApiData(() => api.settings.getDepartments(), [], []);
+  const locations = useApiData(() => api.settings.getLocations(), [], []);
 
   // Compute all day-level dates for the range
   const allDates = useMemo(() => {
@@ -122,7 +126,6 @@ export function PlanningGrid() {
       }
 
       case "4weeks": {
-        // Group into 4-week blocks starting from the first date
         const blocks: ColumnHeader[] = [];
         for (let i = 0; i < allDates.length; i += 28) {
           const blockDates = allDates.slice(i, i + 28);
@@ -177,27 +180,31 @@ export function PlanningGrid() {
     }
   }, [allDates, aggregation]);
 
-  const data = useStore(() =>
-    allDates.length > 0 ? services.planning.getPlanningForDateRange(allDates, activeScenarioId) : null
+  const data = useApiData(
+    () => allDates.length > 0 ? api.planning.getForRange(allDates, activeScenarioId) : Promise.resolve(null),
+    [allDates.length > 0 ? allDates[0] : "", allDates.length, activeScenarioId],
+    null as { drivers: DriverWithEntries[]; dates: string[] } | null
   );
 
   const skillMap = useMemo(() => new Map(skills.map((s) => [s.id, s.name])), [skills]);
 
   const resolveColumnValue = useCallback((driver: DriverWithEntries, col: DriverColumnKey): string => {
+    const emp = getActiveEmployment(driver);
+    const pos = getActiveFunction(driver);
     switch (col) {
       case "employeeNumber": return driver.employeeNumber || "";
-      case "employer": return services.driver.getComputedFields(driver).currentEmployer;
-      case "department": return services.driver.getComputedFields(driver).currentDepartment;
-      case "location": return services.driver.getComputedFields(driver).currentLocation;
-      case "employmentType": return services.driver.getComputedFields(driver).currentEmploymentType;
-      case "manager": return services.driver.getComputedFields(driver).currentManager;
+      case "employer": return (emp?.employerId && employers.find((e) => e.id === emp.employerId)?.description) || "";
+      case "department": return (pos?.departmentId && departments.find((d) => d.id === pos.departmentId)?.description) || "";
+      case "location": return (pos?.locationId && locations.find((l) => l.id === pos.locationId)?.description) || "";
+      case "employmentType": return emp?.employmentType ? (EMPLOYMENT_TYPE_LABELS[emp.employmentType as keyof typeof EMPLOYMENT_TYPE_LABELS] || "") : "";
+      case "manager": return pos?.manager || "";
       case "licenseTypes": return driver.licenseTypes?.join(", ") || "";
       case "skills": return driver.skillIds?.map((id) => skillMap.get(id) || id).join(", ") || "";
     }
-  }, [skillMap]);
+  }, [skillMap, employers, departments, locations]);
 
   function handleUpdate(driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
-    services.planning.upsertEntry(driverId, date, status, options, activeScenarioId);
+    mutate(() => api.planning.upsert({ driverId, date, status, ...options, scenarioId: activeScenarioId }));
   }
 
   function toggleColumn(key: DriverColumnKey) {
@@ -240,7 +247,6 @@ export function PlanningGrid() {
 
   function handleDragEnd() {
     if (dragState && dragState.dates.length > 1) {
-      // Show bulk status selector
       setShowBulkSelector(true);
     } else {
       setDragState(null);
@@ -249,7 +255,7 @@ export function PlanningGrid() {
 
   function handleBulkSelect(status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
     if (!dragState) return;
-    services.planning.upsertBulkEntries(dragState.driverId, dragState.dates, status, options, activeScenarioId);
+    mutate(() => api.planning.upsertBulk({ driverId: dragState.driverId, dates: dragState.dates, status, ...options, scenarioId: activeScenarioId }));
     setDragState(null);
     setShowBulkSelector(false);
   }
@@ -291,8 +297,7 @@ export function PlanningGrid() {
     return sorted;
   }, [filteredDrivers, sortConfig, resolveColumnValue]);
 
-  const groups = services.driver.groupDrivers(sortedDrivers, groupBy);
-  const isDayLevel = aggregation === "day";
+  const groups = groupDrivers(sortedDrivers, groupBy, { employers, departments, locations });
   const dc = DENSITY_CONFIG[density];
 
   // Calculate sticky left offset
@@ -446,6 +451,7 @@ export function PlanningGrid() {
                   aggregation={aggregation}
                   density={density}
                   leaveTypes={leaveTypes}
+                  employers={employers}
                   driverColWidth={driverColWidth}
                   extraColWidth={extraColWidth}
                   resolveColumnValue={resolveColumnValue}
@@ -503,6 +509,7 @@ function GroupRows({
   aggregation,
   density,
   leaveTypes,
+  employers,
   driverColWidth,
   extraColWidth,
   resolveColumnValue,
@@ -518,6 +525,7 @@ function GroupRows({
   aggregation: AggregationLevel;
   density: DensityLevel;
   leaveTypes: StamtabelRecord[];
+  employers: StamtabelRecord[];
   driverColWidth: number;
   extraColWidth: number;
   resolveColumnValue: (driver: DriverWithEntries, col: DriverColumnKey) => string;
@@ -546,8 +554,8 @@ function GroupRows({
             <div className="flex items-center justify-between">
               <div>
                 {(() => {
-                  const pos = services.driver.getActiveFunction(driver);
-                  const emp = services.driver.getActiveEmployment(driver);
+                  const pos = getActiveFunction(driver);
+                  const emp = getActiveEmployment(driver);
                   return (
                     <>
                       <div className={`font-medium ${dc.fontSize} whitespace-nowrap`}>

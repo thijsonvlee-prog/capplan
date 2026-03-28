@@ -3,8 +3,8 @@
 import { useState } from "react";
 import type { PlanningStatus } from "@/domain/enums";
 import { ALL_PLANNING_STATUSES, STATUS_LABELS, STATUS_COLORS } from "@/domain/constants";
-import { useStore } from "@/repositories/localStorage/storage";
-import { services } from "@/services";
+import { useApiData } from "@/hooks/useApi";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -20,7 +20,7 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
   const [showSickInput, setShowSickInput] = useState(false);
   const [sickPct, setSickPct] = useState(currentSickPercentage ?? 0);
 
-  const leaveTypes = useStore(() => services.settings.getLeaveTypes());
+  const leaveTypes = useApiData(() => api.settings.getLeaveTypes(), [], []);
 
   function handleStatusClick(status: PlanningStatus) {
     if (status === "LEAVE") {
