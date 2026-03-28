@@ -2,9 +2,12 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
   startOfWeek,
+  startOfMonth,
+  endOfMonth,
   addDays,
   getISOWeek,
   getYear,
+  getDaysInMonth,
   format,
 } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -49,3 +52,38 @@ export const STATUS_COLORS: Record<string, string> = {
   SICK: "bg-red-100 text-red-700",
   HIRED: "bg-purple-100 text-purple-700",
 };
+
+export const STATUS_CHART_COLORS: Record<string, string> = {
+  ROSTER_FREE: "#9ca3af",
+  BASE_ROSTER: "#3b82f6",
+  AVAILABLE_EXTRA: "#22c55e",
+  LEAVE: "#eab308",
+  SICK: "#ef4444",
+  HIRED: "#a855f7",
+};
+
+export function get4WeekDates(year: number, week: number): Date[] {
+  const jan4 = new Date(year, 0, 4);
+  const startOfWeek1 = startOfWeek(jan4, { weekStartsOn: 1 });
+  const weekStart = addDays(startOfWeek1, (week - 1) * 7);
+  return Array.from({ length: 28 }, (_, i) => addDays(weekStart, i));
+}
+
+export function getMonthDates(year: number, month: number): Date[] {
+  const start = startOfMonth(new Date(year, month - 1));
+  const days = getDaysInMonth(start);
+  return Array.from({ length: days }, (_, i) => addDays(start, i));
+}
+
+export function getYearMonths(year: number): { label: string; startDate: string; endDate: string }[] {
+  const MONTH_LABELS = ["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
+  return MONTH_LABELS.map((label, i) => {
+    const start = startOfMonth(new Date(year, i));
+    const end = endOfMonth(new Date(year, i));
+    return {
+      label,
+      startDate: format(start, "yyyy-MM-dd"),
+      endDate: format(end, "yyyy-MM-dd"),
+    };
+  });
+}

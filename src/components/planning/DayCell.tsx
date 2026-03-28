@@ -10,18 +10,20 @@ type Props = {
   entry?: PlanningEntry;
   driverId: string;
   date: string;
+  compact?: boolean;
   onUpdate: (driverId: string, date: string, status: PlanningStatus, notes?: string) => void;
 };
 
-export function DayCell({ entry, driverId, date, onUpdate }: Props) {
+export function DayCell({ entry, driverId, date, compact, onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
 
   return (
-    <td className="relative border border-gray-200 p-1">
+    <td className="relative border border-gray-200 p-0.5">
       <button
         onClick={() => setShowSelector(true)}
         className={cn(
-          "w-full h-10 rounded-md flex items-center justify-center transition-colors cursor-pointer",
+          "w-full rounded-sm flex items-center justify-center transition-colors cursor-pointer",
+          compact ? "h-7" : "h-10",
           entry ? "hover:opacity-80" : "bg-gray-50 hover:bg-gray-100"
         )}
         title={entry?.notes || undefined}

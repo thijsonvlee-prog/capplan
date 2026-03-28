@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Users, UserPlus } from "lucide-react";
+import { CalendarDays, BarChart3, Users, UserPlus, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/planning", label: "Planning", icon: CalendarDays },
+  { href: "/capacity", label: "Capaciteit", icon: BarChart3 },
   { href: "/drivers", label: "Chauffeurs", icon: Users },
   { href: "/external-hires", label: "Inhuur", icon: UserPlus },
+  { href: "/settings", label: "Instellingen", icon: Settings },
 ];
 
 export function Sidebar() {
