@@ -392,7 +392,7 @@ export function PlanningGrid() {
           placeholder="Zoek op naam..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm w-64"
+          className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-64 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
         />
         <div className="flex items-center gap-2">
           <label className="text-sm text-gray-500">Groepeer op:</label>
@@ -470,7 +470,7 @@ export function PlanningGrid() {
           <div className="text-sm">Planning laden...</div>
         </div>
       ) : (
-        <div className="overflow-auto bg-white rounded-lg shadow flex-1 min-h-0">
+        <div className="overflow-auto bg-surface-primary rounded-lg shadow-card border border-border-subtle flex-1 min-h-0">
           <table className="border-collapse" style={{ minWidth: `${driverColWidth + extraColumns.length * extraColWidth + columnHeaders.length * dc.minW}px` }}>
             <thead className="sticky top-0 z-20">
               <tr className="bg-gray-50">

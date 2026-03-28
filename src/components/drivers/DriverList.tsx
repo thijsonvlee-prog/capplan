@@ -48,11 +48,11 @@ export function DriverList() {
           placeholder="Zoek op naam of personeelsnummer..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm w-64"
+          className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-64 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
         />
         <button
           onClick={() => { setShowForm(true); setEditingDriver(null); }}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
+          className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium shadow-xs transition-colors"
         >
           <Plus className="w-4 h-4" />
           Chauffeur toevoegen
@@ -76,18 +76,18 @@ export function DriverList() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-surface-tertiary">
             <tr>
-              <th className="text-left p-3 text-sm font-medium text-gray-600">Naam</th>
-              <th className="text-left p-3 text-sm font-medium text-gray-600">Leidinggevende</th>
-              <th className="text-left p-3 text-sm font-medium text-gray-600">Dienstverband</th>
-              <th className="text-left p-3 text-sm font-medium text-gray-600">Werkgever</th>
-              <th className="text-left p-3 text-sm font-medium text-gray-600">Afdeling</th>
-              <th className="text-left p-3 text-sm font-medium text-gray-600">Standplaats</th>
-              <th className="text-left p-3 text-sm font-medium text-gray-600">Rijbewijs</th>
-              <th className="text-left p-3 text-sm font-medium text-gray-600">Vaardigheden</th>
+              <th className="text-left p-3 text-label">Naam</th>
+              <th className="text-left p-3 text-label">Leidinggevende</th>
+              <th className="text-left p-3 text-label">Dienstverband</th>
+              <th className="text-left p-3 text-label">Werkgever</th>
+              <th className="text-left p-3 text-label">Afdeling</th>
+              <th className="text-left p-3 text-label">Standplaats</th>
+              <th className="text-left p-3 text-label">Rijbewijs</th>
+              <th className="text-left p-3 text-label">Vaardigheden</th>
               <th className="w-10"></th>
             </tr>
           </thead>

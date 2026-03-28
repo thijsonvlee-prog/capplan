@@ -187,7 +187,7 @@ export default function CapacityPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Capaciteitsoverzicht</h2>
+      {/* Page title is shown in the header */}
 
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-3">

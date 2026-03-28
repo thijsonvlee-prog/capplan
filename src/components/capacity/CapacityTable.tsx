@@ -21,7 +21,7 @@ export function CapacityTable({ capacityData, columnHeaders }: Props) {
     (capacityData[dateKey]?.AVAILABLE_EXTRA || 0);
 
   return (
-    <div className="overflow-x-auto bg-white rounded-lg shadow">
+    <div className="overflow-x-auto bg-surface-primary rounded-lg shadow-card border border-border-subtle">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-gray-50">

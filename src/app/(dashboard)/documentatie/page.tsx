@@ -14,14 +14,14 @@ export default function DocumentatiePage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Documentatie</h2>
-      <div className="bg-white rounded-lg shadow p-6 space-y-4">
-        <p className="text-sm text-gray-600">
+      {/* Page title is shown in the header */}
+      <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle p-6 space-y-4">
+        <p className="text-sm text-text-secondary">
           Download de volledige documentatie van CapPlan als tekstbestand. Hierin staat een beschrijving van alle functionaliteiten en de opbouw van de applicatie.
         </p>
         <button
           onClick={handleDownload}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"
+          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 shadow-xs transition-colors"
         >
           Download documentatie (.txt)
         </button>

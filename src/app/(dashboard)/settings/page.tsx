@@ -14,7 +14,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Instellingen</h2>
+      {/* Page title is shown in the header */}
       <div className="max-w-2xl space-y-6">
         <StamtabelManager
           title="Werkgevers"

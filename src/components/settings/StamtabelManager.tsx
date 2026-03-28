@@ -42,28 +42,28 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-4 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
-        <p className="text-xs text-gray-400 mt-1">{description}</p>
+    <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle">
+      <div className="p-4 border-b border-border-subtle">
+        <h3 className="text-section-title">{title}</h3>
+        <p className="text-caption mt-1">{description}</p>
       </div>
 
-      <form onSubmit={handleAdd} className="p-4 border-b border-gray-100 flex gap-2">
+      <form onSubmit={handleAdd} className="p-4 border-b border-border-subtle flex gap-2">
         <input
           type="text"
           value={newCode}
           onChange={(e) => setNewCode(e.target.value)}
           placeholder="Code..."
-          className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="w-24 px-3 py-2 border border-border-default rounded-lg text-sm bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
         />
         <input
           type="text"
           value={newDesc}
           onChange={(e) => setNewDesc(e.target.value)}
           placeholder="Omschrijving..."
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="flex-1 px-3 py-2 border border-border-default rounded-lg text-sm bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
         />
-        <button type="submit" className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+        <button type="submit" className="flex items-center gap-1 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium shadow-xs transition-colors">
           <Plus className="w-4 h-4" />
           Toevoegen
         </button>
