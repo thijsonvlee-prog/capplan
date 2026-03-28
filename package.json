@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "node scripts/migrate.mjs && PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK=true prisma migrate deploy && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "verify": "npx prisma generate && npm run typecheck && npm run lint",
     "db:migrate": "npx prisma migrate dev",
     "db:push": "npx prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",
@@ -49,7 +51,6 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.5",
     "@types/pg": "^8.20.0",
     "dotenv": "^17.3.1",
     "eslint": "^9.39.4",

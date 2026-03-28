@@ -40,9 +40,12 @@ export function useApiData<T>(
     () => (entry ? (entry.data as T) : defaultValue)
   );
   const fetcherRef = useRef(fetcher);
-  fetcherRef.current = fetcher;
   const keyRef = useRef(key);
-  keyRef.current = key;
+
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+    keyRef.current = key;
+  });
 
   const doFetch = useCallback(() => {
     fetcherRef
