@@ -8,7 +8,7 @@
  */
 import pg from "pg";
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
 if (!DATABASE_URL) {
   console.log("No DATABASE_URL set – skipping migrations.");
   process.exit(0);
