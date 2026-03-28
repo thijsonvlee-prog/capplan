@@ -9,13 +9,14 @@ import {
   upsertBulkPlanningEntries,
   getActiveScenarioId,
   getLeaveTypes,
-  getEmployers,
-  getDepartments,
-  getLocations,
   getSkills,
   groupDrivers,
   GROUP_BY_LABELS,
   EMPLOYMENT_TYPE_LABELS,
+  getActiveEmployment,
+  getActivePosition,
+  getActiveRoster,
+  getDriverComputedFields,
 } from "@/lib/store";
 import { PeriodSelector } from "./WeekSelector";
 import { ZoomSelector } from "./ZoomSelector";
@@ -103,9 +104,6 @@ export function PlanningGrid() {
 
   const activeScenarioId = useStore(() => getActiveScenarioId());
   const leaveTypes = useStore(() => getLeaveTypes());
-  const employers = useStore(() => getEmployers());
-  const departments = useStore(() => getDepartments());
-  const locations = useStore(() => getLocations());
   const skills = useStore(() => getSkills());
 
   // Compute all day-level dates for the range
@@ -200,24 +198,20 @@ export function PlanningGrid() {
     allDates.length > 0 ? getPlanningForDateRange(allDates, activeScenarioId) : null
   );
 
-  // Build lookup maps for stamtabel resolution
-  const employerMap = useMemo(() => new Map(employers.map((e) => [e.id, e.description])), [employers]);
-  const departmentMap = useMemo(() => new Map(departments.map((d) => [d.id, d.description])), [departments]);
-  const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.description])), [locations]);
   const skillMap = useMemo(() => new Map(skills.map((s) => [s.id, s.name])), [skills]);
 
   const resolveColumnValue = useCallback((driver: DriverWithEntries, col: DriverColumnKey): string => {
     switch (col) {
       case "employeeNumber": return driver.employeeNumber || "";
-      case "employer": return (driver.employer && employerMap.get(driver.employer)) || "";
-      case "department": return (driver.department && departmentMap.get(driver.department)) || "";
-      case "location": return (driver.location && locationMap.get(driver.location)) || "";
-      case "employmentType": return driver.employmentType ? EMPLOYMENT_TYPE_LABELS[driver.employmentType] : "";
-      case "manager": return driver.manager || "";
+      case "employer": return getDriverComputedFields(driver).currentEmployer;
+      case "department": return getDriverComputedFields(driver).currentDepartment;
+      case "location": return getDriverComputedFields(driver).currentLocation;
+      case "employmentType": return getDriverComputedFields(driver).currentEmploymentType;
+      case "manager": return getDriverComputedFields(driver).currentManager;
       case "licenseTypes": return driver.licenseTypes?.join(", ") || "";
       case "skills": return driver.skillIds?.map((id) => skillMap.get(id) || id).join(", ") || "";
     }
-  }, [employerMap, departmentMap, locationMap, skillMap]);
+  }, [skillMap]);
 
   function handleUpdate(driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
     upsertPlanningEntry(driverId, date, status, options, activeScenarioId);
@@ -568,15 +562,23 @@ function GroupRows({
           <td className={`${dc.cellPad} border border-gray-200 sticky left-0 bg-white z-10`} style={{ minWidth: driverColWidth }}>
             <div className="flex items-center justify-between">
               <div>
-                <div className={`font-medium ${dc.fontSize} whitespace-nowrap`}>
-                  {driver.firstName} {driver.lastName}
-                  {driver.manager && <span className="ml-1 text-xs text-gray-400" title={`LG: ${driver.manager}`}>(LG)</span>}
-                </div>
-                {density !== "compact" && (
-                  <div className="text-xs text-gray-400">
-                    {driver.employeeNumber || (driver.employmentType === "CHARTER" ? "Charter" : "")}
-                  </div>
-                )}
+                {(() => {
+                  const pos = getActivePosition(driver);
+                  const emp = getActiveEmployment(driver);
+                  return (
+                    <>
+                      <div className={`font-medium ${dc.fontSize} whitespace-nowrap`}>
+                        {driver.firstName} {driver.lastName}
+                        {pos?.manager && <span className="ml-1 text-xs text-gray-400" title={`LG: ${pos.manager}`}>(LG)</span>}
+                      </div>
+                      {density !== "compact" && (
+                        <div className="text-xs text-gray-400">
+                          {driver.employeeNumber || (emp?.employmentType === "CHARTER" ? "Charter" : "")}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
               <button
                 onClick={() => onAssignRoster(driver.id, `${driver.firstName} ${driver.lastName}`)}
@@ -600,9 +602,6 @@ function GroupRows({
             ? columnHeaders.map((col) => {
                 const date = col.dates[0];
                 const entry = driver.planningEntries.find((e) => e.date === date);
-                const dayOfWeek = new Date(date + "T00:00:00").getDay();
-                const mondayBased = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-                const baseHours = driver.baseRosterHours?.[String(mondayBased)];
                 const isDragging = dragState?.active && dragState.driverId === driver.id;
                 const isSelected = dragState?.driverId === driver.id && dragState.dates.includes(date);
                 return (
@@ -622,7 +621,6 @@ function GroupRows({
                         driverId={driver.id}
                         date={date}
                         compact={isCompact}
-                        baseRosterHours={baseHours}
                         leaveTypes={leaveTypes}
                         onUpdate={onUpdate}
                         density={density}

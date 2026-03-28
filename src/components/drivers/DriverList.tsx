@@ -9,11 +9,8 @@ import {
   createDriver,
   updateDriver,
   getSkills,
-  getEmployers,
-  getDepartments,
-  getLocations,
+  getDriverComputedFields,
   type Driver,
-  type EmploymentType,
   EMPLOYMENT_TYPE_LABELS,
 } from "@/lib/store";
 
@@ -24,21 +21,15 @@ export function DriverList() {
 
   const drivers = useStore(() => getDrivers({ search: search || undefined }));
   const skills = useStore(() => getSkills());
-  const employers = useStore(() => getEmployers());
-  const departments = useStore(() => getDepartments());
-  const locations = useStore(() => getLocations());
 
   const skillMap = new Map(skills.map((s) => [s.id, s.name]));
-  const employerMap = new Map(employers.map((e) => [e.id, e.description]));
-  const departmentMap = new Map(departments.map((d) => [d.id, d.description]));
-  const locationMap = new Map(locations.map((l) => [l.id, l.description]));
 
   function handleCreate(data: Omit<Driver, "id" | "isActive" | "createdAt" | "updatedAt">) {
     createDriver(data);
     setShowForm(false);
   }
 
-  function handleUpdate(data: Omit<Driver, "id" | "isActive" | "createdAt" | "updatedAt">) {
+  function handleUpdate(data: Partial<Omit<Driver, "id" | "createdAt">>) {
     if (!editingDriver) return;
     updateDriver(editingDriver.id, data);
     setEditingDriver(null);
@@ -101,54 +92,57 @@ export function DriverList() {
             </tr>
           </thead>
           <tbody>
-            {drivers.map((d) => (
-              <tr key={d.id} className="border-t border-gray-100 hover:bg-gray-50">
-                <td className="p-3 text-sm">
-                  <div>{d.firstName} {d.lastName}</div>
-                  {d.employeeNumber && <div className="text-gray-400 text-xs">{d.employeeNumber}</div>}
-                </td>
-                <td className="p-3 text-sm text-gray-600">{d.manager || "-"}</td>
-                <td className="p-3 text-sm">
-                  {d.employmentType ? (
-                    <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">
-                      {EMPLOYMENT_TYPE_LABELS[d.employmentType]}
-                    </span>
-                  ) : "-"}
-                </td>
-                <td className="p-3 text-sm text-gray-600">{(d.employer && employerMap.get(d.employer)) || "-"}</td>
-                <td className="p-3 text-sm text-gray-600">{(d.department && departmentMap.get(d.department)) || "-"}</td>
-                <td className="p-3 text-sm text-gray-600">{(d.location && locationMap.get(d.location)) || "-"}</td>
-                <td className="p-3 text-sm">
-                  {d.licenseTypes?.length ? (
-                    <div className="flex gap-1 flex-wrap">
-                      {d.licenseTypes.map((lt) => (
-                        <span key={lt} className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs">{lt}</span>
-                      ))}
-                    </div>
-                  ) : "-"}
-                </td>
-                <td className="p-3 text-sm">
-                  {d.skillIds?.length ? (
-                    <div className="flex gap-1 flex-wrap">
-                      {d.skillIds.map((sid) => (
-                        <span key={sid} className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs">
-                          {skillMap.get(sid) || sid}
-                        </span>
-                      ))}
-                    </div>
-                  ) : "-"}
-                </td>
-                <td className="p-3">
-                  <button
-                    onClick={() => startEdit(d)}
-                    className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
-                    title="Bewerken"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {drivers.map((d) => {
+              const computed = getDriverComputedFields(d);
+              return (
+                <tr key={d.id} className="border-t border-gray-100 hover:bg-gray-50">
+                  <td className="p-3 text-sm">
+                    <div>{d.firstName} {d.lastName}</div>
+                    {d.employeeNumber && <div className="text-gray-400 text-xs">{d.employeeNumber}</div>}
+                  </td>
+                  <td className="p-3 text-sm text-gray-600">{computed.currentManager || "-"}</td>
+                  <td className="p-3 text-sm">
+                    {computed.currentEmploymentType ? (
+                      <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">
+                        {computed.currentEmploymentType}
+                      </span>
+                    ) : "-"}
+                  </td>
+                  <td className="p-3 text-sm text-gray-600">{computed.currentEmployer || "-"}</td>
+                  <td className="p-3 text-sm text-gray-600">{computed.currentDepartment || "-"}</td>
+                  <td className="p-3 text-sm text-gray-600">{computed.currentLocation || "-"}</td>
+                  <td className="p-3 text-sm">
+                    {d.licenseTypes?.length ? (
+                      <div className="flex gap-1 flex-wrap">
+                        {d.licenseTypes.map((lt) => (
+                          <span key={lt} className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs">{lt}</span>
+                        ))}
+                      </div>
+                    ) : "-"}
+                  </td>
+                  <td className="p-3 text-sm">
+                    {d.skillIds?.length ? (
+                      <div className="flex gap-1 flex-wrap">
+                        {d.skillIds.map((sid) => (
+                          <span key={sid} className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs">
+                            {skillMap.get(sid) || sid}
+                          </span>
+                        ))}
+                      </div>
+                    ) : "-"}
+                  </td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => startEdit(d)}
+                      className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                      title="Bewerken"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
             {drivers.length === 0 && (
               <tr>
                 <td colSpan={9} className="text-center py-8 text-gray-400 text-sm">

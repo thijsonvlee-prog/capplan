@@ -5,10 +5,10 @@ import { Trash2 } from "lucide-react";
 import {
   useStore,
   getRosterProfiles,
-  assignRosterProfile,
+  addRosterRecord,
   getActiveScenarioId,
-  getDriverRosterAssignments,
-  deleteRosterAssignment,
+  getDriverRosterRecords,
+  deleteRosterRecord,
 } from "@/lib/store";
 import { get4WeekPeriodStarts } from "@/lib/utils";
 
@@ -21,54 +21,62 @@ type Props = {
 export function RosterAssigner({ driverId, driverName, onClose }: Props) {
   const profiles = useStore(() => getRosterProfiles());
   const activeScenarioId = useStore(() => getActiveScenarioId());
-  const assignments = useStore(() => getDriverRosterAssignments(driverId));
+  const records = useStore(() => getDriverRosterRecords(driverId));
   const [profileId, setProfileId] = useState("");
   const [startDate, setStartDate] = useState("");
+  const [weeklyHours, setWeeklyHours] = useState<number | "">("");
 
   const currentYear = new Date().getFullYear();
-  // Show period starts for current year and next year
   const periodStarts = [...get4WeekPeriodStarts(currentYear), ...get4WeekPeriodStarts(currentYear + 1)];
 
   function handleAssign() {
     if (!profileId || !startDate) return;
-    assignRosterProfile(driverId, profileId, startDate, activeScenarioId === "default" ? undefined : activeScenarioId);
+    addRosterRecord(
+      driverId,
+      { startDate, rosterProfileId: profileId, weeklyHours: weeklyHours !== "" ? weeklyHours : undefined },
+      activeScenarioId === "default" ? undefined : activeScenarioId,
+    );
     setProfileId("");
     setStartDate("");
+    setWeeklyHours("");
   }
 
-  function handleDeleteAssignment(assignmentId: string) {
-    deleteRosterAssignment(driverId, assignmentId);
+  function handleDelete(recordId: string) {
+    deleteRosterRecord(driverId, recordId);
   }
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-[480px] space-y-4 max-h-[80vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-[520px] space-y-4 max-h-[80vh] overflow-y-auto">
         <h3 className="font-semibold text-sm">Roosterprofiel — {driverName}</h3>
 
-        {/* History table */}
-        {assignments.length > 0 && (
+        {records.length > 0 && (
           <div>
             <div className="text-xs font-medium text-gray-500 mb-1">Roosterhistorie</div>
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gray-50 text-xs text-gray-500">
+                  <th className="text-left p-2 border border-gray-200">#</th>
                   <th className="text-left p-2 border border-gray-200">Profiel</th>
                   <th className="text-left p-2 border border-gray-200">Ingangsdatum</th>
                   <th className="text-left p-2 border border-gray-200">Einddatum</th>
+                  <th className="text-left p-2 border border-gray-200">Uren/wk</th>
                   <th className="w-8 border border-gray-200"></th>
                 </tr>
               </thead>
               <tbody>
-                {assignments.map((a) => (
-                  <tr key={a.id} className={!a.endDate ? "bg-blue-50" : ""}>
-                    <td className="p-2 border border-gray-200 text-sm">{a.profileName}</td>
-                    <td className="p-2 border border-gray-200 text-sm">{a.startDate}</td>
+                {records.map((r) => (
+                  <tr key={r.id} className={!r.endDate ? "bg-blue-50" : ""}>
+                    <td className="p-2 border border-gray-200 text-sm">{r.sequenceNumber}</td>
+                    <td className="p-2 border border-gray-200 text-sm">{r.profileName}</td>
+                    <td className="p-2 border border-gray-200 text-sm">{r.startDate}</td>
                     <td className="p-2 border border-gray-200 text-sm">
-                      {a.endDate || <span className="text-green-600 text-xs font-medium">Actief</span>}
+                      {r.endDate || <span className="text-green-600 text-xs font-medium">Actief</span>}
                     </td>
+                    <td className="p-2 border border-gray-200 text-sm">{r.weeklyHours ?? "-"}</td>
                     <td className="p-1 border border-gray-200 text-center">
                       <button
-                        onClick={() => handleDeleteAssignment(a.id)}
+                        onClick={() => handleDelete(r.id)}
                         className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
                         title="Verwijderen"
                       >
@@ -82,7 +90,6 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
           </div>
         )}
 
-        {/* Assign new */}
         <div className="border-t border-gray-200 pt-4 space-y-3">
           <div className="text-xs font-medium text-gray-500">Nieuw roosterprofiel toewijzen</div>
           <div>
@@ -102,18 +109,32 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Ingangsdatum (start 4-weken periode)</label>
-            <select
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            >
-              <option value="">-- Selecteer datum --</option>
-              {periodStarts.map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Ingangsdatum (start 4-weken periode)</label>
+              <select
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              >
+                <option value="">-- Selecteer datum --</option>
+                {periodStarts.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Uren/week (gem.)</label>
+              <input
+                type="number"
+                value={weeklyHours}
+                onChange={(e) => setWeeklyHours(e.target.value ? Number(e.target.value) : "")}
+                placeholder="40"
+                min={0}
+                max={60}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+            </div>
           </div>
 
           <div className="flex gap-2 pt-1">

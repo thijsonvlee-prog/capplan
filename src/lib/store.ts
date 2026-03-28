@@ -29,20 +29,45 @@ export type StamtabelRecord = {
   description: string;
 };
 
+export type EmploymentRecord = {
+  id: string;
+  sequenceNumber: number;
+  startDate: string;
+  endDate?: string;
+  employmentType: EmploymentType;
+  employerId?: string;
+};
+
+export type PositionRecord = {
+  id: string;
+  sequenceNumber: number;
+  startDate: string;
+  endDate?: string;
+  position: string;
+  locationId?: string;
+  departmentId?: string;
+  manager?: string;
+};
+
+export type RosterRecord = {
+  id: string;
+  sequenceNumber: number;
+  startDate: string;
+  endDate?: string;
+  rosterProfileId: string;
+  weeklyHours?: number;
+};
+
 export type Driver = {
   id: string;
   firstName: string;
   lastName: string;
   employeeNumber?: string;
-  employer?: string;
-  department?: string;
-  location?: string;
   licenseTypes?: string[];
-  employmentType?: EmploymentType;
   skillIds?: string[];
-  manager?: string; // name of the manager/leidinggevende
-  baseRosterHours?: Record<string, number>; // day-of-week (0=Mon..6=Sun) -> hours
-  rosterAssignments?: RosterAssignment[];
+  employmentRecords?: EmploymentRecord[];
+  positionRecords?: PositionRecord[];
+  rosterRecords?: RosterRecord[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -81,13 +106,6 @@ export type RosterProfile = {
   entries: RosterProfileEntry[];
   createdAt: string;
   updatedAt: string;
-};
-
-export type RosterAssignment = {
-  id: string;
-  rosterProfileId: string;
-  startDate: string; // YYYY-MM-DD
-  endDate?: string;  // YYYY-MM-DD, undefined = active/current
 };
 
 export type GroupByField = "none" | "employer" | "department" | "location" | "licenseType" | "employmentType";
@@ -181,11 +199,41 @@ function writeRosterProfiles(profiles: RosterProfile[]) {
 // === Sample data ===
 
 const SAMPLE_DRIVERS: Omit<Driver, "createdAt" | "updatedAt">[] = [
-  { id: "d1", firstName: "Jan", lastName: "de Vries", employeeNumber: "EMP001", employer: "emp1", department: "dep1", location: "loc1", licenseTypes: ["C", "CE"], employmentType: "FULLTIME", skillIds: ["sk1", "sk2"], isActive: true },
-  { id: "d2", firstName: "Pieter", lastName: "Bakker", employeeNumber: "EMP002", employer: "emp1", department: "dep1", location: "loc2", licenseTypes: ["C"], employmentType: "FULLTIME", skillIds: ["sk1"], isActive: true },
-  { id: "d3", firstName: "Klaas", lastName: "Jansen", employeeNumber: "EMP003", employer: "emp1", department: "dep2", location: "loc1", licenseTypes: ["C", "CE"], employmentType: "PARTTIME", skillIds: ["sk1", "sk3"], manager: "Jan de Vries", isActive: true },
-  { id: "d4", firstName: "Henk", lastName: "van Dijk", employer: "emp2", location: "loc3", licenseTypes: ["CE"], employmentType: "CHARTER", skillIds: ["sk2"], isActive: true },
-  { id: "d5", firstName: "Willem", lastName: "Smit", location: "loc4", licenseTypes: ["C"], employmentType: "TEMPORARY", skillIds: [], isActive: true },
+  {
+    id: "d1", firstName: "Jan", lastName: "de Vries", employeeNumber: "EMP001",
+    licenseTypes: ["C", "CE"], skillIds: ["sk1", "sk2"], isActive: true,
+    employmentRecords: [{ id: "er1", sequenceNumber: 1, startDate: "2024-01-01", employmentType: "FULLTIME", employerId: "emp1" }],
+    positionRecords: [{ id: "pr1", sequenceNumber: 1, startDate: "2024-01-01", position: "Chauffeur", locationId: "loc1", departmentId: "dep1", manager: "" }],
+    rosterRecords: [],
+  },
+  {
+    id: "d2", firstName: "Pieter", lastName: "Bakker", employeeNumber: "EMP002",
+    licenseTypes: ["C"], skillIds: ["sk1"], isActive: true,
+    employmentRecords: [{ id: "er2", sequenceNumber: 1, startDate: "2024-01-01", employmentType: "FULLTIME", employerId: "emp1" }],
+    positionRecords: [{ id: "pr2", sequenceNumber: 1, startDate: "2024-01-01", position: "Chauffeur", locationId: "loc2", departmentId: "dep1", manager: "" }],
+    rosterRecords: [],
+  },
+  {
+    id: "d3", firstName: "Klaas", lastName: "Jansen", employeeNumber: "EMP003",
+    licenseTypes: ["C", "CE"], skillIds: ["sk1", "sk3"], isActive: true,
+    employmentRecords: [{ id: "er3", sequenceNumber: 1, startDate: "2024-01-01", employmentType: "PARTTIME", employerId: "emp1" }],
+    positionRecords: [{ id: "pr3", sequenceNumber: 1, startDate: "2024-01-01", position: "Chauffeur", locationId: "loc1", departmentId: "dep2", manager: "Jan de Vries" }],
+    rosterRecords: [],
+  },
+  {
+    id: "d4", firstName: "Henk", lastName: "van Dijk",
+    licenseTypes: ["CE"], skillIds: ["sk2"], isActive: true,
+    employmentRecords: [{ id: "er4", sequenceNumber: 1, startDate: "2024-01-01", employmentType: "CHARTER", employerId: "emp2" }],
+    positionRecords: [{ id: "pr4", sequenceNumber: 1, startDate: "2024-01-01", position: "Chauffeur", locationId: "loc3", manager: "" }],
+    rosterRecords: [],
+  },
+  {
+    id: "d5", firstName: "Willem", lastName: "Smit",
+    licenseTypes: ["C"], skillIds: [], isActive: true,
+    employmentRecords: [{ id: "er5", sequenceNumber: 1, startDate: "2024-01-01", employmentType: "TEMPORARY" }],
+    positionRecords: [{ id: "pr5", sequenceNumber: 1, startDate: "2024-01-01", position: "Chauffeur", locationId: "loc4", manager: "" }],
+    rosterRecords: [],
+  },
 ];
 
 const SAMPLE_SKILLS: Skill[] = [
@@ -375,36 +423,114 @@ export function deleteRosterProfile(id: string) {
   writeRosterProfiles(profiles);
 }
 
-export function assignRosterProfile(driverId: string, profileId: string, startDate: string, scenarioId?: string) {
+// === Sub-table CRUD (generic auto-close pattern) ===
+
+function autoCloseAndAdd<T extends { id: string; sequenceNumber: number; startDate: string; endDate?: string }>(
+  items: T[],
+  newData: Omit<T, "id" | "sequenceNumber">,
+): T[] {
+  const result = [...items];
+  const dayBefore = new Date(newData.startDate + "T00:00:00");
+  dayBefore.setDate(dayBefore.getDate() - 1);
+  const endDateStr = dayBefore.toISOString().split("T")[0];
+  for (let i = 0; i < result.length; i++) {
+    if (!result[i].endDate) {
+      result[i] = { ...result[i], endDate: endDateStr };
+    }
+  }
+  const maxSeq = result.reduce((max, item) => Math.max(max, item.sequenceNumber), 0);
+  result.push({ ...newData, id: generateId(), sequenceNumber: maxSeq + 1 } as T);
+  return result;
+}
+
+// Employment records
+export function addEmploymentRecord(driverId: string, data: Omit<EmploymentRecord, "id" | "sequenceNumber">) {
   const drivers = readDrivers();
   const idx = drivers.findIndex((d) => d.id === driverId);
   if (idx === -1) return;
-
   const driver = drivers[idx];
-  const assignments = [...(driver.rosterAssignments || [])];
+  const records = autoCloseAndAdd(driver.employmentRecords || [], data);
+  drivers[idx] = { ...driver, employmentRecords: records, updatedAt: new Date().toISOString() };
+  writeDrivers(drivers);
+}
 
-  // Auto-close the previous active assignment (one without endDate) by giving it an endDate
-  const dayBefore = new Date(startDate + "T00:00:00");
-  dayBefore.setDate(dayBefore.getDate() - 1);
-  const endDateStr = dayBefore.toISOString().split("T")[0];
-  for (let i = 0; i < assignments.length; i++) {
-    if (!assignments[i].endDate) {
-      assignments[i] = { ...assignments[i], endDate: endDateStr };
-    }
-  }
+export function updateEmploymentRecord(driverId: string, recordId: string, data: Partial<Omit<EmploymentRecord, "id" | "sequenceNumber">>) {
+  const drivers = readDrivers();
+  const idx = drivers.findIndex((d) => d.id === driverId);
+  if (idx === -1) return;
+  const driver = drivers[idx];
+  const records = (driver.employmentRecords || []).map((r) => r.id === recordId ? { ...r, ...data } : r);
+  drivers[idx] = { ...driver, employmentRecords: records, updatedAt: new Date().toISOString() };
+  writeDrivers(drivers);
+}
 
-  // Add new assignment
-  assignments.push({ id: generateId(), rosterProfileId: profileId, startDate, endDate: undefined });
+export function deleteEmploymentRecord(driverId: string, recordId: string) {
+  const drivers = readDrivers();
+  const idx = drivers.findIndex((d) => d.id === driverId);
+  if (idx === -1) return;
+  const driver = drivers[idx];
+  const records = (driver.employmentRecords || []).filter((r) => r.id !== recordId);
+  drivers[idx] = { ...driver, employmentRecords: records, updatedAt: new Date().toISOString() };
+  writeDrivers(drivers);
+}
 
-  drivers[idx] = { ...driver, rosterAssignments: assignments, updatedAt: new Date().toISOString() };
+export function getDriverEmploymentRecords(driverId: string): EmploymentRecord[] {
+  const driver = readDrivers().find((d) => d.id === driverId);
+  return (driver?.employmentRecords || []).sort((a, b) => b.startDate.localeCompare(a.startDate));
+}
+
+// Position records
+export function addPositionRecord(driverId: string, data: Omit<PositionRecord, "id" | "sequenceNumber">) {
+  const drivers = readDrivers();
+  const idx = drivers.findIndex((d) => d.id === driverId);
+  if (idx === -1) return;
+  const driver = drivers[idx];
+  const records = autoCloseAndAdd(driver.positionRecords || [], data);
+  drivers[idx] = { ...driver, positionRecords: records, updatedAt: new Date().toISOString() };
+  writeDrivers(drivers);
+}
+
+export function updatePositionRecord(driverId: string, recordId: string, data: Partial<Omit<PositionRecord, "id" | "sequenceNumber">>) {
+  const drivers = readDrivers();
+  const idx = drivers.findIndex((d) => d.id === driverId);
+  if (idx === -1) return;
+  const driver = drivers[idx];
+  const records = (driver.positionRecords || []).map((r) => r.id === recordId ? { ...r, ...data } : r);
+  drivers[idx] = { ...driver, positionRecords: records, updatedAt: new Date().toISOString() };
+  writeDrivers(drivers);
+}
+
+export function deletePositionRecord(driverId: string, recordId: string) {
+  const drivers = readDrivers();
+  const idx = drivers.findIndex((d) => d.id === driverId);
+  if (idx === -1) return;
+  const driver = drivers[idx];
+  const records = (driver.positionRecords || []).filter((r) => r.id !== recordId);
+  drivers[idx] = { ...driver, positionRecords: records, updatedAt: new Date().toISOString() };
+  writeDrivers(drivers);
+}
+
+export function getDriverPositionRecords(driverId: string): PositionRecord[] {
+  const driver = readDrivers().find((d) => d.id === driverId);
+  return (driver?.positionRecords || []).sort((a, b) => b.startDate.localeCompare(a.startDate));
+}
+
+// Roster records
+export function addRosterRecord(driverId: string, data: Omit<RosterRecord, "id" | "sequenceNumber">, scenarioId?: string) {
+  const drivers = readDrivers();
+  const idx = drivers.findIndex((d) => d.id === driverId);
+  if (idx === -1) return;
+  const driver = drivers[idx];
+  const records = autoCloseAndAdd(driver.rosterRecords || [], data);
+  drivers[idx] = { ...driver, rosterRecords: records, updatedAt: new Date().toISOString() };
   writeDrivers(drivers);
 
   // Generate planning entries for 1 year (52 weeks = 364 days)
-  const profile = readRosterProfiles().find((p) => p.id === profileId);
+  const profile = readRosterProfiles().find((p) => p.id === data.rosterProfileId);
   if (!profile) return;
 
   const entries = readEntries(scenarioId);
-  const start = new Date(startDate + "T00:00:00");
+  const start = new Date(data.startDate + "T00:00:00");
 
   for (let day = 0; day < 364; day++) {
     const date = new Date(start);
@@ -414,7 +540,6 @@ export function assignRosterProfile(driverId: string, profileId: string, startDa
     const profileEntry = profile.entries.find((e) => e.dayOffset === dayOffset);
     const status = profileEntry?.status || "ROSTER_FREE";
 
-    // Only overwrite if there's no leave/sick entry for this date
     const existingIdx = entries.findIndex((e) => e.driverId === driverId && e.date === dateStr);
     if (existingIdx >= 0) {
       const existing = entries[existingIdx];
@@ -428,26 +553,83 @@ export function assignRosterProfile(driverId: string, profileId: string, startDa
   writeEntries(entries, scenarioId);
 }
 
-export function getDriverRosterAssignments(driverId: string): (RosterAssignment & { profileName: string })[] {
-  const driver = readDrivers().find((d) => d.id === driverId);
-  if (!driver?.rosterAssignments) return [];
-  const profiles = readRosterProfiles();
-  return driver.rosterAssignments
-    .map((a) => ({
-      ...a,
-      profileName: profiles.find((p) => p.id === a.rosterProfileId)?.name || "(verwijderd)",
-    }))
-    .sort((a, b) => b.startDate.localeCompare(a.startDate));
-}
-
-export function deleteRosterAssignment(driverId: string, assignmentId: string) {
+export function updateRosterRecord(driverId: string, recordId: string, data: Partial<Omit<RosterRecord, "id" | "sequenceNumber">>) {
   const drivers = readDrivers();
   const idx = drivers.findIndex((d) => d.id === driverId);
   if (idx === -1) return;
   const driver = drivers[idx];
-  const assignments = (driver.rosterAssignments || []).filter((a) => a.id !== assignmentId);
-  drivers[idx] = { ...driver, rosterAssignments: assignments, updatedAt: new Date().toISOString() };
+  const records = (driver.rosterRecords || []).map((r) => r.id === recordId ? { ...r, ...data } : r);
+  drivers[idx] = { ...driver, rosterRecords: records, updatedAt: new Date().toISOString() };
   writeDrivers(drivers);
+}
+
+export function deleteRosterRecord(driverId: string, recordId: string) {
+  const drivers = readDrivers();
+  const idx = drivers.findIndex((d) => d.id === driverId);
+  if (idx === -1) return;
+  const driver = drivers[idx];
+  const records = (driver.rosterRecords || []).filter((r) => r.id !== recordId);
+  drivers[idx] = { ...driver, rosterRecords: records, updatedAt: new Date().toISOString() };
+  writeDrivers(drivers);
+}
+
+export function getDriverRosterRecords(driverId: string): (RosterRecord & { profileName: string })[] {
+  const driver = readDrivers().find((d) => d.id === driverId);
+  if (!driver?.rosterRecords) return [];
+  const profiles = readRosterProfiles();
+  return driver.rosterRecords
+    .map((r) => ({
+      ...r,
+      profileName: profiles.find((p) => p.id === r.rosterProfileId)?.name || "(verwijderd)",
+    }))
+    .sort((a, b) => b.startDate.localeCompare(a.startDate));
+}
+
+// === Computed "actuele" fields ===
+
+export function getActiveEmployment(driver: Driver): EmploymentRecord | undefined {
+  return (driver.employmentRecords || []).find((r) => !r.endDate);
+}
+
+export function getActivePosition(driver: Driver): PositionRecord | undefined {
+  return (driver.positionRecords || []).find((r) => !r.endDate);
+}
+
+export function getActiveRoster(driver: Driver): RosterRecord | undefined {
+  return (driver.rosterRecords || []).find((r) => !r.endDate);
+}
+
+export type DriverComputedFields = {
+  currentEmployer: string;
+  currentEmploymentType: string;
+  currentPosition: string;
+  currentDepartment: string;
+  currentLocation: string;
+  currentManager: string;
+  currentRosterProfile: string;
+  currentWeeklyHours: number | undefined;
+};
+
+export function getDriverComputedFields(driver: Driver): DriverComputedFields {
+  const emp = getActiveEmployment(driver);
+  const pos = getActivePosition(driver);
+  const ros = getActiveRoster(driver);
+
+  const employers = readStamtabel(EMPLOYERS_KEY);
+  const departments = readStamtabel(DEPARTMENTS_KEY);
+  const locations = readStamtabel(LOCATIONS_KEY);
+  const profiles = readRosterProfiles();
+
+  return {
+    currentEmployer: (emp?.employerId && employers.find((e) => e.id === emp.employerId)?.description) || "",
+    currentEmploymentType: emp?.employmentType ? EMPLOYMENT_TYPE_LABELS[emp.employmentType] : "",
+    currentPosition: pos?.position || "",
+    currentDepartment: (pos?.departmentId && departments.find((d) => d.id === pos.departmentId)?.description) || "",
+    currentLocation: (pos?.locationId && locations.find((l) => l.id === pos.locationId)?.description) || "",
+    currentManager: pos?.manager || "",
+    currentRosterProfile: (ros?.rosterProfileId && profiles.find((p) => p.id === ros.rosterProfileId)?.name) || "",
+    currentWeeklyHours: ros?.weeklyHours,
+  };
 }
 
 export function upsertBulkPlanningEntries(
@@ -705,29 +887,30 @@ export function groupDrivers(
   }
 
   const groups = new Map<string, DriverWithEntries[]>();
-  // Resolve stamtabel names
   const employers = readStamtabel(EMPLOYERS_KEY);
   const departments = readStamtabel(DEPARTMENTS_KEY);
   const locations = readStamtabel(LOCATIONS_KEY);
 
   for (const driver of drivers) {
     let keys: string[];
+    const emp = getActiveEmployment(driver);
+    const pos = getActivePosition(driver);
 
     switch (groupBy) {
       case "employer":
-        keys = [employers.find((e) => e.id === driver.employer)?.description || driver.employer || "Onbekend"];
+        keys = [(emp?.employerId && employers.find((e) => e.id === emp.employerId)?.description) || "Onbekend"];
         break;
       case "department":
-        keys = [departments.find((d) => d.id === driver.department)?.description || driver.department || "Onbekend"];
+        keys = [(pos?.departmentId && departments.find((d) => d.id === pos.departmentId)?.description) || "Onbekend"];
         break;
       case "location":
-        keys = [locations.find((l) => l.id === driver.location)?.description || driver.location || "Onbekend"];
+        keys = [(pos?.locationId && locations.find((l) => l.id === pos.locationId)?.description) || "Onbekend"];
         break;
       case "licenseType":
         keys = driver.licenseTypes?.length ? driver.licenseTypes : ["Onbekend"];
         break;
       case "employmentType":
-        keys = [driver.employmentType ? EMPLOYMENT_TYPE_LABELS[driver.employmentType] : "Onbekend"];
+        keys = [emp?.employmentType ? EMPLOYMENT_TYPE_LABELS[emp.employmentType] : "Onbekend"];
         break;
       default:
         keys = ["Onbekend"];
