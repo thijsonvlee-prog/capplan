@@ -47,6 +47,7 @@ export function DayCell({ entry, driverId, date, compact, baseRosterHours, leave
   return (
     <div className="relative">
       <button
+        onMouseDown={(e) => { e.stopPropagation(); }}
         onClick={(e) => { e.stopPropagation(); setShowSelector(true); }}
         className={cn(
           "w-full rounded-sm flex items-center justify-center transition-colors cursor-pointer",
