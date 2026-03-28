@@ -77,7 +77,12 @@ export function DayCell({ entry, driverId, date, compact, baseRosterHours, leave
       </button>
 
       {showSelector && createPortal(
-        <div className="fixed z-50" style={{ top: selectorPos.top, left: selectorPos.left }}>
+        <div
+          className="fixed z-50"
+          style={{ top: selectorPos.top, left: selectorPos.left }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
           <StatusSelector
             currentStatus={entry?.status}
             currentLeaveTypeId={entry?.leaveTypeId}
