@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withPerfLogging } from "@/lib/perf";
 
 function resolveScenarioId(scenarioId?: string | null): string | null {
   if (!scenarioId || scenarioId === "default" || scenarioId === "") return null;
   return scenarioId;
 }
 
-export async function GET(request: NextRequest) {
+export const GET = withPerfLogging(
+  "GET /api/planning",
+  async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const scenarioId = searchParams.get("scenarioId");
@@ -52,9 +55,12 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+  }
+);
 
-export async function POST(request: NextRequest) {
+export const POST = withPerfLogging(
+  "POST /api/planning",
+  async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { driverId, date, status, leaveTypeId, sickPercentage, notes, scenarioId } = body;
@@ -112,4 +118,5 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+  }
+);

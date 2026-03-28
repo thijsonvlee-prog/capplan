@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withPerfLogging } from "@/lib/perf";
 
 function transformDriver(dbDriver: any) {
   return {
@@ -25,7 +26,9 @@ const driverInclude = {
   rosterAssignments: true,
 };
 
-export async function GET(request: NextRequest) {
+export const GET = withPerfLogging(
+  "GET /api/drivers",
+  async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const isActive = searchParams.get("isActive");
@@ -58,9 +61,12 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+  }
+);
 
-export async function POST(request: NextRequest) {
+export const POST = withPerfLogging(
+  "POST /api/drivers",
+  async (request: NextRequest) => {
   try {
     const body = await request.json();
     const {
@@ -132,4 +138,5 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+  }
+);

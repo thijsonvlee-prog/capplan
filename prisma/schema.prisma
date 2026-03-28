@@ -236,3 +236,41 @@ model RosterProfileDay {
   @@unique([rosterProfileId, dayOffset])
   @@index([rosterProfileId])
 }
+
+// === Performance Observability ===
+
+model PerformanceEvent {
+  id          String   @id @default(uuid())
+  timestamp   DateTime @default(now())
+  environment String   @default("production")
+  source      String   // "api", "frontend", "db", "system"
+  eventType   String   // "request", "query", "action", "error"
+  name        String   // route/action name, e.g. "GET /api/planning/for-range"
+  durationMs  Int?
+  status      String?  // "success", "error", "slow"
+  requestId   String?
+  metadata    Json?    @db.JsonB
+
+  @@index([timestamp])
+  @@index([source, name, timestamp])
+  @@index([eventType, timestamp])
+  @@index([status, timestamp])
+}
+
+model PerformanceSummary {
+  id         String @id @default(uuid())
+  date       String // YYYY-MM-DD
+  source     String
+  name       String
+  count      Int
+  avgMs      Float
+  p95Ms      Float
+  maxMs      Float
+  minMs      Float
+  errorCount Int    @default(0)
+  slowCount  Int    @default(0)
+  metadata   Json?  @db.JsonB
+
+  @@unique([date, source, name])
+  @@index([date])
+}
