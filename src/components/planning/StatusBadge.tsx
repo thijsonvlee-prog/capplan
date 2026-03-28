@@ -1,14 +1,34 @@
 "use client";
 
-import { cn, STATUS_LABELS, STATUS_COLORS } from "@/lib/utils";
+import { cn, STATUS_LABELS, STATUS_COLORS, STATUS_CODES } from "@/lib/utils";
 import type { PlanningStatus } from "@/lib/store";
 
 type Props = {
   status: PlanningStatus;
   compact?: boolean;
+  sickPercentage?: number;
 };
 
-export function StatusBadge({ status, compact }: Props) {
+export function StatusBadge({ status, compact, sickPercentage }: Props) {
+  // Sick with attendance > 0: show split red/green
+  if (status === "SICK" && sickPercentage !== undefined && sickPercentage > 0) {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center rounded-md font-medium overflow-hidden",
+          compact ? "text-xs" : "text-sm"
+        )}
+        style={{
+          background: `linear-gradient(to right, #ef4444 ${100 - sickPercentage}%, #22c55e ${100 - sickPercentage}%)`,
+          color: "white",
+          padding: compact ? "2px 6px" : "4px 8px",
+        }}
+      >
+        {compact ? `${STATUS_CODES[status]}${sickPercentage}` : `${STATUS_LABELS[status]} (${sickPercentage}%)`}
+      </span>
+    );
+  }
+
   return (
     <span
       className={cn(
@@ -17,7 +37,7 @@ export function StatusBadge({ status, compact }: Props) {
         STATUS_COLORS[status]
       )}
     >
-      {compact ? status.charAt(0) : STATUS_LABELS[status]}
+      {compact ? STATUS_CODES[status] : STATUS_LABELS[status]}
     </span>
   );
 }

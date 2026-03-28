@@ -1,1 +1,1 @@
-export type { Driver, DriverType } from "@/lib/store";
+export type { Driver } from "@/lib/store";

@@ -17,7 +17,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getWeekDates(year: number, week: number): Date[] {
-  // Get January 4th of the year (always in ISO week 1)
   const jan4 = new Date(year, 0, 4);
   const startOfWeek1 = startOfWeek(jan4, { weekStartsOn: 1 });
   const weekStart = addDays(startOfWeek1, (week - 1) * 7);
@@ -38,28 +37,33 @@ export const DAY_LABELS = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"] as const;
 export const STATUS_LABELS: Record<string, string> = {
   ROSTER_FREE: "Roostervrij",
   BASE_ROSTER: "Basisrooster",
-  AVAILABLE_EXTRA: "Extra beschikbaar",
+  AVAILABLE_EXTRA: "Aanvullend beschikbaar",
   LEAVE: "Verlof",
   SICK: "Ziek",
-  HIRED: "Ingehuurd",
+};
+
+export const STATUS_CODES: Record<string, string> = {
+  ROSTER_FREE: "-",
+  BASE_ROSTER: "B",
+  AVAILABLE_EXTRA: "A",
+  LEAVE: "V",
+  SICK: "Z",
 };
 
 export const STATUS_COLORS: Record<string, string> = {
-  ROSTER_FREE: "bg-gray-100 text-gray-600",
-  BASE_ROSTER: "bg-blue-100 text-blue-700",
-  AVAILABLE_EXTRA: "bg-green-100 text-green-700",
-  LEAVE: "bg-yellow-100 text-yellow-700",
-  SICK: "bg-red-100 text-red-700",
-  HIRED: "bg-purple-100 text-purple-700",
+  ROSTER_FREE: "bg-gray-200 text-gray-600",
+  BASE_ROSTER: "bg-green-700 text-white",
+  AVAILABLE_EXTRA: "bg-green-300 text-green-900",
+  LEAVE: "bg-yellow-300 text-yellow-900",
+  SICK: "bg-red-500 text-white",
 };
 
 export const STATUS_CHART_COLORS: Record<string, string> = {
   ROSTER_FREE: "#9ca3af",
-  BASE_ROSTER: "#3b82f6",
-  AVAILABLE_EXTRA: "#22c55e",
-  LEAVE: "#eab308",
+  BASE_ROSTER: "#15803d",
+  AVAILABLE_EXTRA: "#86efac",
+  LEAVE: "#fde047",
   SICK: "#ef4444",
-  HIRED: "#a855f7",
 };
 
 export function get4WeekDates(year: number, week: number): Date[] {
@@ -86,4 +90,16 @@ export function getYearMonths(year: number): { label: string; startDate: string;
       endDate: format(end, "yyyy-MM-dd"),
     };
   });
+}
+
+// Compute valid 4-week ISO period start dates for a given year
+export function get4WeekPeriodStarts(year: number): string[] {
+  const jan4 = new Date(year, 0, 4);
+  const startOfWeek1 = startOfWeek(jan4, { weekStartsOn: 1 });
+  const starts: string[] = [];
+  for (let w = 0; w < 13; w++) {
+    const d = addDays(startOfWeek1, w * 28);
+    starts.push(d.toISOString().split("T")[0]);
+  }
+  return starts;
 }

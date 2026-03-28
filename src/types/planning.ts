@@ -1,6 +1,5 @@
 export type {
   Driver,
-  DriverType,
   PlanningEntry,
   PlanningStatus,
   DriverWithEntries,

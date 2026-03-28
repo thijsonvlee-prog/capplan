@@ -4,7 +4,7 @@ import type { PlanningStatus } from "@/lib/store";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/utils";
 
 const ALL_STATUSES: PlanningStatus[] = [
-  "BASE_ROSTER", "AVAILABLE_EXTRA", "HIRED", "ROSTER_FREE", "LEAVE", "SICK",
+  "BASE_ROSTER", "AVAILABLE_EXTRA", "ROSTER_FREE", "LEAVE", "SICK",
 ];
 
 type Props = {
@@ -18,8 +18,7 @@ export function CapacityTable({ capacityData, columnHeaders }: Props) {
 
   const availableDrivers = (dateKey: string) =>
     (capacityData[dateKey]?.BASE_ROSTER || 0) +
-    (capacityData[dateKey]?.AVAILABLE_EXTRA || 0) +
-    (capacityData[dateKey]?.HIRED || 0);
+    (capacityData[dateKey]?.AVAILABLE_EXTRA || 0);
 
   return (
     <div className="overflow-x-auto bg-white rounded-lg shadow">

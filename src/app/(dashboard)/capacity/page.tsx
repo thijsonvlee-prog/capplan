@@ -108,7 +108,7 @@ export default function CapacityPage() {
     const months = getYearMonths(year);
     for (let m = 0; m < 12; m++) {
       const monthDates = getMonthDates(year, m + 1).map((d) => d.toISOString().split("T")[0]);
-      const agg = { ROSTER_FREE: 0, BASE_ROSTER: 0, AVAILABLE_EXTRA: 0, LEAVE: 0, SICK: 0, HIRED: 0 } as Record<string, number>;
+      const agg = { ROSTER_FREE: 0, BASE_ROSTER: 0, AVAILABLE_EXTRA: 0, LEAVE: 0, SICK: 0 } as Record<string, number>;
       for (const date of monthDates) {
         const dayData = capacityData[date];
         if (dayData) {

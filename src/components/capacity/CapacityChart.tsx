@@ -14,7 +14,7 @@ import type { PlanningStatus } from "@/lib/store";
 import { STATUS_LABELS, STATUS_CHART_COLORS } from "@/lib/utils";
 
 const CHART_STATUSES: PlanningStatus[] = [
-  "BASE_ROSTER", "AVAILABLE_EXTRA", "HIRED", "ROSTER_FREE", "LEAVE", "SICK",
+  "BASE_ROSTER", "AVAILABLE_EXTRA", "ROSTER_FREE", "LEAVE", "SICK",
 ];
 
 type Props = {
@@ -41,7 +41,7 @@ export function CapacityChart({ capacityData, columnHeaders, compareData }: Prop
       for (const scenario of compareData) {
         const sd = scenario.data[col.key];
         const available = sd
-          ? (sd.BASE_ROSTER || 0) + (sd.AVAILABLE_EXTRA || 0) + (sd.HIRED || 0)
+          ? (sd.BASE_ROSTER || 0) + (sd.AVAILABLE_EXTRA || 0)
           : 0;
         row[`compare_${scenario.name}`] = available;
       }

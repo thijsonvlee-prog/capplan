@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { PlanningStatus, ZoomLevel, GroupByField } from "@/lib/store";
+import type { PlanningStatus, ZoomLevel, GroupByField, DriverWithEntries } from "@/lib/store";
 import {
   useStore,
   getPlanningForDateRange,
   upsertPlanningEntry,
   getActiveScenarioId,
+  getLeaveTypes,
   groupDrivers,
   GROUP_BY_LABELS,
 } from "@/lib/store";
@@ -15,17 +16,19 @@ import { ZoomSelector } from "./ZoomSelector";
 import { ScenarioSelector } from "./ScenarioSelector";
 import { DayCell } from "./DayCell";
 import { StatusBadge } from "./StatusBadge";
+import { RosterAssigner } from "./RosterAssigner";
+import { CalendarCog } from "lucide-react";
 import {
   getCurrentWeek,
   DAY_LABELS,
-  STATUS_LABELS,
   STATUS_COLORS,
   getWeekDates,
   get4WeekDates,
   getMonthDates,
   getYearMonths,
 } from "@/lib/utils";
-import { format } from "date-fns";
+
+const ALL_STATUSES: PlanningStatus[] = ["ROSTER_FREE", "BASE_ROSTER", "AVAILABLE_EXTRA", "LEAVE", "SICK"];
 
 export function PlanningGrid() {
   const [year, setYear] = useState(0);
@@ -34,6 +37,7 @@ export function PlanningGrid() {
   const [zoom, setZoom] = useState<ZoomLevel>("week");
   const [filter, setFilter] = useState("");
   const [groupBy, setGroupBy] = useState<GroupByField>("none");
+  const [assigningDriver, setAssigningDriver] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     const current = getCurrentWeek();
@@ -43,16 +47,15 @@ export function PlanningGrid() {
   }, []);
 
   const activeScenarioId = useStore(() => getActiveScenarioId());
-
-  // Compute dates based on zoom level
+  const leaveTypes = useStore(() => getLeaveTypes());
   const { dates, columnHeaders } = computeColumns(zoom, year, week, month);
 
   const data = useStore(() =>
     dates.length > 0 ? getPlanningForDateRange(dates, activeScenarioId) : null
   );
 
-  function handleUpdate(driverId: string, date: string, status: PlanningStatus, notes?: string) {
-    upsertPlanningEntry(driverId, date, status, notes, activeScenarioId);
+  function handleUpdate(driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
+    upsertPlanningEntry(driverId, date, status, options, activeScenarioId);
   }
 
   function handlePeriodChange(newYear: number, newWeek: number, newMonth: number) {
@@ -103,7 +106,7 @@ export function PlanningGrid() {
           </select>
         </div>
         <div className="flex gap-1.5 flex-wrap ml-auto">
-          {(["ROSTER_FREE", "BASE_ROSTER", "AVAILABLE_EXTRA", "LEAVE", "SICK", "HIRED"] as PlanningStatus[]).map((s) => (
+          {ALL_STATUSES.map((s) => (
             <StatusBadge key={s} status={s} />
           ))}
         </div>
@@ -137,12 +140,13 @@ export function PlanningGrid() {
                 <GroupRows
                   key={group.label || "__all"}
                   group={group}
-                  dates={dates}
                   columnHeaders={columnHeaders}
                   zoom={zoom}
                   isCompact={isCompact}
                   isYearView={isYearView}
+                  leaveTypes={leaveTypes}
                   onUpdate={handleUpdate}
+                  onAssignRoster={(id, name) => setAssigningDriver({ id, name })}
                 />
               ))}
               {filteredDrivers.length === 0 && (
@@ -155,6 +159,15 @@ export function PlanningGrid() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {assigningDriver && (
+        <RosterAssigner
+          driverId={assigningDriver.id}
+          driverName={assigningDriver.name}
+          year={year}
+          onClose={() => setAssigningDriver(null)}
+        />
       )}
     </div>
   );
@@ -190,11 +203,7 @@ function computeColumns(
         dates: allDates,
         columnHeaders: allDates.map((date) => {
           const d = new Date(date + "T00:00:00");
-          return {
-            key: date,
-            label: String(d.getDate()),
-            sub: DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1],
-          };
+          return { key: date, label: String(d.getDate()), sub: DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1] };
         }),
       };
     }
@@ -204,19 +213,15 @@ function computeColumns(
         dates: allDates,
         columnHeaders: allDates.map((date) => {
           const d = new Date(date + "T00:00:00");
-          return {
-            key: date,
-            label: String(d.getDate()),
-            sub: DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1],
-          };
+          return { key: date, label: String(d.getDate()), sub: DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1] };
         }),
       };
     }
     case "year": {
       const months = getYearMonths(year);
       const allDates: string[] = [];
-      const headers: ColumnHeader[] = months.map((m) => {
-        const monthDates = getMonthDates(year, months.indexOf(m) + 1).map((d) => d.toISOString().split("T")[0]);
+      const headers: ColumnHeader[] = months.map((m, i) => {
+        const monthDates = getMonthDates(year, i + 1).map((d) => d.toISOString().split("T")[0]);
         allDates.push(...monthDates);
         return { key: m.label, label: m.label, dates: monthDates };
       });
@@ -227,24 +232,26 @@ function computeColumns(
 
 // === Helper: group rows ===
 
-import type { DriverWithEntries } from "@/lib/store";
+import type { StamtabelRecord } from "@/lib/store";
 
 function GroupRows({
   group,
-  dates,
   columnHeaders,
   zoom,
   isCompact,
   isYearView,
+  leaveTypes,
   onUpdate,
+  onAssignRoster,
 }: {
   group: { label: string; drivers: DriverWithEntries[] };
-  dates: string[];
   columnHeaders: ColumnHeader[];
   zoom: ZoomLevel;
   isCompact: boolean;
   isYearView: boolean;
-  onUpdate: (driverId: string, date: string, status: PlanningStatus, notes?: string) => void;
+  leaveTypes: StamtabelRecord[];
+  onUpdate: (driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) => void;
+  onAssignRoster: (driverId: string, driverName: string) => void;
 }) {
   return (
     <>
@@ -258,23 +265,28 @@ function GroupRows({
       {group.drivers.map((driver) => (
         <tr key={driver.id} className="hover:bg-gray-50/50">
           <td className="p-2 border border-gray-200 sticky left-0 bg-white z-10">
-            <div className="font-medium text-sm">
-              {driver.firstName} {driver.lastName}
-            </div>
-            <div className="text-xs text-gray-400">
-              {driver.type === "INTERNAL"
-                ? driver.employeeNumber || "Intern"
-                : driver.type === "CHARTER"
-                  ? `Charter: ${driver.companyName || ""}`
-                  : "Uitzendkracht"}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-sm">
+                  {driver.firstName} {driver.lastName}
+                  {driver.isManager && <span className="ml-1 text-xs text-indigo-600">LG</span>}
+                </div>
+                <div className="text-xs text-gray-400">
+                  {driver.employeeNumber || (driver.employmentType === "CHARTER" ? "Charter" : "")}
+                </div>
+              </div>
+              <button
+                onClick={() => onAssignRoster(driver.id, `${driver.firstName} ${driver.lastName}`)}
+                className="p-1 text-gray-300 hover:text-blue-600 hover:bg-blue-50 rounded"
+                title="Roosterprofiel toewijzen"
+              >
+                <CalendarCog className="w-3.5 h-3.5" />
+              </button>
             </div>
           </td>
           {isYearView
             ? columnHeaders.map((col) => {
-                // Aggregate: show dominant status for this month
-                const monthEntries = driver.planningEntries.filter(
-                  (e) => col.dates?.includes(e.date)
-                );
+                const monthEntries = driver.planningEntries.filter((e) => col.dates?.includes(e.date));
                 const statusCounts: Record<string, number> = {};
                 for (const e of monthEntries) {
                   statusCounts[e.status] = (statusCounts[e.status] || 0) + 1;
@@ -294,6 +306,10 @@ function GroupRows({
               })
             : columnHeaders.map((col) => {
                 const entry = driver.planningEntries.find((e) => e.date === col.key);
+                // Get base roster hours for this day of week
+                const dayOfWeek = new Date(col.key + "T00:00:00").getDay();
+                const mondayBased = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                const baseHours = driver.baseRosterHours?.[String(mondayBased)];
                 return (
                   <DayCell
                     key={col.key}
@@ -301,6 +317,8 @@ function GroupRows({
                     driverId={driver.id}
                     date={col.key}
                     compact={isCompact}
+                    baseRosterHours={baseHours}
+                    leaveTypes={leaveTypes}
                     onUpdate={onUpdate}
                   />
                 );
