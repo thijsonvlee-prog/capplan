@@ -1,3 +1,5 @@
+"use client";
+
 import { ExternalHireList } from "@/components/external-hires/ExternalHireList";
 
 export default function ExternalHiresPage() {

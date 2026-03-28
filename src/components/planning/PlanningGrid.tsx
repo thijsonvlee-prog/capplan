@@ -1,25 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import type { PlanningStatus, PlanningEntry, Driver } from "@prisma/client";
+import { useState, useEffect } from "react";
+import type { PlanningStatus } from "@/lib/store";
+import {
+  useStore,
+  getPlanningForWeek,
+  upsertPlanningEntry,
+} from "@/lib/store";
 import { WeekSelector } from "./WeekSelector";
 import { DayCell } from "./DayCell";
 import { StatusBadge } from "./StatusBadge";
 import { getCurrentWeek, DAY_LABELS } from "@/lib/utils";
 
-type DriverWithEntries = Driver & { planningEntries: PlanningEntry[] };
-type GridData = {
-  drivers: DriverWithEntries[];
-  weekDates: string[];
-  year: number;
-  week: number;
-};
-
 export function PlanningGrid() {
-  const { data: session } = useSession();
-  const [data, setData] = useState<GridData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [year, setYear] = useState(0);
   const [week, setWeek] = useState(0);
   const [filter, setFilter] = useState("");
@@ -30,89 +23,23 @@ export function PlanningGrid() {
     setWeek(current.week);
   }, []);
 
-  const fetchData = useCallback(async () => {
-    if (!year || !week) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/planning?week=${week}&year=${year}`);
-      const json = await res.json();
-      setData(json);
-    } catch (err) {
-      console.error("Failed to fetch planning data:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [year, week]);
+  const data = useStore(() =>
+    year && week ? getPlanningForWeek(year, week) : null
+  );
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  async function handleUpdate(
+  function handleUpdate(
     driverId: string,
     date: string,
     status: PlanningStatus,
     notes?: string
   ) {
-    // Optimistic update
-    if (data) {
-      setData({
-        ...data,
-        drivers: data.drivers.map((d) => {
-          if (d.id !== driverId) return d;
-          const existing = d.planningEntries.find(
-            (e) => e.date.toString().startsWith(date)
-          );
-          if (existing) {
-            return {
-              ...d,
-              planningEntries: d.planningEntries.map((e) =>
-                e.id === existing.id ? { ...e, status, notes: notes || e.notes } : e
-              ),
-            };
-          }
-          return {
-            ...d,
-            planningEntries: [
-              ...d.planningEntries,
-              {
-                id: "temp-" + Date.now(),
-                driverId,
-                date: new Date(date),
-                status,
-                notes: notes || null,
-                startTime: null,
-                endTime: null,
-                plannedHours: null,
-                isOverride: true,
-                sourceAfas: false,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              },
-            ],
-          };
-        }),
-      });
-    }
-
-    try {
-      await fetch("/api/planning", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ driverId, date, status, notes, isOverride: true }),
-      });
-    } catch {
-      // Rollback on error
-      fetchData();
-    }
+    upsertPlanningEntry(driverId, date, status, notes);
   }
 
   function handleWeekChange(newYear: number, newWeek: number) {
     setYear(newYear);
     setWeek(newWeek);
   }
-
-  const readonly = session?.user.role === "VIEWER";
 
   const filteredDrivers =
     data?.drivers.filter(
@@ -135,14 +62,21 @@ export function PlanningGrid() {
       </div>
 
       <div className="mb-3 flex gap-2 flex-wrap">
-        {(["ROSTER_FREE", "BASE_ROSTER", "AVAILABLE_EXTRA", "LEAVE", "SICK", "HIRED"] as PlanningStatus[]).map(
-          (s) => (
-            <StatusBadge key={s} status={s} />
-          )
-        )}
+        {(
+          [
+            "ROSTER_FREE",
+            "BASE_ROSTER",
+            "AVAILABLE_EXTRA",
+            "LEAVE",
+            "SICK",
+            "HIRED",
+          ] as PlanningStatus[]
+        ).map((s) => (
+          <StatusBadge key={s} status={s} />
+        ))}
       </div>
 
-      {loading ? (
+      {!data ? (
         <div className="text-center py-12 text-gray-500">Laden...</div>
       ) : (
         <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -152,7 +86,7 @@ export function PlanningGrid() {
                 <th className="text-left p-3 border border-gray-200 font-semibold text-sm min-w-[200px]">
                   Chauffeur
                 </th>
-                {data?.weekDates.map((date, i) => (
+                {data.weekDates.map((date, i) => (
                   <th
                     key={date}
                     className="p-2 border border-gray-200 text-center text-sm font-medium min-w-[80px]"
@@ -180,9 +114,9 @@ export function PlanningGrid() {
                           : "Uitzendkracht"}
                     </div>
                   </td>
-                  {data?.weekDates.map((date) => {
-                    const entry = driver.planningEntries.find((e) =>
-                      e.date.toString().startsWith(date)
+                  {data.weekDates.map((date) => {
+                    const entry = driver.planningEntries.find(
+                      (e) => e.date === date
                     );
                     return (
                       <DayCell
@@ -191,7 +125,6 @@ export function PlanningGrid() {
                         driverId={driver.id}
                         date={date}
                         onUpdate={handleUpdate}
-                        readonly={readonly}
                       />
                     );
                   })}

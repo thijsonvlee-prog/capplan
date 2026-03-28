@@ -1,3 +1,5 @@
+"use client";
+
 import { PlanningGrid } from "@/components/planning/PlanningGrid";
 
 export default function PlanningPage() {

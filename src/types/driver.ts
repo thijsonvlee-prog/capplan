@@ -1,5 +1,1 @@
-import type { Driver, BaseRoster } from "@prisma/client";
-
-export type DriverWithRosters = Driver & {
-  baseRosters: BaseRoster[];
-};
+export type { Driver, DriverType } from "@/lib/store";

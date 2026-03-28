@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { DriverType } from "@prisma/client";
+import type { DriverType } from "@/lib/store";
 
 type Props = {
   onSubmit: (data: {
@@ -38,9 +38,7 @@ export function DriverForm({ onSubmit, onCancel, initialType = "INTERNAL", savin
     <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Voornaam
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Voornaam</label>
           <input
             type="text"
             value={firstName}
@@ -50,9 +48,7 @@ export function DriverForm({ onSubmit, onCancel, initialType = "INTERNAL", savin
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Achternaam
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Achternaam</label>
           <input
             type="text"
             value={lastName}
@@ -78,9 +74,7 @@ export function DriverForm({ onSubmit, onCancel, initialType = "INTERNAL", savin
 
       {type === "INTERNAL" && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Personeelsnummer
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Personeelsnummer</label>
           <input
             type="text"
             value={employeeNumber}
@@ -92,9 +86,7 @@ export function DriverForm({ onSubmit, onCancel, initialType = "INTERNAL", savin
 
       {type === "CHARTER" && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Bedrijfsnaam
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Bedrijfsnaam</label>
           <input
             type="text"
             value={companyName}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { PlanningEntry, PlanningStatus } from "@prisma/client";
+import type { PlanningEntry, PlanningStatus } from "@/lib/store";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 import { cn } from "@/lib/utils";
@@ -11,22 +11,18 @@ type Props = {
   driverId: string;
   date: string;
   onUpdate: (driverId: string, date: string, status: PlanningStatus, notes?: string) => void;
-  readonly?: boolean;
 };
 
-export function DayCell({ entry, driverId, date, onUpdate, readonly }: Props) {
+export function DayCell({ entry, driverId, date, onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
 
   return (
     <td className="relative border border-gray-200 p-1">
       <button
-        onClick={() => !readonly && setShowSelector(true)}
+        onClick={() => setShowSelector(true)}
         className={cn(
-          "w-full h-10 rounded-md flex items-center justify-center transition-colors",
-          entry
-            ? "cursor-pointer hover:opacity-80"
-            : "bg-gray-50 hover:bg-gray-100 cursor-pointer",
-          readonly && "cursor-default hover:opacity-100"
+          "w-full h-10 rounded-md flex items-center justify-center transition-colors cursor-pointer",
+          entry ? "hover:opacity-80" : "bg-gray-50 hover:bg-gray-100"
         )}
         title={entry?.notes || undefined}
       >

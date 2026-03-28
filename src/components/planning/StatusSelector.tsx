@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import type { PlanningStatus } from "@prisma/client";
+import type { PlanningStatus } from "@/lib/store";
 import { STATUS_LABELS, STATUS_COLORS, cn } from "@/lib/utils";
 
 const ALL_STATUSES: PlanningStatus[] = [

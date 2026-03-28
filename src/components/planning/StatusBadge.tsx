@@ -1,7 +1,7 @@
 "use client";
 
 import { cn, STATUS_LABELS, STATUS_COLORS } from "@/lib/utils";
-import type { PlanningStatus } from "@prisma/client";
+import type { PlanningStatus } from "@/lib/store";
 
 type Props = {
   status: PlanningStatus;

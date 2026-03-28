@@ -1,3 +1,5 @@
+"use client";
+
 import { DriverList } from "@/components/drivers/DriverList";
 
 export default function DriversPage() {

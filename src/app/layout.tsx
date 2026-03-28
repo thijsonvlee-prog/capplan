@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "@/components/layout/AuthProvider";
 
 export const metadata: Metadata = {
   title: "CapPlan - Driver Planning Tool",
-  description: "Chauffeur planning en roosterbeheer met AFAS integratie",
+  description: "Chauffeur planning en roosterbeheer",
 };
 
 export default function RootLayout({
@@ -14,9 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="nl">
-      <body className="font-sans antialiased">
-        <AuthProvider>{children}</AuthProvider>
-      </body>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }

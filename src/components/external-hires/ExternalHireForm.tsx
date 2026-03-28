@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { DriverType } from "@prisma/client";
 
 type Props = {
   onSubmit: (data: {
     firstName: string;
     lastName: string;
-    type: DriverType;
+    type: "CHARTER" | "TEMPORARY";
     companyName?: string;
   }) => void;
   onCancel: () => void;
@@ -34,9 +33,7 @@ export function ExternalHireForm({ onSubmit, onCancel, saving }: Props) {
     <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Voornaam
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Voornaam</label>
           <input
             type="text"
             value={firstName}
@@ -46,9 +43,7 @@ export function ExternalHireForm({ onSubmit, onCancel, saving }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Achternaam
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Achternaam</label>
           <input
             type="text"
             value={lastName}
@@ -73,9 +68,7 @@ export function ExternalHireForm({ onSubmit, onCancel, saving }: Props) {
 
       {type === "CHARTER" && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Bedrijfsnaam
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Bedrijfsnaam</label>
           <input
             type="text"
             value={companyName}
