@@ -65,7 +65,7 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
           onClick={() => setExpanded(true)}
           title="Klik om alle statussen te tonen"
         >
-          ▸ Beschikbaar
+          ▸ Totalen (beschikbaar)
         </td>
         {Array.from({ length: extraColumnCount }).map((_, i) => (
           <td

@@ -54,7 +54,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
                   <th className="text-left p-2 border border-gray-200">Profiel</th>
                   <th className="text-left p-2 border border-gray-200">Ingangsdatum</th>
                   <th className="text-left p-2 border border-gray-200">Einddatum</th>
-                  <th className="text-left p-2 border border-gray-200">Uren/wk</th>
+                  <th className="text-left p-2 border border-gray-200">Uren/week</th>
                   <th className="w-8 border border-gray-200"></th>
                 </tr>
               </thead>
@@ -114,7 +114,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Uren/week (gem.)</label>
+              <label className="block text-sm text-gray-600 mb-1">Uren/week (gemiddeld)</label>
               <input
                 type="number"
                 value={weeklyHours}

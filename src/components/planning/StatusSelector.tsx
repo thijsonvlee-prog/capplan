@@ -108,7 +108,8 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
           >
             &#9664; Terug
           </button>
-          <div className="text-xs font-semibold text-gray-500 px-3 mb-2">Aanwezigheidspercentage</div>
+          <div className="text-xs font-semibold text-gray-500 px-3 mb-1">Aanwezigheidspercentage</div>
+          <div className="text-xs text-gray-400 px-3 mb-2">Hoeveel procent is de chauffeur inzetbaar? (0% = volledig ziek)</div>
           <div className="px-3 space-y-2">
             <div className="flex items-center gap-1">
               <input

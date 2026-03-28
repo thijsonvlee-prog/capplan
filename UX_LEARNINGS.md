@@ -12,6 +12,10 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 - Roosterprofiel-toewijzing heeft complexe gevolgen (364 dagen generatie) die onvoldoende uitgelegd werden aan de gebruiker
 - Afkortingen in de UI (bijv. "B", "A" voor roosterstatussen) zijn cryptisch voor nieuwe gebruikers
 - Invoervelden met eenheden (percentages, uren) moeten het eenheidssymbool bij het veld tonen
+- Afkortingen zoals "gem.", "wk", "LG" worden vaak niet uitgeschreven — schrijf ze uit of geef een tooltip
+- Ontwikkelaarstermen ("subtabellen", "records") sluipen gemakkelijk in de UI — gebruik gebruikerstaal
+- Icon-only knoppen missen vaak aria-labels — controleer dit bij nieuwe features
+- Experimentele features (POC) mogen geen cryptische symbolen of onverklaarde labels in de UI gebruiken
 
 ## Bekende UX-problemen
 | Onderdeel | Probleem | Impact | Status | Opmerking |
@@ -36,6 +40,11 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 | DriverList niet sorteerbaar | Geen kolomsortering, bij veel chauffeurs moeilijk navigeerbaar | Middel | Open | PlanningGrid heeft wél sortering |
 | DriverForm computed velden | Actuele gegevens lijken bewerkbaar maar zijn read-only | Laag | Open | Visueel onderscheid ontbreekt (bijv. disabled styling) |
 | ScenarioSelector dubbel dupliceren | "Kopie van Kopie van..." bij herhaald dupliceren | Laag | Open | Naamgeving wordt onwerkbaar |
+| Documentatie loading/error | Download-knop toont geen feedback bij fout of verwerking | Laag | Open | Geen loading state op download button |
+| Capaciteitspagina error state | Geen foutmelding bij mislukte API-calls | Middel | Open | Pagina toont alleen loading spinner |
+| Instellingenpagina loading state | Geen loading indicator bij initieel laden van stamtabellen | Laag | Open | Data verschijnt plotseling |
+| StamtabelManager stille validatie | Lege code/omschrijving: form submit doet niets | Middel | Open | Geen foutmelding bij lege velden |
+| SkillManager stille validatie | Lege vaardigheidsnaam: form submit doet niets | Middel | Open | Geen foutmelding bij leeg veld |
 
 ## Bewezen effectieve verbeteringen
 - Bevestigingsdialogen bij verwijderacties: direct hoge waarde, nul risico op regressies
@@ -46,6 +55,9 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 - Helperteksten bij complexe acties: verduidelijkt gevolgen zonder de flow te vertragen
 - Uitgeschreven labels i.p.v. afkortingen: maakt de app direct begrijpelijker voor nieuwe gebruikers
 - Eenheidsindicatoren bij invoervelden: voorkomt verwarring over wat er ingevuld moet worden
+- Vervanging van cryptische symbolen (Σ) door gewone tekst: verlaagt drempel voor alle gebruikers
+- Tooltips op onverklaarde badges/labels (bijv. "Concept"): verduidelijkt zonder ruimte in te nemen
+- Aria-labels op icon-only knoppen: nul visuele impact, verbetert toegankelijkheid
 
 ## Dingen die weinig opleverden of juist risico gaven
 - Nog geen negatieve ervaringen geregistreerd (eerste scan)
@@ -56,7 +68,9 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 - Controleer of nieuwe lege states guidance geven
 - Controleer of nieuwe labels/teksten in het Nederlands zijn (ook HTML title, meta tags)
 - Controleer of afkortingen in de UI uitgeschreven of tenminste verklaard zijn
-- Overweeg een toast/notificatiesysteem voor succesfeedback na acties
+- Controleer of nieuwe icon-only knoppen aria-labels hebben
+- Controleer of nieuwe formulieren foutfeedback geven bij lege verplichte velden (geen stille validatie)
+- Overweeg een toast/notificatiesysteem voor succesfeedback na acties (hoogste prioriteit, al drie keer opgemerkt)
 - Overweeg of de DriverForm edit-flow beter kan (modal vs inline)
 - Controleer of documentatiepagina nog actueel is na architectuurwijzigingen
 - Let op of het ziekpercentage-bereik (0-99) verwarring oplevert bij gebruikers
@@ -64,6 +78,8 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 - DriverList heeft geen sortering — bij groei van chauffeursbestand wordt dit problematisch
 - StatusSelector heeft twee verschillende interactiepatronen voor Verlof en Ziek — harmoniseren?
 - ScenarioSelector: dupliceernaamgeving "Kopie van..." kan onwerkbaar worden bij herhaald gebruik
+- StamtabelManager, SkillManager, ScenarioSelector: stille validatie bij lege formulieren
+- Capaciteitspagina en instellingenpagina: ontbreken error states bij mislukte API-calls
 
 ## Scan- en wijzigingsgeschiedenis
 
@@ -159,3 +175,47 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 3. StatusSelector Verlof/Ziek-flow harmoniseren
 4. DriverForm computed velden visueel onderscheiden van bewerkbare velden
 5. Documentatiepagina opnieuw valideren op actualiteit
+
+### 2026-03-28 (run 3)
+**Samenvatting**
+- Derde UX-scan met focus op jargon, afkortingen, cryptische symbolen, ontbrekende helpteksten en aria-labels
+
+**Geanalyseerd**
+- Alle 6 pagina's en 19 componenten opnieuw doorgelopen
+- Focus op: ontwikkelaarsjargon in UI, afkortingen, onverklaarde labels/badges, icon-only knoppen, formuliervalidatie, loading/error states, consistentie van labels
+
+**Doorgevoerd**
+1. PlanningGrid "Σ Totalen" → "Totalen" (cryptisch sigma-symbool verwijderd)
+2. PlanningGrid zoekplaceholder "Zoek chauffeur..." → "Zoek op naam..." (match met daadwerkelijk zoekgedrag)
+3. PlanningGrid "(LG)" tooltip "LG:" → "Leidinggevende:" (afkorting uitgeschreven in tooltip)
+4. DriverForm "Actuele gegevens (afgeleid van subtabellen)" → "Actuele gegevens (op basis van dienstverband, functie en rooster)" (jargon verwijderd)
+5. DriverForm "Geen functierecords" → "Geen functiegegevens" (jargon verwijderd)
+6. DriverForm "Geen roosterrecords" → "Geen roostergegevens" (jargon verwijderd)
+7. DriverForm + RosterAssigner "Uren/week (gem.)" → "Uren/week (gemiddeld)" (afkorting uitgeschreven)
+8. RosterAssigner tabelkop "Uren/wk" → "Uren/week" (consistent met formulierlabel)
+9. ScenarioSelector "Concept" badge: tooltip toegevoegd die uitlegt dat het een werkkopie is
+10. ScenarioSelector icon-only knoppen: aria-labels toegevoegd (Nieuw/Dupliceer/Verwijder scenario)
+11. CapacitySummaryRow "▸ Beschikbaar" → "▸ Totalen (beschikbaar)" (duidelijker wat de rij toont)
+12. StatusSelector "Aanwezigheidspercentage": helptekst toegevoegd die uitlegt wat 0% betekent
+
+**Niet doorgevoerd**
+- Toast/notificatiesysteem: vereist aparte component of dependency, te groot voor deze run (derde keer opgemerkt, blijft hoogste prioriteit)
+- DriverList sortering: vereist state management, middelgroot
+- StamtabelManager/SkillManager stille validatie: vereist design-keuze over foutweergave (inline error vs disabled knop)
+- Capaciteitspagina error state: vereist error boundary of try/catch + state
+- Instellingenpagina loading state: vereist skeleton of spinner per sectie
+- Documentatiepagina download-feedback: vereist loading state op knop
+
+**Nieuwe learnings**
+- Het sigma-symbool (Σ) was een typisch voorbeeld van een feature die voor de ontwikkelaar logisch is maar voor gebruikers een drempel vormt
+- Afkortingen ("gem.", "wk", "LG") komen steeds terug bij nieuwe features — maak er een checklistpunt van
+- Stille validatie (form submit doet niets bij lege velden) is een terugkerend patroon in meerdere componenten (StamtabelManager, SkillManager, ScenarioSelector). Eén generieke oplossing (bijv. form-level validation met inline errors) zou alle gevallen tegelijk adresseren.
+- Het woord "records" (Engels/technisch) komt op meerdere plekken in de UI terug — gebruik liever "gegevens" of domeinspecifieke termen
+
+**Aanbevolen vervolgstappen**
+1. Toast/succesfeedback implementeren (al drie scans de hoogste prioriteit — overweeg een lightweight eigen component zonder externe dependency)
+2. Stille validatie oplossen in StamtabelManager, SkillManager en ScenarioSelector (toon inline foutmelding bij lege velden)
+3. DriverList kolomsortering toevoegen
+4. StatusSelector Verlof/Ziek-flow harmoniseren
+5. Error states toevoegen aan capaciteitspagina en instellingenpagina
+6. DriverForm computed velden visueel onderscheiden (disabled styling)

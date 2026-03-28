@@ -181,7 +181,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           {/* Computed fields (read-only, edit mode only) */}
           {computed && (
             <div className="border-t border-gray-200 pt-4">
-              <div className="text-xs font-medium text-gray-500 mb-2">Actuele gegevens (afgeleid van subtabellen)</div>
+              <div className="text-xs font-medium text-gray-500 mb-2">Actuele gegevens (op basis van dienstverband, functie en rooster)</div>
               <div className="grid grid-cols-3 gap-3 text-sm">
                 {[
                   { label: "Werkgever", value: computed.currentEmployer },
@@ -240,7 +240,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           ]}
           onAdd={(data) => mutate(() => api.drivers.addFunctionRecord(initialData.id, data))}
           onDelete={(id) => mutate(() => api.drivers.deleteFunctionRecord(initialData.id, id))}
-          emptyMessage="Geen functierecords"
+          emptyMessage="Geen functiegegevens"
           renderForm={(onSubmit, onCancel) => (
             <PositionForm departments={departments} locations={locations} onSubmit={onSubmit} onCancel={onCancel} />
           )}
@@ -257,7 +257,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           ]}
           onAdd={(data) => mutate(() => api.drivers.addRosterAssignment(initialData.id, { ...data, scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId }))}
           onDelete={(id) => mutate(() => api.drivers.deleteRosterAssignment(initialData.id, id))}
-          emptyMessage="Geen roosterrecords"
+          emptyMessage="Geen roostergegevens"
           renderForm={(onSubmit, onCancel) => (
             <RosterForm profiles={profiles} onSubmit={onSubmit} onCancel={onCancel} />
           )}
@@ -421,7 +421,7 @@ function RosterForm({
           )}
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Uren/week (gem.)</label>
+          <label className="block text-sm text-gray-600 mb-1">Uren/week (gemiddeld)</label>
           <input
             type="number"
             value={weeklyHours}

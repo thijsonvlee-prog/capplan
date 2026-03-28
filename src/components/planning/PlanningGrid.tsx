@@ -389,7 +389,7 @@ export function PlanningGrid() {
       <div className="flex items-center gap-3 mb-3 flex-wrap flex-shrink-0">
         <input
           type="text"
-          placeholder="Zoek chauffeur..."
+          placeholder="Zoek op naam..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm w-64"
@@ -447,7 +447,7 @@ export function PlanningGrid() {
           }`}
           title="Capaciteitssamenvatting tonen/verbergen"
         >
-          Σ Totalen
+          Totalen
         </button>
 
         <div className="flex gap-1.5 flex-wrap ml-auto">
@@ -637,7 +637,7 @@ function GroupRows({
                     <>
                       <div className={`font-medium ${dc.fontSize} whitespace-nowrap`}>
                         {driver.firstName} {driver.lastName}
-                        {pos?.manager && <span className="ml-1 text-xs text-gray-400" title={`LG: ${pos.manager}`}>(LG)</span>}
+                        {pos?.manager && <span className="ml-1 text-xs text-gray-400" title={`Leidinggevende: ${pos.manager}`}>(LG)</span>}
                       </div>
                       {density !== "compact" && (
                         <div className="text-xs text-gray-400">

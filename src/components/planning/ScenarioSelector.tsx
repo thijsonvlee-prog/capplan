@@ -56,7 +56,7 @@ export function ScenarioSelector() {
       </select>
 
       {activeId !== "default" && (
-        <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-medium">
+        <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-medium" title="Dit scenario is een werkkopie en heeft geen invloed op de actuele planning">
           Concept
         </span>
       )}
@@ -65,6 +65,7 @@ export function ScenarioSelector() {
         onClick={() => setShowCreate(true)}
         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
         title="Nieuw scenario"
+        aria-label="Nieuw scenario"
       >
         <Plus className="w-4 h-4" />
       </button>
@@ -72,6 +73,7 @@ export function ScenarioSelector() {
         onClick={handleDuplicate}
         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
         title="Dupliceer scenario"
+        aria-label="Dupliceer scenario"
       >
         <Copy className="w-4 h-4" />
       </button>
@@ -80,6 +82,7 @@ export function ScenarioSelector() {
           onClick={handleDelete}
           className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded"
           title="Verwijder scenario"
+          aria-label="Verwijder scenario"
         >
           <Trash2 className="w-4 h-4" />
         </button>
