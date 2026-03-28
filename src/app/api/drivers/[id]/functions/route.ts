@@ -42,14 +42,10 @@ export async function POST(
       dayBefore.setDate(dayBefore.getDate() - 1);
       const endDateStr = dayBefore.toISOString().split("T")[0];
 
-      await Promise.all(
-        openRecords.map((r) =>
-          prisma.driverFunctionRecord.update({
-            where: { id: r.id },
-            data: { endDate: endDateStr },
-          })
-        )
-      );
+      await prisma.driverFunctionRecord.updateMany({
+        where: { driverId: id, endDate: null },
+        data: { endDate: endDateStr },
+      });
     }
 
     // Get next sequence number

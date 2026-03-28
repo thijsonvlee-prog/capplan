@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import type { PlanningStatus, DensityLevel } from "@/domain/enums";
 import type { PlanningEntry, StamtabelRecord } from "@/domain/types";
 import { StatusBadge } from "./StatusBadge";
@@ -24,7 +24,7 @@ type Props = {
   onUpdate: (driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) => void;
 };
 
-export function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypes, density = "comfortable", onUpdate }: Props) {
+export const DayCell = memo(function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypes, density = "comfortable", onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
 
   // Build hover title
@@ -103,4 +103,4 @@ export function DayCell({ entry, driverId, date, compact, baseRosterHours, leave
       )}
     </>
   );
-}
+});

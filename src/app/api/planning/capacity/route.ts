@@ -22,11 +22,14 @@ export async function GET(request: NextRequest) {
     const dateList = dates.split(",").map((d) => d.trim());
     const resolvedScenarioId = resolveScenarioId(scenarioId);
 
-    const entries = await prisma.planningEntry.findMany({
+    // Use groupBy to aggregate in the database instead of fetching all rows
+    const grouped = await prisma.planningEntry.groupBy({
+      by: ["date", "status"],
       where: {
         date: { in: dateList },
         scenarioId: resolvedScenarioId,
       },
+      _count: { _all: true },
     });
 
     const capacity: Record<string, Record<string, number>> = {};
@@ -41,10 +44,9 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    for (const entry of entries) {
-      if (capacity[entry.date]) {
-        capacity[entry.date][entry.status] =
-          (capacity[entry.date][entry.status] || 0) + 1;
+    for (const group of grouped) {
+      if (capacity[group.date]) {
+        capacity[group.date][group.status] = group._count._all;
       }
     }
 

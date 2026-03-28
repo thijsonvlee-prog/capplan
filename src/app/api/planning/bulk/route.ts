@@ -13,38 +13,56 @@ export async function POST(request: NextRequest) {
 
     const resolvedScenarioId = resolveScenarioId(scenarioId);
 
+    // Batch: fetch all existing entries in one query
+    const existingEntries = await prisma.planningEntry.findMany({
+      where: {
+        driverId,
+        date: { in: dates },
+        scenarioId: resolvedScenarioId,
+      },
+      select: { id: true, date: true },
+    });
+
+    const existingByDate = new Map(
+      existingEntries.map((e) => [e.date, e.id])
+    );
+
+    const updateIds: string[] = [];
+    const toCreate: { driverId: string; date: string; status: string; leaveTypeId: string | null; sickPercentage: number | null; notes: string | null; scenarioId: string | null }[] = [];
+
     for (const date of dates) {
-      const existing = await prisma.planningEntry.findFirst({
-        where: {
+      const existingId = existingByDate.get(date);
+      if (existingId) {
+        updateIds.push(existingId);
+      } else {
+        toCreate.push({
           driverId,
           date,
+          status,
+          leaveTypeId: leaveTypeId || null,
+          sickPercentage: sickPercentage ?? null,
+          notes: notes || null,
           scenarioId: resolvedScenarioId,
-        },
-      });
-
-      if (existing) {
-        await prisma.planningEntry.update({
-          where: { id: existing.id },
-          data: {
-            status,
-            leaveTypeId: leaveTypeId || null,
-            sickPercentage: sickPercentage ?? null,
-            notes: notes || null,
-          },
-        });
-      } else {
-        await prisma.planningEntry.create({
-          data: {
-            driverId,
-            date,
-            status,
-            leaveTypeId: leaveTypeId || null,
-            sickPercentage: sickPercentage ?? null,
-            notes: notes || null,
-            scenarioId: resolvedScenarioId,
-          },
         });
       }
+    }
+
+    // Batch update all existing entries at once
+    if (updateIds.length > 0) {
+      await prisma.planningEntry.updateMany({
+        where: { id: { in: updateIds } },
+        data: {
+          status,
+          leaveTypeId: leaveTypeId || null,
+          sickPercentage: sickPercentage ?? null,
+          notes: notes || null,
+        },
+      });
+    }
+
+    // Batch create all new entries at once
+    if (toCreate.length > 0) {
+      await prisma.planningEntry.createMany({ data: toCreate });
     }
 
     return NextResponse.json({ success: true });

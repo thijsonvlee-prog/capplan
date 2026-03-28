@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import {
   AreaChart,
   Area,
@@ -23,9 +24,9 @@ type Props = {
   compareData?: { name: string; data: Record<string, Record<PlanningStatus, number>> }[];
 };
 
-export function CapacityChart({ capacityData, columnHeaders, compareData }: Props) {
+export const CapacityChart = memo(function CapacityChart({ capacityData, columnHeaders, compareData }: Props) {
   // Build chart data: each row = one date column
-  const chartData = columnHeaders.map((col) => {
+  const chartData = useMemo(() => columnHeaders.map((col) => {
     const row: Record<string, string | number> = { name: col.label };
 
     // Main scenario "available" total
@@ -48,7 +49,7 @@ export function CapacityChart({ capacityData, columnHeaders, compareData }: Prop
     }
 
     return row;
-  });
+  }), [columnHeaders, capacityData, compareData]);
 
   const COMPARE_COLORS = ["#f97316", "#06b6d4", "#8b5cf6"];
 
@@ -90,4 +91,4 @@ export function CapacityChart({ capacityData, columnHeaders, compareData }: Prop
       </ResponsiveContainer>
     </div>
   );
-}
+});

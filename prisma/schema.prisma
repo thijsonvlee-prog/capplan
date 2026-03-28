@@ -197,7 +197,8 @@ model PlanningEntry {
   @@index([driverId])
   @@index([date])
   @@index([scenarioId])
-  @@index([driverId, date])
+  @@index([driverId, date, scenarioId])
+  @@index([scenarioId, date])
 }
 
 // === Scenario Domain ===

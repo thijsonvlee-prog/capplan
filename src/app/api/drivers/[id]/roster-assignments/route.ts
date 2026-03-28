@@ -54,14 +54,10 @@ export async function POST(
       dayBefore.setDate(dayBefore.getDate() - 1);
       const endDateStr = dayBefore.toISOString().split("T")[0];
 
-      await Promise.all(
-        openRecords.map((r) =>
-          prisma.driverRosterAssignment.update({
-            where: { id: r.id },
-            data: { endDate: endDateStr },
-          })
-        )
-      );
+      await prisma.driverRosterAssignment.updateMany({
+        where: { driverId, endDate: null },
+        data: { endDate: endDateStr },
+      });
     }
 
     // Get next sequence number
@@ -99,50 +95,70 @@ export async function POST(
 
       const start = new Date(startDate);
 
+      // Generate all date strings upfront
+      const allDates: string[] = [];
+      const statusByDate: Record<string, string> = {};
       for (let i = 0; i < 364; i++) {
         const currentDate = new Date(start);
         currentDate.setDate(start.getDate() + i);
         const dateStr = currentDate.toISOString().split("T")[0];
+        allDates.push(dateStr);
+        statusByDate[dateStr] = patternMap[i % 28] || "ROSTER_FREE";
+      }
 
-        const dayOffset = i % 28;
-        const status = patternMap[dayOffset] || "ROSTER_FREE";
+      // Batch: fetch all existing entries for this driver+scenario in one query
+      const existingEntries = await prisma.planningEntry.findMany({
+        where: {
+          driverId,
+          date: { in: allDates },
+          scenarioId: resolvedScenarioId,
+        },
+        select: { id: true, date: true, status: true },
+      });
 
-        // Check if there's an existing LEAVE or SICK entry
-        const existing = await prisma.planningEntry.findFirst({
-          where: {
-            driverId,
-            date: dateStr,
-            scenarioId: resolvedScenarioId,
-            status: { in: ["LEAVE", "SICK"] },
-          },
-        });
+      const existingByDate = new Map(
+        existingEntries.map((e) => [e.date, e])
+      );
 
-        if (existing) continue;
+      // Separate into: skip (LEAVE/SICK), update, create
+      const toUpdate: { id: string; status: string }[] = [];
+      const toCreate: { driverId: string; date: string; status: string; scenarioId: string | null }[] = [];
 
-        // Upsert the planning entry
-        const existingEntry = await prisma.planningEntry.findFirst({
-          where: {
-            driverId,
-            date: dateStr,
-            scenarioId: resolvedScenarioId,
-          },
-        });
-
-        if (existingEntry) {
-          await prisma.planningEntry.update({
-            where: { id: existingEntry.id },
-            data: { status },
-          });
+      for (const dateStr of allDates) {
+        const existing = existingByDate.get(dateStr);
+        if (existing && (existing.status === "LEAVE" || existing.status === "SICK")) {
+          continue; // Preserve leave/sick entries
+        }
+        if (existing) {
+          if (existing.status !== statusByDate[dateStr]) {
+            toUpdate.push({ id: existing.id, status: statusByDate[dateStr] });
+          }
         } else {
-          await prisma.planningEntry.create({
-            data: {
-              driverId,
-              date: dateStr,
-              status,
-              scenarioId: resolvedScenarioId,
-            },
+          toCreate.push({
+            driverId,
+            date: dateStr,
+            status: statusByDate[dateStr],
+            scenarioId: resolvedScenarioId,
           });
         }
+      }
+
+      // Batch create new entries
+      if (toCreate.length > 0) {
+        await prisma.planningEntry.createMany({ data: toCreate });
+      }
+
+      // Batch update existing entries (grouped by status to minimize queries)
+      const updatesByStatus: Record<string, string[]> = {};
+      for (const u of toUpdate) {
+        if (!updatesByStatus[u.status]) updatesByStatus[u.status] = [];
+        updatesByStatus[u.status].push(u.id);
+      }
+      for (const status of Object.keys(updatesByStatus)) {
+        await prisma.planningEntry.updateMany({
+          where: { id: { in: updatesByStatus[status] } },
+          data: { status },
+        });
       }
     }
 

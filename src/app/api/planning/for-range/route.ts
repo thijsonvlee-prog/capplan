@@ -39,14 +39,14 @@ export async function GET(request: NextRequest) {
     const dateList = dates.split(",").map((d) => d.trim());
     const resolvedScenarioId = resolveScenarioId(scenarioId);
 
-    // Get all active drivers
+    // Get all active drivers with only the fields needed for planning grid
     const drivers = await prisma.driver.findMany({
       where: { isActive: true },
       include: {
-        skills: true,
-        employmentRecords: true,
-        functionRecords: true,
-        rosterAssignments: true,
+        skills: { select: { skillId: true } },
+        employmentRecords: { select: { id: true, sequenceNumber: true, startDate: true, endDate: true, employmentType: true, employerId: true } },
+        functionRecords: { select: { id: true, sequenceNumber: true, startDate: true, endDate: true, position: true, locationId: true, departmentId: true, manager: true } },
+        rosterAssignments: { select: { id: true, sequenceNumber: true, startDate: true, endDate: true, rosterProfileId: true, weeklyHours: true } },
       },
       orderBy: { lastName: "asc" },
     });
