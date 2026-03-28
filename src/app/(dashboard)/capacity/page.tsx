@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import type { ZoomLevel } from "@/lib/store";
+import { useState, useEffect, useMemo } from "react";
+import type { AggregationLevel, PlanningStatus } from "@/lib/store";
 import {
   useStore,
   getCapacityForDateRange,
@@ -13,119 +13,157 @@ import { CapacityChart } from "@/components/capacity/CapacityChart";
 import { PeriodSelector } from "@/components/planning/WeekSelector";
 import { ZoomSelector } from "@/components/planning/ZoomSelector";
 import {
-  getCurrentWeek,
+  getDateRange,
+  getISOWeekNumber,
   DAY_LABELS,
-  getWeekDates,
-  get4WeekDates,
-  getMonthDates,
-  getYearMonths,
 } from "@/lib/utils";
+import { addDays } from "date-fns";
 
 type ColumnHeader = { key: string; label: string };
 
-function computeCapacityColumns(
-  zoom: ZoomLevel,
-  year: number,
-  week: number,
-  month: number
-): { dates: string[]; columnHeaders: ColumnHeader[] } {
-  if (!year) return { dates: [], columnHeaders: [] };
-
-  switch (zoom) {
-    case "week": {
-      const weekDates = getWeekDates(year, week).map((d) => d.toISOString().split("T")[0]);
-      return {
-        dates: weekDates,
-        columnHeaders: weekDates.map((date, i) => ({ key: date, label: `${DAY_LABELS[i]} ${date.split("-")[2]}` })),
-      };
-    }
-    case "4weeks": {
-      const allDates = get4WeekDates(year, week).map((d) => d.toISOString().split("T")[0]);
-      return {
-        dates: allDates,
-        columnHeaders: allDates.map((date) => ({ key: date, label: date.split("-")[2] })),
-      };
-    }
-    case "month": {
-      const allDates = getMonthDates(year, month).map((d) => d.toISOString().split("T")[0]);
-      return {
-        dates: allDates,
-        columnHeaders: allDates.map((date) => ({ key: date, label: date.split("-")[2] })),
-      };
-    }
-    case "year": {
-      const months = getYearMonths(year);
-      // For year view in capacity, aggregate per month: use first date of month as key
-      return {
-        dates: months.map((m) => m.startDate),
-        columnHeaders: months.map((m) => ({ key: m.startDate, label: m.label })),
-      };
-    }
-  }
-}
+const DEFAULT_CAPACITY_DAYS = 56;
 
 export default function CapacityPage() {
-  const [year, setYear] = useState(0);
-  const [week, setWeek] = useState(0);
-  const [month, setMonth] = useState(0);
-  const [zoom, setZoom] = useState<ZoomLevel>("week");
+  const [startDate, setStartDate] = useState("");
+  const [dayCount] = useState(DEFAULT_CAPACITY_DAYS);
+  const [aggregation, setAggregation] = useState<AggregationLevel>("week");
   const [compareIds, setCompareIds] = useState<string[]>([]);
 
   useEffect(() => {
-    const current = getCurrentWeek();
-    setYear(current.year);
-    setWeek(current.week);
-    setMonth(new Date().getMonth() + 1);
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = addDays(today, mondayOffset);
+    setStartDate(monday.toISOString().split("T")[0]);
   }, []);
 
   const activeId = useStore(() => getActiveScenarioId());
   const scenarios = useStore(() => getScenarios());
 
-  // For year view, get all dates in the year for capacity calculation
-  let allDates: string[];
-  if (zoom === "year" && year) {
-    const months = getYearMonths(year);
-    allDates = [];
-    for (let m = 1; m <= 12; m++) {
-      const monthDates = getMonthDates(year, m).map((d) => d.toISOString().split("T")[0]);
-      allDates.push(...monthDates);
-    }
-  } else {
-    const { dates } = computeCapacityColumns(zoom, year, week, month);
-    allDates = dates;
-  }
+  const allDates = useMemo(() => {
+    if (!startDate) return [];
+    return getDateRange(startDate, dayCount);
+  }, [startDate, dayCount]);
 
-  const capacityData = useStore(() =>
+  // Compute aggregated column headers + date groups
+  const { columnHeaders, dateGroups } = useMemo(() => {
+    if (allDates.length === 0) return { columnHeaders: [] as ColumnHeader[], dateGroups: [] as string[][] };
+    const MONTH_SHORT = ["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
+    const headers: ColumnHeader[] = [];
+    const groups: string[][] = [];
+
+    switch (aggregation) {
+      case "day":
+        for (const date of allDates) {
+          const d = new Date(date + "T00:00:00");
+          const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+          headers.push({ key: date, label: `${DAY_LABELS[dayIdx]} ${d.getDate()}` });
+          groups.push([date]);
+        }
+        break;
+      case "week": {
+        const weekMap = new Map<string, string[]>();
+        for (const date of allDates) {
+          const wk = getISOWeekNumber(date);
+          const yr = new Date(date + "T00:00:00").getFullYear();
+          const key = `${yr}-W${wk}`;
+          if (!weekMap.has(key)) weekMap.set(key, []);
+          weekMap.get(key)!.push(date);
+        }
+        Array.from(weekMap.entries()).forEach(([key, dates]) => {
+          headers.push({ key, label: `Wk ${key.split("-W")[1]}` });
+          groups.push(dates);
+        });
+        break;
+      }
+      case "4weeks": {
+        for (let i = 0; i < allDates.length; i += 28) {
+          const blockDates = allDates.slice(i, i + 28);
+          if (blockDates.length === 0) break;
+          const firstWk = getISOWeekNumber(blockDates[0]);
+          const lastWk = getISOWeekNumber(blockDates[blockDates.length - 1]);
+          headers.push({ key: `4w-${i}`, label: `Wk ${firstWk}–${lastWk}` });
+          groups.push(blockDates);
+        }
+        break;
+      }
+      case "month": {
+        const monthMap = new Map<string, string[]>();
+        for (const date of allDates) {
+          const d = new Date(date + "T00:00:00");
+          const key = `${d.getFullYear()}-${d.getMonth()}`;
+          if (!monthMap.has(key)) monthMap.set(key, []);
+          monthMap.get(key)!.push(date);
+        }
+        Array.from(monthMap.entries()).forEach(([key, dates]) => {
+          const [yr, m] = key.split("-").map(Number);
+          headers.push({ key, label: `${MONTH_SHORT[m]} ${yr}` });
+          groups.push(dates);
+        });
+        break;
+      }
+      case "quarter": {
+        const qMap = new Map<string, string[]>();
+        for (const date of allDates) {
+          const d = new Date(date + "T00:00:00");
+          const q = Math.floor(d.getMonth() / 3) + 1;
+          const key = `${d.getFullYear()}-Q${q}`;
+          if (!qMap.has(key)) qMap.set(key, []);
+          qMap.get(key)!.push(date);
+        }
+        Array.from(qMap.entries()).forEach(([key, dates]) => {
+          headers.push({ key, label: key.replace("-", " ") });
+          groups.push(dates);
+        });
+        break;
+      }
+      case "year": {
+        const yMap = new Map<string, string[]>();
+        for (const date of allDates) {
+          const yr = new Date(date + "T00:00:00").getFullYear().toString();
+          if (!yMap.has(yr)) yMap.set(yr, []);
+          yMap.get(yr)!.push(date);
+        }
+        Array.from(yMap.entries()).forEach(([key, dates]) => {
+          headers.push({ key, label: key });
+          groups.push(dates);
+        });
+        break;
+      }
+    }
+
+    return { columnHeaders: headers, dateGroups: groups };
+  }, [allDates, aggregation]);
+
+  const rawCapacity = useStore(() =>
     allDates.length > 0 ? getCapacityForDateRange(allDates, activeId) : {}
   );
 
-  // For year view, aggregate daily data into monthly data
-  const { columnHeaders } = computeCapacityColumns(zoom, year, week, month);
-
-  let displayData = capacityData;
-  if (zoom === "year" && year) {
-    displayData = {};
-    const months = getYearMonths(year);
-    for (let m = 0; m < 12; m++) {
-      const monthDates = getMonthDates(year, m + 1).map((d) => d.toISOString().split("T")[0]);
-      const agg = { ROSTER_FREE: 0, BASE_ROSTER: 0, AVAILABLE_EXTRA: 0, LEAVE: 0, SICK: 0 } as Record<string, number>;
-      for (const date of monthDates) {
-        const dayData = capacityData[date];
+  // Aggregate into display data
+  const displayData = useMemo(() => {
+    const result: Record<string, Record<PlanningStatus, number>> = {};
+    for (let i = 0; i < columnHeaders.length; i++) {
+      const dates = dateGroups[i];
+      const key = columnHeaders[i].key;
+      const agg = { ROSTER_FREE: 0, BASE_ROSTER: 0, AVAILABLE_EXTRA: 0, LEAVE: 0, SICK: 0 } as Record<PlanningStatus, number>;
+      for (const date of dates) {
+        const dayData = rawCapacity[date];
         if (dayData) {
           for (const [status, count] of Object.entries(dayData)) {
-            agg[status] = (agg[status] || 0) + count;
+            agg[status as PlanningStatus] = (agg[status as PlanningStatus] || 0) + (count as number);
           }
         }
       }
-      // Average per day in month
-      const days = monthDates.length;
-      const key = months[m].startDate;
-      displayData[key] = {} as Record<string, number>;
-      for (const [status, total] of Object.entries(agg)) {
-        (displayData[key] as Record<string, number>)[status] = Math.round(total / days * 10) / 10;
+      // Average per day
+      if (dates.length > 1) {
+        for (const status of Object.keys(agg) as PlanningStatus[]) {
+          agg[status] = Math.round(agg[status] / dates.length * 10) / 10;
+        }
       }
+      result[key] = agg;
     }
-  }
+    return result;
+  }, [rawCapacity, columnHeaders, dateGroups]);
 
   // Compare scenarios
   const compareData = useStore(() =>
@@ -150,14 +188,8 @@ export default function CapacityPage() {
 
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-3">
-          <PeriodSelector
-            year={year}
-            week={week}
-            month={month}
-            zoom={zoom}
-            onChange={(y, w, m) => { setYear(y); setWeek(w); setMonth(m); }}
-          />
-          <ZoomSelector value={zoom} onChange={setZoom} />
+          <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
+          <ZoomSelector value={aggregation} onChange={setAggregation} />
         </div>
 
         {scenarios.length > 0 && (
@@ -184,14 +216,14 @@ export default function CapacityPage() {
         <>
           <div className="mb-6">
             <CapacityChart
-              capacityData={displayData as Record<string, Record<import("@/lib/store").PlanningStatus, number>>}
+              capacityData={displayData}
               columnHeaders={columnHeaders}
               compareData={compareData.length > 0 ? compareData : undefined}
             />
           </div>
 
           <CapacityTable
-            capacityData={displayData as Record<string, Record<import("@/lib/store").PlanningStatus, number>>}
+            capacityData={displayData}
             columnHeaders={columnHeaders}
           />
         </>

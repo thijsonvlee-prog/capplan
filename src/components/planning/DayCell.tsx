@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import type { PlanningEntry, PlanningStatus, StamtabelRecord } from "@/lib/store";
+import type { PlanningEntry, PlanningStatus, StamtabelRecord, DensityLevel } from "@/lib/store";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 import { cn } from "@/lib/utils";
+
+const DENSITY_HEIGHT: Record<DensityLevel, string> = {
+  spacious: "h-10",
+  comfortable: "h-8",
+  compact: "h-6",
+};
 
 type Props = {
   entry?: PlanningEntry;
@@ -13,10 +19,11 @@ type Props = {
   compact?: boolean;
   baseRosterHours?: number;
   leaveTypes?: StamtabelRecord[];
+  density?: DensityLevel;
   onUpdate: (driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) => void;
 };
 
-export function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypes, onUpdate }: Props) {
+export function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypes, density = "comfortable", onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
 
   // Build hover title
@@ -35,13 +42,15 @@ export function DayCell({ entry, driverId, date, compact, baseRosterHours, leave
     if (entry.notes) title += title ? ` — ${entry.notes}` : entry.notes;
   }
 
+  const h = DENSITY_HEIGHT[density];
+
   return (
-    <td className="relative border border-gray-200 p-0.5">
+    <div className="relative">
       <button
-        onClick={() => setShowSelector(true)}
+        onClick={(e) => { e.stopPropagation(); setShowSelector(true); }}
         className={cn(
           "w-full rounded-sm flex items-center justify-center transition-colors cursor-pointer",
-          compact ? "h-7" : "h-10",
+          h,
           entry ? "hover:opacity-80" : "bg-gray-50 hover:bg-gray-100"
         )}
         title={title || undefined}
@@ -65,6 +74,6 @@ export function DayCell({ entry, driverId, date, compact, baseRosterHours, leave
           onClose={() => setShowSelector(false)}
         />
       )}
-    </td>
+    </div>
   );
 }

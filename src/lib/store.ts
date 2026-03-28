@@ -14,6 +14,10 @@ export type PlanningStatus =
 
 export type ZoomLevel = "week" | "4weeks" | "month" | "year";
 
+export type AggregationLevel = "day" | "week" | "4weeks" | "month" | "quarter" | "year";
+
+export type DensityLevel = "spacious" | "comfortable" | "compact";
+
 export type Skill = {
   id: string;
   name: string;
@@ -38,8 +42,7 @@ export type Driver = {
   skillIds?: string[];
   manager?: string; // name of the manager/leidinggevende
   baseRosterHours?: Record<string, number>; // day-of-week (0=Mon..6=Sun) -> hours
-  rosterProfileId?: string;
-  rosterProfileStartDate?: string; // YYYY-MM-DD
+  rosterAssignments?: RosterAssignment[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -78,6 +81,13 @@ export type RosterProfile = {
   entries: RosterProfileEntry[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type RosterAssignment = {
+  id: string;
+  rosterProfileId: string;
+  startDate: string; // YYYY-MM-DD
+  endDate?: string;  // YYYY-MM-DD, undefined = active/current
 };
 
 export type GroupByField = "none" | "employer" | "department" | "location" | "licenseType" | "employmentType";
@@ -366,11 +376,27 @@ export function deleteRosterProfile(id: string) {
 }
 
 export function assignRosterProfile(driverId: string, profileId: string, startDate: string, scenarioId?: string) {
-  // Update driver with profile assignment
   const drivers = readDrivers();
   const idx = drivers.findIndex((d) => d.id === driverId);
   if (idx === -1) return;
-  drivers[idx] = { ...drivers[idx], rosterProfileId: profileId, rosterProfileStartDate: startDate, updatedAt: new Date().toISOString() };
+
+  const driver = drivers[idx];
+  const assignments = [...(driver.rosterAssignments || [])];
+
+  // Auto-close the previous active assignment (one without endDate) by giving it an endDate
+  const dayBefore = new Date(startDate + "T00:00:00");
+  dayBefore.setDate(dayBefore.getDate() - 1);
+  const endDateStr = dayBefore.toISOString().split("T")[0];
+  for (let i = 0; i < assignments.length; i++) {
+    if (!assignments[i].endDate) {
+      assignments[i] = { ...assignments[i], endDate: endDateStr };
+    }
+  }
+
+  // Add new assignment
+  assignments.push({ id: generateId(), rosterProfileId: profileId, startDate, endDate: undefined });
+
+  drivers[idx] = { ...driver, rosterAssignments: assignments, updatedAt: new Date().toISOString() };
   writeDrivers(drivers);
 
   // Generate planning entries for 1 year (52 weeks = 364 days)
@@ -399,6 +425,53 @@ export function assignRosterProfile(driverId: string, profileId: string, startDa
     }
   }
 
+  writeEntries(entries, scenarioId);
+}
+
+export function getDriverRosterAssignments(driverId: string): (RosterAssignment & { profileName: string })[] {
+  const driver = readDrivers().find((d) => d.id === driverId);
+  if (!driver?.rosterAssignments) return [];
+  const profiles = readRosterProfiles();
+  return driver.rosterAssignments
+    .map((a) => ({
+      ...a,
+      profileName: profiles.find((p) => p.id === a.rosterProfileId)?.name || "(verwijderd)",
+    }))
+    .sort((a, b) => b.startDate.localeCompare(a.startDate));
+}
+
+export function deleteRosterAssignment(driverId: string, assignmentId: string) {
+  const drivers = readDrivers();
+  const idx = drivers.findIndex((d) => d.id === driverId);
+  if (idx === -1) return;
+  const driver = drivers[idx];
+  const assignments = (driver.rosterAssignments || []).filter((a) => a.id !== assignmentId);
+  drivers[idx] = { ...driver, rosterAssignments: assignments, updatedAt: new Date().toISOString() };
+  writeDrivers(drivers);
+}
+
+export function upsertBulkPlanningEntries(
+  driverId: string,
+  dates: string[],
+  status: PlanningStatus,
+  options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string },
+  scenarioId?: string
+) {
+  const entries = readEntries(scenarioId);
+  for (const date of dates) {
+    const entryIdx = entries.findIndex((e) => e.driverId === driverId && e.date === date);
+    const entryData: Partial<PlanningEntry> = {
+      status,
+      leaveTypeId: options?.leaveTypeId,
+      sickPercentage: options?.sickPercentage,
+      notes: options?.notes,
+    };
+    if (entryIdx >= 0) {
+      entries[entryIdx] = { ...entries[entryIdx], ...entryData };
+    } else {
+      entries.push({ id: generateId(), driverId, date, ...entryData } as PlanningEntry);
+    }
+  }
   writeEntries(entries, scenarioId);
 }
 

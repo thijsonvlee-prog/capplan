@@ -1,24 +1,26 @@
 "use client";
 
-import type { ZoomLevel } from "@/lib/store";
+import type { AggregationLevel } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-const ZOOM_OPTIONS: { value: ZoomLevel; label: string }[] = [
+const AGGREGATION_OPTIONS: { value: AggregationLevel; label: string }[] = [
+  { value: "day", label: "Dag" },
   { value: "week", label: "Week" },
   { value: "4weeks", label: "4 Weken" },
   { value: "month", label: "Maand" },
+  { value: "quarter", label: "Kwartaal" },
   { value: "year", label: "Jaar" },
 ];
 
 type Props = {
-  value: ZoomLevel;
-  onChange: (level: ZoomLevel) => void;
+  value: AggregationLevel;
+  onChange: (level: AggregationLevel) => void;
 };
 
 export function ZoomSelector({ value, onChange }: Props) {
   return (
     <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-      {ZOOM_OPTIONS.map((opt) => (
+      {AGGREGATION_OPTIONS.map((opt) => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
