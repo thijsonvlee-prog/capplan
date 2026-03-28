@@ -205,8 +205,11 @@ Beheer van referentiegegevens die in de applicatie worden gebruikt:
 8. DATA-OPSLAG
 ================================================================================
 
-Alle data wordt opgeslagen in de browser (localStorage). De volgende keys
-worden gebruikt:
+Alle data wordt opgeslagen in de browser via localStorage. De persistentielaag
+is opgebouwd via het Repository-patroon, waardoor de opslagmethode in de
+toekomst eenvoudig vervangen kan worden door een database.
+
+De volgende localStorage-keys worden gebruikt:
 
   capplan_drivers          : Alle chauffeurs met subtabellen
   capplan_planning         : Planningregels (standaardscenario)
@@ -219,12 +222,70 @@ worden gebruikt:
   capplan_roster_profiles  : Roosterprofielen
   capplan_scenarios        : Lijst met scenario's
   capplan_active_scenario  : Actief scenario ID
+  capplan_user_preferences : Gebruikersvoorkeuren (voorbereiding multi-user)
 
 Let op: localStorage is gebonden aan de browser. Data gaat verloren bij het
 wissen van browsergegevens. Er is geen server-side opslag.
 
 
-9. BRONCODE STRUCTUUR
+9. ARCHITECTUUR
+================================================================================
+
+De applicatie volgt een gelaagde architectuur (Domain-Driven Design):
+
+  UI (Components/Pages)
+       ↓ gebruikt
+  Services (bedrijfslogica)
+       ↓ gebruikt
+  Repositories (data-abstractie via interfaces)
+       ↓ implementatie
+  localStorage (huidige opslag)
+
+9.1 Domeinlaag (/src/domain):
+  - enums.ts      : Alle enum-types (PlanningStatus, EmploymentType, UserRole, etc.)
+  - types.ts      : Alle domeinentiteiten (Driver, PlanningEntry, Scenario, etc.)
+  - constants.ts  : Labels, kleuren, statusarrays (STATUS_LABELS, DAY_LABELS, etc.)
+
+  Voorbereiding voor toekomstige uitbreidingen:
+  - ExternalSourceMetadata op entiteiten (voor AFAS-koppeling)
+  - User, UserContext, UserPreference types (voor multi-user ondersteuning)
+
+9.2 Repository-interfaces (/src/repositories/interfaces):
+  Definiëren contracten voor data-toegang, onafhankelijk van opslagmethode:
+  - DriverRepository        : CRUD chauffeurs + sub-records
+  - PlanningRepository      : Planningregels per scenario
+  - ScenarioRepository      : Scenario CRUD + actief scenario
+  - SkillRepository         : Vaardigheden CRUD
+  - StamtabelRepository     : Generiek stamtabelbeheer (werkgevers, afdelingen, etc.)
+  - RosterProfileRepository : Roosterprofielen CRUD
+  - UserPreferenceRepository: Gebruikersvoorkeuren CRUD
+
+9.3 localStorage-implementaties (/src/repositories/localStorage):
+  - Eén implementatie per repository-interface
+  - storage.ts: gedeelde infrastructuur (useStore hook, notify, initializeStore)
+  - Elke schrijfactie roept notify() aan voor automatische UI-updates
+
+9.4 Services (/src/services):
+  Bevatten de bedrijfslogica, gescheiden van de opslaglaag:
+  - DriverService       : Chauffeur-CRUD, sub-record beheer (autoCloseAndAdd),
+                          roosterprofiel-toewijzing met planninggeneratie,
+                          berekende velden, groepering
+  - PlanningService     : Planningregels ophalen/bijwerken, capaciteitsberekening
+  - ScenarioService     : Scenario CRUD, dupliceren, actief scenario
+  - SettingsService     : Vaardigheden + stamtabellen, cascade-verwijdering
+  - RosterProfileService: Roosterprofiel CRUD
+  - UserPreferenceService: Gebruikersvoorkeuren (voorbereiding multi-user)
+  - index.ts            : Service-container (createServices factory + singleton)
+
+9.5 Reactiviteit:
+  De applicatie gebruikt een pub/sub patroon voor reactieve UI-updates:
+  - storage.ts bevat een set listeners + notify() functie
+  - useStore(getter) hook: abonneert component op wijzigingen
+  - Alle repositories roepen notify() aan na schrijfacties
+  - Components renderen automatisch opnieuw na datawijzigingen
+
+
+10. BRONCODE STRUCTUUR
 ================================================================================
 
 /src
@@ -235,7 +296,25 @@ wissen van browsergegevens. Er is geen server-side opslag.
       /drivers/page.tsx             Chauffeurspagina
       /settings/page.tsx            Instellingenpagina
       /documentatie/page.tsx        Documentatiepagina
-      layout.tsx                    Dashboard wrapper
+      layout.tsx                    Dashboard wrapper (initializeStore)
+
+  /domain                           Domeinlaag
+    enums.ts                        Enum-types en union types
+    types.ts                        Domeinentiteiten en modellen
+    constants.ts                    Labels, kleuren, statusarrays
+
+  /repositories                     Data-abstractielaag
+    /interfaces                     Repository-contracten (7 interfaces)
+    /localStorage                   localStorage-implementaties (7 repos + storage.ts)
+
+  /services                         Bedrijfslogica
+    DriverService.ts                Chauffeur bedrijfslogica
+    PlanningService.ts              Planning bedrijfslogica
+    ScenarioService.ts              Scenario bedrijfslogica
+    SettingsService.ts              Stamgegevens bedrijfslogica
+    RosterProfileService.ts         Roosterprofiel bedrijfslogica
+    UserPreferenceService.ts        Gebruikersvoorkeuren
+    index.ts                        Service-container en singleton
 
   /components
     /layout
@@ -263,16 +342,11 @@ wissen van browsergegevens. Er is geen server-side opslag.
       RosterProfileEditor.tsx       Roosterprofiel editor
 
   /lib
-    store.ts                        Centrale state management (localStorage)
-    utils.ts                        Datum-hulpfuncties en constanten
-
-  /types
-    driver.ts                       Type re-exports
-    planning.ts                     Type re-exports
+    utils.ts                        Datum-hulpfuncties (cn, getWeekDates, etc.)
 
 
 ================================================================================
-Einde documentatie - CapPlan v1.0
+Einde documentatie - CapPlan v2.0
 ================================================================================
 `;
 }
