@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
-import type { PlanningEntry, PlanningStatus, StamtabelRecord, DensityLevel } from "@/lib/store";
+import { useState } from "react";
+import type { PlanningStatus, DensityLevel } from "@/domain/enums";
+import type { PlanningEntry, StamtabelRecord } from "@/domain/types";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 import { cn } from "@/lib/utils";
@@ -26,8 +26,6 @@ type Props = {
 
 export function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypes, density = "comfortable", onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
-  const [selectorPos, setSelectorPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
-  const btnRef = useRef<HTMLButtonElement>(null);
 
   // Build hover title
   let title = "";
@@ -47,21 +45,11 @@ export function DayCell({ entry, driverId, date, compact, baseRosterHours, leave
 
   const h = DENSITY_HEIGHT[density];
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      setSelectorPos({ top: rect.bottom, left: rect.left });
-    }
-    setShowSelector(true);
-  }, []);
-
   return (
-    <div className="relative">
+    <>
       <button
-        ref={btnRef}
         onMouseDown={(e) => { e.stopPropagation(); }}
-        onClick={handleClick}
+        onClick={() => setShowSelector(true)}
         className={cn(
           "w-full rounded-sm flex items-center justify-center transition-colors cursor-pointer",
           h,
@@ -76,21 +64,43 @@ export function DayCell({ entry, driverId, date, compact, baseRosterHours, leave
         )}
       </button>
 
-      {showSelector && createPortal(
-        <div className="fixed z-50" style={{ top: selectorPos.top, left: selectorPos.left }}>
-          <StatusSelector
-            currentStatus={entry?.status}
-            currentLeaveTypeId={entry?.leaveTypeId}
-            currentSickPercentage={entry?.sickPercentage}
-            onSelect={(status, options) => {
-              onUpdate(driverId, date, status, options);
-              setShowSelector(false);
-            }}
-            onClose={() => setShowSelector(false)}
+      {showSelector && (
+        <div
+          className="fixed inset-0 z-50"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            setShowSelector(false);
+          }}
+        >
+          <div
+            className="fixed inset-0 bg-black/10"
           />
-        </div>,
-        document.body
+          <div
+            className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 p-2 w-56"
+            style={{
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="text-xs font-medium text-gray-500 mb-2 px-1">
+              Status instellen — {date}
+            </div>
+            <StatusSelector
+              currentStatus={entry?.status}
+              currentLeaveTypeId={entry?.leaveTypeId}
+              currentSickPercentage={entry?.sickPercentage}
+              onSelect={(status, options) => {
+                onUpdate(driverId, date, status, options);
+                setShowSelector(false);
+              }}
+              onClose={() => setShowSelector(false)}
+            />
+          </div>
+        </div>
       )}
-    </div>
+    </>
   );
 }

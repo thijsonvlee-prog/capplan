@@ -1,27 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { EmploymentType, EmploymentRecord, PositionRecord, RosterRecord, Driver } from "@/lib/store";
-import {
-  useStore,
-  getSkills,
-  getEmployers,
-  getDepartments,
-  getLocations,
-  getRosterProfiles,
-  addEmploymentRecord,
-  deleteEmploymentRecord,
-  addPositionRecord,
-  deletePositionRecord,
-  addRosterRecord,
-  deleteRosterRecord,
-  getDriverEmploymentRecords,
-  getDriverPositionRecords,
-  getDriverRosterRecords,
-  getDriverComputedFields,
-  getActiveScenarioId,
-  EMPLOYMENT_TYPE_LABELS,
-} from "@/lib/store";
+import type { EmploymentType } from "@/domain/enums";
+import type { DriverEmploymentRecord, DriverFunctionRecord, DriverRosterAssignment, Driver } from "@/domain/types";
+import { EMPLOYMENT_TYPE_LABELS } from "@/domain/constants";
+import { useStore } from "@/repositories/localStorage/storage";
+import { services } from "@/services";
 import { SubTable } from "./SubTable";
 
 const LICENSE_OPTIONS = ["B", "C", "C1", "CE", "D", "DE"];
@@ -59,20 +43,20 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
   const [licenseTypes, setLicenseTypes] = useState<string[]>(initialData?.licenseTypes || []);
   const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.skillIds || []);
 
-  const skills = useStore(() => getSkills());
-  const employers = useStore(() => getEmployers());
-  const departments = useStore(() => getDepartments());
-  const locations = useStore(() => getLocations());
-  const profiles = useStore(() => getRosterProfiles());
-  const activeScenarioId = useStore(() => getActiveScenarioId());
+  const skills = useStore(() => services.settings.getSkills());
+  const employers = useStore(() => services.settings.getEmployers());
+  const departments = useStore(() => services.settings.getDepartments());
+  const locations = useStore(() => services.settings.getLocations());
+  const profiles = useStore(() => services.rosterProfile.getAll());
+  const activeScenarioId = useStore(() => services.scenario.getActiveId());
 
   // Sub-table data (only for edit mode)
-  const employmentRecords = useStore(() => initialData ? getDriverEmploymentRecords(initialData.id) : []);
-  const positionRecords = useStore(() => initialData ? getDriverPositionRecords(initialData.id) : []);
-  const rosterRecords = useStore(() => initialData ? getDriverRosterRecords(initialData.id) : []);
+  const employmentRecords = useStore(() => initialData ? services.driver.getEmploymentRecords(initialData.id) : []);
+  const functionRecords = useStore(() => initialData ? services.driver.getFunctionRecords(initialData.id) : []);
+  const rosterAssignments = useStore(() => initialData ? services.driver.getRosterAssignments(initialData.id) : []);
 
   // Computed fields for display
-  const computed = initialData ? getDriverComputedFields(initialData) : null;
+  const computed = initialData ? services.driver.getComputedFields(initialData) : null;
 
   function toggleLicense(lt: string) {
     setLicenseTypes((prev) => prev.includes(lt) ? prev.filter((l) => l !== lt) : [...prev, lt]);
@@ -219,14 +203,14 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
 
       {/* Tab: Dienstverband */}
       {activeTab === "dienstverband" && initialData && (
-        <SubTable<EmploymentRecord>
+        <SubTable<DriverEmploymentRecord>
           rows={employmentRecords}
           columns={[
             { key: "employmentType", label: "Type", render: (v) => v ? EMPLOYMENT_TYPE_LABELS[v as EmploymentType] : "-" },
             { key: "employerId", label: "Werkgever", render: (v) => (v && employerMap.get(v)) || "-" },
           ]}
-          onAdd={(data) => addEmploymentRecord(initialData.id, data)}
-          onDelete={(id) => deleteEmploymentRecord(initialData.id, id)}
+          onAdd={(data) => services.driver.addEmploymentRecord(initialData.id, data)}
+          onDelete={(id) => services.driver.deleteEmploymentRecord(initialData.id, id)}
           emptyMessage="Geen dienstverbanden"
           renderForm={(onSubmit, onCancel) => (
             <EmploymentForm employers={employers} onSubmit={onSubmit} onCancel={onCancel} />
@@ -236,16 +220,16 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
 
       {/* Tab: Functie */}
       {activeTab === "functie" && initialData && (
-        <SubTable<PositionRecord>
-          rows={positionRecords}
+        <SubTable<DriverFunctionRecord>
+          rows={functionRecords}
           columns={[
             { key: "position", label: "Functie" },
             { key: "locationId", label: "Standplaats", render: (v) => (v && locationMap.get(v)) || "-" },
             { key: "departmentId", label: "Afdeling", render: (v) => (v && departmentMap.get(v)) || "-" },
             { key: "manager", label: "Leidinggevende", render: (v) => v || "-" },
           ]}
-          onAdd={(data) => addPositionRecord(initialData.id, data)}
-          onDelete={(id) => deletePositionRecord(initialData.id, id)}
+          onAdd={(data) => services.driver.addFunctionRecord(initialData.id, data)}
+          onDelete={(id) => services.driver.deleteFunctionRecord(initialData.id, id)}
           emptyMessage="Geen functierecords"
           renderForm={(onSubmit, onCancel) => (
             <PositionForm departments={departments} locations={locations} onSubmit={onSubmit} onCancel={onCancel} />
@@ -255,14 +239,14 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
 
       {/* Tab: Rooster */}
       {activeTab === "rooster" && initialData && (
-        <SubTable<RosterRecord & { profileName: string }>
-          rows={rosterRecords}
+        <SubTable<DriverRosterAssignment & { profileName: string }>
+          rows={rosterAssignments}
           columns={[
             { key: "profileName", label: "Roosterprofiel" },
             { key: "weeklyHours", label: "Uren/week", render: (v) => v !== undefined && v !== null ? String(v) : "-" },
           ]}
-          onAdd={(data) => addRosterRecord(initialData.id, data, activeScenarioId === "default" ? undefined : activeScenarioId)}
-          onDelete={(id) => deleteRosterRecord(initialData.id, id)}
+          onAdd={(data) => services.driver.addRosterAssignment(initialData.id, data, activeScenarioId === "default" ? undefined : activeScenarioId)}
+          onDelete={(id) => services.driver.deleteRosterAssignment(initialData.id, id)}
           emptyMessage="Geen roosterrecords"
           renderForm={(onSubmit, onCancel) => (
             <RosterForm profiles={profiles} onSubmit={onSubmit} onCancel={onCancel} />
@@ -281,7 +265,7 @@ function EmploymentForm({
   onCancel,
 }: {
   employers: { id: string; description: string }[];
-  onSubmit: (data: Omit<EmploymentRecord, "id" | "sequenceNumber">) => void;
+  onSubmit: (data: Omit<DriverEmploymentRecord, "id" | "sequenceNumber">) => void;
   onCancel: () => void;
 }) {
   const [startDate, setStartDate] = useState("");
@@ -335,7 +319,7 @@ function PositionForm({
 }: {
   departments: { id: string; description: string }[];
   locations: { id: string; description: string }[];
-  onSubmit: (data: Omit<PositionRecord, "id" | "sequenceNumber">) => void;
+  onSubmit: (data: Omit<DriverFunctionRecord, "id" | "sequenceNumber">) => void;
   onCancel: () => void;
 }) {
   const [startDate, setStartDate] = useState("");
@@ -400,7 +384,7 @@ function RosterForm({
   onCancel,
 }: {
   profiles: { id: string; name: string }[];
-  onSubmit: (data: Omit<RosterRecord, "id" | "sequenceNumber">) => void;
+  onSubmit: (data: Omit<DriverRosterAssignment, "id" | "sequenceNumber">) => void;
   onCancel: () => void;
 }) {
   const [startDate, setStartDate] = useState("");

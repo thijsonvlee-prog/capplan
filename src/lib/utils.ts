@@ -32,40 +32,6 @@ export function formatDateNL(date: Date): string {
   return format(date, "EEEEEE d MMM", { locale: nl });
 }
 
-export const DAY_LABELS = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"] as const;
-
-export const STATUS_LABELS: Record<string, string> = {
-  ROSTER_FREE: "Roostervrij",
-  BASE_ROSTER: "Basisrooster",
-  AVAILABLE_EXTRA: "Aanvullend beschikbaar",
-  LEAVE: "Verlof",
-  SICK: "Ziek",
-};
-
-export const STATUS_CODES: Record<string, string> = {
-  ROSTER_FREE: "-",
-  BASE_ROSTER: "B",
-  AVAILABLE_EXTRA: "A",
-  LEAVE: "V",
-  SICK: "Z",
-};
-
-export const STATUS_COLORS: Record<string, string> = {
-  ROSTER_FREE: "bg-gray-200 text-gray-600",
-  BASE_ROSTER: "bg-green-700 text-white",
-  AVAILABLE_EXTRA: "bg-green-300 text-green-900",
-  LEAVE: "bg-yellow-300 text-yellow-900",
-  SICK: "bg-red-500 text-white",
-};
-
-export const STATUS_CHART_COLORS: Record<string, string> = {
-  ROSTER_FREE: "#9ca3af",
-  BASE_ROSTER: "#15803d",
-  AVAILABLE_EXTRA: "#86efac",
-  LEAVE: "#fde047",
-  SICK: "#ef4444",
-};
-
 export function get4WeekDates(year: number, week: number): Date[] {
   const jan4 = new Date(year, 0, 4);
   const startOfWeek1 = startOfWeek(jan4, { weekStartsOn: 1 });

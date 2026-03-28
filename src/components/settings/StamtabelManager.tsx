@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
-import type { StamtabelRecord } from "@/lib/store";
+import type { StamtabelRecord } from "@/domain/types";
 
 type Props = {
   title: string;

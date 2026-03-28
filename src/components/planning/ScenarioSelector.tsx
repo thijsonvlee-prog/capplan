@@ -2,29 +2,22 @@
 
 import { useState } from "react";
 import { Plus, Copy, Trash2 } from "lucide-react";
-import {
-  useStore,
-  getScenarios,
-  getActiveScenarioId,
-  setActiveScenarioId,
-  createScenario,
-  duplicateScenario,
-  deleteScenario,
-} from "@/lib/store";
+import { useStore } from "@/repositories/localStorage/storage";
+import { services } from "@/services";
 
 export function ScenarioSelector() {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
 
-  const scenarios = useStore(() => getScenarios());
-  const activeId = useStore(() => getActiveScenarioId());
+  const scenarios = useStore(() => services.scenario.getScenarios());
+  const activeId = useStore(() => services.scenario.getActiveId());
 
   function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
-    const s = createScenario(newName.trim(), newDesc.trim() || undefined);
-    setActiveScenarioId(s.id);
+    const s = services.scenario.create(newName.trim(), newDesc.trim() || undefined);
+    services.scenario.setActiveId(s.id);
     setNewName("");
     setNewDesc("");
     setShowCreate(false);
@@ -32,20 +25,20 @@ export function ScenarioSelector() {
 
   function handleDuplicate() {
     const name = activeId === "default" ? "Kopie van Actueel" : `Kopie van ${scenarios.find((s) => s.id === activeId)?.name || "scenario"}`;
-    const s = duplicateScenario(activeId, name);
-    setActiveScenarioId(s.id);
+    const s = services.scenario.duplicate(activeId, name);
+    services.scenario.setActiveId(s.id);
   }
 
   function handleDelete() {
     if (activeId === "default") return;
-    deleteScenario(activeId);
+    services.scenario.delete(activeId);
   }
 
   return (
     <div className="flex items-center gap-2">
       <select
         value={activeId}
-        onChange={(e) => setActiveScenarioId(e.target.value)}
+        onChange={(e) => services.scenario.setActiveId(e.target.value)}
         className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
       >
         <option value="default">Actuele planning</option>

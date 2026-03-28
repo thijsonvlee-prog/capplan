@@ -1,23 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField, DriverWithEntries, StamtabelRecord } from "@/lib/store";
-import {
-  useStore,
-  getPlanningForDateRange,
-  upsertPlanningEntry,
-  upsertBulkPlanningEntries,
-  getActiveScenarioId,
-  getLeaveTypes,
-  getSkills,
-  groupDrivers,
-  GROUP_BY_LABELS,
-  EMPLOYMENT_TYPE_LABELS,
-  getActiveEmployment,
-  getActivePosition,
-  getActiveRoster,
-  getDriverComputedFields,
-} from "@/lib/store";
+import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField } from "@/domain/enums";
+import type { DriverWithEntries, StamtabelRecord } from "@/domain/types";
+import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, GROUP_BY_LABELS, DAY_LABELS } from "@/domain/constants";
+import { useStore } from "@/repositories/localStorage/storage";
+import { services } from "@/services";
 import { PeriodSelector } from "./WeekSelector";
 import { ZoomSelector } from "./ZoomSelector";
 import { ScenarioSelector } from "./ScenarioSelector";
@@ -27,16 +15,11 @@ import { StatusSelector } from "./StatusSelector";
 import { RosterAssigner } from "./RosterAssigner";
 import { CalendarCog, Columns3, ArrowUp, ArrowDown, Maximize2, Minus, AlignJustify } from "lucide-react";
 import {
-  DAY_LABELS,
-  STATUS_COLORS,
-  STATUS_CODES,
   getDateRange,
   getISOWeekNumber,
   cn,
 } from "@/lib/utils";
 import { addDays, startOfWeek, getISOWeek } from "date-fns";
-
-const ALL_STATUSES: PlanningStatus[] = ["ROSTER_FREE", "BASE_ROSTER", "AVAILABLE_EXTRA", "LEAVE", "SICK"];
 
 const DEFAULT_DAY_COUNT = 56;
 
@@ -102,9 +85,9 @@ export function PlanningGrid() {
     setStartDate(monday.toISOString().split("T")[0]);
   }, []);
 
-  const activeScenarioId = useStore(() => getActiveScenarioId());
-  const leaveTypes = useStore(() => getLeaveTypes());
-  const skills = useStore(() => getSkills());
+  const activeScenarioId = useStore(() => services.scenario.getActiveId());
+  const leaveTypes = useStore(() => services.settings.getLeaveTypes());
+  const skills = useStore(() => services.settings.getSkills());
 
   // Compute all day-level dates for the range
   const allDates = useMemo(() => {
@@ -195,7 +178,7 @@ export function PlanningGrid() {
   }, [allDates, aggregation]);
 
   const data = useStore(() =>
-    allDates.length > 0 ? getPlanningForDateRange(allDates, activeScenarioId) : null
+    allDates.length > 0 ? services.planning.getPlanningForDateRange(allDates, activeScenarioId) : null
   );
 
   const skillMap = useMemo(() => new Map(skills.map((s) => [s.id, s.name])), [skills]);
@@ -203,18 +186,18 @@ export function PlanningGrid() {
   const resolveColumnValue = useCallback((driver: DriverWithEntries, col: DriverColumnKey): string => {
     switch (col) {
       case "employeeNumber": return driver.employeeNumber || "";
-      case "employer": return getDriverComputedFields(driver).currentEmployer;
-      case "department": return getDriverComputedFields(driver).currentDepartment;
-      case "location": return getDriverComputedFields(driver).currentLocation;
-      case "employmentType": return getDriverComputedFields(driver).currentEmploymentType;
-      case "manager": return getDriverComputedFields(driver).currentManager;
+      case "employer": return services.driver.getComputedFields(driver).currentEmployer;
+      case "department": return services.driver.getComputedFields(driver).currentDepartment;
+      case "location": return services.driver.getComputedFields(driver).currentLocation;
+      case "employmentType": return services.driver.getComputedFields(driver).currentEmploymentType;
+      case "manager": return services.driver.getComputedFields(driver).currentManager;
       case "licenseTypes": return driver.licenseTypes?.join(", ") || "";
       case "skills": return driver.skillIds?.map((id) => skillMap.get(id) || id).join(", ") || "";
     }
   }, [skillMap]);
 
   function handleUpdate(driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
-    upsertPlanningEntry(driverId, date, status, options, activeScenarioId);
+    services.planning.upsertEntry(driverId, date, status, options, activeScenarioId);
   }
 
   function toggleColumn(key: DriverColumnKey) {
@@ -266,7 +249,7 @@ export function PlanningGrid() {
 
   function handleBulkSelect(status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
     if (!dragState) return;
-    upsertBulkPlanningEntries(dragState.driverId, dragState.dates, status, options, activeScenarioId);
+    services.planning.upsertBulkEntries(dragState.driverId, dragState.dates, status, options, activeScenarioId);
     setDragState(null);
     setShowBulkSelector(false);
   }
@@ -308,7 +291,7 @@ export function PlanningGrid() {
     return sorted;
   }, [filteredDrivers, sortConfig, resolveColumnValue]);
 
-  const groups = groupDrivers(sortedDrivers, groupBy);
+  const groups = services.driver.groupDrivers(sortedDrivers, groupBy);
   const isDayLevel = aggregation === "day";
   const dc = DENSITY_CONFIG[density];
 
@@ -401,7 +384,7 @@ export function PlanningGrid() {
         </div>
 
         <div className="flex gap-1.5 flex-wrap ml-auto">
-          {ALL_STATUSES.map((s) => (
+          {ALL_PLANNING_STATUSES.map((s) => (
             <StatusBadge key={s} status={s} />
           ))}
         </div>
@@ -563,8 +546,8 @@ function GroupRows({
             <div className="flex items-center justify-between">
               <div>
                 {(() => {
-                  const pos = getActivePosition(driver);
-                  const emp = getActiveEmployment(driver);
+                  const pos = services.driver.getActiveFunction(driver);
+                  const emp = services.driver.getActiveEmployment(driver);
                   return (
                     <>
                       <div className={`font-medium ${dc.fontSize} whitespace-nowrap`}>
@@ -650,10 +633,10 @@ function GroupRows({
                   <td key={col.key} className={`border border-gray-200 ${dc.cellPad} text-center`}>
                     {dominant ? (
                       <div
-                        className={`rounded px-1 py-0.5 ${dc.fontSize} ${STATUS_COLORS[dominant[0]]}`}
-                        title={Object.entries(statusCounts).map(([s, c]) => `${STATUS_CODES[s]}: ${c}/${total}`).join(", ")}
+                        className={`rounded px-1 py-0.5 ${dc.fontSize} ${STATUS_COLORS[dominant[0] as PlanningStatus]}`}
+                        title={Object.entries(statusCounts).map(([s, c]) => `${STATUS_CODES[s as PlanningStatus]}: ${c}/${total}`).join(", ")}
                       >
-                        {STATUS_CODES[dominant[0]]} {dominant[1]}
+                        {STATUS_CODES[dominant[0] as PlanningStatus]} {dominant[1]}
                       </div>
                     ) : (
                       <span className="text-gray-300 text-xs">-</span>

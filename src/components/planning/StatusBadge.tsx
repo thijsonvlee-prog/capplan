@@ -1,7 +1,8 @@
 "use client";
 
-import { cn, STATUS_LABELS, STATUS_COLORS, STATUS_CODES } from "@/lib/utils";
-import type { PlanningStatus } from "@/lib/store";
+import type { PlanningStatus } from "@/domain/enums";
+import { STATUS_LABELS, STATUS_COLORS, STATUS_CODES } from "@/domain/constants";
+import { cn } from "@/lib/utils";
 
 type Props = {
   status: PlanningStatus;

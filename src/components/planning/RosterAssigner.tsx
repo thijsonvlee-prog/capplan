@@ -2,14 +2,8 @@
 
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import {
-  useStore,
-  getRosterProfiles,
-  addRosterRecord,
-  getActiveScenarioId,
-  getDriverRosterRecords,
-  deleteRosterRecord,
-} from "@/lib/store";
+import { useStore } from "@/repositories/localStorage/storage";
+import { services } from "@/services";
 
 type Props = {
   driverId: string;
@@ -18,16 +12,16 @@ type Props = {
 };
 
 export function RosterAssigner({ driverId, driverName, onClose }: Props) {
-  const profiles = useStore(() => getRosterProfiles());
-  const activeScenarioId = useStore(() => getActiveScenarioId());
-  const records = useStore(() => getDriverRosterRecords(driverId));
+  const profiles = useStore(() => services.rosterProfile.getAll());
+  const activeScenarioId = useStore(() => services.scenario.getActiveId());
+  const records = useStore(() => services.driver.getRosterAssignments(driverId));
   const [profileId, setProfileId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [weeklyHours, setWeeklyHours] = useState<number | "">("");
 
   function handleAssign() {
     if (!profileId || !startDate) return;
-    addRosterRecord(
+    services.driver.addRosterAssignment(
       driverId,
       { startDate, rosterProfileId: profileId, weeklyHours: weeklyHours !== "" ? weeklyHours : undefined },
       activeScenarioId === "default" ? undefined : activeScenarioId,
@@ -38,7 +32,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
   }
 
   function handleDelete(recordId: string) {
-    deleteRosterRecord(driverId, recordId);
+    services.driver.deleteRosterAssignment(driverId, recordId);
   }
 
   return (
