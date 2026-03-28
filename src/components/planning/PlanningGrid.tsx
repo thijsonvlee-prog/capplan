@@ -14,6 +14,7 @@ import { DayCell } from "./DayCell";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 import { RosterAssigner } from "./RosterAssigner";
+import { CapacitySummaryRow } from "./CapacitySummaryRow";
 import { CalendarCog, Columns3, ArrowUp, ArrowDown, Maximize2, Minus, AlignJustify } from "lucide-react";
 import {
   getDateRange,
@@ -73,6 +74,7 @@ export function PlanningGrid() {
   const [extraColumns, setExtraColumns] = useState<DriverColumnKey[]>([]);
   const [showColumnPicker, setShowColumnPicker] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+  const [showCapacitySummary, setShowCapacitySummary] = useState(true); // POC: capacity summary row
 
   // Multi-select drag state
   const [dragState, setDragState] = useState<{
@@ -437,6 +439,17 @@ export function PlanningGrid() {
           )}
         </div>
 
+        {/* POC: toggle capacity summary row */}
+        <button
+          onClick={() => setShowCapacitySummary((v) => !v)}
+          className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
+            showCapacitySummary ? "border-blue-300 bg-blue-50 text-blue-700" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+          }`}
+          title="Capaciteitssamenvatting tonen/verbergen"
+        >
+          Σ Totalen
+        </button>
+
         <div className="flex gap-1.5 flex-wrap ml-auto">
           {ALL_PLANNING_STATUSES.map((s) => (
             <StatusBadge key={s} status={s} />
@@ -520,6 +533,18 @@ export function PlanningGrid() {
                     {filter ? `Geen chauffeurs gevonden voor "${filter}"` : "Geen chauffeurs beschikbaar. Voeg chauffeurs toe via het Chauffeurs-scherm."}
                   </td>
                 </tr>
+              )}
+              {/* POC: Capacity summary row */}
+              {showCapacitySummary && filteredDrivers.length > 0 && (
+                <CapacitySummaryRow
+                  drivers={filteredDrivers}
+                  columnHeaders={columnHeaders}
+                  extraColumnCount={extraColumns.length}
+                  density={density}
+                  driverColWidth={driverColWidth}
+                  extraColWidth={extraColWidth}
+                  minCellWidth={dc.minW}
+                />
               )}
             </tbody>
           </table>
