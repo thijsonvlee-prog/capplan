@@ -36,6 +36,11 @@ Dit bestand bevat de verzamelde learnings van terugkerende code quality en techn
 ## Dingen die weinig opleverden of juist extra risico gaven
 - (Eerste run - nog geen mislukte pogingen)
 
+## Cross-domain aandachtspunten
+- PlanningGrid.tsx refactoring is randvoorwaardelijk voor performance-virtualisatie (zie PERFORMANCE_LEARNINGS.md). Coördineer opsplitsing met performance-runs.
+- Aggregatielogica-extractie (PlanningGrid + CapacityPage) raakt ook de POC CapacitySummaryRow (zie POC_EXPERIMENTS.md). Neem dit experiment mee bij consolidatie.
+- Type safety verbeteringen mogen de bestaande API-route conventie uit CLAUDE.md niet doorbreken (alle data access via API routes met Prisma).
+
 ## Aandachtspunten voor volgende runs
 - PlanningGrid.tsx is de grootste kandidaat voor opsplitsing, maar riskant vanwege complexe state-interacties
 - De `saving` prop in DriverForm wordt niet doorgegeven vanuit DriverList - dit is een feature die nog aangesloten moet worden, niet dode code

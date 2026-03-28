@@ -13,13 +13,18 @@ Dit bestand bevat een logboek van kleine experimentele functionaliteiten die aan
 ## Historie van experimenten
 | Datum | Naam | Onderdeel | Doel | Status | Opmerking |
 |---|---|---|---|---|---|
-| 2026-03-28 | Capacity Summary Row | Planning Grid | Inline capaciteitsoverzicht per kolom in de planningtabel | Ingebouwd | Togglebaar via "Σ Totalen" knop, makkelijk verwijderbaar |
+| 2026-03-28 | Capacity Summary Row | Planning Grid | Inline capaciteitsoverzicht per kolom in de planningtabel | Ingebouwd | Togglebaar via "Totalen" knop, makkelijk verwijderbaar (label gewijzigd van "Σ Totalen" naar "Totalen" door UX-run 3) |
 
 ## Terugkerende inzichten
 - De PlanningGrid is het meest zichtbare en meest gebruikte scherm — experimenten hier hebben direct impact
 - Data is al geladen in de PlanningGrid (drivers + entries), dus client-side berekeningen zijn gratis
 - De app is Nederlandstalig — labels en tooltips altijd in het Nederlands
 - Geen database-migraties nodig voor UI-experimenten die bestaande data hergebruiken
+
+## Cross-domain aandachtspunten
+- Lees voor nieuwe experimenten op PlanningGrid ook TECH_DEBT_LEARNINGS.md: PlanningGrid is al 709 regels en kandidaat voor opsplitsing. Nieuwe experimenten hier vergroten de complexiteit.
+- Spiegel experimenten altijd tegen UX_LEARNINGS.md: labels in het Nederlands, geen cryptische symbolen, bevestigingsdialogen bij destructieve acties.
+- Als een experiment database-wijzigingen vereist, check PERFORMANCE_LEARNINGS.md voor batch-patronen en PERFORMANCE_OBSERVABILITY.md voor instrumentatie.
 
 ## Ideeën voor volgende experimenten
 - Weeknummers met kleurindicatie (groen/oranje/rood) op basis van bezettingsgraad
@@ -53,7 +58,7 @@ Dit bestand bevat een logboek van kleine experimentele functionaliteiten die aan
 - `src/components/planning/PlanningGrid.tsx` — 3 kleine wijzigingen:
   1. Import van CapacitySummaryRow (regel ~17)
   2. `showCapacitySummary` state variabele (regel ~76)
-  3. Toggle-knop "Σ Totalen" in toolbar (regel ~443)
+  3. Toggle-knop "Totalen" in toolbar (regel ~443) — label gewijzigd door UX-run 3
   4. Rendering van `<CapacitySummaryRow>` in tbody (regel ~530)
 
 **Waarom dit klein en omkeerbaar is**
@@ -69,7 +74,7 @@ Dit bestand bevat een logboek van kleine experimentele functionaliteiten die aan
 2. Verwijder uit `PlanningGrid.tsx`:
    - De import regel voor `CapacitySummaryRow`
    - De `showCapacitySummary` state regel
-   - De "Σ Totalen" toggle-knop
+   - De "Totalen" toggle-knop
    - Het `<CapacitySummaryRow>` render-blok in tbody
 3. Klaar — geen database, geen API, geen andere bestanden geraakt
 
@@ -82,6 +87,6 @@ Dit bestand bevat een logboek van kleine experimentele functionaliteiten die aan
 - Open het Planning-scherm met een aantal chauffeurs die roosters/statussen hebben
 - Bekijk de samenvattingsrij onderaan: toont het nuttige informatie?
 - Klik op "▸ Beschikbaar" om de uitgebreide weergave te zien
-- Toggle de "Σ Totalen" knop om te bevestigen dat aan/uit werkt
+- Toggle de "Totalen" knop om te bevestigen dat aan/uit werkt
 - Wissel van dagweergave naar weekweergave — past de samenvatting zich aan?
 - Beoordeel: is dit waardevoller dan naar het Capaciteit-scherm navigeren?

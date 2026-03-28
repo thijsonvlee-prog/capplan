@@ -53,6 +53,11 @@ Sinds 2026-03-28 is er een gestructureerde performance logging infrastructuur be
 - Focus optimalisatie op routes die in de data als traag naar voren komen, niet op code-inspectie alleen
 - De data is querybaar via Prisma of directe SQL (zie PERFORMANCE_OBSERVABILITY.md voor voorbeeldqueries)
 
+## Cross-domain aandachtspunten
+- Performance-optimalisaties aan PlanningGrid moeten UX-impact meewegen: dit component heeft 3 UX-runs doorlopen met veel label-, flow- en toegankelijkheidsverbeteringen (zie UX_LEARNINGS.md).
+- PlanningGrid virtualisatie is afhankelijk van opsplitsing van het component (zie TECH_DEBT_LEARNINGS.md). Doe eerst de tech debt refactor, dan virtualisatie.
+- Performance observability (PERFORMANCE_OBSERVABILITY.md) voegt per geïnstrumenteerde request een extra DB-write toe. Bij agressieve optimalisatie van response times: houd rekening met deze overhead (~1-5ms fire-and-forget).
+
 ## Aandachtspunten voor volgende runs
 - Monitor of de PlanningGrid bij >50 drivers nog responsive is; zo niet, implementeer row virtualisatie
 - Check of de nieuwe composite indexes daadwerkelijk door Prisma's query planner worden gebruikt (EXPLAIN ANALYZE)
