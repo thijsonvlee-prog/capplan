@@ -22,7 +22,6 @@ import {
   getActiveScenarioId,
   EMPLOYMENT_TYPE_LABELS,
 } from "@/lib/store";
-import { get4WeekPeriodStarts } from "@/lib/utils";
 import { SubTable } from "./SubTable";
 
 const LICENSE_OPTIONS = ["B", "C", "C1", "CE", "D", "DE"];
@@ -103,9 +102,6 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
     { key: "functie", label: "Functie", editOnly: true },
     { key: "rooster", label: "Rooster", editOnly: true },
   ];
-
-  const currentYear = new Date().getFullYear();
-  const periodStarts = [...get4WeekPeriodStarts(currentYear), ...get4WeekPeriodStarts(currentYear + 1)];
 
   const employerMap = new Map(employers.map((e) => [e.id, e.description]));
   const departmentMap = new Map(departments.map((d) => [d.id, d.description]));
@@ -233,7 +229,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           onDelete={(id) => deleteEmploymentRecord(initialData.id, id)}
           emptyMessage="Geen dienstverbanden"
           renderForm={(onSubmit, onCancel) => (
-            <EmploymentForm employers={employers} periodStarts={periodStarts} onSubmit={onSubmit} onCancel={onCancel} />
+            <EmploymentForm employers={employers} onSubmit={onSubmit} onCancel={onCancel} />
           )}
         />
       )}
@@ -252,7 +248,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           onDelete={(id) => deletePositionRecord(initialData.id, id)}
           emptyMessage="Geen functierecords"
           renderForm={(onSubmit, onCancel) => (
-            <PositionForm departments={departments} locations={locations} periodStarts={periodStarts} onSubmit={onSubmit} onCancel={onCancel} />
+            <PositionForm departments={departments} locations={locations} onSubmit={onSubmit} onCancel={onCancel} />
           )}
         />
       )}
@@ -269,7 +265,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           onDelete={(id) => deleteRosterRecord(initialData.id, id)}
           emptyMessage="Geen roosterrecords"
           renderForm={(onSubmit, onCancel) => (
-            <RosterForm profiles={profiles} periodStarts={periodStarts} onSubmit={onSubmit} onCancel={onCancel} />
+            <RosterForm profiles={profiles} onSubmit={onSubmit} onCancel={onCancel} />
           )}
         />
       )}
@@ -281,12 +277,10 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
 
 function EmploymentForm({
   employers,
-  periodStarts,
   onSubmit,
   onCancel,
 }: {
   employers: { id: string; description: string }[];
-  periodStarts: string[];
   onSubmit: (data: Omit<EmploymentRecord, "id" | "sequenceNumber">) => void;
   onCancel: () => void;
 }) {
@@ -301,10 +295,7 @@ function EmploymentForm({
       <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="block text-sm text-gray-600 mb-1">Begindatum</label>
-          <select value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass}>
-            <option value="">-- Selecteer --</option>
-            {periodStarts.map((d) => <option key={d} value={d}>{d}</option>)}
-          </select>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1">Type</label>
@@ -339,13 +330,11 @@ function EmploymentForm({
 function PositionForm({
   departments,
   locations,
-  periodStarts,
   onSubmit,
   onCancel,
 }: {
   departments: { id: string; description: string }[];
   locations: { id: string; description: string }[];
-  periodStarts: string[];
   onSubmit: (data: Omit<PositionRecord, "id" | "sequenceNumber">) => void;
   onCancel: () => void;
 }) {
@@ -362,10 +351,7 @@ function PositionForm({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm text-gray-600 mb-1">Begindatum</label>
-          <select value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass}>
-            <option value="">-- Selecteer --</option>
-            {periodStarts.map((d) => <option key={d} value={d}>{d}</option>)}
-          </select>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1">Functie</label>
@@ -410,12 +396,10 @@ function PositionForm({
 
 function RosterForm({
   profiles,
-  periodStarts,
   onSubmit,
   onCancel,
 }: {
   profiles: { id: string; name: string }[];
-  periodStarts: string[];
   onSubmit: (data: Omit<RosterRecord, "id" | "sequenceNumber">) => void;
   onCancel: () => void;
 }) {
@@ -430,10 +414,7 @@ function RosterForm({
       <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="block text-sm text-gray-600 mb-1">Begindatum</label>
-          <select value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass}>
-            <option value="">-- Selecteer --</option>
-            {periodStarts.map((d) => <option key={d} value={d}>{d}</option>)}
-          </select>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
         </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1">Roosterprofiel</label>

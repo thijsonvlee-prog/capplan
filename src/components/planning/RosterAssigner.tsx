@@ -10,7 +10,6 @@ import {
   getDriverRosterRecords,
   deleteRosterRecord,
 } from "@/lib/store";
-import { get4WeekPeriodStarts } from "@/lib/utils";
 
 type Props = {
   driverId: string;
@@ -25,9 +24,6 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
   const [profileId, setProfileId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [weeklyHours, setWeeklyHours] = useState<number | "">("");
-
-  const currentYear = new Date().getFullYear();
-  const periodStarts = [...get4WeekPeriodStarts(currentYear), ...get4WeekPeriodStarts(currentYear + 1)];
 
   function handleAssign() {
     if (!profileId || !startDate) return;
@@ -111,17 +107,13 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Ingangsdatum (start 4-weken periode)</label>
-              <select
+              <label className="block text-sm text-gray-600 mb-1">Ingangsdatum</label>
+              <input
+                type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              >
-                <option value="">-- Selecteer datum --</option>
-                {periodStarts.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+              />
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Uren/week (gem.)</label>
