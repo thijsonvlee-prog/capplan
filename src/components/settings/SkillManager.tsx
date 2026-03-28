@@ -2,20 +2,20 @@
 
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
-import { useStore } from "@/repositories/localStorage/storage";
-import { services } from "@/services";
+import { useApiData, mutate } from "@/hooks/useApi";
+import { api } from "@/lib/api";
 
 export function SkillManager() {
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
 
-  const skills = useStore(() => services.settings.getSkills());
+  const skills = useApiData(() => api.settings.getSkills(), [], []);
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
-    services.settings.createSkill(newName.trim());
+    mutate(() => api.settings.createSkill(newName.trim()));
     setNewName("");
   }
 
@@ -26,14 +26,14 @@ export function SkillManager() {
 
   function saveEdit() {
     if (editingId && editingName.trim()) {
-      services.settings.updateSkill(editingId, editingName.trim());
+      mutate(() => api.settings.updateSkill(editingId, editingName.trim()));
     }
     setEditingId(null);
     setEditingName("");
   }
 
   function handleDelete(id: string) {
-    services.settings.deleteSkill(id);
+    mutate(() => api.settings.deleteSkill(id));
   }
 
   return (

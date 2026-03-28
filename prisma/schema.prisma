@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// === User Domain (multi-user preparation) ===
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  role      String   @default("PLANNER") // ADMIN, PLANNER, VIEWER
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  preferences UserPreference[]
+}
+
+model UserPreference {
+  id        String   @id @default(uuid())
+  userId    String
+  key       String
+  value     String
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+// === Master Data ===
+
+model Skill {
+  id           String    @id @default(uuid())
+  name         String
+  sourceSystem String?
+  externalId   String?
+  syncedAt     DateTime?
+
+  drivers DriverSkill[]
+}
+
+model Employer {
+  id           String    @id @default(uuid())
+  code         String    @unique
+  description  String
+  sourceSystem String?
+  externalId   String?
+  syncedAt     DateTime?
+
+  employmentRecords DriverEmploymentRecord[]
+}
+
+model Department {
+  id           String    @id @default(uuid())
+  code         String    @unique
+  description  String
+  sourceSystem String?
+  externalId   String?
+  syncedAt     DateTime?
+
+  functionRecords DriverFunctionRecord[]
+}
+
+model Location {
+  id           String    @id @default(uuid())
+  code         String    @unique
+  description  String
+  sourceSystem String?
+  externalId   String?
+  syncedAt     DateTime?
+
+  functionRecords DriverFunctionRecord[]
+}
+
+model LeaveType {
+  id           String    @id @default(uuid())
+  code         String    @unique
+  description  String
+  sourceSystem String?
+  externalId   String?
+  syncedAt     DateTime?
+
+  planningEntries PlanningEntry[]
+}
+
+// === Driver Domain ===
+
+model Driver {
+  id             String   @id @default(uuid())
+  firstName      String
+  lastName       String
+  employeeNumber String?
+  licenseTypes   String[] // PostgreSQL array
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // AFAS integration preparation
+  sourceSystem String?
+  externalId   String?
+  syncedAt     DateTime?
+
+  // Relations
+  skills            DriverSkill[]
+  employmentRecords DriverEmploymentRecord[]
+  functionRecords   DriverFunctionRecord[]
+  rosterAssignments DriverRosterAssignment[]
+  planningEntries   PlanningEntry[]
+
+  @@index([lastName, firstName])
+  @@index([isActive])
+}
+
+model DriverSkill {
+  id       String @id @default(uuid())
+  driverId String
+  skillId  String
+
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  skill  Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, skillId])
+  @@index([driverId])
+  @@index([skillId])
+}
+
+model DriverEmploymentRecord {
+  id             String  @id @default(uuid())
+  driverId       String
+  sequenceNumber Int
+  startDate      String // YYYY-MM-DD
+  endDate        String? // YYYY-MM-DD
+  employmentType String // FULLTIME, PARTTIME, ONCALL, TEMPORARY, CHARTER
+  employerId     String?
+
+  driver   Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  employer Employer? @relation(fields: [employerId], references: [id], onDelete: SetNull)
+
+  @@index([driverId])
+}
+
+model DriverFunctionRecord {
+  id             String  @id @default(uuid())
+  driverId       String
+  sequenceNumber Int
+  startDate      String // YYYY-MM-DD
+  endDate        String? // YYYY-MM-DD
+  position       String
+  locationId     String?
+  departmentId   String?
+  manager        String?
+
+  driver     Driver      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  location   Location?   @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  @@index([driverId])
+}
+
+model DriverRosterAssignment {
+  id              String  @id @default(uuid())
+  driverId        String
+  sequenceNumber  Int
+  startDate       String // YYYY-MM-DD
+  endDate         String? // YYYY-MM-DD
+  rosterProfileId String
+  weeklyHours     Float?
+
+  driver        Driver        @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  rosterProfile RosterProfile @relation(fields: [rosterProfileId], references: [id])
+
+  @@index([driverId])
+}
+
+// === Planning Domain ===
+
+model PlanningEntry {
+  id             String  @id @default(uuid())
+  driverId       String
+  date           String // YYYY-MM-DD
+  status         String // ROSTER_FREE, BASE_ROSTER, AVAILABLE_EXTRA, LEAVE, SICK
+  leaveTypeId    String?
+  sickPercentage Int?
+  notes          String?
+  scenarioId     String? // NULL = default/base scenario
+
+  driver    Driver     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  leaveType LeaveType? @relation(fields: [leaveTypeId], references: [id], onDelete: SetNull)
+  scenario  Scenario?  @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  @@index([driverId])
+  @@index([date])
+  @@index([scenarioId])
+  @@index([driverId, date])
+}
+
+// === Scenario Domain ===
+
+model Scenario {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  planningEntries PlanningEntry[]
+}
+
+// === Roster Profile Domain ===
+
+model RosterProfile {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  days              RosterProfileDay[]
+  rosterAssignments DriverRosterAssignment[]
+}
+
+model RosterProfileDay {
+  id              String @id @default(uuid())
+  rosterProfileId String
+  dayOffset       Int // 0-27 (4 weeks = 28 days)
+  status          String // ROSTER_FREE, BASE_ROSTER, AVAILABLE_EXTRA
+
+  rosterProfile RosterProfile @relation(fields: [rosterProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([rosterProfileId, dayOffset])
+  @@index([rosterProfileId])
+}

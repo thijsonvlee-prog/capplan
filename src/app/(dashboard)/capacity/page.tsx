@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import type { AggregationLevel } from "@/domain/enums";
 import type { PlanningStatus } from "@/domain/enums";
-import { useStore } from "@/repositories/localStorage/storage";
-import { services } from "@/services";
+import { useApiData } from "@/hooks/useApi";
+import { api } from "@/lib/api";
 import { CapacityTable } from "@/components/capacity/CapacityTable";
 import { CapacityChart } from "@/components/capacity/CapacityChart";
 import { PeriodSelector } from "@/components/planning/WeekSelector";
@@ -34,8 +34,8 @@ export default function CapacityPage() {
     setStartDate(monday.toISOString().split("T")[0]);
   }, []);
 
-  const activeId = useStore(() => services.scenario.getActiveId());
-  const scenarios = useStore(() => services.scenario.getScenarios());
+  const activeId = useApiData(() => api.scenarios.getActiveId(), [], "default");
+  const scenarios = useApiData(() => api.scenarios.list(), [], []);
 
   const allDates = useMemo(() => {
     if (!startDate) return [];
@@ -132,8 +132,11 @@ export default function CapacityPage() {
     return { columnHeaders: headers, dateGroups: groups };
   }, [allDates, aggregation]);
 
-  const rawCapacity = useStore(() =>
-    allDates.length > 0 ? services.planning.getCapacityForDateRange(allDates, activeId) : {}
+  const emptyCapacity: Record<string, Record<PlanningStatus, number>> = {};
+  const rawCapacity = useApiData(
+    () => allDates.length > 0 ? api.planning.getCapacity(allDates, activeId) as Promise<Record<string, Record<PlanningStatus, number>>> : Promise.resolve(emptyCapacity),
+    [allDates.length > 0 ? allDates[0] : "", allDates.length, activeId],
+    emptyCapacity
   );
 
   // Aggregate into display data
@@ -162,15 +165,21 @@ export default function CapacityPage() {
     return result;
   }, [rawCapacity, columnHeaders, dateGroups]);
 
-  // Compare scenarios
-  const compareData = useStore(() =>
-    compareIds
-      .filter((id) => id !== activeId)
-      .map((id) => {
-        const scenario = scenarios.find((s) => s.id === id);
-        const data = services.planning.getCapacityForDateRange(allDates, id);
-        return { name: scenario?.name || id, data };
-      })
+  // Compare scenarios - fetch capacity for each compare scenario
+  const compareCapacities = useApiData(
+    () => {
+      const ids = compareIds.filter((id) => id !== activeId);
+      if (ids.length === 0 || allDates.length === 0) return Promise.resolve([]);
+      return Promise.all(
+        ids.map(async (id) => {
+          const scenario = scenarios.find((s) => s.id === id);
+          const data = await api.planning.getCapacity(allDates, id);
+          return { name: scenario?.name || id, data };
+        })
+      );
+    },
+    [compareIds.join(","), activeId, allDates.length > 0 ? allDates[0] : "", allDates.length],
+    [] as { name: string; data: Record<string, Record<string, number>> }[]
   );
 
   function toggleCompare(id: string) {
@@ -215,7 +224,7 @@ export default function CapacityPage() {
             <CapacityChart
               capacityData={displayData}
               columnHeaders={columnHeaders}
-              compareData={compareData.length > 0 ? compareData : undefined}
+              compareData={compareCapacities.length > 0 ? compareCapacities : undefined}
             />
           </div>
 

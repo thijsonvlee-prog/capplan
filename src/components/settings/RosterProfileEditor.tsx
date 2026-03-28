@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Save } from "lucide-react";
 import type { RosterProfileEntry, RosterProfile } from "@/domain/types";
-import { useStore } from "@/repositories/localStorage/storage";
-import { services } from "@/services";
+import { useApiData, mutate } from "@/hooks/useApi";
+import { api } from "@/lib/api";
 import { ROSTER_PROFILE_STATUSES, STATUS_CODES, STATUS_COLORS, DAY_LABELS, type RosterProfileStatus } from "@/domain/constants";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ function emptyGrid(): RosterProfileEntry[] {
 }
 
 export function RosterProfileEditor() {
-  const profiles = useStore(() => services.rosterProfile.getAll());
+  const profiles = useApiData(() => api.rosterProfiles.list(), [], []);
   const [editingProfile, setEditingProfile] = useState<RosterProfile | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [name, setName] = useState("");
@@ -53,16 +53,16 @@ export function RosterProfileEditor() {
   function handleSave() {
     if (!name.trim()) return;
     if (isNew) {
-      services.rosterProfile.create(name.trim(), grid);
+      mutate(() => api.rosterProfiles.create(name.trim(), grid));
     } else if (editingProfile) {
-      services.rosterProfile.update(editingProfile.id, name.trim(), grid);
+      mutate(() => api.rosterProfiles.update(editingProfile.id, name.trim(), grid));
     }
     setEditingProfile(null);
     setIsNew(false);
   }
 
   function handleDelete(id: string) {
-    services.rosterProfile.delete(id);
+    mutate(() => api.rosterProfiles.remove(id));
   }
 
   const showEditor = isNew || editingProfile;
