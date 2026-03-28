@@ -90,6 +90,7 @@ export function DriverList() {
           <thead className="bg-gray-50">
             <tr>
               <th className="text-left p-3 text-sm font-medium text-gray-600">Naam</th>
+              <th className="text-left p-3 text-sm font-medium text-gray-600">Leidinggevende</th>
               <th className="text-left p-3 text-sm font-medium text-gray-600">Dienstverband</th>
               <th className="text-left p-3 text-sm font-medium text-gray-600">Werkgever</th>
               <th className="text-left p-3 text-sm font-medium text-gray-600">Afdeling</th>
@@ -103,12 +104,10 @@ export function DriverList() {
             {drivers.map((d) => (
               <tr key={d.id} className="border-t border-gray-100 hover:bg-gray-50">
                 <td className="p-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span>{d.firstName} {d.lastName}</span>
-                    {d.isManager && <span className="bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded text-xs">LG</span>}
-                  </div>
+                  <div>{d.firstName} {d.lastName}</div>
                   {d.employeeNumber && <div className="text-gray-400 text-xs">{d.employeeNumber}</div>}
                 </td>
+                <td className="p-3 text-sm text-gray-600">{d.manager || "-"}</td>
                 <td className="p-3 text-sm">
                   {d.employmentType ? (
                     <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">
@@ -152,7 +151,7 @@ export function DriverList() {
             ))}
             {drivers.length === 0 && (
               <tr>
-                <td colSpan={8} className="text-center py-8 text-gray-400 text-sm">
+                <td colSpan={9} className="text-center py-8 text-gray-400 text-sm">
                   Geen chauffeurs gevonden
                 </td>
               </tr>

@@ -36,7 +36,7 @@ export type Driver = {
   licenseTypes?: string[];
   employmentType?: EmploymentType;
   skillIds?: string[];
-  isManager?: boolean;
+  manager?: string; // name of the manager/leidinggevende
   baseRosterHours?: Record<string, number>; // day-of-week (0=Mon..6=Sun) -> hours
   rosterProfileId?: string;
   rosterProfileStartDate?: string; // YYYY-MM-DD
@@ -173,7 +173,7 @@ function writeRosterProfiles(profiles: RosterProfile[]) {
 const SAMPLE_DRIVERS: Omit<Driver, "createdAt" | "updatedAt">[] = [
   { id: "d1", firstName: "Jan", lastName: "de Vries", employeeNumber: "EMP001", employer: "emp1", department: "dep1", location: "loc1", licenseTypes: ["C", "CE"], employmentType: "FULLTIME", skillIds: ["sk1", "sk2"], isActive: true },
   { id: "d2", firstName: "Pieter", lastName: "Bakker", employeeNumber: "EMP002", employer: "emp1", department: "dep1", location: "loc2", licenseTypes: ["C"], employmentType: "FULLTIME", skillIds: ["sk1"], isActive: true },
-  { id: "d3", firstName: "Klaas", lastName: "Jansen", employeeNumber: "EMP003", employer: "emp1", department: "dep2", location: "loc1", licenseTypes: ["C", "CE"], employmentType: "PARTTIME", skillIds: ["sk1", "sk3"], isManager: true, isActive: true },
+  { id: "d3", firstName: "Klaas", lastName: "Jansen", employeeNumber: "EMP003", employer: "emp1", department: "dep2", location: "loc1", licenseTypes: ["C", "CE"], employmentType: "PARTTIME", skillIds: ["sk1", "sk3"], manager: "Jan de Vries", isActive: true },
   { id: "d4", firstName: "Henk", lastName: "van Dijk", employer: "emp2", location: "loc3", licenseTypes: ["CE"], employmentType: "CHARTER", skillIds: ["sk2"], isActive: true },
   { id: "d5", firstName: "Willem", lastName: "Smit", location: "loc4", licenseTypes: ["C"], employmentType: "TEMPORARY", skillIds: [], isActive: true },
 ];

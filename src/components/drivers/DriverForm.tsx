@@ -33,7 +33,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
   const [licenseTypes, setLicenseTypes] = useState<string[]>(initialData?.licenseTypes || []);
   const [employmentType, setEmploymentType] = useState<EmploymentType>(initialData?.employmentType || "FULLTIME");
   const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.skillIds || []);
-  const [isManager, setIsManager] = useState(initialData?.isManager || false);
+  const [manager, setManager] = useState(initialData?.manager || "");
 
   const skills = useStore(() => getSkills());
   const employers = useStore(() => getEmployers());
@@ -60,7 +60,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
       ...(licenseTypes.length > 0 && { licenseTypes }),
       employmentType,
       ...(selectedSkills.length > 0 && { skillIds: selectedSkills }),
-      isManager,
+      ...(manager && { manager }),
     });
   }
 
@@ -92,11 +92,9 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
             ))}
           </select>
         </div>
-        <div className="flex items-end pb-1">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={isManager} onChange={(e) => setIsManager(e.target.checked)} className="w-4 h-4 rounded border-gray-300" />
-            <span className="text-sm font-medium text-gray-700">Leidinggevende</span>
-          </label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Leidinggevende</label>
+          <input type="text" value={manager} onChange={(e) => setManager(e.target.value)} placeholder="Naam leidinggevende" className={inputClass} />
         </div>
       </div>
 
