@@ -6,8 +6,16 @@ export async function PUT(
   { params }: { params: Promise<{ id: string; recordId: string }> }
 ) {
   try {
-    const { recordId } = await params;
+    const { id, recordId } = await params;
     const body = await request.json();
+
+    // Verify the record belongs to the specified driver
+    const existing = await prisma.driverRosterAssignment.findFirst({
+      where: { id: recordId, driverId: id },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
+    }
 
     const record = await prisma.driverRosterAssignment.update({
       where: { id: recordId },
@@ -34,7 +42,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; recordId: string }> }
 ) {
   try {
-    const { recordId } = await params;
+    const { id, recordId } = await params;
+
+    // Verify the record belongs to the specified driver
+    const existing = await prisma.driverRosterAssignment.findFirst({
+      where: { id: recordId, driverId: id },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Record not found" }, { status: 404 });
+    }
 
     await prisma.driverRosterAssignment.delete({
       where: { id: recordId },

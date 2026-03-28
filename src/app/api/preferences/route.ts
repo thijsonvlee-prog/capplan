@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId") || "default";
+    // userId is server-determined; do not accept from client to prevent cross-user access
+    const userId = "default";
     const key = searchParams.get("key");
 
     if (key) {
@@ -34,7 +35,8 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { key, value } = body;
-    const userId = body.userId || "default";
+    // userId is server-determined; do not accept from client to prevent cross-user access
+    const userId = "default";
 
     const pref = await prisma.userPreference.upsert({
       where: {
@@ -57,7 +59,8 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId") || "default";
+    // userId is server-determined; do not accept from client to prevent cross-user access
+    const userId = "default";
     const key = searchParams.get("key");
 
     if (!key) {

@@ -11,7 +11,7 @@ export async function PUT(
 
     if (!model) {
       return NextResponse.json(
-        { error: `Unknown settings type: ${type}` },
+        { error: "Unknown settings type" },
         { status: 400 }
       );
     }
@@ -45,7 +45,7 @@ export async function DELETE(
 
     if (!model) {
       return NextResponse.json(
-        { error: `Unknown settings type: ${type}` },
+        { error: "Unknown settings type" },
         { status: 400 }
       );
     }

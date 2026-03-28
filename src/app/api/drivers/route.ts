@@ -57,6 +57,13 @@ export const POST = withPerfLogging(
       rosterAssignments,
     } = body;
 
+    if (!firstName || typeof firstName !== "string" || firstName.trim().length === 0) {
+      return NextResponse.json({ error: "firstName is required" }, { status: 400 });
+    }
+    if (!lastName || typeof lastName !== "string" || lastName.trim().length === 0) {
+      return NextResponse.json({ error: "lastName is required" }, { status: 400 });
+    }
+
     const driver = await prisma.driver.create({
       data: {
         firstName,

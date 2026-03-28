@@ -11,7 +11,7 @@ export async function GET(
 
     if (!model) {
       return NextResponse.json(
-        { error: `Unknown settings type: ${type}` },
+        { error: "Unknown settings type" },
         { status: 400 }
       );
     }
@@ -40,13 +40,27 @@ export async function POST(
 
     if (!model) {
       return NextResponse.json(
-        { error: `Unknown settings type: ${type}` },
+        { error: "Unknown settings type" },
         { status: 400 }
       );
     }
 
     const body = await request.json();
     const { code, description } = body;
+
+    if (!code || typeof code !== "string" || code.trim().length === 0) {
+      return NextResponse.json(
+        { error: "code is required" },
+        { status: 400 }
+      );
+    }
+
+    if (code.length > 100) {
+      return NextResponse.json(
+        { error: "code must be 100 characters or less" },
+        { status: 400 }
+      );
+    }
 
     const record = await model.create({
       data: { code, description },

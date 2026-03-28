@@ -18,7 +18,22 @@ export const GET = withPerfLogging(
         );
       }
 
-      const dateList = dates.split(",").map((d) => d.trim());
+      const dateList = dates.split(",").map((d) => d.trim()).filter(Boolean);
+
+      if (dateList.length === 0) {
+        return NextResponse.json(
+          { error: "At least one valid date is required" },
+          { status: 400 }
+        );
+      }
+
+      if (dateList.length > 90) {
+        return NextResponse.json(
+          { error: "Maximum 90 dates allowed per request" },
+          { status: 400 }
+        );
+      }
+
       const resolvedScenarioId = resolveScenarioId(scenarioId);
 
       // Get all active drivers with only the fields needed for planning grid

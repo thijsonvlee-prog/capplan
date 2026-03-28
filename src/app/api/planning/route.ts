@@ -61,6 +61,13 @@ export const POST = withPerfLogging(
     const body = await request.json();
     const { driverId, date, status, leaveTypeId, sickPercentage, notes, scenarioId } = body;
 
+    if (!driverId || !date || !status) {
+      return NextResponse.json(
+        { error: "driverId, date, and status are required" },
+        { status: 400 }
+      );
+    }
+
     const resolvedScenarioId = resolveScenarioId(scenarioId);
 
     // Find existing entry for same driverId+date+scenarioId

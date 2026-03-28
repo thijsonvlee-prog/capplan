@@ -13,16 +13,35 @@ export const POST = withPerfLogging(
       const body = await request.json();
       const { name } = body;
 
-      // Create the new scenario
-      const newScenario = await prisma.scenario.create({
-        data: {
-          name,
-        },
-      });
+      if (!name || typeof name !== "string" || name.trim().length === 0) {
+        return NextResponse.json(
+          { error: "name is required" },
+          { status: 400 }
+        );
+      }
 
       // Determine source scenarioId filter
       const isDefault = sourceId === "default";
       const sourceScenarioFilter = isDefault ? null : sourceId;
+
+      // Check source entry count before duplicating to prevent excessive data generation
+      const sourceCount = await prisma.planningEntry.count({
+        where: { scenarioId: sourceScenarioFilter },
+      });
+
+      if (sourceCount > 50000) {
+        return NextResponse.json(
+          { error: "Source scenario has too many entries to duplicate" },
+          { status: 400 }
+        );
+      }
+
+      // Create the new scenario
+      const newScenario = await prisma.scenario.create({
+        data: {
+          name: name.trim(),
+        },
+      });
 
       // Copy all planning entries from source to new scenario
       const sourceEntries = await prisma.planningEntry.findMany({

@@ -10,6 +10,20 @@ export const POST = withPerfLogging(
       const body = await request.json();
       const { driverId, dates, status, leaveTypeId, sickPercentage, notes, scenarioId } = body;
 
+      if (!driverId || !Array.isArray(dates) || dates.length === 0 || !status) {
+        return NextResponse.json(
+          { error: "driverId, dates (non-empty array), and status are required" },
+          { status: 400 }
+        );
+      }
+
+      if (dates.length > 366) {
+        return NextResponse.json(
+          { error: "Maximum 366 dates allowed per bulk operation" },
+          { status: 400 }
+        );
+      }
+
       const resolvedScenarioId = resolveScenarioId(scenarioId);
 
       // Batch: fetch all existing entries in one query
