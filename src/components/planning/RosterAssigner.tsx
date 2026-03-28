@@ -33,7 +33,9 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
   }
 
   function handleDelete(recordId: string) {
-    if (!window.confirm("Weet je zeker dat je dit roosterrecord wilt verwijderen?")) return;
+    const record = records.find((r) => r.id === recordId);
+    const recordLabel = record ? `${record.profileName} vanaf ${record.startDate}` : "dit roosterrecord";
+    if (!window.confirm(`Weet je zeker dat je "${recordLabel}" wilt verwijderen?`)) return;
     mutate(() => api.drivers.deleteRosterAssignment(driverId, recordId));
   }
 

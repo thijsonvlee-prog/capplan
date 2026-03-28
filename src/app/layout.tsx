@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CapPlan - Driver Planning Tool",
+  title: "CapPlan - Chauffeurplanning",
   description: "Chauffeur planning en roosterbeheer",
 };
 

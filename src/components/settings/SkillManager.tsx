@@ -104,7 +104,7 @@ export function SkillManager() {
         ))}
         {skills.length === 0 && (
           <div className="p-4 text-center text-gray-400 text-sm">
-            Geen vaardigheden gedefinieerd
+            Nog geen vaardigheden. Voeg een vaardigheid toe om deze aan chauffeurs te koppelen.
           </div>
         )}
       </div>

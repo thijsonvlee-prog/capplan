@@ -113,7 +113,7 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
           </div>
         ))}
         {records.length === 0 && (
-          <div className="p-4 text-center text-gray-400 text-sm">Geen records</div>
+          <div className="p-4 text-center text-gray-400 text-sm">Nog geen {title.toLowerCase()} toegevoegd.</div>
         )}
       </div>
     </div>

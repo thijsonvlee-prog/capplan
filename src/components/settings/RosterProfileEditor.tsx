@@ -147,8 +147,8 @@ export function RosterProfileEditor() {
             <div>
               <span className="text-sm text-gray-700 font-medium">{p.name}</span>
               <span className="text-xs text-gray-400 ml-2">
-                ({p.entries.filter((e) => e.status === "BASE_ROSTER").length} B,{" "}
-                {p.entries.filter((e) => e.status === "AVAILABLE_EXTRA").length} A)
+                ({p.entries.filter((e) => e.status === "BASE_ROSTER").length} basisdagen,{" "}
+                {p.entries.filter((e) => e.status === "AVAILABLE_EXTRA").length} aanvullend)
               </span>
             </div>
             <div className="flex items-center gap-1">
@@ -162,7 +162,7 @@ export function RosterProfileEditor() {
           </div>
         ))}
         {profiles.length === 0 && !showEditor && (
-          <div className="p-4 text-center text-gray-400 text-sm">Geen roosterprofielen</div>
+          <div className="p-4 text-center text-gray-400 text-sm">Nog geen roosterprofielen. Maak een profiel aan om het aan chauffeurs toe te wijzen.</div>
         )}
       </div>
     </div>

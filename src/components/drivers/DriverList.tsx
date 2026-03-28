@@ -45,7 +45,7 @@ export function DriverList() {
       <div className="flex items-center justify-between mb-4">
         <input
           type="text"
-          placeholder="Zoek chauffeur..."
+          placeholder="Zoek op naam of personeelsnummer..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm w-64"

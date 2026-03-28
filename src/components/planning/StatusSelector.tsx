@@ -108,18 +108,21 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
           >
             &#9664; Terug
           </button>
-          <div className="text-xs font-semibold text-gray-500 px-3 mb-2">Aanwezigheidspercentage (0–99)</div>
+          <div className="text-xs font-semibold text-gray-500 px-3 mb-2">Aanwezigheidspercentage</div>
           <div className="px-3 space-y-2">
-            <input
-              type="number"
-              min={0}
-              max={99}
-              value={sickPct}
-              onChange={(e) => setSickPct(Math.min(99, Math.max(0, parseInt(e.target.value) || 0)))}
-              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
-              autoFocus
-              onKeyDown={(e) => { if (e.key === "Enter") handleSickConfirm(); }}
-            />
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min={0}
+                max={99}
+                value={sickPct}
+                onChange={(e) => setSickPct(Math.min(99, Math.max(0, parseInt(e.target.value) || 0)))}
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded"
+                autoFocus
+                onKeyDown={(e) => { if (e.key === "Enter") handleSickConfirm(); }}
+              />
+              <span className="text-sm text-gray-500">%</span>
+            </div>
             <button
               onClick={handleSickConfirm}
               className="w-full bg-red-500 text-white px-3 py-1.5 rounded text-sm hover:bg-red-600"
