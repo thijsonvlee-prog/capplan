@@ -24,8 +24,8 @@ export function groupDrivers(
 
   for (const driver of drivers) {
     let keys: string[];
-    const emp = (driver.employmentRecords || []).find((r) => !r.endDate);
-    const pos = (driver.functionRecords || []).find((r) => !r.endDate);
+    const emp = getActiveRecord(driver.employmentRecords);
+    const pos = getActiveRecord(driver.functionRecords);
 
     switch (groupBy) {
       case "employer":
@@ -89,15 +89,9 @@ export function getComputedFields(
     rosterProfiles: { id: string; name: string }[];
   }
 ): DriverComputedFields {
-  const emp = (driver.employmentRecords || []).find(
-    (r: any) => !r.endDate
-  );
-  const pos = (driver.functionRecords || []).find(
-    (r: any) => !r.endDate
-  );
-  const ros = (driver.rosterAssignments || []).find(
-    (r: any) => !r.endDate
-  );
+  const emp: any = getActiveRecord(driver.employmentRecords);
+  const pos: any = getActiveRecord(driver.functionRecords);
+  const ros: any = getActiveRecord(driver.rosterAssignments);
 
   return {
     currentEmployer:
@@ -129,17 +123,7 @@ export function getComputedFields(
   };
 }
 
-// Get active employment record
-export function getActiveEmployment(driver: any) {
-  return (driver.employmentRecords || []).find((r: any) => !r.endDate);
-}
-
-// Get active function record
-export function getActiveFunction(driver: any) {
-  return (driver.functionRecords || []).find((r: any) => !r.endDate);
-}
-
-// Get active roster assignment
-export function getActiveRoster(driver: any) {
-  return (driver.rosterAssignments || []).find((r: any) => !r.endDate);
+// Get the active (open-ended) record from a list of sub-records
+export function getActiveRecord<T extends { endDate?: string }>(records: T[] | undefined): T | undefined {
+  return (records || []).find((r) => !r.endDate);
 }

@@ -1,28 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-
-function resolveScenarioId(scenarioId?: string | null): string | null {
-  if (!scenarioId || scenarioId === "default" || scenarioId === "") return null;
-  return scenarioId;
-}
-
-function transformDriver(dbDriver: any) {
-  return {
-    id: dbDriver.id,
-    firstName: dbDriver.firstName,
-    lastName: dbDriver.lastName,
-    employeeNumber: dbDriver.employeeNumber || undefined,
-    licenseTypes: dbDriver.licenseTypes || [],
-    skillIds: dbDriver.skills?.map((ds: any) => ds.skillId) || [],
-    employmentRecords: dbDriver.employmentRecords || [],
-    functionRecords: dbDriver.functionRecords || [],
-    rosterAssignments: dbDriver.rosterAssignments || [],
-    isActive: dbDriver.isActive,
-    createdAt: dbDriver.createdAt.toISOString(),
-    updatedAt: dbDriver.updatedAt.toISOString(),
-  };
-}
+import { resolveScenarioId, transformDriver } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning/for-range",

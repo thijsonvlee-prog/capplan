@@ -1,30 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-
-function transformDriver(dbDriver: any) {
-  return {
-    id: dbDriver.id,
-    firstName: dbDriver.firstName,
-    lastName: dbDriver.lastName,
-    employeeNumber: dbDriver.employeeNumber || undefined,
-    licenseTypes: dbDriver.licenseTypes || [],
-    skillIds: dbDriver.skills?.map((ds: any) => ds.skillId) || [],
-    employmentRecords: dbDriver.employmentRecords || [],
-    functionRecords: dbDriver.functionRecords || [],
-    rosterAssignments: dbDriver.rosterAssignments || [],
-    isActive: dbDriver.isActive,
-    createdAt: dbDriver.createdAt.toISOString(),
-    updatedAt: dbDriver.updatedAt.toISOString(),
-  };
-}
-
-const driverInclude = {
-  skills: true,
-  employmentRecords: true,
-  functionRecords: true,
-  rosterAssignments: true,
-};
+import { transformDriver, driverInclude } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/drivers",

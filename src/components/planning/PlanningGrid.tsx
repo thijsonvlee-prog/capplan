@@ -6,7 +6,7 @@ import type { DriverWithEntries, StamtabelRecord } from "@/domain/types";
 import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, GROUP_BY_LABELS, DAY_LABELS, EMPLOYMENT_TYPE_LABELS } from "@/domain/constants";
 import { useApiData } from "@/hooks/useApi";
 import { api } from "@/lib/api";
-import { groupDrivers, getActiveEmployment, getActiveFunction } from "@/lib/api-helpers";
+import { groupDrivers, getActiveRecord } from "@/lib/api-helpers";
 import { PeriodSelector } from "./WeekSelector";
 import { ZoomSelector } from "./ZoomSelector";
 import { ScenarioSelector } from "./ScenarioSelector";
@@ -190,8 +190,8 @@ export function PlanningGrid() {
   useEffect(() => { setLocalData(data); }, [data]);
 
   const resolveColumnValue = useCallback((driver: DriverWithEntries, col: DriverColumnKey): string => {
-    const emp = getActiveEmployment(driver);
-    const pos = getActiveFunction(driver);
+    const emp = getActiveRecord(driver.employmentRecords);
+    const pos = getActiveRecord(driver.functionRecords);
     switch (col) {
       case "employeeNumber": return driver.employeeNumber || "";
       case "employer": return (emp?.employerId && employers.find((e) => e.id === emp.employerId)?.description) || "";
@@ -603,8 +603,8 @@ function GroupRows({
             <div className="flex items-center justify-between">
               <div>
                 {(() => {
-                  const pos = getActiveFunction(driver);
-                  const emp = getActiveEmployment(driver);
+                  const pos = getActiveRecord(driver.functionRecords);
+                  const emp = getActiveRecord(driver.employmentRecords);
                   return (
                     <>
                       <div className={`font-medium ${dc.fontSize} whitespace-nowrap`}>

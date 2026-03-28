@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-
-function resolveScenarioId(scenarioId?: string | null): string | null {
-  if (!scenarioId || scenarioId === "default" || scenarioId === "") return null;
-  return scenarioId;
-}
+import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/drivers/[id]/roster-assignments",
@@ -51,27 +47,10 @@ export const POST = withPerfLogging(
         body;
 
       // Auto-close open-ended records
-      const openRecords = await prisma.driverRosterAssignment.findMany({
-        where: { driverId, endDate: null },
-      });
-
-      if (openRecords.length > 0) {
-        const dayBefore = new Date(startDate);
-        dayBefore.setDate(dayBefore.getDate() - 1);
-        const endDateStr = dayBefore.toISOString().split("T")[0];
-
-        await prisma.driverRosterAssignment.updateMany({
-          where: { driverId, endDate: null },
-          data: { endDate: endDateStr },
-        });
-      }
+      await autoCloseOpenRecords(prisma.driverRosterAssignment, driverId, startDate);
 
       // Get next sequence number
-      const maxSeq = await prisma.driverRosterAssignment.aggregate({
-        where: { driverId },
-        _max: { sequenceNumber: true },
-      });
-      const nextSeq = (maxSeq._max.sequenceNumber || 0) + 1;
+      const nextSeq = await getNextSequenceNumber(prisma.driverRosterAssignment, driverId);
 
       const record = await prisma.driverRosterAssignment.create({
         data: {

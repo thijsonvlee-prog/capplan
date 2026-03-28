@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { autoCloseOpenRecords, getNextSequenceNumber } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -33,27 +34,10 @@ export async function POST(
       body;
 
     // Auto-close open-ended records
-    const openRecords = await prisma.driverFunctionRecord.findMany({
-      where: { driverId: id, endDate: null },
-    });
-
-    if (openRecords.length > 0) {
-      const dayBefore = new Date(startDate);
-      dayBefore.setDate(dayBefore.getDate() - 1);
-      const endDateStr = dayBefore.toISOString().split("T")[0];
-
-      await prisma.driverFunctionRecord.updateMany({
-        where: { driverId: id, endDate: null },
-        data: { endDate: endDateStr },
-      });
-    }
+    await autoCloseOpenRecords(prisma.driverFunctionRecord, id, startDate);
 
     // Get next sequence number
-    const maxSeq = await prisma.driverFunctionRecord.aggregate({
-      where: { driverId: id },
-      _max: { sequenceNumber: true },
-    });
-    const nextSeq = (maxSeq._max.sequenceNumber || 0) + 1;
+    const nextSeq = await getNextSequenceNumber(prisma.driverFunctionRecord, id);
 
     const record = await prisma.driverFunctionRecord.create({
       data: {

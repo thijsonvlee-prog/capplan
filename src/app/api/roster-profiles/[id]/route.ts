@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-function transformProfile(profile: any) {
-  return {
-    id: profile.id,
-    name: profile.name,
-    entries: (profile.days || []).map((d: any) => ({
-      dayOffset: d.dayOffset,
-      status: d.status,
-    })),
-    createdAt: profile.createdAt.toISOString(),
-    updatedAt: profile.updatedAt.toISOString(),
-  };
-}
+import { transformProfile } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,

@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-
-function resolveScenarioId(scenarioId?: string | null): string | null {
-  if (!scenarioId || scenarioId === "default" || scenarioId === "") return null;
-  return scenarioId;
-}
+import { resolveScenarioId } from "@/lib/api-route-utils";
 
 export const POST = withPerfLogging(
   "POST /api/planning/bulk",

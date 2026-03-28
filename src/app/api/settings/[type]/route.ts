@@ -1,18 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-const typeModelMap: Record<string, string> = {
-  employers: "employer",
-  departments: "department",
-  locations: "location",
-  "leave-types": "leaveType",
-};
-
-function getModel(type: string) {
-  const modelName = typeModelMap[type];
-  if (!modelName) return null;
-  return (prisma as any)[modelName];
-}
+import { getSettingsModel } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -20,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { type } = await params;
-    const model = getModel(type);
+    const model = getSettingsModel(type);
 
     if (!model) {
       return NextResponse.json(
@@ -49,7 +36,7 @@ export async function POST(
 ) {
   try {
     const { type } = await params;
-    const model = getModel(type);
+    const model = getSettingsModel(type);
 
     if (!model) {
       return NextResponse.json(
