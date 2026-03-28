@@ -40,6 +40,19 @@ Dit bestand bevat de verzamelde learnings van terugkerende performance-audits op
 - Overweging: virtualisatie voor PlanningGrid is niet doorgevoerd vanwege complexiteit met sticky kolommen en drag-functionaliteit. Pas doen als >50 drivers problematisch wordt.
 - Overweging: unique constraint op (driverId, date, scenarioId) niet toegevoegd vanwege risico op conflicten met bestaande data. Kan later als data-integriteit is gevalideerd.
 
+## Performance Observability Infrastructuur
+
+Sinds 2026-03-28 is er een gestructureerde performance logging infrastructuur beschikbaar. Zie `PERFORMANCE_OBSERVABILITY.md` voor volledige documentatie.
+
+**Kern**: alle kritieke API-routes worden automatisch gemeten (duur, status, metadata) en opgeslagen in de `PerformanceEvent` tabel. Dagelijkse samenvattingen kunnen worden gegenereerd in `PerformanceSummary`.
+
+**Voor volgende performance-runs**:
+- Gebruik `getSlowEvents()` en `getRouteStats()` uit `src/lib/perf.ts` om echte bottlenecks te vinden
+- Gebruik `compareDays()` om regressies te detecteren
+- Gebruik `generateDailySummary()` om trends over tijd te analyseren
+- Focus optimalisatie op routes die in de data als traag naar voren komen, niet op code-inspectie alleen
+- De data is querybaar via Prisma of directe SQL (zie PERFORMANCE_OBSERVABILITY.md voor voorbeeldqueries)
+
 ## Aandachtspunten voor volgende runs
 - Monitor of de PlanningGrid bij >50 drivers nog responsive is; zo niet, implementeer row virtualisatie
 - Check of de nieuwe composite indexes daadwerkelijk door Prisma's query planner worden gebruikt (EXPLAIN ANALYZE)
