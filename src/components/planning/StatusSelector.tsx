@@ -56,12 +56,12 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
                 "w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors flex items-center justify-between",
                 status === currentStatus
                   ? STATUS_COLORS[status] + " font-semibold"
-                  : "hover:bg-gray-100"
+                  : "hover:bg-surface-secondary"
               )}
             >
               <span>{STATUS_LABELS[status]}</span>
               {(status === "LEAVE" || status === "SICK") && (
-                <span className="text-gray-400 text-xs">&#9654;</span>
+                <span className="text-text-tertiary text-xs">&#9654;</span>
               )}
             </button>
           ))}
@@ -72,11 +72,11 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
         <div>
           <button
             onClick={() => setShowLeaveMenu(false)}
-            className="text-xs text-blue-600 hover:underline mb-2 px-1"
+            className="text-xs text-brand-600 hover:underline mb-2 px-1"
           >
             &#9664; Terug
           </button>
-          <div className="text-xs font-semibold text-gray-500 px-3 mb-1">Verloftype</div>
+          <div className="text-xs font-semibold text-text-secondary px-3 mb-1">Verloftype</div>
           <div className="space-y-1">
             {leaveTypes.map((lt) => (
               <button
@@ -84,15 +84,15 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
                 onClick={() => handleLeaveSelect(lt.id)}
                 className={cn(
                   "w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors",
-                  currentLeaveTypeId === lt.id ? "bg-yellow-200 text-yellow-900 font-semibold" : "hover:bg-gray-100"
+                  currentLeaveTypeId === lt.id ? "bg-yellow-200 text-yellow-900 font-semibold" : "hover:bg-surface-secondary"
                 )}
               >
-                <span className="text-xs text-gray-400 mr-2">{lt.code}</span>
+                <span className="text-xs text-text-tertiary mr-2">{lt.code}</span>
                 {lt.description}
               </button>
             ))}
             {leaveTypes.length === 0 && (
-              <div className="text-xs text-gray-400 px-3 py-2">
+              <div className="text-xs text-text-tertiary px-3 py-2">
                 Geen verloftypes. Voeg toe via Instellingen.
               </div>
             )}
@@ -104,12 +104,12 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
         <div>
           <button
             onClick={() => setShowSickInput(false)}
-            className="text-xs text-blue-600 hover:underline mb-2 px-1"
+            className="text-xs text-brand-600 hover:underline mb-2 px-1"
           >
             &#9664; Terug
           </button>
-          <div className="text-xs font-semibold text-gray-500 px-3 mb-1">Aanwezigheidspercentage</div>
-          <div className="text-xs text-gray-400 px-3 mb-2">Hoeveel procent is de chauffeur inzetbaar? (0% = volledig ziek)</div>
+          <div className="text-xs font-semibold text-text-secondary px-3 mb-1">Aanwezigheidspercentage</div>
+          <div className="text-xs text-text-tertiary px-3 mb-2">Hoeveel procent is de chauffeur inzetbaar? (0% = volledig ziek)</div>
           <div className="px-3 space-y-2">
             <div className="flex items-center gap-1">
               <input
@@ -122,7 +122,7 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
                 autoFocus
                 onKeyDown={(e) => { if (e.key === "Enter") handleSickConfirm(); }}
               />
-              <span className="text-sm text-gray-500">%</span>
+              <span className="text-sm text-text-secondary">%</span>
             </div>
             <button
               onClick={handleSickConfirm}

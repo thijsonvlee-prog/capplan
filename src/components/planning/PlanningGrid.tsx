@@ -356,10 +356,10 @@ export function PlanningGrid() {
   const extraColWidth = 120;
 
   function SortIcon({ colKey }: { colKey: "name" | DriverColumnKey }) {
-    if (sortConfig?.key !== colKey) return <ArrowUp className="w-3 h-3 text-gray-300 ml-0.5 inline" />;
+    if (sortConfig?.key !== colKey) return <ArrowUp className="w-3 h-3 text-text-tertiary ml-0.5 inline" />;
     return sortConfig.direction === "asc"
-      ? <ArrowUp className="w-3 h-3 text-blue-600 ml-0.5 inline" />
-      : <ArrowDown className="w-3 h-3 text-blue-600 ml-0.5 inline" />;
+      ? <ArrowUp className="w-3 h-3 text-brand-600 ml-0.5 inline" />
+      : <ArrowDown className="w-3 h-3 text-brand-600 ml-0.5 inline" />;
   }
 
   const DensityIcon = DENSITY_ICONS[density];
@@ -429,7 +429,7 @@ export function PlanningGrid() {
                       type="checkbox"
                       checked={extraColumns.includes(col.key)}
                       onChange={() => toggleColumn(col.key)}
-                      className="w-3.5 h-3.5 rounded border-gray-300"
+                      className="w-3.5 h-3.5 rounded border-border-default accent-brand-600"
                     />
                     {col.label}
                   </label>
@@ -465,17 +465,17 @@ export function PlanningGrid() {
       )}
 
       {!localData ? (
-        <div className="text-center py-12 text-gray-500">
-          <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mb-2" />
+        <div className="text-center py-12 text-text-tertiary">
+          <div className="spinner mb-2" />
           <div className="text-sm">Planning laden...</div>
         </div>
       ) : (
         <div className="overflow-auto bg-surface-primary rounded-lg shadow-card border border-border-subtle flex-1 min-h-0">
           <table className="border-collapse" style={{ minWidth: `${driverColWidth + extraColumns.length * extraColWidth + columnHeaders.length * dc.minW}px` }}>
             <thead className="sticky top-0 z-20">
-              <tr className="bg-gray-50">
+              <tr className="bg-surface-tertiary">
                 <th
-                  className={`text-left ${dc.cellPad} border border-gray-200 font-semibold ${dc.fontSize} sticky left-0 bg-gray-50 z-30 cursor-pointer whitespace-nowrap`}
+                  className={`text-left ${dc.cellPad} border border-border-default font-semibold ${dc.fontSize} sticky left-0 bg-surface-tertiary z-30 cursor-pointer whitespace-nowrap`}
                   style={{ minWidth: driverColWidth }}
                   onClick={() => handleSort("name")}
                 >
@@ -486,7 +486,7 @@ export function PlanningGrid() {
                   return (
                     <th
                       key={colKey}
-                      className={`text-left ${dc.cellPad} border border-gray-200 font-medium ${dc.fontSize} sticky bg-gray-50 z-30 cursor-pointer whitespace-nowrap`}
+                      className={`text-left ${dc.cellPad} border border-border-default font-medium ${dc.fontSize} sticky bg-surface-tertiary z-30 cursor-pointer whitespace-nowrap`}
                       style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth }}
                       onClick={() => handleSort(colKey)}
                     >
@@ -497,11 +497,11 @@ export function PlanningGrid() {
                 {columnHeaders.map((col) => (
                   <th
                     key={col.key}
-                    className={`border border-gray-200 text-center font-medium ${dc.cellPad} ${dc.fontSize}`}
+                    className={`border border-border-default text-center font-medium ${dc.cellPad} ${dc.fontSize}`}
                     style={{ minWidth: dc.minW }}
                   >
                     <div>{col.label}</div>
-                    {col.sub && <div className="text-xs text-gray-400 font-normal">{col.sub}</div>}
+                    {col.sub && <div className="text-xs text-text-tertiary font-normal">{col.sub}</div>}
                   </th>
                 ))}
               </tr>
@@ -529,7 +529,7 @@ export function PlanningGrid() {
               ))}
               {filteredDrivers.length === 0 && (
                 <tr>
-                  <td colSpan={columnHeaders.length + 1 + extraColumns.length} className="text-center py-8 text-gray-400 text-sm">
+                  <td colSpan={columnHeaders.length + 1 + extraColumns.length} className="text-center py-8 text-text-tertiary text-sm">
                     {filter ? `Geen chauffeurs gevonden voor "${filter}"` : "Geen chauffeurs beschikbaar. Voeg chauffeurs toe via het Chauffeurs-scherm."}
                   </td>
                 </tr>
@@ -619,15 +619,15 @@ function GroupRows({
   return (
     <>
       {group.label && (
-        <tr className="bg-gray-100">
-          <td colSpan={columnHeaders.length + 1 + extraColumns.length} className={`${dc.cellPad} ${dc.fontSize} font-semibold text-gray-700 sticky left-0`}>
+        <tr className="bg-surface-inset">
+          <td colSpan={columnHeaders.length + 1 + extraColumns.length} className={`${dc.cellPad} ${dc.fontSize} font-semibold text-text-secondary sticky left-0`}>
             {group.label} ({group.drivers.length})
           </td>
         </tr>
       )}
       {group.drivers.map((driver) => (
-        <tr key={driver.id} className="hover:bg-gray-50/50">
-          <td className={`${dc.cellPad} border border-gray-200 sticky left-0 bg-white z-10`} style={{ minWidth: driverColWidth }}>
+        <tr key={driver.id} className="hover:bg-surface-secondary/50">
+          <td className={`${dc.cellPad} border border-border-default sticky left-0 bg-surface-primary z-10`} style={{ minWidth: driverColWidth }}>
             <div className="flex items-center justify-between">
               <div>
                 {(() => {
@@ -637,10 +637,10 @@ function GroupRows({
                     <>
                       <div className={`font-medium ${dc.fontSize} whitespace-nowrap`}>
                         {driver.firstName} {driver.lastName}
-                        {pos?.manager && <span className="ml-1 text-xs text-gray-400" title={`Leidinggevende: ${pos.manager}`}>(LG)</span>}
+                        {pos?.manager && <span className="ml-1 text-xs text-text-tertiary" title={`Leidinggevende: ${pos.manager}`}>(LG)</span>}
                       </div>
                       {density !== "compact" && (
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-text-tertiary">
                           {driver.employeeNumber || (emp?.employmentType === "CHARTER" ? "Charter" : "")}
                         </div>
                       )}
@@ -650,7 +650,7 @@ function GroupRows({
               </div>
               <button
                 onClick={() => onAssignRoster(driver.id, `${driver.firstName} ${driver.lastName}`)}
-                className="p-1 text-gray-300 hover:text-blue-600 hover:bg-blue-50 rounded"
+                className="p-1 text-text-tertiary hover:text-brand-600 hover:bg-brand-50 rounded"
                 title="Roosterprofiel toewijzen"
               >
                 <CalendarCog className="w-3.5 h-3.5" />
@@ -660,7 +660,7 @@ function GroupRows({
           {extraColumns.map((colKey, i) => (
             <td
               key={colKey}
-              className={`${dc.cellPad} border border-gray-200 ${dc.fontSize} text-gray-600 sticky bg-white z-10 whitespace-nowrap`}
+              className={`${dc.cellPad} border border-border-default ${dc.fontSize} text-text-secondary sticky bg-surface-primary z-10 whitespace-nowrap`}
               style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth, maxWidth: extraColWidth }}
             >
               <div className="truncate">{resolveColumnValue(driver, colKey) || "-"}</div>
@@ -676,9 +676,9 @@ function GroupRows({
                   <td
                     key={col.key}
                     className={cn(
-                      "relative border border-gray-200",
+                      "relative border border-border-default",
                       dc.cellPad,
-                      isSelected && "ring-2 ring-inset ring-blue-400"
+                      isSelected && "ring-2 ring-inset ring-brand-400"
                     )}
                     onMouseDown={(e) => { e.preventDefault(); onDragStart(driver.id, date); }}
                     onMouseEnter={() => onDragEnter(driver.id, date)}
@@ -698,7 +698,7 @@ function GroupRows({
                         {entry ? (
                           <StatusBadge status={entry.status} compact sickPercentage={entry.sickPercentage} />
                         ) : (
-                          <span className="text-gray-300 text-xs">-</span>
+                          <span className="text-text-tertiary text-xs">-</span>
                         )}
                       </div>
                     )}
@@ -715,7 +715,7 @@ function GroupRows({
                 const dominant = Object.entries(statusCounts).sort((a, b) => b[1] - a[1])[0];
                 const total = col.dates.length;
                 return (
-                  <td key={col.key} className={`border border-gray-200 ${dc.cellPad} text-center`}>
+                  <td key={col.key} className={`border border-border-default ${dc.cellPad} text-center`}>
                     {dominant ? (
                       <div
                         className={`rounded px-1 py-0.5 ${dc.fontSize} ${STATUS_COLORS[dominant[0] as PlanningStatus]}`}
@@ -724,7 +724,7 @@ function GroupRows({
                         {STATUS_CODES[dominant[0] as PlanningStatus]} {dominant[1]}
                       </div>
                     ) : (
-                      <span className="text-gray-300 text-xs">-</span>
+                      <span className="text-text-tertiary text-xs">-</span>
                     )}
                   </td>
                 );

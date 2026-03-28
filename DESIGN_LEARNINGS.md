@@ -14,7 +14,8 @@ Dit bestand bevat de verzamelde learnings van terugkerende design- en visual pol
 - alle componenten gebruikten losse Tailwind utility classes zonder centraal systeem (grotendeels opgelost in run 1+2)
 - sidebar en header waren minimaal en generiek (opgelost in run 1)
 - knoppen, inputs en kaarten hadden geen consistente focus/hover/active states (opgelost in run 2)
-- er was geen kleurpalet met eigen karakter; alles gebruikte standaard Tailwind grays/blues (grotendeels opgelost)
+- er was geen kleurpalet met eigen karakter; alles gebruikte standaard Tailwind grays/blues (opgelost in run 3)
+- hardcoded Tailwind gray/blue/white kleuren in tabel- en datacomponenten ondermijnden tokensysteem (opgelost in run 3)
 
 ## Bekende designproblemen
 | Onderdeel | Probleem | Impact | Status | Opmerking |
@@ -27,7 +28,7 @@ Dit bestand bevat de verzamelde learnings van terugkerende design- en visual pol
 | Card surfaces | Alleen `shadow`, geen border, geen token | Midden | Opgelost | shadow-card + border-border-subtle |
 | Inputs | Geen focus ring, geen consistent token-gebruik | Midden | Opgelost | .input-field class in globals.css, alle componenten gebruiken deze nu |
 | Buttons (primary) | Hardcoded blue-600, geen token | Midden | Opgelost | .btn-primary/.btn-secondary/.btn-icon classes in globals.css |
-| Tabel headers | Inconsistente styling | Laag | Deels opgelost | DriverList thead gebruikt text-label class |
+| Tabel headers | Inconsistente styling | Laag | Opgelost | Alle tabellen gebruiken surface-tertiary + border-default tokens |
 | Form labels | Mix van text-sm/text-gray-600/text-gray-700 | Midden | Opgelost | .form-label class, alle formulieren gebruiken deze nu |
 | Form controls breed | Alle forms gebruiken losse inline classes | Midden | Opgelost | .input-field + .form-label classes, overal toegepast |
 | ZoomSelector/filters | Generieke stijl, geen token-gebruik | Laag | Opgelost | Brand tokens + border-default/surface tokens |
@@ -36,6 +37,18 @@ Dit bestand bevat de verzamelde learnings van terugkerende design- en visual pol
 | Icon buttons (edit/delete) | Mix van inline hover kleuren | Laag | Opgelost | .btn-icon en .btn-icon-danger classes |
 | StatusBadge kleuren | Direct in constants.ts, niet in tokens | Laag | Open | Overwegen bij P2 verfijning |
 | Settings card surfaces | SkillManager/RosterProfileEditor gebruikten bg-white/shadow | Laag | Opgelost | surface-primary + shadow-card + border-border-subtle |
+| Planning grid borders/headers | Hardcoded gray-50/gray-200 | Midden | Opgelost | Alle borders → border-default, headers → surface-tertiary |
+| Capacity page/table | Hardcoded grays, geen tokens | Midden | Opgelost | Volledige migratie naar tokens in run 3 |
+| CapacityChart | bg-white, shadow, text-gray-700 | Laag | Opgelost | surface-primary + shadow-card + section-title class |
+| CapacitySummaryRow | Hardcoded blue-50/blue-200/gray-200 | Laag | Opgelost | Brand tokens + border-default |
+| SubTable borders | border-gray-200 | Laag | Opgelost | border-border-default |
+| RosterAssigner table | border-gray-200 | Laag | Opgelost | border-border-default |
+| DayCell popup | bg-white, border-gray-200, text-gray-500 | Laag | Opgelost | surface-primary + shadow-dropdown + text-text-secondary |
+| StatusSelector | text-gray-400/500, hover:bg-gray-100, text-blue-600 | Laag | Opgelost | text-text-tertiary/secondary, hover:bg-surface-secondary, text-brand-600 |
+| WeekSelector | text-gray-400 | Laag | Opgelost | text-text-tertiary |
+| RosterProfileEditor | text-gray-400/500 | Laag | Opgelost | text-text-tertiary/secondary |
+| DriverList license badge | bg-blue-50 text-blue-700 | Laag | Opgelost | bg-brand-50 text-brand-700 |
+| Loading spinners | Hardcoded inline border classes | Laag | Opgelost | .spinner utility class in globals.css |
 
 ## Bewezen effectieve designverbeteringen
 - CSS @theme tokens voor kleuren, shadows, radius — werkt goed met Tailwind v4
@@ -48,22 +61,23 @@ Dit bestand bevat de verzamelde learnings van terugkerende design- en visual pol
 - .btn-primary/.btn-secondary classes: elimineren tientallen varianten van inline button styling
 - .btn-icon/.btn-icon-danger: consistente icon button hover states over alle componenten
 - .form-label class: uniforme label styling (gewicht, kleur, spacing) over alle formulieren
+- .spinner class: herbruikbare loading spinner via globals.css — voorkomt dubbele inline border-constructies
+- Systematische replace_all van hardcoded kleuren is effectief en veilig als de tokenlaag al goed staat
 
 ## Dingen die weinig opleverden of juist risico gaven
 - Google Fonts (Inter) via next/font/google werkt niet in offline/sandbox omgevingen — system font stack is veiliger
 - Te veel tegelijk veranderen vergroot risico op regressies; tokens eerst, dan component voor component
 
 ## Aandachtspunten voor volgende runs
-- StatusBadge kleuren overwegen als design tokens (nu in constants.ts)
-- Planning grid table header styling verder afstemmen op tokens (bg-gray-50 → surface-tertiary)
-- Planning grid table borders (border-gray-200) nog niet op tokens
-- Spacing tussen secties op settings-pagina evalueren
+- StatusBadge kleuren overwegen als design tokens (nu in constants.ts met Tailwind utility classes)
 - Tab component (DriverForm) herbruikbaar maken als shared component
-- Toggle chip buttons (rijbewijs, vaardigheden) eigen chip-class overwegen
-- Subtable thead/tbody borders nog op gray-200 i.p.v. tokens
-- Checkbox styling in column picker nog standaard browser
-- Loading spinner (PlanningGrid) als herbruikbaar component
-- Capacity page nog niet geaudit op token-gebruik
+- Toggle chip buttons (rijbewijs, vaardigheden) eigen .chip-toggle class overwegen
+- Checkbox/radio styling verbeteren (column picker gebruikt nu accent-brand-600 maar verder browser defaults)
+- Spacing tussen secties op settings-pagina evalueren
+- Scenario compare buttons op capacity page gebruiken nog orange-100/orange-700 (geen token)
+- StatusSelector bevestigknop (ziek) gebruikt nog bg-red-500 (functionele kleur, overwegen als token)
+- Shared component voor tabel-header styling (nu herhaald patroon: bg-surface-tertiary + text-label)
+- Motion/transition systeem: transitions zijn nu ad-hoc per component, geen centraal patroon
 
 ## Designgeschiedenis
 
@@ -158,9 +172,58 @@ Form Controls & Button System (P1 fundament)
 - .btn-icon + .btn-icon-danger patroon werkt goed voor consistente icon buttons met verschillende hover-intentie
 
 **Aanbevolen vervolgstappen**
-1. Planning grid tabel borders/headers migreren naar tokens
+1. ~~Planning grid tabel borders/headers migreren naar tokens~~ → Opgelost in run 3
 2. StatusBadge kleuren als design tokens
 3. Shared Tab component voor DriverForm en eventueel settings
 4. Toggle chip class voor multi-select buttons (rijbewijs, vaardigheden)
 5. Checkbox/radio styling verbeteren (column picker)
-6. Capacity pagina op tokens brengen
+6. ~~Capacity pagina op tokens brengen~~ → Opgelost in run 3
+
+### 2026-03-28 (Run 3)
+**Samenvatting**
+Volledige token-migratie: alle resterende hardcoded Tailwind gray/blue/white kleuren in componenten vervangen door design tokens. Spinner utility class toegevoegd.
+
+**Gekozen ontwerpthema**
+Token-migratie in tabellen en data-componenten (P1 fundament — consistentie)
+
+**Geanalyseerd**
+- Alle 19 componentbestanden gescand op hardcoded kleuren (gray-*, blue-*, bg-white)
+- 12 bestanden bevatten nog hardcoded kleuren die al als tokens beschikbaar waren
+- Pattern: bg-gray-50 → surface-tertiary, border-gray-200 → border-default, text-gray-400/500 → text-tertiary/secondary, bg-white → surface-primary, text-blue-600 → brand-600, etc.
+
+**Doorgevoerd**
+- PlanningGrid.tsx: ~20 kleurverwijzingen gemigreerd (thead, borders, hover states, group rows, sort icons, empty states, driver cells, extra columns, drag selection ring, checkbox)
+- CapacityTable.tsx: thead, borders, hover states, summary rows → tokens
+- CapacityChart.tsx: card surface (bg-white → surface-primary + shadow-card + border-subtle), section-title class
+- CapacitySummaryRow.tsx: blue-50/blue-200 → brand-50/brand-200, borders, text colors → tokens
+- SubTable.tsx: alle border-gray-200 → border-border-default
+- RosterAssigner.tsx: alle border-gray-200 → border-border-default
+- DayCell.tsx: empty cell bg → surface-secondary/tertiary, popup → surface-primary + shadow-dropdown + border-default, text → text-secondary
+- StatusSelector.tsx: hover states → surface-secondary, text colors → text-tertiary/secondary, back links → brand-600
+- WeekSelector.tsx: loading text → text-tertiary
+- RosterProfileEditor.tsx: text-gray-400/500 → text-tertiary/secondary
+- DriverList.tsx: license badge bg-blue-50 → bg-brand-50
+- Capacity page.tsx: loading spinner, compare button inactive state → surface tokens
+- globals.css: .spinner utility class (border-strong + brand-600 top, 0.6s spin animation)
+- PlanningGrid + Capacity page: inline spinner → .spinner class
+
+**Niet doorgevoerd**
+- StatusBadge kleuren als tokens — vereist refactor van constants.ts STATUS_COLORS map, risicovol voor planning grid rendering
+- Scenario compare buttons (orange-100/orange-700) — functionele kleur, beter als apart token
+- StatusSelector ziek-bevestigknop (bg-red-500) — functionele destructive color, beter als token
+- Shared tabel-header component — te breed voor deze run, patroon is al consistent via tokens
+
+**Nieuwe learnings**
+- Na 3 runs zijn er nul hardcoded gray/white Tailwind kleuren meer in .tsx bestanden
+- replace_all edits zijn zeer effectief voor token-migratie als de tokenlaag compleet is
+- shadow-dropdown token werkt goed voor inline popups (DayCell status selector)
+- accent-brand-600 op checkboxen is een subtiele maar effectieve verbetering
+
+**Aanbevolen vervolgstappen**
+1. StatusBadge kleuren als design tokens (P2 verfijning)
+2. Shared Tab component (P2 structurele verfijning)
+3. Toggle chip class voor multi-select buttons (P2)
+4. Checkbox/radio custom styling (P3 polish)
+5. Functionele kleur-tokens toevoegen (success/warning/danger) voor scenario compare, ziek-bevestig, etc.
+6. Motion/transition standaardisatie (P3)
+7. Nu het tokenfundament compleet is: volgende runs kunnen focussen op P2/P3 verfijning en custom UI-elementen

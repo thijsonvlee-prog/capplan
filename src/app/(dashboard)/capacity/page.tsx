@@ -197,7 +197,7 @@ export default function CapacityPage() {
 
         {scenarios.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Vergelijk:</span>
+            <span className="text-sm text-text-tertiary">Vergelijk:</span>
             {scenarios.map((s) => (
               <button
                 key={s.id}
@@ -205,7 +205,7 @@ export default function CapacityPage() {
                 className={`px-2 py-1 text-xs rounded border transition-colors ${
                   compareIds.includes(s.id)
                     ? "bg-orange-100 text-orange-700 border-orange-300"
-                    : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+                    : "bg-surface-primary text-text-secondary border-border-default hover:bg-surface-secondary"
                 }`}
               >
                 {s.name}
@@ -216,8 +216,8 @@ export default function CapacityPage() {
       </div>
 
       {columnHeaders.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mb-2" />
+        <div className="text-center py-12 text-text-tertiary">
+          <div className="spinner mb-2" />
           <div className="text-sm">Capaciteitsgegevens laden...</div>
         </div>
       ) : (

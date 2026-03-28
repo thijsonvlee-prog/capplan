@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function PeriodSelector({ startDate, dayCount, onChangeStart }: Props) {
-  if (!startDate) return <div className="flex items-center gap-2"><span className="text-sm text-gray-400">Laden...</span></div>;
+  if (!startDate) return <div className="flex items-center gap-2"><span className="text-sm text-text-tertiary">Laden...</span></div>;
 
   const start = new Date(startDate + "T00:00:00");
   const end = addDays(start, dayCount - 1);

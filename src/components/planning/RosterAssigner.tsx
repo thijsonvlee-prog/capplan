@@ -50,25 +50,25 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-surface-tertiary text-xs text-text-secondary">
-                  <th className="text-left p-2 border border-gray-200">#</th>
-                  <th className="text-left p-2 border border-gray-200">Profiel</th>
-                  <th className="text-left p-2 border border-gray-200">Ingangsdatum</th>
-                  <th className="text-left p-2 border border-gray-200">Einddatum</th>
-                  <th className="text-left p-2 border border-gray-200">Uren/week</th>
-                  <th className="w-8 border border-gray-200"></th>
+                  <th className="text-left p-2 border border-border-default">#</th>
+                  <th className="text-left p-2 border border-border-default">Profiel</th>
+                  <th className="text-left p-2 border border-border-default">Ingangsdatum</th>
+                  <th className="text-left p-2 border border-border-default">Einddatum</th>
+                  <th className="text-left p-2 border border-border-default">Uren/week</th>
+                  <th className="w-8 border border-border-default"></th>
                 </tr>
               </thead>
               <tbody>
                 {records.map((r) => (
                   <tr key={r.id} className={!r.endDate ? "bg-brand-50" : ""}>
-                    <td className="p-2 border border-gray-200 text-sm">{r.sequenceNumber}</td>
-                    <td className="p-2 border border-gray-200 text-sm">{r.profileName}</td>
-                    <td className="p-2 border border-gray-200 text-sm">{r.startDate}</td>
-                    <td className="p-2 border border-gray-200 text-sm">
+                    <td className="p-2 border border-border-default text-sm">{r.sequenceNumber}</td>
+                    <td className="p-2 border border-border-default text-sm">{r.profileName}</td>
+                    <td className="p-2 border border-border-default text-sm">{r.startDate}</td>
+                    <td className="p-2 border border-border-default text-sm">
                       {r.endDate || <span className="text-green-600 text-xs font-medium">Actief</span>}
                     </td>
-                    <td className="p-2 border border-gray-200 text-sm">{r.weeklyHours ?? "-"}</td>
-                    <td className="p-1 border border-gray-200 text-center">
+                    <td className="p-2 border border-border-default text-sm">{r.weeklyHours ?? "-"}</td>
+                    <td className="p-1 border border-border-default text-center">
                       <button
                         onClick={() => handleDelete(r.id)}
                         className="btn-icon-danger"

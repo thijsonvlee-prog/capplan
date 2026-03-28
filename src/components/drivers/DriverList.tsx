@@ -115,7 +115,7 @@ export function DriverList() {
                     {d.licenseTypes?.length ? (
                       <div className="flex gap-1 flex-wrap">
                         {d.licenseTypes.map((lt) => (
-                          <span key={lt} className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs">{lt}</span>
+                          <span key={lt} className="bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded text-xs">{lt}</span>
                         ))}
                       </div>
                     ) : "-"}

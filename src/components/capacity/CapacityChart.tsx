@@ -54,8 +54,8 @@ export const CapacityChart = memo(function CapacityChart({ capacityData, columnH
   const COMPARE_COLORS = ["#f97316", "#06b6d4", "#8b5cf6"];
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-4">Capaciteitsverloop</h3>
+    <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle p-4">
+      <h3 className="text-section-title mb-4">Capaciteitsverloop</h3>
       <ResponsiveContainer width="100%" height={350}>
         <AreaChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />

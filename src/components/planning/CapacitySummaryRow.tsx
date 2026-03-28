@@ -58,9 +58,9 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
 
   if (!expanded) {
     return (
-      <tr className="bg-blue-50/60 border-t-2 border-blue-200">
+      <tr className="bg-brand-50/60 border-t-2 border-brand-200">
         <td
-          className={`px-2 py-1 border border-gray-200 sticky left-0 bg-blue-50 z-10 ${fontSize} font-semibold text-blue-700 cursor-pointer whitespace-nowrap`}
+          className={`px-2 py-1 border border-border-default sticky left-0 bg-brand-50 z-10 ${fontSize} font-semibold text-brand-700 cursor-pointer whitespace-nowrap`}
           style={{ minWidth: driverColWidth }}
           onClick={() => setExpanded(true)}
           title="Klik om alle statussen te tonen"
@@ -70,7 +70,7 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
         {Array.from({ length: extraColumnCount }).map((_, i) => (
           <td
             key={`extra-${i}`}
-            className="border border-gray-200 sticky bg-blue-50 z-10"
+            className="border border-border-default sticky bg-brand-50 z-10"
             style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth }}
           />
         ))}
@@ -80,12 +80,12 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
           return (
             <td
               key={columnHeaders[i].key}
-              className={`border border-gray-200 text-center py-0.5 ${fontSize}`}
+              className={`border border-border-default text-center py-0.5 ${fontSize}`}
               style={{ minWidth: minCellWidth }}
               title={ALL_PLANNING_STATUSES.map((s) => `${STATUS_LABELS[s]}: ${counts[s]}`).join("\n")}
             >
               <span className="font-semibold text-green-700">{available}</span>
-              <span className="text-gray-400">/{total}</span>
+              <span className="text-text-tertiary">/{total}</span>
             </td>
           );
         })}
@@ -96,10 +96,10 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
   return (
     <>
       {ALL_PLANNING_STATUSES.map((status, statusIdx) => (
-        <tr key={status} className="bg-blue-50/40">
+        <tr key={status} className="bg-brand-50/40">
           <td
-            className={`px-2 py-0.5 border border-gray-200 sticky left-0 bg-blue-50 z-10 ${fontSize} whitespace-nowrap ${
-              statusIdx === 0 ? "cursor-pointer font-semibold text-blue-700" : "pl-5 text-gray-600"
+            className={`px-2 py-0.5 border border-border-default sticky left-0 bg-brand-50 z-10 ${fontSize} whitespace-nowrap ${
+              statusIdx === 0 ? "cursor-pointer font-semibold text-brand-700" : "pl-5 text-text-secondary"
             }`}
             style={{ minWidth: driverColWidth }}
             onClick={statusIdx === 0 ? () => setExpanded(false) : undefined}
@@ -112,15 +112,15 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
           {Array.from({ length: extraColumnCount }).map((_, i) => (
             <td
               key={`extra-${i}`}
-              className="border border-gray-200 sticky bg-blue-50 z-10"
+              className="border border-border-default sticky bg-brand-50 z-10"
               style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth }}
             />
           ))}
           {columnCounts.map((counts, i) => (
             <td
               key={columnHeaders[i].key}
-              className={`border border-gray-200 text-center py-0.5 ${fontSize} ${
-                counts[status] > 0 ? "font-medium" : "text-gray-300"
+              className={`border border-border-default text-center py-0.5 ${fontSize} ${
+                counts[status] > 0 ? "font-medium" : "text-text-tertiary"
               }`}
               style={{ minWidth: minCellWidth }}
             >

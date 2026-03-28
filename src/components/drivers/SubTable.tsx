@@ -59,31 +59,31 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-surface-tertiary text-xs text-text-secondary">
-              <th className="text-left p-2 border border-gray-200">#</th>
-              <th className="text-left p-2 border border-gray-200">Begindatum</th>
-              <th className="text-left p-2 border border-gray-200">Einddatum</th>
+              <th className="text-left p-2 border border-border-default">#</th>
+              <th className="text-left p-2 border border-border-default">Begindatum</th>
+              <th className="text-left p-2 border border-border-default">Einddatum</th>
               {columns.map((col) => (
-                <th key={String(col.key)} className="text-left p-2 border border-gray-200">
+                <th key={String(col.key)} className="text-left p-2 border border-border-default">
                   {col.label}
                 </th>
               ))}
-              <th className="w-8 border border-gray-200"></th>
+              <th className="w-8 border border-border-default"></th>
             </tr>
           </thead>
           <tbody>
             {sorted.map((row) => (
               <tr key={row.id} className={!row.endDate ? "bg-brand-50" : ""}>
-                <td className="p-2 border border-gray-200 text-sm">{row.sequenceNumber}</td>
-                <td className="p-2 border border-gray-200 text-sm">{row.startDate}</td>
-                <td className="p-2 border border-gray-200 text-sm">
+                <td className="p-2 border border-border-default text-sm">{row.sequenceNumber}</td>
+                <td className="p-2 border border-border-default text-sm">{row.startDate}</td>
+                <td className="p-2 border border-border-default text-sm">
                   {row.endDate || <span className="text-green-600 text-xs font-medium">Actief</span>}
                 </td>
                 {columns.map((col) => (
-                  <td key={String(col.key)} className="p-2 border border-gray-200 text-sm">
+                  <td key={String(col.key)} className="p-2 border border-border-default text-sm">
                     {col.render ? col.render((row as any)[col.key], row) : String((row as any)[col.key] ?? "-")}
                   </td>
                 ))}
-                <td className="p-1 border border-gray-200 text-center">
+                <td className="p-1 border border-border-default text-center">
                   <button
                     onClick={() => { if (window.confirm(`Weet je zeker dat je het record vanaf ${row.startDate} wilt verwijderen?`)) onDelete(row.id); }}
                     className="btn-icon-danger"

@@ -97,16 +97,16 @@ export function RosterProfileEditor() {
             <table className="border-collapse text-xs">
               <thead>
                 <tr>
-                  <th className="p-1 text-gray-500 font-medium">Week</th>
+                  <th className="p-1 text-text-secondary font-medium">Week</th>
                   {DAY_LABELS.map((d) => (
-                    <th key={d} className="p-1 text-center text-gray-500 font-medium min-w-[32px]">{d}</th>
+                    <th key={d} className="p-1 text-center text-text-secondary font-medium min-w-[32px]">{d}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {[0, 1, 2, 3].map((weekIdx) => (
                   <tr key={weekIdx}>
-                    <td className="p-1 text-gray-400 font-medium">{weekIdx + 1}</td>
+                    <td className="p-1 text-text-tertiary font-medium">{weekIdx + 1}</td>
                     {Array.from({ length: 7 }, (_, dayIdx) => {
                       const offset = weekIdx * 7 + dayIdx;
                       const entry = grid[offset];

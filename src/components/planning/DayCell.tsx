@@ -53,14 +53,14 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
         className={cn(
           "w-full rounded-sm flex items-center justify-center transition-colors cursor-pointer",
           h,
-          entry ? "hover:opacity-80" : "bg-gray-50 hover:bg-gray-100"
+          entry ? "hover:opacity-80" : "bg-surface-secondary hover:bg-surface-tertiary"
         )}
         title={title || undefined}
       >
         {entry ? (
           <StatusBadge status={entry.status} compact sickPercentage={entry.sickPercentage} />
         ) : (
-          <span className="text-gray-300 text-xs">-</span>
+          <span className="text-text-tertiary text-xs">-</span>
         )}
       </button>
 
@@ -77,7 +77,7 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
             className="fixed inset-0 bg-black/10"
           />
           <div
-            className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 p-2 w-56"
+            className="fixed z-50 bg-surface-primary rounded-lg shadow-dropdown border border-border-default p-2 w-56"
             style={{
               top: "50%",
               left: "50%",
@@ -85,7 +85,7 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
             }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="text-xs font-medium text-gray-500 mb-2 px-1">
+            <div className="text-xs font-medium text-text-secondary mb-2 px-1">
               Status instellen — {date}
             </div>
             <StatusSelector
