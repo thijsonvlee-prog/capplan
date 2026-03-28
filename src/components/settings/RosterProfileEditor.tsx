@@ -2,37 +2,18 @@
 
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Save } from "lucide-react";
-import type { RosterProfileEntry, RosterProfile } from "@/lib/store";
-import {
-  useStore,
-  getRosterProfiles,
-  createRosterProfile,
-  updateRosterProfile,
-  deleteRosterProfile,
-} from "@/lib/store";
-import { cn, DAY_LABELS } from "@/lib/utils";
-
-const PROFILE_STATUSES = ["ROSTER_FREE", "BASE_ROSTER", "AVAILABLE_EXTRA"] as const;
-type ProfileStatus = (typeof PROFILE_STATUSES)[number];
-
-const PROFILE_STATUS_LABELS: Record<ProfileStatus, string> = {
-  ROSTER_FREE: "-",
-  BASE_ROSTER: "B",
-  AVAILABLE_EXTRA: "A",
-};
-
-const PROFILE_STATUS_COLORS: Record<ProfileStatus, string> = {
-  ROSTER_FREE: "bg-gray-200",
-  BASE_ROSTER: "bg-green-700 text-white",
-  AVAILABLE_EXTRA: "bg-green-300",
-};
+import type { RosterProfileEntry, RosterProfile } from "@/domain/types";
+import { useStore } from "@/repositories/localStorage/storage";
+import { services } from "@/services";
+import { ROSTER_PROFILE_STATUSES, STATUS_CODES, STATUS_COLORS, DAY_LABELS, type RosterProfileStatus } from "@/domain/constants";
+import { cn } from "@/lib/utils";
 
 function emptyGrid(): RosterProfileEntry[] {
-  return Array.from({ length: 28 }, (_, i) => ({ dayOffset: i, status: "ROSTER_FREE" as ProfileStatus }));
+  return Array.from({ length: 28 }, (_, i) => ({ dayOffset: i, status: "ROSTER_FREE" as const }));
 }
 
 export function RosterProfileEditor() {
-  const profiles = useStore(() => getRosterProfiles());
+  const profiles = useStore(() => services.rosterProfile.getAll());
   const [editingProfile, setEditingProfile] = useState<RosterProfile | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [name, setName] = useState("");
@@ -63,8 +44,8 @@ export function RosterProfileEditor() {
     setGrid((prev) => {
       const next = [...prev];
       const current = next[dayOffset].status;
-      const idx = PROFILE_STATUSES.indexOf(current as ProfileStatus);
-      next[dayOffset] = { dayOffset, status: PROFILE_STATUSES[(idx + 1) % PROFILE_STATUSES.length] };
+      const idx = ROSTER_PROFILE_STATUSES.indexOf(current as RosterProfileStatus);
+      next[dayOffset] = { dayOffset, status: ROSTER_PROFILE_STATUSES[(idx + 1) % ROSTER_PROFILE_STATUSES.length] };
       return next;
     });
   }
@@ -72,16 +53,16 @@ export function RosterProfileEditor() {
   function handleSave() {
     if (!name.trim()) return;
     if (isNew) {
-      createRosterProfile(name.trim(), grid);
+      services.rosterProfile.create(name.trim(), grid);
     } else if (editingProfile) {
-      updateRosterProfile(editingProfile.id, name.trim(), grid);
+      services.rosterProfile.update(editingProfile.id, name.trim(), grid);
     }
     setEditingProfile(null);
     setIsNew(false);
   }
 
   function handleDelete(id: string) {
-    deleteRosterProfile(id);
+    services.rosterProfile.delete(id);
   }
 
   const showEditor = isNew || editingProfile;
@@ -135,10 +116,10 @@ export function RosterProfileEditor() {
                             onClick={() => cycleStatus(offset)}
                             className={cn(
                               "w-8 h-8 rounded text-xs font-bold flex items-center justify-center transition-colors",
-                              PROFILE_STATUS_COLORS[entry.status as ProfileStatus]
+                              STATUS_COLORS[entry.status]
                             )}
                           >
-                            {PROFILE_STATUS_LABELS[entry.status as ProfileStatus]}
+                            {STATUS_CODES[entry.status]}
                           </button>
                         </td>
                       );

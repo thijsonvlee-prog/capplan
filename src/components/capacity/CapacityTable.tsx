@@ -1,11 +1,11 @@
 "use client";
 
-import type { PlanningStatus } from "@/lib/store";
-import { STATUS_LABELS, STATUS_COLORS } from "@/lib/utils";
+import type { PlanningStatus } from "@/domain/enums";
+import { STATUS_LABELS, STATUS_COLORS } from "@/domain/constants";
 
-const ALL_STATUSES: PlanningStatus[] = [
-  "BASE_ROSTER", "AVAILABLE_EXTRA", "ROSTER_FREE", "LEAVE", "SICK",
-];
+import { ALL_PLANNING_STATUSES } from "@/domain/constants";
+
+const ALL_STATUSES = ALL_PLANNING_STATUSES;
 
 type Props = {
   capacityData: Record<string, Record<PlanningStatus, number>>;

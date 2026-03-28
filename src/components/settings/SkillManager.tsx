@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
-import { useStore, getSkills, createSkill, updateSkill, deleteSkill } from "@/lib/store";
+import { useStore } from "@/repositories/localStorage/storage";
+import { services } from "@/services";
 
 export function SkillManager() {
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
 
-  const skills = useStore(() => getSkills());
+  const skills = useStore(() => services.settings.getSkills());
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
-    createSkill(newName.trim());
+    services.settings.createSkill(newName.trim());
     setNewName("");
   }
 
@@ -25,14 +26,14 @@ export function SkillManager() {
 
   function saveEdit() {
     if (editingId && editingName.trim()) {
-      updateSkill(editingId, editingName.trim());
+      services.settings.updateSkill(editingId, editingName.trim());
     }
     setEditingId(null);
     setEditingName("");
   }
 
   function handleDelete(id: string) {
-    deleteSkill(id);
+    services.settings.deleteSkill(id);
   }
 
   return (

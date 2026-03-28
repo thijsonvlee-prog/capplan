@@ -1,6 +1,6 @@
 "use client";
 
-import type { AggregationLevel } from "@/lib/store";
+import type { AggregationLevel } from "@/domain/enums";
 import { cn } from "@/lib/utils";
 
 const AGGREGATION_OPTIONS: { value: AggregationLevel; label: string }[] = [

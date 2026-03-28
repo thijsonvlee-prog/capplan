@@ -1,21 +1,18 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import type { AggregationLevel, PlanningStatus } from "@/lib/store";
-import {
-  useStore,
-  getCapacityForDateRange,
-  getScenarios,
-  getActiveScenarioId,
-} from "@/lib/store";
+import type { AggregationLevel } from "@/domain/enums";
+import type { PlanningStatus } from "@/domain/enums";
+import { useStore } from "@/repositories/localStorage/storage";
+import { services } from "@/services";
 import { CapacityTable } from "@/components/capacity/CapacityTable";
 import { CapacityChart } from "@/components/capacity/CapacityChart";
 import { PeriodSelector } from "@/components/planning/WeekSelector";
 import { ZoomSelector } from "@/components/planning/ZoomSelector";
+import { DAY_LABELS } from "@/domain/constants";
 import {
   getDateRange,
   getISOWeekNumber,
-  DAY_LABELS,
 } from "@/lib/utils";
 import { addDays } from "date-fns";
 
@@ -37,8 +34,8 @@ export default function CapacityPage() {
     setStartDate(monday.toISOString().split("T")[0]);
   }, []);
 
-  const activeId = useStore(() => getActiveScenarioId());
-  const scenarios = useStore(() => getScenarios());
+  const activeId = useStore(() => services.scenario.getActiveId());
+  const scenarios = useStore(() => services.scenario.getScenarios());
 
   const allDates = useMemo(() => {
     if (!startDate) return [];
@@ -136,7 +133,7 @@ export default function CapacityPage() {
   }, [allDates, aggregation]);
 
   const rawCapacity = useStore(() =>
-    allDates.length > 0 ? getCapacityForDateRange(allDates, activeId) : {}
+    allDates.length > 0 ? services.planning.getCapacityForDateRange(allDates, activeId) : {}
   );
 
   // Aggregate into display data
@@ -171,7 +168,7 @@ export default function CapacityPage() {
       .filter((id) => id !== activeId)
       .map((id) => {
         const scenario = scenarios.find((s) => s.id === id);
-        const data = getCapacityForDateRange(allDates, id);
+        const data = services.planning.getCapacityForDateRange(allDates, id);
         return { name: scenario?.name || id, data };
       })
   );

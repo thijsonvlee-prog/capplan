@@ -3,35 +3,28 @@
 import { useState } from "react";
 import { Plus, Pencil } from "lucide-react";
 import { DriverForm } from "./DriverForm";
-import {
-  useStore,
-  getDrivers,
-  createDriver,
-  updateDriver,
-  getSkills,
-  getDriverComputedFields,
-  type Driver,
-  EMPLOYMENT_TYPE_LABELS,
-} from "@/lib/store";
+import type { Driver } from "@/domain/types";
+import { useStore } from "@/repositories/localStorage/storage";
+import { services } from "@/services";
 
 export function DriverList() {
   const [showForm, setShowForm] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [search, setSearch] = useState("");
 
-  const drivers = useStore(() => getDrivers({ search: search || undefined }));
-  const skills = useStore(() => getSkills());
+  const drivers = useStore(() => services.driver.getDrivers({ search: search || undefined }));
+  const skills = useStore(() => services.settings.getSkills());
 
   const skillMap = new Map(skills.map((s) => [s.id, s.name]));
 
   function handleCreate(data: Omit<Driver, "id" | "isActive" | "createdAt" | "updatedAt">) {
-    createDriver(data);
+    services.driver.createDriver(data);
     setShowForm(false);
   }
 
   function handleUpdate(data: Partial<Omit<Driver, "id" | "createdAt">>) {
     if (!editingDriver) return;
-    updateDriver(editingDriver.id, data);
+    services.driver.updateDriver(editingDriver.id, data);
     setEditingDriver(null);
   }
 
@@ -93,7 +86,7 @@ export function DriverList() {
           </thead>
           <tbody>
             {drivers.map((d) => {
-              const computed = getDriverComputedFields(d);
+              const computed = services.driver.getComputedFields(d);
               return (
                 <tr key={d.id} className="border-t border-gray-100 hover:bg-gray-50">
                   <td className="p-3 text-sm">

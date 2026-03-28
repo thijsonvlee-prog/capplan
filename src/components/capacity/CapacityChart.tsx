@@ -10,8 +10,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import type { PlanningStatus } from "@/lib/store";
-import { STATUS_LABELS, STATUS_CHART_COLORS } from "@/lib/utils";
+import type { PlanningStatus } from "@/domain/enums";
+import { STATUS_LABELS, STATUS_CHART_COLORS } from "@/domain/constants";
 
 const CHART_STATUSES: PlanningStatus[] = [
   "BASE_ROSTER", "AVAILABLE_EXTRA", "ROSTER_FREE", "LEAVE", "SICK",

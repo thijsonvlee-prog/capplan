@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
-import { initializeStore } from "@/lib/store";
+import { initializeStore } from "@/repositories/localStorage/storage";
 
 export default function DashboardLayout({
   children,

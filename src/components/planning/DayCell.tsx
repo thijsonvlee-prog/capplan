@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { PlanningEntry, PlanningStatus, StamtabelRecord, DensityLevel } from "@/lib/store";
+import type { PlanningStatus, DensityLevel } from "@/domain/enums";
+import type { PlanningEntry, StamtabelRecord } from "@/domain/types";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 import { cn } from "@/lib/utils";

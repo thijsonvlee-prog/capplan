@@ -1,17 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { PlanningStatus } from "@/lib/store";
-import { useStore, getLeaveTypes } from "@/lib/store";
-import { STATUS_LABELS, STATUS_COLORS, cn } from "@/lib/utils";
-
-const MAIN_STATUSES: PlanningStatus[] = [
-  "ROSTER_FREE",
-  "BASE_ROSTER",
-  "AVAILABLE_EXTRA",
-  "LEAVE",
-  "SICK",
-];
+import type { PlanningStatus } from "@/domain/enums";
+import { ALL_PLANNING_STATUSES, STATUS_LABELS, STATUS_COLORS } from "@/domain/constants";
+import { useStore } from "@/repositories/localStorage/storage";
+import { services } from "@/services";
+import { cn } from "@/lib/utils";
 
 type Props = {
   currentStatus?: PlanningStatus;
@@ -26,7 +20,7 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
   const [showSickInput, setShowSickInput] = useState(false);
   const [sickPct, setSickPct] = useState(currentSickPercentage ?? 0);
 
-  const leaveTypes = useStore(() => getLeaveTypes());
+  const leaveTypes = useStore(() => services.settings.getLeaveTypes());
 
   function handleStatusClick(status: PlanningStatus) {
     if (status === "LEAVE") {
@@ -54,7 +48,7 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
     <div>
       {!showLeaveMenu && !showSickInput && (
         <div className="space-y-1">
-          {MAIN_STATUSES.map((status) => (
+          {ALL_PLANNING_STATUSES.map((status) => (
             <button
               key={status}
               onClick={() => handleStatusClick(status)}
