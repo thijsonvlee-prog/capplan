@@ -29,8 +29,8 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Status:** Planned
 - **Input:** Er moeten grotere stappen gemaakt worden in het redesign om te voldoen aan design.md. Stuur aan op grotere verbeteringen, minder schaven aan bestaand ontwerp, maar echt componenten en schermen opnieuw ontwerpen obv design.md. Luister dus ook goed naar de aanbevelingen van de experience agent.
 - **Why this matters:** The Scrum Master is signaling that incremental polish is no longer sufficient. The product needs visible, meaningful redesign steps.
-- **Product Owner action:** Planning grid redesign (3 phases) complete. DayCell popup redesign complete. Date input wrapper complete. Next major UX deliverable: settings page layout (PB-041).
-- **Backlog linkage:** PB-032 (done), PB-034 (done), PB-035 (done), PB-037 (done), PB-038 (done), PB-039 (done), PB-041 (ready).
+- **Product Owner action:** Planning grid redesign (3 phases) complete. DayCell popup redesign complete. Date input wrapper complete. Settings page tab navigation complete. Next major UX deliverable: drivers page composition (PB-048).
+- **Backlog linkage:** PB-032 (done), PB-034 (done), PB-035 (done), PB-037 (done), PB-038 (done), PB-039 (done), PB-041 (done), PB-048 (ready).
 
 ### SMI-002: Keep improvements incremental during stabilization
 

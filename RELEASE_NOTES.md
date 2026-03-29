@@ -6,14 +6,16 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-### Instellingenpagina herontwerp
+_No unreleased changes._
+
+## Release History
+
+### 2026-03-29 (nacht) — Instellingenpagina herontwerp en technische opschoning
 
 #### UX / design verbeteringen
 
 - De instellingenpagina gebruikt nu tabnavigatie (Stamgegevens, Competenties, Roosters) in plaats van een lange verticale lijst. Elke tab toont een duidelijke sectietitel met contextbeschrijving. Het tabblad Stamgegevens toont een totaalbadge.
 - Invoervelden in stamtabelbeheer gebruiken nu dezelfde gestylede `input-field` klasse als de rest van de applicatie, voor consistente focus- en randstijlen.
-
-### Technische verbeteringen en betrouwbaarheid
 
 #### Betrouwbaarheid
 
@@ -22,27 +24,22 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### Prestaties
 
-- Het planningsrooster herberekent de gefilterde en gesorteerde chauffeurlijst alleen wanneer data of filter daadwerkelijk wijzigen, in plaats van bij elke render. ESLint-waarschuwingen teruggebracht van 2 naar 1.
+- Het planningsrooster herberekent de gefilterde en gesorteerde chauffeurlijst alleen wanneer data of filter daadwerkelijk wijzigen, in plaats van bij elke render.
 
 #### Interne kwaliteit
 
 - Ongebruikte `patchBody` helper, `isDriverActiveByEmployment` functie, misleidende `userId` parameter in voorkeuren-API en overbodige cascade-verwijderingen opgeruimd.
-
-## Release History
+- Ongebruikte `preferences.getAll()` en `preferences.remove()` methoden verwijderd uit de frontend API-laag.
 
 ### 2026-03-29 (avond) — Datuminvoer, planningsrooster verfijning en codekwaliteit
 
 #### UX / design verbeteringen
 
-- Alle datumvelden in de applicatie gebruiken nu een gestylede invoer met kalenderknop, consistent met het ontwerpsysteem. De standaard browser-datuminvoer is vervangen door een wrapper met een zichtbaar kalendericoon.
+- Alle datumvelden in de applicatie gebruiken nu een gestylede invoer met kalenderknop, consistent met het ontwerpsysteem.
 - Statuscellen in het planningsrooster tonen nu een kleurindicatorstip naast de statusletter voor snellere visuele herkenning bij scannen.
 - Lege cellen in het planningsrooster zijn subtieler en vallen visueel minder op, waardoor de aandacht naar gevulde cellen gaat.
 - Geaggregeerde weergave (week/maand) gebruikt dezelfde statuschip-stijl als de dagweergave voor consistentie.
 - Celknoppen hebben een zachtere rand voor een meer product-achtige uitstraling.
-
-#### Interne kwaliteit
-
-- Ongebruikte `preferences.getAll()` en `preferences.remove()` methoden verwijderd uit de frontend API-laag.
 
 ### 2026-03-29 — DayCell popup, planningsrooster redesign en kwaliteitsverbeteringen
 
