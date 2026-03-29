@@ -70,7 +70,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
                     <td className="p-2 border border-border-default text-sm">{r.profileName}</td>
                     <td className="p-2 border border-border-default text-sm">{r.startDate}</td>
                     <td className="p-2 border border-border-default text-sm">
-                      {r.endDate || <span className="text-green-600 text-xs font-medium">Actief</span>}
+                      {r.endDate || <span className="text-success-600 text-xs font-medium">Actief</span>}
                     </td>
                     <td className="p-2 border border-border-default text-sm">{r.weeklyHours ?? "-"}</td>
                     <td className="p-1 border border-border-default text-center">

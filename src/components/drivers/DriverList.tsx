@@ -129,7 +129,7 @@ export function DriverList() {
                     {d.skillIds?.length ? (
                       <div className="flex gap-1 flex-wrap">
                         {d.skillIds.map((sid) => (
-                          <span key={sid} className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-xs">
+                          <span key={sid} className="bg-success-50 text-success-700 px-1.5 py-0.5 rounded text-xs">
                             {skillMap.get(sid) || sid}
                           </span>
                         ))}

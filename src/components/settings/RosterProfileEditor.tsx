@@ -104,11 +104,11 @@ export function RosterProfileEditor() {
               value={name}
               onChange={(e) => { setName(e.target.value); if (e.target.value.trim()) setShowValidation(false); }}
               placeholder="Profielnaam..."
-              className={`input-field w-64 ${showValidation && !name.trim() ? "border-red-400" : ""}`}
+              className={`input-field w-64 ${showValidation && !name.trim() ? "border-danger-400" : ""}`}
               autoFocus
             />
             {showValidation && !name.trim() && (
-              <div className="text-xs text-red-600 mt-1">Vul een profielnaam in.</div>
+              <div className="text-xs text-danger-600 mt-1">Vul een profielnaam in.</div>
             )}
           </div>
           <div className="text-caption mb-1">Klik op een cel om de status te wisselen: Roostervrij → Basisrooster → Aanvullend beschikbaar</div>

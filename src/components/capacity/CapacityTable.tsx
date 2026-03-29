@@ -51,7 +51,7 @@ export function CapacityTable({ capacityData, columnHeaders }: Props) {
           <tr className="bg-surface-tertiary font-semibold">
             <td className="p-2 border border-border-default text-xs">Beschikbaar</td>
             {columnHeaders.map((col) => (
-              <td key={col.key} className="p-2 border border-border-default text-center text-xs text-green-700">
+              <td key={col.key} className="p-2 border border-border-default text-center text-xs text-success-700">
                 {availableDrivers(col.key)}
               </td>
             ))}

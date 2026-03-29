@@ -70,7 +70,7 @@ export function SkillManager() {
         </button>
       </form>
       {showValidation && !newName.trim() && (
-        <div className="px-4 pb-2 -mt-2 text-xs text-red-600">Vul een vaardigheidsnaam in.</div>
+        <div className="px-4 pb-2 -mt-2 text-xs text-danger-600">Vul een vaardigheidsnaam in.</div>
       )}
 
       <div className="divide-y divide-border-subtle">
@@ -86,7 +86,7 @@ export function SkillManager() {
                   autoFocus
                   onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
                 />
-                <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-50 rounded-md">
+                <button onClick={saveEdit} className="p-1 text-success-600 hover:bg-success-50 rounded-md">
                   <Check className="w-4 h-4" />
                 </button>
                 <button onClick={() => setEditingId(null)} className="btn-icon">

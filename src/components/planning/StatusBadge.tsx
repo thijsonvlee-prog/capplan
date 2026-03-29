@@ -20,8 +20,8 @@ export function StatusBadge({ status, compact, sickPercentage }: Props) {
           compact ? "text-xs" : "text-sm"
         )}
         style={{
-          background: `linear-gradient(to right, #ef4444 ${100 - sickPercentage}%, #22c55e ${100 - sickPercentage}%)`,
-          color: "white",
+          background: `linear-gradient(to right, var(--color-danger-500) ${100 - sickPercentage}%, var(--color-success-500) ${100 - sickPercentage}%)`,
+          color: "var(--color-text-inverse)",
           padding: compact ? "2px 6px" : "4px 8px",
         }}
       >

@@ -168,7 +168,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
                     type="button"
                     onClick={() => toggleSkill(s.id)}
                     className={`px-3 py-1 rounded-md text-sm border transition-colors ${
-                      selectedSkills.includes(s.id) ? "bg-green-600 text-white border-green-600" : "bg-surface-primary text-text-primary border-border-default hover:bg-surface-secondary"
+                      selectedSkills.includes(s.id) ? "bg-success-600 text-text-inverse border-success-600" : "bg-surface-primary text-text-primary border-border-default hover:bg-surface-secondary"
                     }`}
                   >
                     {s.name}

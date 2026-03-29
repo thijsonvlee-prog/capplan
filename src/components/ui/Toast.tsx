@@ -64,14 +64,14 @@ export function ToastContainer() {
           key={toast.id}
           className={`pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-lg shadow-dropdown text-sm font-medium animate-slide-in ${
             toast.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
+              ? "bg-success-50 text-success-800 border border-success-200"
+              : "bg-danger-50 text-danger-800 border border-danger-200"
           }`}
         >
           {toast.type === "success" ? (
-            <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+            <CheckCircle className="w-4 h-4 text-success-600 shrink-0" />
           ) : (
-            <XCircle className="w-4 h-4 text-red-600 shrink-0" />
+            <XCircle className="w-4 h-4 text-danger-600 shrink-0" />
           )}
           <span>{toast.message}</span>
           <button

@@ -26,11 +26,11 @@ export const STATUS_CODES: Record<PlanningStatus, string> = {
 };
 
 export const STATUS_COLORS: Record<PlanningStatus, string> = {
-  ROSTER_FREE: "bg-gray-200 text-gray-600",
-  BASE_ROSTER: "bg-green-700 text-white",
-  AVAILABLE_EXTRA: "bg-green-300 text-green-900",
-  LEAVE: "bg-yellow-300 text-yellow-900",
-  SICK: "bg-red-500 text-white",
+  ROSTER_FREE: "bg-surface-inset text-text-secondary",
+  BASE_ROSTER: "bg-success-700 text-text-inverse",
+  AVAILABLE_EXTRA: "bg-success-300 text-success-900",
+  LEAVE: "bg-warning-300 text-warning-900",
+  SICK: "bg-danger-500 text-text-inverse",
 };
 
 export const STATUS_CHART_COLORS: Record<PlanningStatus, string> = {

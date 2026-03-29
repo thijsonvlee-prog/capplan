@@ -84,7 +84,7 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
                 onClick={() => handleLeaveSelect(lt.id)}
                 className={cn(
                   "w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors",
-                  currentLeaveTypeId === lt.id ? "bg-yellow-200 text-yellow-900 font-semibold" : "hover:bg-surface-secondary"
+                  currentLeaveTypeId === lt.id ? "bg-warning-200 text-warning-900 font-semibold" : "hover:bg-surface-secondary"
                 )}
               >
                 <span className="text-xs text-text-tertiary mr-2">{lt.code}</span>
@@ -126,7 +126,7 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
             </div>
             <button
               onClick={handleSickConfirm}
-              className="w-full bg-red-500 text-white px-3 py-1.5 rounded text-sm hover:bg-red-600"
+              className="w-full bg-danger-500 text-text-inverse px-3 py-1.5 rounded text-sm hover:bg-danger-600"
             >
               Bevestigen
             </button>

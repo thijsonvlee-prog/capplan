@@ -76,7 +76,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
                 <td className="p-2 border border-border-default text-sm">{row.sequenceNumber}</td>
                 <td className="p-2 border border-border-default text-sm">{row.startDate}</td>
                 <td className="p-2 border border-border-default text-sm">
-                  {row.endDate || <span className="text-green-600 text-xs font-medium">Actief</span>}
+                  {row.endDate || <span className="text-success-600 text-xs font-medium">Actief</span>}
                 </td>
                 {columns.map((col) => (
                   <td key={String(col.key)} className="p-2 border border-border-default text-sm">

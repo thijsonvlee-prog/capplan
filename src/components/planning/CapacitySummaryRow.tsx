@@ -84,7 +84,7 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
               style={{ minWidth: minCellWidth }}
               title={ALL_PLANNING_STATUSES.map((s) => `${STATUS_LABELS[s]}: ${counts[s]}`).join("\n")}
             >
-              <span className="font-semibold text-green-700">{available}</span>
+              <span className="font-semibold text-success-700">{available}</span>
               <span className="text-text-tertiary">/{total}</span>
             </td>
           );

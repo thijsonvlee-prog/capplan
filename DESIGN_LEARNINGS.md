@@ -35,7 +35,14 @@ Dit bestand bevat de verzamelde learnings van terugkerende design- en visual pol
 | Modals | Inconsistente overlay/shadow stijlen | Laag | Opgelost | shadow-modal token, surface-primary bg, consistente structuur |
 | Density/toolbar buttons | Geen uniforme control stijl | Laag | Opgelost | border-border-default + text-text-secondary + surface-secondary hover |
 | Icon buttons (edit/delete) | Mix van inline hover kleuren | Laag | Opgelost | .btn-icon en .btn-icon-danger classes |
-| StatusBadge kleuren | Direct in constants.ts, niet in tokens | Laag | Open | Overwegen bij P2 verfijning |
+| StatusBadge kleuren | Direct in constants.ts, niet in tokens | Laag | Opgelost | Gemigreerd naar success/danger/warning tokens in run 4 |
+| Functionele kleuren | Geen success/danger/warning tokens | Midden | Opgelost | 18 tokens toegevoegd (success, danger, warning) in run 4 |
+| Toast kleuren | Hardcoded green-*/red-* | Laag | Opgelost | Gemigreerd naar success/danger tokens in run 4 |
+| Validatie kleuren | Hardcoded red-400/red-600 | Laag | Opgelost | Gemigreerd naar danger tokens in run 4 |
+| Skill badges/toggles | Hardcoded green-50/green-600 | Laag | Opgelost | Gemigreerd naar success tokens in run 4 |
+| Ziek-bevestigknop | Hardcoded bg-red-500 | Laag | Opgelost | bg-danger-500 in run 4 |
+| btn-icon-danger | Hardcoded hex #dc2626/#fef2f2 | Laag | Opgelost | CSS vars danger-600/danger-50 in run 4 |
+| Capacity compare button | orange-100/orange-700 (hardcoded) | Laag | Open | Enige resterende hardcoded kleur; overwegen als apart token |
 | Settings card surfaces | SkillManager/RosterProfileEditor gebruikten bg-white/shadow | Laag | Opgelost | surface-primary + shadow-card + border-border-subtle |
 | Planning grid borders/headers | Hardcoded gray-50/gray-200 | Midden | Opgelost | Alle borders → border-default, headers → surface-tertiary |
 | Capacity page/table | Hardcoded grays, geen tokens | Midden | Opgelost | Volledige migratie naar tokens in run 3 |
@@ -50,6 +57,11 @@ Dit bestand bevat de verzamelde learnings van terugkerende design- en visual pol
 | DriverList license badge | bg-blue-50 text-blue-700 | Laag | Opgelost | bg-brand-50 text-brand-700 |
 | Loading spinners | Hardcoded inline border classes | Laag | Opgelost | .spinner utility class in globals.css |
 
+## Terugkerende designaandachtspunten (bijgewerkt)
+- functionele kleuren (success/danger/warning) ontbraken als tokens — nu opgelost in run 4
+- StatusBadge kleuren waren hardcoded Tailwind utilities — nu opgelost via functionele tokens
+- .btn-icon-danger bevatte nog hardcoded hex — nu opgelost via CSS vars
+
 ## Bewezen effectieve designverbeteringen
 - CSS @theme tokens voor kleuren, shadows, radius — werkt goed met Tailwind v4
 - Typography utility classes (.text-page-title, .text-section-title, .text-label, .text-caption) — herbruikbaar
@@ -63,21 +75,22 @@ Dit bestand bevat de verzamelde learnings van terugkerende design- en visual pol
 - .form-label class: uniforme label styling (gewicht, kleur, spacing) over alle formulieren
 - .spinner class: herbruikbare loading spinner via globals.css — voorkomt dubbele inline border-constructies
 - Systematische replace_all van hardcoded kleuren is effectief en veilig als de tokenlaag al goed staat
+- Functionele kleur-tokens (success/danger/warning) geven semantische betekenis aan kleuren; makkelijker te onderhouden dan losse Tailwind green/red/yellow
+- STATUS_COLORS migreren naar tokens was onterecht als "risicovol" gemarkeerd — bleek een eenvoudige string-vervanging
 
 ## Dingen die weinig opleverden of juist risico gaven
 - Google Fonts (Inter) via next/font/google werkt niet in offline/sandbox omgevingen — system font stack is veiliger
 - Te veel tegelijk veranderen vergroot risico op regressies; tokens eerst, dan component voor component
 
 ## Aandachtspunten voor volgende runs
-- StatusBadge kleuren overwegen als design tokens (nu in constants.ts met Tailwind utility classes)
 - Tab component (DriverForm) herbruikbaar maken als shared component
 - Toggle chip buttons (rijbewijs, vaardigheden) eigen .chip-toggle class overwegen
 - Checkbox/radio styling verbeteren (column picker gebruikt nu accent-brand-600 maar verder browser defaults)
 - Spacing tussen secties op settings-pagina evalueren
-- Scenario compare buttons op capacity page gebruiken nog orange-100/orange-700 (geen token)
-- StatusSelector bevestigknop (ziek) gebruikt nog bg-red-500 (functionele kleur, overwegen als token)
+- Scenario compare buttons op capacity page gebruiken nog orange-100/orange-700 (geen token — enige resterende hardcoded kleur)
 - Shared component voor tabel-header styling (nu herhaald patroon: bg-surface-tertiary + text-label)
 - Motion/transition systeem: transitions zijn nu ad-hoc per component, geen centraal patroon
+- Nu P1+P2 token fundament compleet is: runs kunnen focussen op componentpatronen (tab, chip, tabel-header) en custom UI
 
 ## Designgeschiedenis
 
@@ -227,3 +240,62 @@ Token-migratie in tabellen en data-componenten (P1 fundament — consistentie)
 5. Functionele kleur-tokens toevoegen (success/warning/danger) voor scenario compare, ziek-bevestig, etc.
 6. Motion/transition standaardisatie (P3)
 7. Nu het tokenfundament compleet is: volgende runs kunnen focussen op P2/P3 verfijning en custom UI-elementen
+
+### 2026-03-29 (Run 4)
+**Samenvatting**
+Functionele kleur-tokens (success/danger/warning) toegevoegd en alle hardcoded green/red/yellow Tailwind kleuren in componenten gemigreerd. STATUS_COLORS in constants.ts nu volledig op design tokens. Token-systeem is nu compleet.
+
+**Gekozen ontwerpthema**
+Functionele Kleur Tokens (P2 verfijning — semantische kleuren)
+
+**Geanalyseerd**
+- Alle .tsx bestanden gescand op resterende hardcoded functionele kleuren (green-*, red-*, yellow-*, orange-*)
+- 18 locaties in 14 bestanden gevonden
+- STATUS_COLORS in constants.ts: 5 statussen met losse Tailwind utilities
+- StatusBadge inline gradient met hardcoded hex
+- Toast success/error kleuren
+- Validatie-foutmeldingen (red-600, red-400)
+- Actief-labels (green-600)
+- Beschikbaar-tellers (green-700)
+- Skill badges/toggles (green-50/green-600)
+- Save/confirm buttons (green-600, red-500)
+- .btn-icon-danger hover met hardcoded hex
+
+**Doorgevoerd**
+- globals.css @theme: 18 functionele kleur-tokens (success-50/200/300/500/600/700/800/900, danger-50/200/400/500/600/800, warning-200/300/900)
+- globals.css: .btn-icon-danger hover van hardcoded #dc2626/#fef2f2 naar var(--color-danger-600)/var(--color-danger-50))
+- constants.ts: STATUS_COLORS volledig op tokens (surface-inset, success-700, success-300, warning-300, danger-500)
+- StatusBadge.tsx: inline gradient hex → CSS vars (--color-danger-500, --color-success-500, --color-text-inverse)
+- DriverForm.tsx: skill toggle bg-green-600 → bg-success-600
+- DriverList.tsx: skill badge bg-green-50 text-green-700 → success-50/success-700
+- SubTable.tsx: "Actief" label text-green-600 → text-success-600
+- RosterAssigner.tsx: "Actief" label text-green-600 → text-success-600
+- CapacityTable.tsx: beschikbaar-rij text-green-700 → text-success-700
+- CapacitySummaryRow.tsx: beschikbaar-teller text-green-700 → text-success-700
+- SkillManager.tsx: validatie text-red-600 → text-danger-600, save button text-green-600 → text-success-600
+- StamtabelManager.tsx: idem
+- RosterProfileEditor.tsx: validatie border-red-400 → border-danger-400, text-red-600 → text-danger-600
+- StatusSelector.tsx: ziek-bevestigknop bg-red-500 → bg-danger-500, verloftype bg-yellow-200 → bg-warning-200
+- Toast.tsx: success bg-green-50/text-green-800/border-green-200 → success tokens, error bg-red-50/text-red-800 → danger tokens
+
+**Niet doorgevoerd**
+- Capacity page scenario compare button (orange-100/orange-700) — enige resterende hardcoded kleur, past niet in success/danger/warning taxonomie. Documenteren als apart token voor toekomstige run.
+- STATUS_CHART_COLORS hex waarden — Recharts vereist string hex, geen CSS vars mogelijk. Overweeg commentaar toevoegen dat deze hex waarden corresponderen met tokens.
+
+**Nieuwe learnings**
+- Functionele kleur-tokens geven semantische betekenis: text-danger-600 communiceert intent beter dan text-red-600
+- STATUS_COLORS migratie was eenvoudiger dan verwacht; eerder onterecht als risicovol aangemerkt
+- Na 4 runs: nul hardcoded kleuren in .tsx bestanden behalve 1 orange compare button
+- .btn-icon-danger was laatste CSS-regel met hardcoded hex; nu ook via tokens
+- CSS vars werken goed in inline styles voor gradiënten (StatusBadge sick split)
+- Het complete tokensysteem omvat nu: brand (10), neutral surfaces (4), borders (3), text (4), sidebar (5), functional (18), shadows (4), radius (4) = 52 design tokens
+
+**Aanbevolen vervolgstappen**
+1. Tab component herbruikbaar maken (P2 structurele verfijning)
+2. Toggle chip class (.chip-toggle) voor rijbewijs/vaardigheden/filter buttons (P2)
+3. Shared tabel-header component of utility class (P2)
+4. Checkbox/radio custom styling (P3 polish)
+5. Motion/transition standaardisatie (P3)
+6. Orange compare token overwegen of negeren (P4 — slechts 1 locatie)
+7. Spacing en compositie evalueren op settings/drivers pagina's (P2 structureel)
+8. Custom UI-patronen identificeren voor meer eigen signatuur (P3 onderscheidend)
