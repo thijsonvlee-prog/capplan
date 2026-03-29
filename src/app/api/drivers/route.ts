@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { transformDriver, driverInclude, activeDriverWhereClause } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateOptionalForeignKey } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/drivers",
@@ -67,6 +67,35 @@ export const POST = withPerfLogging(
     }
     if (!lastName || typeof lastName !== "string" || lastName.trim().length === 0) {
       return NextResponse.json({ error: "Achternaam is verplicht" }, { status: 400 });
+    }
+
+    // Validate all FK references in nested records
+    const fkChecks: Promise<string | null>[] = [];
+    if (skillIds?.length) {
+      fkChecks.push(validateForeignKeys([{ ids: skillIds, model: prisma.skill, label: "competenties" }]));
+    }
+    if (employmentRecords?.length) {
+      for (const r of employmentRecords) {
+        if (r.employerId) fkChecks.push(validateOptionalForeignKey(r.employerId, prisma.employer, "werkgever"));
+      }
+    }
+    if (functionRecords?.length) {
+      for (const r of functionRecords) {
+        if (r.locationId) fkChecks.push(validateOptionalForeignKey(r.locationId, prisma.location, "locatie"));
+        if (r.departmentId) fkChecks.push(validateOptionalForeignKey(r.departmentId, prisma.department, "afdeling"));
+      }
+    }
+    if (rosterAssignments?.length) {
+      for (const r of rosterAssignments) {
+        if (r.rosterProfileId) fkChecks.push(validateOptionalForeignKey(r.rosterProfileId, prisma.rosterProfile, "roosterprofiel"));
+      }
+    }
+    if (fkChecks.length > 0) {
+      const fkErrors = await Promise.all(fkChecks);
+      const fkError = fkErrors.find((e) => e !== null);
+      if (fkError) {
+        return NextResponse.json({ error: fkError }, { status: 400 });
+      }
     }
 
     const driver = await prisma.driver.create({

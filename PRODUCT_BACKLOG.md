@@ -74,7 +74,7 @@ _No items currently in progress._
 ### PB-018: Add foreign key existence checks before relation creation
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Added `validateForeignKeys` and `validateOptionalForeignKey` helpers to `api-route-utils.ts`. Applied FK existence validation to 8 routes: driver PUT (skillIds), employment POST/PUT (employerId), function POST/PUT (locationId, departmentId), roster-assignment POST/PUT (rosterProfileId), and planning bulk POST (leaveTypeId). Invalid references now return 400 with a Dutch error message instead of causing 500 FK constraint errors.
+- **Summary:** Added `validateForeignKeys` and `validateOptionalForeignKey` helpers to `api-route-utils.ts`. Applied FK existence validation to 10 routes: driver POST (all nested FKs) and PUT (skillIds), employment POST/PUT (employerId), function POST/PUT (locationId, departmentId), roster-assignment POST/PUT (rosterProfileId), planning POST and bulk POST (leaveTypeId). Invalid references now return 400 with a Dutch error message instead of causing 500 FK constraint errors.
 
 ### PB-058: RosterAssigner driver name format consistency
 - **Completed:** 2026-03-29

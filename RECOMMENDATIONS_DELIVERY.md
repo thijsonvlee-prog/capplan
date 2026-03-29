@@ -51,6 +51,19 @@ The codebase is in good shape. Remaining improvement opportunities are lower pri
 - **Suggested owner:** Delivery Agent
 - **Why now:** PB-030 exists. Quick compliance fix.
 
+### DE-REC-032: Replace linear .find() lookups with Map-based lookups in api-helpers.ts
+
+- **Title:** Pre-build Maps for employer/location/department lookups in groupDrivers and getComputedFields
+- **Problem:** `src/lib/api-helpers.ts` uses `.find()` inside loops to resolve employer, location, and department names. With N drivers × M records, this is O(N×M) per lookup array. `PlanningGrid.tsx` has a similar pattern in `resolveColumnValue` for the same lookup arrays.
+- **Proposed improvement:** Pre-build `Map<id, name>` from employer/location/department arrays once, then use `.get()` for O(1) lookups. The skill lookup already uses this pattern (line 106 in PlanningGrid).
+- **Expected product/technical value:** Faster rendering for large driver lists. Consistent with existing skillMap pattern.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Straightforward performance improvement. Follows existing pattern. Benefits users with larger datasets.
+
 ### DE-REC-031: Add PerformanceEvent table cleanup
 
 - **Title:** Call `cleanupOldEvents()` or add TTL-based cleanup for PerformanceEvent
