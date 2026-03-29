@@ -6,17 +6,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-### UX / design verbeteringen
-
-- Alle verwijderbevestigingen gebruiken nu een gestylede dialoog in plaats van de standaard browserdialoog. Elke bevestiging toont specifiek wat er verwijderd wordt (naam, datum).
-- De instellingenpagina heeft een paginakop met titel en beschrijving.
-- De capaciteitspagina heeft een paginakop met titel en scenariobadge.
-- Vergelijkingsknoppen op de capaciteitspagina gebruiken nu de juiste designtokens.
-
-### Toegankelijkheid
-
-- Focus wordt vastgehouden binnen open modale vensters. Tab/Shift+Tab bladert alleen door elementen in het venster. Bij sluiten keert de focus terug naar het oorspronkelijke element.
-- Bevestigingsdialogen ondersteunen de Escape-toets voor annuleren en klikken op de achtergrond.
+_Geen onuitgebrachte wijzigingen._
 
 ## Release History
 
@@ -24,22 +14,24 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### UX / design verbeteringen
 
+- Alle verwijderbevestigingen gebruiken nu een gestylede dialoog in plaats van de standaard browserdialoog. Elke bevestiging toont specifiek wat er verwijderd wordt (naam, datum).
 - De werkbalk van het planningsscherm is gegroepeerd in logische secties: Periode, Weergave, Zoeken & Filteren, en Weergaveopties. Elke groep is visueel onderscheiden met subtiele containers.
 - Het chauffeursoverzicht heeft een volledige paginakop met de titel "Chauffeurs", een teller-badge, zoekbalk met icoon, en een prominente knop "Chauffeur toevoegen".
-- De instellingenpagina is gegroepeerd in drie secties: Stamgegevens, Competenties en Roosters, elk met een koptekst en korte introductietekst.
+- De instellingenpagina heeft een paginakop met titel en beschrijving, en is gegroepeerd in drie secties: Stamgegevens, Competenties en Roosters.
+- De capaciteitspagina heeft een paginakop met titel en scenariobadge. Vergelijkingsknoppen gebruiken nu de juiste designtokens.
 - Verplichte formuliervelden zijn gemarkeerd met rode sterretjes.
-- Bevestigingsdialogen bij verwijderen specificeren welk type gegeven wordt verwijderd.
 - Toastmeldingen verschijnen bij alle aanmaak-, wijzig- en verwijderacties.
 - Lege stamtabellen tonen instructietekst.
 - Formulier voor chauffeur aanmaken toont foutmeldingen bij lege verplichte velden.
 
 #### Toegankelijkheid
 
+- Focus wordt vastgehouden binnen open modale vensters. Tab/Shift+Tab bladert alleen door elementen in het venster. Bij sluiten keert de focus terug naar het oorspronkelijke element.
+- Bevestigingsdialogen ondersteunen de Escape-toets voor annuleren en klikken op de achtergrond.
 - Alle modale vensters hebben `role="dialog"`, `aria-modal="true"`, en beschrijvende labels voor screenreaders.
 - Alle icoon-knoppen hebben beschrijvende labels voor screenreaders.
 - Toastmeldingen worden aangekondigd door screenreaders.
-- SkillManager en RosterProfileEditor tonen laadspinners tijdens het ophalen van data.
-- Instellingenpagina toont laadspinners tijdens het ophalen van data.
+- SkillManager, RosterProfileEditor en instellingenpagina tonen laadspinners tijdens het ophalen van data.
 
 #### Bugfix
 

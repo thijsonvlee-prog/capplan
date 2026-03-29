@@ -30,22 +30,22 @@ _None._
 
 ### ESC-003: Planning grid visual redesign — scope and phasing
 
-- **Status:** Planned
+- **Status:** Closed
 - **Date / run context:** 2026-03-29 — triggered by SMI-004 and EX-REC-016
 - **Decision needed:** How should the planning grid visual redesign be scoped and phased?
 - **Chosen option:** Option B — Phased redesign across 2-3 cycles
-  - Phase 1: Surface layering and row tonal hierarchy
-  - Phase 2: Row composition and identity
-  - Phase 3: Cell rendering and status refinement
-- **Product Owner action:** Created PB-032 (Phase 1, ready), PB-034 (Phase 2, planned future), PB-035 (Phase 3, planned future). PB-032 is unblocked and scheduled after current P2 items complete.
+  - Phase 1: Surface layering and row tonal hierarchy (PB-032)
+  - Phase 2: Row composition and identity (PB-034)
+  - Phase 3: Cell rendering and status refinement (PB-035)
+- **Product Owner action:** All three phases translated into backlog items. PB-032 is ready for next cycle. Prerequisite work (PB-028, PB-033, PB-020, PB-031) all completed.
 
 ### ESC-001: Define MVP scope for connectivity hub
 
-- **Status:** Planned
+- **Status:** Closed
 - **Date / run context:** 2026-03-29 — triggered by SMI-001
 - **Decision needed:** What should the MVP scope be for the connectivity hub initiative?
 - **Chosen option:** Option A — Configuration-first MVP (CSV only, field mapping UI, no scheduled execution)
-- **Product Owner action:** Created PB-015 and PB-016 as phased backlog items.
+- **Product Owner action:** Created PB-015 (data model + API) and PB-016 (admin screen UI) as phased backlog items for future cycles.
 
 ### ESC-002: Conflicting driver status computation between views
 
@@ -53,7 +53,7 @@ _None._
 - **Date / run context:** 2026-03-29 — blocking PB-003
 - **Decision needed:** Which computation of driver active/inactive status is authoritative?
 - **Chosen option:** Option A — Employment-based status
-- **Product Owner action:** PB-003 completed. Regression fixed via PB-025 (completed). Both are done.
+- **Product Owner action:** PB-003 completed. Regression fixed via PB-025. Both done.
 
 ## Escalation Rules
 
