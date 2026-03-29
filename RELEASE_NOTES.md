@@ -10,6 +10,17 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 (laat) — Chauffeurspagina herontwerp
+
+#### UX / design verbeteringen
+
+- De chauffeurspagina heeft een vernieuwd ontwerp met een samengestelde paginakop inclusief contextbeschrijving.
+- De chauffeurslijst gebruikt nu tonale rijafwisseling en subtiele scheidingslijnen in plaats van harde randen, consistent met het planningsrooster.
+- Chauffeursnamen worden weergegeven als "Achternaam, Voornaam" voor consistentie met het planningsrooster.
+- Bij het bewerken of toevoegen van een chauffeur wordt de tabel verborgen en verschijnt een sectiekop met titel en beschrijving, waardoor de focus op het formulier ligt.
+- Bewerkknop heeft een beschrijvend aria-label per chauffeur voor betere screenreader-ondersteuning.
+- Lege cellen tonen subtiele placeholders in plaats van een streepje met volle tekstkleur.
+
 ### 2026-03-29 (nacht) — Instellingenpagina herontwerp en technische opschoning
 
 #### UX / design verbeteringen

@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Planning grid redesign (3 phases), DayCell popup, styled date input, and settings page tab navigation are all complete. Input styling standardized. Race condition, API guard, performance memoization, and dead code cleanup done. Focus shifts to: (1) drivers page composition (PB-048) as the next major UX deliverable per SMI-004, (2) remaining small technical improvements (ESLint fix, date validation), and (3) connectivity hub (PB-015/016) when capacity allows.
+**Current direction:** Planning grid redesign (3 phases), DayCell popup, styled date input, settings page tab navigation, and drivers page composition are all complete. Input styling standardized. Race condition, API guard, performance memoization, and dead code cleanup done. Focus shifts to: (1) remaining technical improvements (ESLint fix PB-049, date validation PB-050, scenario guard PB-051), (2) smaller UX consistency items (capacity badges PB-047, RosterAssigner table PB-040), and (3) connectivity hub (PB-015/016) when capacity allows.
 
 ## Status Definitions
 
@@ -26,19 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-048: Drivers page header and layout composition
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The drivers page has not been reviewed against DESIGN.md standards. With planning grid, settings page, and DayCell popup all redesigned, the drivers page is the next most visible screen and the consistency gap is increasingly noticeable. SMI-004 calls for bigger design steps.
-- **Why this matters now:** Aligns with SMI-004 direction. Users navigating between planning, settings, and drivers should feel the same design standard. The drivers page is a core workflow screen.
-- **Scope notes:** Review the drivers page header, filter grouping, table layout, and overall composition against DESIGN.md sections 2.5, 7.1, 7.2. Apply tab or surface grouping patterns if needed. Follow the same pattern as the settings page redesign.
-- **Dependencies:** None.
-- **Definition of done:** Drivers page uses composed layout with proper hierarchy, consistent with planning grid and settings page design quality. Passes `npm run verify`.
-- **Implementation note:** Evaluate whether tabs, section headers, or surface grouping best fits this screen's content. Do not over-engineer — the goal is compositional quality, not feature additions.
-- **Source:** EX-REC-022.
 
 ### PB-049: Fix handleDragEnd stale closure in PlanningGrid useEffect
 
@@ -140,6 +127,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-048: Drivers page header and layout composition
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Redesigned drivers page composition: added contextual subtitle, improved header hierarchy, introduced view-mode state management (list/create/edit) so table hides during editing, applied tonal row alternation and tonal separators to the drivers table, improved name display to "Achternaam, Voornaam" format matching the planning grid, added form section headers with descriptions for create/edit states, improved empty state spacing, better aria-labels. Added `.drivers-form-header` CSS class. No functional changes to data flow.
 
 ### PB-041: Settings page layout composition
 - **Completed:** 2026-03-29
