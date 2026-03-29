@@ -6,16 +6,29 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-066 (PlanningGrid per-cell entry lookup) is complete. All hot-path `.find()` calls in PlanningGrid are now replaced with Map-based O(1) lookups. The Map-based lookup pattern is fully consistent across the production codebase. A fresh scan confirms: no N+1 patterns, comprehensive error handling across all API routes, zero ESLint warnings, zero hardcoded Tailwind colors in components, zero console.log statements.
+No Delivery Agent backlog items were ready for execution this cycle. All previously assigned items are either completed or deferred. A fresh codebase scan was performed. The codebase remains in good shape: 0 ESLint warnings, Map-based lookups consistent across all hot paths, comprehensive API validation with Dutch error messages, and full design token compliance.
 
-The one remaining `.find()` in a render-hot path is in `CapacitySummaryRow.tsx` (POC), which iterates drivers×dates×entries. This is a new recommendation (DE-REC-036). The existing deferred items remain valid but low urgency.
+The scan identified a few new areas worth noting: unused utility exports in `utils.ts`, and the previously known `any` type usage (~38 instances) remains stable. The existing deferred items (PB-009, PB-030, PB-061, DE-REC-036) remain valid but low urgency at current scale.
 
 ## Recommended Next Improvements
+
+### DE-REC-037: Remove unused utility exports from utils.ts
+
+- **Title:** Remove dead code — unused utility functions in utils.ts
+- **Problem:** Four exported functions in `src/lib/utils.ts` are never imported anywhere in the codebase: `getStartDateForRange()`, `getQuarterDates()`, `getQuarterLabel()`, `get4WeekPeriodStarts()`. These appear to be remnants from an earlier aggregation approach. Dead exports create confusion about what is actually used.
+- **Proposed improvement:** Remove the four unused functions. If any are needed later, they can be restored from git history.
+- **Expected product/technical value:** Reduced dead code surface. Clearer utility module.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low. Functions are confirmed unused via grep.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Quick cleanup, reduces maintenance noise.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
 - **Title:** Replace `planningEntries.find()` with Map-based lookup in CapacitySummaryRow
-- **Problem:** `CapacitySummaryRow.tsx:47` uses `driver.planningEntries.find((e) => e.date === date)` inside a nested loop over drivers × dates. This is the same hot-path pattern that was fixed in PlanningGrid (PB-066), but lives in the POC capacity summary component.
+- **Problem:** `CapacitySummaryRow.tsx` uses `driver.planningEntries.find((e) => e.date === date)` inside a nested loop over drivers × dates. This is the same hot-path pattern that was fixed in PlanningGrid (PB-066), but lives in the POC capacity summary component.
 - **Proposed improvement:** Either pass the `entryMaps` from PlanningGrid down to CapacitySummaryRow, or build a local Map inside the component. Alternatively, if the POC is to be promoted to production quality, this should be part of that effort.
 - **Expected product/technical value:** Consistent O(1) lookup pattern. Performance improvement for large grids when totals row is visible.
 - **Priority:** P4 Low
@@ -54,7 +67,7 @@ The one remaining `.find()` in a render-hot path is in `CapacitySummaryRow.tsx` 
 ### DE-REC-014: Move hardcoded comparison chart colors to constants
 
 - **Title:** Extract COMPARE_COLORS from CapacityChart to constants
-- **Problem:** `CapacityChart.tsx:54` defines `COMPARE_COLORS = ["#f97316", "#06b6d4", "#8b5cf6"]`. Hardcoded hex values violate CLAUDE.md design token rules (Recharts exception documented).
+- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS = ["#f97316", "#06b6d4", "#8b5cf6"]`. Hardcoded hex values violate CLAUDE.md design token rules (Recharts exception documented).
 - **Proposed improvement:** Move to `src/domain/constants.ts` with comments referencing design token equivalents.
 - **Expected product/technical value:** CLAUDE.md compliance. Centralizes color definitions.
 - **Priority:** P4 Low
@@ -83,6 +96,7 @@ The one remaining `.find()` in a render-hot path is in `CapacitySummaryRow.tsx` 
 - **Date timezone handling in aggregation:** `aggregation.ts` and `utils.ts` parse date strings using `new Date(date + "T00:00:00")` without timezone specifier. Vercel serverless runs in UTC so this is not a current production risk, but could surface if the server environment changes.
 - **`any` types in source code:** ~38 uses of `any` across 12 source files (excluding generated). These are functional but reduce type safety. Not worth a dedicated backlog item — fix opportunistically when touching these files.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". This should either be promoted to production quality or removed to avoid dead code confusion.
+- **DELETE race conditions:** Multiple DELETE routes (employment, functions, roster-assignments, import-sources) use a check-then-delete pattern without a transaction. The record could theoretically be deleted between the existence check and the delete. Low risk at current concurrency levels but worth noting.
 
 ## Items Intentionally Not Recommended
 
@@ -102,6 +116,9 @@ The one remaining `.find()` in a render-hot path is in `CapacitySummaryRow.tsx` 
 - **Split DriverForm.tsx (~475 lines):** Large but well-structured with tab-based organization. Would add complexity without clear payoff at current size.
 - **Other `.find()` calls in render paths (scenarios, roster assignments):** The remaining `.find()` calls in ScenarioSelector, RosterAssigner, capacity page, and Header operate on small arrays (typically <10 items). The performance benefit of Map conversion is negligible. Only DE-REC-036 (CapacitySummaryRow) operates on a hot path with meaningful volume.
 - **DE-REC-035 (ScenarioSelector hardcoded Tailwind color):** Completed as PB-068. No longer needed.
+- **Wrap DELETE routes in transactions:** The check-then-delete race condition in DELETE routes is theoretical at current concurrency. Adding transactions would be correct but adds complexity for negligible practical benefit.
+- **Add React.memo to settings list items:** SkillManager, StamtabelManager, and RosterProfileEditor render list items without memo. These lists are small (typically <20 items) and render infrequently. Memoization overhead would exceed any benefit.
+- **Add missing foreign key indexes:** Employment, function, and roster-assignment tables lack indexes on some foreign key columns. At current data volumes these are not bottlenecks. Revisit if query performance degrades.
 
 ## Recommendation Rules
 
