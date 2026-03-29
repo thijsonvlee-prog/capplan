@@ -10,6 +10,13 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 — Transaction safety and API input validation
+
+#### Performance / reliability improvements
+
+- The roster assignment creation endpoint now wraps all database operations (auto-close, sequence number, create assignment, generate 364 planning entries) in a single database transaction. If any step fails, all changes roll back cleanly — no more partial roster data on error.
+- All POST and PUT API endpoints now validate required fields before processing. Missing or empty fields return a clear Dutch-language error message (e.g., "Startdatum is verplicht") instead of a cryptic database error. Validation covers: employment records, function records, roster assignments, roster profiles, scenarios, settings, and skills.
+
 ### 2026-03-29 — Form validation, loading states, and delete dialog improvements
 
 #### UX / usability improvements

@@ -27,25 +27,17 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Delivery Agent
 - **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The POST `/api/drivers/[id]/roster-assignments` endpoint performs 4-5 sequential database operations without a `$transaction` wrapper. If any step fails mid-way, the database is left in an inconsistent state with partial roster data.
-- **Why this matters now:** This is the highest-impact multi-step mutation in the app (generates up to 364 planning entries). The fix is straightforward and the risk of data corruption grows with usage.
-- **Scope notes:** Wrap all database operations in the POST handler in `prisma.$transaction()`. No behavior change on success path.
-- **Dependencies:** None.
-- **Definition of done:** All database operations in the roster assignment POST handler are wrapped in an interactive transaction. Partial failures roll back cleanly. Passes `npm run verify`.
-- **Implementation note:** All existing operations are compatible with interactive transactions. Single file change. Source: DE-REC-003.
+- **Status:** Completed (2026-03-29)
+- **Summary:** Wrapped all 7 database operations in the roster assignment POST handler in `prisma.$transaction()`. The transaction client (`tx`) is passed to `autoCloseOpenRecords`, `getNextSequenceNumber`, and all subsequent Prisma calls. Partial failures now roll back cleanly. Single file change.
+- **Implementation note:** Utility functions `autoCloseOpenRecords` and `getNextSequenceNumber` already accepted model delegates, so passing `tx.driverRosterAssignment` instead of `prisma.driverRosterAssignment` required no signature changes.
 
 ### PB-007: Add input validation to API route POST/PUT handlers
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** Several API routes accept POST/PUT bodies without validating required fields. Missing fields result in cryptic Prisma constraint errors rather than clear user-facing messages.
-- **Why this matters now:** Security hygiene and UX quality item. Low risk, broad defensive value. Aligns with CLAUDE.md input sanitization guidelines.
-- **Scope notes:** Add validation checks at the top of each POST/PUT handler for required fields. Return `{ error: "..." }` with status 400 and a Dutch-language message. Use a shared helper in `api-route-utils.ts`.
-- **Dependencies:** None.
-- **Definition of done:** All POST/PUT API routes validate required fields and return clear Dutch-language error messages for missing/invalid input. No Prisma constraint errors leak to the frontend. Passes `npm run verify`.
-- **Implementation note:** Touches ~10 route files. Add a shared validation helper in `api-route-utils.ts`. Source: DE-REC-004.
+- **Status:** Completed (2026-03-29)
+- **Summary:** Added `validateRequired()` helper in `api-route-utils.ts` that checks for missing/empty required fields and returns Dutch-language error messages. Applied validation to 12 POST/PUT handlers across 10 route files: employment (POST/PUT), functions (POST/PUT), roster-assignments (POST/PUT), roster-profiles (POST/PUT), scenarios (POST), settings (PUT), skills (POST/PUT). Routes that already had validation (drivers POST, planning POST/bulk, settings POST, scenario duplicate POST) were left unchanged.
+- **Implementation note:** Shared `validateRequired(body, fields)` helper returns first failing field's Dutch label + "is verplicht", or null if all valid. Consistent 400 response with `{ error: "..." }` shape.
 
 ## Blocked / Needs Decision
 

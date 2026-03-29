@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber } from "@/lib/api-route-utils";
+import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber, validateRequired } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/drivers/[id]/roster-assignments",
@@ -46,106 +46,118 @@ export const POST = withPerfLogging(
       const { startDate, endDate, rosterProfileId, weeklyHours, scenarioId } =
         body;
 
-      // Auto-close open-ended records
-      await autoCloseOpenRecords(prisma.driverRosterAssignment, driverId, startDate);
+      const validationError = validateRequired(body, [
+        { field: "startDate", label: "Startdatum" },
+        { field: "rosterProfileId", label: "Roosterprofiel" },
+      ]);
+      if (validationError) {
+        return NextResponse.json({ error: validationError }, { status: 400 });
+      }
 
-      // Get next sequence number
-      const nextSeq = await getNextSequenceNumber(prisma.driverRosterAssignment, driverId);
+      const record = await prisma.$transaction(async (tx) => {
+        // Auto-close open-ended records
+        await autoCloseOpenRecords(tx.driverRosterAssignment, driverId, startDate);
 
-      const record = await prisma.driverRosterAssignment.create({
-        data: {
-          driverId,
-          sequenceNumber: nextSeq,
-          startDate,
-          endDate: endDate || null,
-          rosterProfileId,
-          weeklyHours: weeklyHours ?? null,
-        },
-      });
+        // Get next sequence number
+        const nextSeq = await getNextSequenceNumber(tx.driverRosterAssignment, driverId);
 
-      // Generate 364 days of planning entries based on roster profile pattern
-      const rosterProfile = await prisma.rosterProfile.findUnique({
-        where: { id: rosterProfileId },
-        include: { days: true },
-      });
-
-      if (rosterProfile) {
-        const resolvedScenarioId = resolveScenarioId(scenarioId);
-
-        // Build a map of dayOffset -> status
-        const patternMap: Record<number, string> = {};
-        for (const day of rosterProfile.days) {
-          patternMap[day.dayOffset] = day.status;
-        }
-
-        const start = new Date(startDate);
-
-        // Generate all date strings upfront
-        const allDates: string[] = [];
-        const statusByDate: Record<string, string> = {};
-        for (let i = 0; i < 364; i++) {
-          const currentDate = new Date(start);
-          currentDate.setDate(start.getDate() + i);
-          const dateStr = currentDate.toISOString().split("T")[0];
-          allDates.push(dateStr);
-          statusByDate[dateStr] = patternMap[i % 28] || "ROSTER_FREE";
-        }
-
-        // Batch: fetch all existing entries for this driver+scenario in one query
-        const existingEntries = await prisma.planningEntry.findMany({
-          where: {
+        const created = await tx.driverRosterAssignment.create({
+          data: {
             driverId,
-            date: { in: allDates },
-            scenarioId: resolvedScenarioId,
+            sequenceNumber: nextSeq,
+            startDate,
+            endDate: endDate || null,
+            rosterProfileId,
+            weeklyHours: weeklyHours ?? null,
           },
-          select: { id: true, date: true, status: true },
         });
 
-        const existingByDate = new Map(
-          existingEntries.map((e) => [e.date, e])
-        );
+        // Generate 364 days of planning entries based on roster profile pattern
+        const rosterProfile = await tx.rosterProfile.findUnique({
+          where: { id: rosterProfileId },
+          include: { days: true },
+        });
 
-        // Separate into: skip (LEAVE/SICK), update, create
-        const toUpdate: { id: string; status: string }[] = [];
-        const toCreate: { driverId: string; date: string; status: string; scenarioId: string | null }[] = [];
+        if (rosterProfile) {
+          const resolvedScenarioId = resolveScenarioId(scenarioId);
 
-        for (const dateStr of allDates) {
-          const existing = existingByDate.get(dateStr);
-          if (existing && (existing.status === "LEAVE" || existing.status === "SICK")) {
-            continue; // Preserve leave/sick entries
+          // Build a map of dayOffset -> status
+          const patternMap: Record<number, string> = {};
+          for (const day of rosterProfile.days) {
+            patternMap[day.dayOffset] = day.status;
           }
-          if (existing) {
-            if (existing.status !== statusByDate[dateStr]) {
-              toUpdate.push({ id: existing.id, status: statusByDate[dateStr] });
-            }
-          } else {
-            toCreate.push({
+
+          const start = new Date(startDate);
+
+          // Generate all date strings upfront
+          const allDates: string[] = [];
+          const statusByDate: Record<string, string> = {};
+          for (let i = 0; i < 364; i++) {
+            const currentDate = new Date(start);
+            currentDate.setDate(start.getDate() + i);
+            const dateStr = currentDate.toISOString().split("T")[0];
+            allDates.push(dateStr);
+            statusByDate[dateStr] = patternMap[i % 28] || "ROSTER_FREE";
+          }
+
+          // Batch: fetch all existing entries for this driver+scenario in one query
+          const existingEntries = await tx.planningEntry.findMany({
+            where: {
               driverId,
-              date: dateStr,
-              status: statusByDate[dateStr],
+              date: { in: allDates },
               scenarioId: resolvedScenarioId,
+            },
+            select: { id: true, date: true, status: true },
+          });
+
+          const existingByDate = new Map(
+            existingEntries.map((e) => [e.date, e])
+          );
+
+          // Separate into: skip (LEAVE/SICK), update, create
+          const toUpdate: { id: string; status: string }[] = [];
+          const toCreate: { driverId: string; date: string; status: string; scenarioId: string | null }[] = [];
+
+          for (const dateStr of allDates) {
+            const existing = existingByDate.get(dateStr);
+            if (existing && (existing.status === "LEAVE" || existing.status === "SICK")) {
+              continue; // Preserve leave/sick entries
+            }
+            if (existing) {
+              if (existing.status !== statusByDate[dateStr]) {
+                toUpdate.push({ id: existing.id, status: statusByDate[dateStr] });
+              }
+            } else {
+              toCreate.push({
+                driverId,
+                date: dateStr,
+                status: statusByDate[dateStr],
+                scenarioId: resolvedScenarioId,
+              });
+            }
+          }
+
+          // Batch create new entries
+          if (toCreate.length > 0) {
+            await tx.planningEntry.createMany({ data: toCreate });
+          }
+
+          // Batch update existing entries (grouped by status to minimize queries)
+          const updatesByStatus: Record<string, string[]> = {};
+          for (const u of toUpdate) {
+            if (!updatesByStatus[u.status]) updatesByStatus[u.status] = [];
+            updatesByStatus[u.status].push(u.id);
+          }
+          for (const status of Object.keys(updatesByStatus)) {
+            await tx.planningEntry.updateMany({
+              where: { id: { in: updatesByStatus[status] } },
+              data: { status },
             });
           }
         }
 
-        // Batch create new entries
-        if (toCreate.length > 0) {
-          await prisma.planningEntry.createMany({ data: toCreate });
-        }
-
-        // Batch update existing entries (grouped by status to minimize queries)
-        const updatesByStatus: Record<string, string[]> = {};
-        for (const u of toUpdate) {
-          if (!updatesByStatus[u.status]) updatesByStatus[u.status] = [];
-          updatesByStatus[u.status].push(u.id);
-        }
-        for (const status of Object.keys(updatesByStatus)) {
-          await prisma.planningEntry.updateMany({
-            where: { id: { in: updatesByStatus[status] } },
-            data: { status },
-          });
-        }
-      }
+        return created;
+      });
 
       return NextResponse.json(record, { status: 201 });
     } catch (error) {

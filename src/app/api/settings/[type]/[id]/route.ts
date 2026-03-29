@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSettingsModel } from "@/lib/api-route-utils";
+import { getSettingsModel, validateRequired } from "@/lib/api-route-utils";
 
 export async function PUT(
   request: NextRequest,
@@ -18,6 +18,13 @@ export async function PUT(
 
     const body = await request.json();
     const { code, description } = body;
+
+    const validationError = validateRequired(body, [
+      { field: "code", label: "Code" },
+    ]);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
 
     const record = await model.update({
       where: { id },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateRequired } from "@/lib/api-route-utils";
 
 export async function PUT(
   request: NextRequest,
@@ -9,6 +10,13 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     const { name } = body;
+
+    const validationError = validateRequired(body, [
+      { field: "name", label: "Naam" },
+    ]);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
 
     const skill = await prisma.skill.update({
       where: { id },

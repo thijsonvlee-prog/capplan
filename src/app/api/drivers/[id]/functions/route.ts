@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { autoCloseOpenRecords, getNextSequenceNumber } from "@/lib/api-route-utils";
+import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -32,6 +32,14 @@ export async function POST(
     const body = await request.json();
     const { startDate, endDate, position, locationId, departmentId, manager } =
       body;
+
+    const validationError = validateRequired(body, [
+      { field: "startDate", label: "Startdatum" },
+      { field: "position", label: "Functie" },
+    ]);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
 
     // Auto-close open-ended records
     await autoCloseOpenRecords(prisma.driverFunctionRecord, id, startDate);

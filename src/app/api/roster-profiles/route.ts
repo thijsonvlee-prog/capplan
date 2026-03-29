@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { transformProfile } from "@/lib/api-route-utils";
+import { transformProfile, validateRequired } from "@/lib/api-route-utils";
 
 export async function GET() {
   try {
@@ -22,6 +22,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { name, entries } = body;
+
+    const validationError = validateRequired(body, [
+      { field: "name", label: "Naam" },
+    ]);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
 
     const profile = await prisma.rosterProfile.create({
       data: {

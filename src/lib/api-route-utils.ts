@@ -97,6 +97,25 @@ export function getSettingsModel(type: string) {
   return (prisma as any)[modelName];
 }
 
+// === Validation utilities ===
+
+/**
+ * Validate that required fields are present and non-empty in a request body.
+ * Returns a Dutch-language error message for the first missing field, or null if all valid.
+ */
+export function validateRequired(
+  body: Record<string, unknown>,
+  fields: { field: string; label: string }[]
+): string | null {
+  for (const { field, label } of fields) {
+    const value = body[field];
+    if (value === undefined || value === null || (typeof value === "string" && value.trim() === "")) {
+      return `${label} is verplicht`;
+    }
+  }
+  return null;
+}
+
 // === Sub-record utilities ===
 
 /**

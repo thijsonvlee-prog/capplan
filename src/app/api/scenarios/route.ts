@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateRequired } from "@/lib/api-route-utils";
 
 export async function GET() {
   try {
@@ -21,6 +22,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { name, description } = body;
+
+    const validationError = validateRequired(body, [
+      { field: "name", label: "Naam" },
+    ]);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
 
     const scenario = await prisma.scenario.create({
       data: {

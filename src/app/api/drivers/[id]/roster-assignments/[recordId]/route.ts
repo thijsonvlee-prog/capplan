@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateRequired } from "@/lib/api-route-utils";
 
 export async function PUT(
   request: NextRequest,
@@ -8,6 +9,14 @@ export async function PUT(
   try {
     const { id, recordId } = await params;
     const body = await request.json();
+
+    const validationError = validateRequired(body, [
+      { field: "startDate", label: "Startdatum" },
+      { field: "rosterProfileId", label: "Roosterprofiel" },
+    ]);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
 
     // Verify the record belongs to the specified driver
     const existing = await prisma.driverRosterAssignment.findFirst({
