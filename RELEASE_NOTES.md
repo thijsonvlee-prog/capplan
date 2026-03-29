@@ -10,6 +10,17 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 (nacht 2) — API-validatie en ESLint-opschoning
+
+#### Betrouwbaarheid
+
+- Dienstverband-, functie- en roostertoewijzing-bewerkingsendpoints valideren nu dat de einddatum niet voor de startdatum ligt. Ongeldige datumbereiken worden afgewezen met een duidelijke foutmelding.
+- Het dupliceren van een scenario met een ongeldig bron-ID geeft nu een 404-fout in plaats van stilzwijgend een leeg scenario aan te maken.
+
+#### Interne kwaliteit
+
+- De laatste ESLint-waarschuwing in het planningsrooster (stale closure in drag-handler) is opgelost. De codebase heeft nu 0 ESLint-waarschuwingen.
+
 ### 2026-03-29 (laat) — Chauffeurspagina herontwerp
 
 #### UX / design verbeteringen

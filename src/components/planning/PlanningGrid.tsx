@@ -201,13 +201,13 @@ export function PlanningGrid() {
     });
   }
 
-  function handleDragEnd() {
+  const handleDragEnd = useCallback(() => {
     if (dragState && dragState.dates.length > 1) {
       setShowBulkSelector(true);
     } else {
       setDragState(null);
     }
-  }
+  }, [dragState]);
 
   function handleBulkSelect(status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
     if (!dragState) return;
@@ -227,7 +227,7 @@ export function PlanningGrid() {
     }
     document.addEventListener("mouseup", onMouseUp);
     return () => document.removeEventListener("mouseup", onMouseUp);
-  }, [dragState]);
+  }, [dragState, handleDragEnd]);
 
   const filteredDrivers = useMemo(() =>
     localData?.drivers.filter(

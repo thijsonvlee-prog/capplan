@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Planning grid redesign (3 phases), DayCell popup, styled date input, settings page tab navigation, and drivers page composition are all complete. Input styling standardized. Race condition, API guard, performance memoization, and dead code cleanup done. Focus shifts to: (1) remaining technical improvements (ESLint fix PB-049, date validation PB-050, scenario guard PB-051), (2) smaller UX consistency items (capacity badges PB-047, RosterAssigner table PB-040), and (3) connectivity hub (PB-015/016) when capacity allows.
+**Current direction:** Planning grid redesign (3 phases), DayCell popup, styled date input, settings page tab navigation, and drivers page composition are all complete. Input styling standardized. Race condition, API guard, performance memoization, dead code cleanup, ESLint fix, date validation, and scenario guard all done. Focus shifts to: (1) smaller UX consistency items (capacity badges PB-047, RosterAssigner table PB-040), and (2) connectivity hub (PB-015/016) when capacity allows. See `RECOMMENDATIONS_DELIVERY.md` for new technical improvement proposals.
 
 ## Status Definitions
 
@@ -27,42 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-049: Fix handleDragEnd stale closure in PlanningGrid useEffect
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The `useEffect` in `PlanningGrid.tsx` references `handleDragEnd` without including it in the dependency array. This causes a stale closure and triggers the last remaining ESLint `react-hooks/exhaustive-deps` warning.
-- **Why this matters now:** It's the last ESLint warning in the codebase. The fix is small and well-scoped.
-- **Scope notes:** Wrap `handleDragEnd` in `useCallback` with `[dragState]` deps, then include it in the useEffect dependency array. Verify drag interaction still works correctly.
-- **Dependencies:** None.
-- **Definition of done:** ESLint warning eliminated. Drag interactions work correctly. Passes `npm run verify` with 0 warnings.
-- **Implementation note:** PlanningGrid is the most complex component — verify carefully. Test drag behavior after the change.
-- **Source:** DE-REC-023.
-
-### PB-050: Add date logic validation to sub-record PUT routes
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The PUT routes for employment, functions, and roster assignments accept date fields without validating that `endDate >= startDate`. Invalid date ranges are accepted silently.
-- **Why this matters now:** Simple defensive validation at system boundary, per CLAUDE.md guidelines. Prevents invalid data.
-- **Scope notes:** Add validation guard to 3 PUT routes: `/api/drivers/[id]/employment/[recordId]`, `/api/drivers/[id]/functions/[recordId]`, `/api/drivers/[id]/roster-assignments/[recordId]`. Return 400 with Dutch error message if `endDate` is before `startDate`.
-- **Dependencies:** None.
-- **Definition of done:** All 3 PUT routes validate date ranges. Dutch error messages on failure. Passes `npm run verify`.
-- **Source:** DE-REC-024.
-
-### PB-051: Validate source scenario exists before duplication
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** `POST /api/scenarios/[id]/duplicate` doesn't verify the source scenario exists. If called with an invalid ID, it silently creates an empty scenario.
-- **Why this matters now:** Quick safety fix. Low effort.
-- **Scope notes:** Add `findUnique` check at start of transaction. Return 404 with Dutch error message if not found.
-- **Dependencies:** None.
-- **Definition of done:** Invalid scenario ID returns 404. Passes `npm run verify`.
-- **Source:** DE-REC-025.
+_No items currently ready._
 
 ---
 
@@ -127,6 +92,21 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-049: Fix handleDragEnd stale closure in PlanningGrid useEffect
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Wrapped `handleDragEnd` in `useCallback` with `[dragState]` dependency and added it to the useEffect dependency array. Eliminates the last ESLint `react-hooks/exhaustive-deps` warning. Codebase now has 0 ESLint warnings. Passes `npm run verify`.
+
+### PB-050: Add date logic validation to sub-record PUT routes
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Added `endDate >= startDate` validation to PUT routes for employment, functions, and roster assignments. Returns 400 with Dutch error message ("Einddatum mag niet voor de startdatum liggen") if `endDate` is before `startDate`. Passes `npm run verify`.
+
+### PB-051: Validate source scenario exists before duplication
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Added `findUnique` check before duplicating a scenario. Returns 404 with Dutch error message ("Bronscenario niet gevonden") if the source scenario ID is invalid. Skips check for default scenario (which has no DB record). Passes `npm run verify`.
 
 ### PB-048: Drivers page header and layout composition
 - **Completed:** 2026-03-29

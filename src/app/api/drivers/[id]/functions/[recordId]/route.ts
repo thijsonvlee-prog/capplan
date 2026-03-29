@@ -18,6 +18,10 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (body.endDate && body.startDate && new Date(body.endDate) < new Date(body.startDate)) {
+      return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
+    }
+
     // Verify the record belongs to the specified driver
     const existing = await prisma.driverFunctionRecord.findFirst({
       where: { id: recordId, driverId: id },

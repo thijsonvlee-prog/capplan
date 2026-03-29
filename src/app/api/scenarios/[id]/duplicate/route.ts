@@ -24,6 +24,19 @@ export const POST = withPerfLogging(
       const isDefault = sourceId === "default";
       const sourceScenarioFilter = isDefault ? null : sourceId;
 
+      // Verify the source scenario exists (skip for default which has no DB record)
+      if (!isDefault) {
+        const sourceScenario = await prisma.scenario.findUnique({
+          where: { id: sourceId },
+        });
+        if (!sourceScenario) {
+          return NextResponse.json(
+            { error: "Bronscenario niet gevonden" },
+            { status: 404 }
+          );
+        }
+      }
+
       // Check source entry count before duplicating to prevent excessive data generation
       const sourceCount = await prisma.planningEntry.count({
         where: { scenarioId: sourceScenarioFilter },
