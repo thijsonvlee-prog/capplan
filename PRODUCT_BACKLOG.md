@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major redesign work is complete. API validation is hardened. ESLint is clean (0 warnings). All API error messages are now in Dutch. All sub-record PUT routes use transactions. Focus now shifts to: (1) connectivity hub (PB-015/016) when capacity allows, and (2) deferred items (PB-018, PB-009, PB-030).
+**Current direction:** All major redesign work is complete. API validation is hardened. ESLint is clean (0 warnings). All API error messages are in Dutch. All sub-record PUT routes use transactions. The active backlog now focuses on: (1) remaining validation gaps (PB-018), (2) small UX consistency fixes, and (3) connectivity hub (PB-015/016) when higher-priority work is done.
 
 ## Status Definitions
 
@@ -27,13 +27,48 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-018: Add foreign key existence checks before relation creation
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The driver PUT handler accepts `skillIds` and creates `DriverSkill` records without verifying those skill IDs exist. Similarly, employment/function POST handlers accept `employerId`, `locationId`, `departmentId` without existence checks. Invalid IDs cause Prisma foreign key constraint errors that return generic 500 responses.
+- **Scope notes:** Before creating related records, verify referenced IDs exist with a `findMany` count check. Return a clear 400 error with Dutch message if any reference is invalid. Focus on the highest-traffic routes first: driver PUT (skillIds), employment POST (employerId, locationId, departmentId), function POST (functionId references).
+- **Dependencies:** None.
+- **Definition of done:** All relation-creating routes validate that referenced foreign keys exist before insert. Invalid references return 400 with a Dutch error message. Passes `npm run verify`.
+- **Implementation note:** Use batch `findMany` with `where: { id: { in: ids } }` and compare count to input length. Avoid N+1 lookups.
+- **Source:** DE-REC-008.
+- **Why this matters now:** All error messages are now Dutch, and date validation is complete. FK existence checks are the next logical validation gap. Prevents confusing 500 errors for users.
+
+### PB-058: RosterAssigner driver name format consistency
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** The RosterAssigner modal title displays the driver name as "Voornaam Achternaam" while the drivers table and planning grid use "Achternaam, Voornaam". Users who open the modal from the planning grid see an inconsistent name format.
+- **Scope notes:** Format the modal title name to match the "Achternaam, Voornaam" convention used elsewhere. The name is passed as a prop from the parent component — either pass the pre-formatted name or format it in the modal.
+- **Dependencies:** None.
+- **Definition of done:** RosterAssigner modal title shows name as "Achternaam, Voornaam". Passes `npm run verify`.
+- **Implementation note:** Small change — likely just reformatting the prop display in the modal header.
+- **Source:** EX-REC-025.
+- **Why this matters now:** Tiny effort, removes a visible inconsistency across surfaces that share the same driver context.
+
+### PB-059: Capacity page control bar grouping
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** The capacity page toolbar (period selector, zoom, compare buttons) is a flat row of controls with weak visual grouping. The compare scenario buttons are small pill-style toggles that don't feel strongly grouped. This is functional but below the DESIGN.md standard for toolbar composition (section 7.2).
+- **Scope notes:** Group the period/zoom controls into a contained toolbar section. Separate the compare controls into a distinct group with a subtle background or framing. Ensure the primary content area (chart + table) feels clearly separated from controls.
+- **Dependencies:** None.
+- **Definition of done:** Capacity page toolbar has clear visual grouping between control sections. Passes `npm run verify`.
+- **Implementation note:** Use existing design tokens (surface/border tokens, card patterns). Do not introduce new CSS classes unless necessary.
+- **Source:** EX-REC-026.
+- **Why this matters now:** The capacity page table is now visually aligned. The control bar is the remaining area that feels generic. Small effort.
 
 ---
 
 ## Planned (Future Cycles)
-
-_No items planned for future cycles._
 
 ### PB-015: Connectivity hub — data model and import source API
 
@@ -76,22 +111,22 @@ _No items currently in progress._
 ### PB-055: Translate remaining English error messages across all API routes
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Translated ~70 English API response error messages to Dutch across 24 route files. Consistent patterns: "niet gevonden" for 404s, "is verplicht" for required fields, "Kan X niet Y" for 500s, "Maximaal X per verzoek" for limits.
+- **Summary:** Translated ~70 English API response error messages to Dutch across 24 route files.
 
 ### PB-056: Wrap find-then-update PUT routes in transactions
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Wrapped findFirst + update in `prisma.$transaction` in employment, functions, and roster assignment PUT routes. Eliminates race conditions on concurrent edits. Consistent with POST routes.
+- **Summary:** Wrapped findFirst + update in `prisma.$transaction` in employment, functions, and roster assignment PUT routes.
 
 ### PB-047: Capacity page status badge consistency
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Replaced basic inline status badges with `status-chip-compact` + `status-dot` pattern. Removed dense cell borders in favor of tonal separators, alternating rows, and `text-label` header styling.
+- **Summary:** Replaced basic inline status badges with `status-chip-compact` + `status-dot` pattern. Tonal separators, alternating rows.
 
 ### PB-040: RosterAssigner modal table styling
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Replaced dense cell borders with tonal row separators, alternating backgrounds, card surface wrapping, and consistent `text-label` header styling. Active records use `bg-success-50`.
+- **Summary:** Tonal row separators, alternating backgrounds, card surface wrapping. Active records use `bg-success-50`.
 
 ### PB-057: RosterProfileEditor status dot indicators
 - **Completed:** 2026-03-29
@@ -103,47 +138,9 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Summary:** Added `endDate >= startDate` validation to POST routes for employment, functions, and roster assignments.
 
-### PB-054: Fix English error messages in settings API routes
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Translated "Unknown settings type" to "Onbekend instellingentype" in all settings API routes.
-
-### PB-052: SubTable tonal separator consistency
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Replaced dense cell borders with tonal row separators, alternating backgrounds, card surface, and consistent header styling.
-
-### PB-049: Fix handleDragEnd stale closure in PlanningGrid useEffect
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Eliminated the last ESLint warning. Codebase now has 0 ESLint warnings.
-
-### PB-050: Add date logic validation to sub-record PUT routes
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Added `endDate >= startDate` validation to PUT routes for employment, functions, and roster assignments.
-
-### PB-051: Validate source scenario exists before duplication
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Added 404 guard when source scenario ID is invalid.
-
-### PB-048: Drivers page header and layout composition
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Redesigned drivers page: composed header, tonal row alternation, "Achternaam, Voornaam" format, form section headers.
-
 ---
 
 ## Deferred
-
-### PB-018: Add foreign key existence checks before relation creation
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Deferred
-- **Reason:** Medium effort — touches several routes. Schedule when capacity allows after higher-priority items.
-- **Source:** DE-REC-008.
 
 ### PB-009: Add covering index for capacity aggregation query
 
@@ -172,7 +169,7 @@ _No items currently in progress._
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
 - Backlog IDs are sequential and never reused.
 - Do not let the active backlog grow indefinitely.
-- Completed items should be moved out of active execution sections.
+- Completed items should be moved out of active sections into `Completed Recently`.
 - Stale or superseded items should be removed or deferred.
 - Overlapping items should be merged.
 - Vague items must be rewritten or split before they are ready for execution.

@@ -14,7 +14,7 @@ _No unreleased changes._
 
 #### Taalafstemming
 
-- Alle foutmeldingen in alle API-routes zijn nu volledig in het Nederlands. Dit omvat validatiemeldingen, 404-fouten, en interne serverfouten over alle 24 routebestanden. Patronen: "niet gevonden" voor 404, "is verplicht" voor verplichte velden, "Kan X niet Y" voor serverfouten, "Maximaal X per verzoek" voor limieten.
+- Alle foutmeldingen in alle API-routes zijn nu volledig in het Nederlands. Dit omvat validatiemeldingen, 404-fouten, en interne serverfouten over alle 24 routebestanden.
 
 #### Betrouwbaarheid
 
@@ -25,14 +25,14 @@ _No unreleased changes._
 #### UX / design verbeteringen
 
 - De capaciteitstabel gebruikt nu statuschips met kleurindicatorstippen, consistent met het planningsrooster. Dichte celranden zijn vervangen door tonale rijscheidingen en afwisselende achtergrondtinten.
-- De roosterhistorietabel in het toewijzingsvenster gebruikt nu tonale rijscheidingen in plaats van dichte celranden, met een kaartoppervlak en consistente kopstijl. Actieve toewijzingen worden gemarkeerd met een groene achtergrond.
+- De roosterhistorietabel in het toewijzingsvenster gebruikt nu tonale rijscheidingen met een kaartoppervlak en consistente kopstijl. Actieve toewijzingen worden gemarkeerd met een groene achtergrond.
 - Het roosterprofielrooster in de instellingen toont nu kleurindicatorstippen bij elke statuscel, consistent met het planningsrooster.
 
 ### 2026-03-29 (nacht 4) — API-validatie completering en taalafstemming
 
 #### Betrouwbaarheid
 
-- Dienstverband-, functie- en roostertoewijzing-aanmaakendpoints valideren nu dat de einddatum niet voor de startdatum ligt, net als de bewerkingsendpoints. Ongeldige datumbereiken worden afgewezen bij zowel aanmaken als bewerken.
+- Dienstverband-, functie- en roostertoewijzing-aanmaakendpoints valideren nu dat de einddatum niet voor de startdatum ligt.
 
 #### Taalafstemming
 
@@ -42,9 +42,8 @@ _No unreleased changes._
 
 #### UX / design verbeteringen
 
-- De subtabellen in het bewerkscherm van chauffeurs (Dienstverband, Functie, Rooster) gebruiken nu tonale rijscheidingen en afwisselende achtergrondtinten in plaats van dichte celranden, consistent met de chauffeurslijst en het planningsrooster.
-- Actieve records worden gemarkeerd met een subtiele groene achtergrond voor betere semantische aansluiting bij de "actief"-status.
-- Tabelkoppen in subtabellen gebruiken dezelfde stijl als de hoofdtabel.
+- De subtabellen in het bewerkscherm van chauffeurs gebruiken nu tonale rijscheidingen en afwisselende achtergrondtinten in plaats van dichte celranden.
+- Actieve records worden gemarkeerd met een subtiele groene achtergrond.
 
 ### 2026-03-29 (nacht 2) — API-validatie en ESLint-opschoning
 
@@ -55,7 +54,7 @@ _No unreleased changes._
 
 #### Interne kwaliteit
 
-- De laatste ESLint-waarschuwing in het planningsrooster is opgelost. De codebase heeft nu 0 ESLint-waarschuwingen.
+- De codebase heeft nu 0 ESLint-waarschuwingen.
 
 ### 2026-03-29 (laat) — Chauffeurspagina herontwerp
 
@@ -64,7 +63,6 @@ _No unreleased changes._
 - De chauffeurspagina heeft een vernieuwd ontwerp met een samengestelde paginakop inclusief contextbeschrijving.
 - De chauffeurslijst gebruikt nu tonale rijafwisseling en subtiele scheidingslijnen.
 - Chauffeursnamen worden weergegeven als "Achternaam, Voornaam" voor consistentie met het planningsrooster.
-- Bij het bewerken of toevoegen van een chauffeur wordt de tabel verborgen en verschijnt een sectiekop met titel en beschrijving.
 
 ### 2026-03-29 (nacht) — Instellingenpagina herontwerp en technische opschoning
 
@@ -82,33 +80,26 @@ _No unreleased changes._
 
 - Het planningsrooster herberekent de gefilterde chauffeurlijst alleen wanneer data of filter daadwerkelijk wijzigen.
 
-#### Interne kwaliteit
-
-- Ongebruikte helpers, functies en misleidende parameters opgeruimd.
-
 ### 2026-03-29 (avond) — Datuminvoer, planningsrooster verfijning en codekwaliteit
 
 #### UX / design verbeteringen
 
 - Alle datumvelden gebruiken nu een gestylede invoer met kalenderknop.
 - Statuscellen in het planningsrooster tonen nu een kleurindicatorstip naast de statusletter.
-- Lege cellen zijn subtieler; geaggregeerde weergave gebruikt dezelfde chipstijl als dagweergave.
 
 ### 2026-03-29 — DayCell popup, planningsrooster redesign en kwaliteitsverbeteringen
 
 #### UX / design verbeteringen
 
-- Het statusselectiemenu opent nu direct naast de aangeklikte cel, met kleurindicatoren per status en vinkje bij huidige status.
+- Het statusselectiemenu opent nu direct naast de aangeklikte cel, met kleurindicatoren per status.
 - Het planningsrooster gebruikt tonale lagen in plaats van rasterlijnen.
 - Chauffeursnamen als "Achternaam, Voornaam" met dikkere typografie.
-- Vastgezette kolommen erven afwisselende rijtinten bij horizontaal scrollen.
 - Alle verwijderbevestigingen gebruiken gestylede dialogen.
 - Volledige paginakoppen, verplichte-veldmarkeringen en toastmeldingen op alle schermen.
 
 #### Toegankelijkheid
 
 - Modale vensters sluiten bij Escape, focus wordt vastgehouden, beschrijvende labels voor screenreaders.
-- Toastmeldingen worden aangekondigd door screenreaders.
 
 #### Bugfix
 
@@ -117,10 +108,6 @@ _No unreleased changes._
 #### Betrouwbaarheid
 
 - Alle meervoudige databasebewerkingen in transacties. Verplichte-veldvalidatie op alle POST/PUT endpoints.
-
-#### Interne kwaliteit
-
-- Ongebruikt `/api/drivers/[id]/computed` endpoint verwijderd. Invoervalidatie toegevoegd aan PUT-endpoints.
 
 ### 2026-03-29 — Workflow setup
 
