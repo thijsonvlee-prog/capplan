@@ -52,7 +52,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
       </div>
 
       {showForm && (
-        <div className="bg-surface-secondary rounded-lg p-4 border border-border-default">
+        <div className="bg-surface-secondary rounded-lg p-4 border border-border-subtle">
           {renderForm(handleSubmit, () => setShowForm(false))}
         </div>
       )}
@@ -60,47 +60,58 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
       {sorted.length === 0 ? (
         <p className="text-sm text-text-tertiary text-center py-4">{emptyMessage}</p>
       ) : (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="bg-surface-tertiary text-xs text-text-secondary">
-              <th className="text-left p-2 border border-border-default">#</th>
-              <th className="text-left p-2 border border-border-default">Begindatum</th>
-              <th className="text-left p-2 border border-border-default">Einddatum</th>
-              {columns.map((col) => (
-                <th key={String(col.key)} className="text-left p-2 border border-border-default">
-                  {col.label}
-                </th>
-              ))}
-              <th className="w-8 border border-border-default"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((row) => (
-              <tr key={row.id} className={!row.endDate ? "bg-brand-50" : ""}>
-                <td className="p-2 border border-border-default text-sm">{row.sequenceNumber}</td>
-                <td className="p-2 border border-border-default text-sm">{row.startDate}</td>
-                <td className="p-2 border border-border-default text-sm">
-                  {row.endDate || <span className="text-success-600 text-xs font-medium">Actief</span>}
-                </td>
+        <div className="bg-surface-primary rounded-lg shadow-card overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-surface-tertiary border-b border-border-subtle">
+                <th className="text-left p-2 text-label">#</th>
+                <th className="text-left p-2 text-label">Begindatum</th>
+                <th className="text-left p-2 text-label">Einddatum</th>
                 {columns.map((col) => (
-                  <td key={String(col.key)} className="p-2 border border-border-default text-sm">
-                    {col.render ? col.render((row as any)[col.key], row) : String((row as any)[col.key] ?? "-")}
-                  </td>
+                  <th key={String(col.key)} className="text-left p-2 text-label">
+                    {col.label}
+                  </th>
                 ))}
-                <td className="p-1 border border-border-default text-center">
-                  <button
-                    onClick={() => setPendingDeleteRow(row)}
-                    className="btn-icon-danger"
-                    title="Verwijderen"
-                    aria-label="Verwijderen"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </td>
+                <th className="w-8"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sorted.map((row, idx) => (
+                <tr
+                  key={row.id}
+                  className={`border-b border-border-subtle hover:bg-surface-secondary transition-colors ${
+                    !row.endDate
+                      ? "bg-success-50"
+                      : idx % 2 === 1
+                        ? "bg-surface-secondary/50"
+                        : ""
+                  }`}
+                >
+                  <td className="p-2 text-sm text-text-secondary">{row.sequenceNumber}</td>
+                  <td className="p-2 text-sm text-text-secondary">{row.startDate}</td>
+                  <td className="p-2 text-sm">
+                    {row.endDate || <span className="text-success-600 text-xs font-medium">Actief</span>}
+                  </td>
+                  {columns.map((col) => (
+                    <td key={String(col.key)} className="p-2 text-sm text-text-secondary">
+                      {col.render ? col.render((row as any)[col.key], row) : String((row as any)[col.key] ?? "-")}
+                    </td>
+                  ))}
+                  <td className="p-1 text-center">
+                    <button
+                      onClick={() => setPendingDeleteRow(row)}
+                      className="btn-icon-danger"
+                      title="Verwijderen"
+                      aria-label="Verwijderen"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {pendingDeleteRow && (

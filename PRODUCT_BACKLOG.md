@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major redesign work is complete (planning grid 3 phases, DayCell popup, date input, settings tabs, drivers page). Input styling standardized. API validation hardened. ESLint clean (0 warnings). Focus now shifts to: (1) remaining visual consistency gaps within driver edit flow (SubTable PB-052) and other surfaces (PB-047, PB-040), (2) completing API validation coverage (PB-053, PB-054), and (3) connectivity hub (PB-015/016) when capacity allows.
+**Current direction:** All major redesign work is complete (planning grid 3 phases, DayCell popup, date input, settings tabs, drivers page, SubTable). Input styling standardized. API validation hardened. ESLint clean (0 warnings). Focus now shifts to: (1) remaining visual consistency gaps on other surfaces (PB-047, PB-040), (2) completing API validation coverage (PB-053, PB-054), and (3) connectivity hub (PB-015/016) when capacity allows.
 
 ## Status Definitions
 
@@ -26,18 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-052: SubTable tonal separator consistency
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The SubTable component (used for employment, function, and roster history in the driver edit form) uses dense `border border-border-default` on every cell. This conflicts with the tonal separator approach now used in the main drivers table and planning grid. Users editing a driver see a sharp visual downgrade when switching to the Dienstverband/Functie/Rooster tabs.
-- **Scope notes:** Remove per-cell borders from SubTable. Use subtle row separators (`border-b border-border-subtle`), keep header bottom edge, apply tonal background for active-row highlighting instead of border-highlighted `bg-brand-50`.
-- **Dependencies:** None.
-- **Definition of done:** SubTable uses tonal separators consistent with the drivers table and planning grid. Active row uses tonal highlight. Passes `npm run verify`.
-- **Why this matters now:** The drivers page has been elevated (PB-048). The SubTable inconsistency within the same page is now the most visible remaining design gap. Small effort, direct user-visible improvement. Aligns with SMI-004 direction.
-- **Source:** EX-REC-023.
 
 ### PB-053: Add date validation to POST sub-record routes
 
@@ -127,6 +115,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-052: SubTable tonal separator consistency
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Replaced dense per-cell borders with tonal row separators (`border-b border-border-subtle`), tonal row alternation (`bg-surface-secondary/50`), `text-label` header styling, card surface wrapping (`shadow-card`), and `bg-success-50` highlight for active records. Consistent with DriverList and PlanningGrid patterns.
 
 ### PB-049: Fix handleDragEnd stale closure in PlanningGrid useEffect
 - **Completed:** 2026-03-29

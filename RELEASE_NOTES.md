@@ -8,6 +8,15 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 _No unreleased changes._
 
+### 2026-03-29 (nacht 3) — SubTable visuele consistentie
+
+#### UX / design verbeteringen
+
+- De subtabellen in het bewerkscherm van chauffeurs (Dienstverband, Functie, Rooster) gebruiken nu tonale rijscheidingen en afwisselende achtergrondtinten in plaats van dichte celranden, consistent met de chauffeurslijst en het planningsrooster.
+- Actieve records (zonder einddatum) worden nu gemarkeerd met een subtiele groene achtergrond in plaats van blauw, voor betere semantische aansluiting bij de "actief"-status.
+- Tabelkoppen in subtabellen gebruiken dezelfde stijl als de hoofdtabel voor een uniforme uitstraling.
+- Het invoerformulier in subtabellen heeft een subtielere rand voor een rustiger geheel.
+
 ## Release History
 
 ### 2026-03-29 (nacht 2) — API-validatie en ESLint-opschoning
