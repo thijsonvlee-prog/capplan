@@ -40,6 +40,10 @@ export async function POST(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
+      return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
+    }
+
     const record = await prisma.$transaction(async (tx) => {
       // Auto-close open-ended records
       await autoCloseOpenRecords(tx.driverEmploymentRecord, id, startDate);

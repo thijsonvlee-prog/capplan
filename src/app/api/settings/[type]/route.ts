@@ -11,7 +11,7 @@ export async function GET(
 
     if (!model) {
       return NextResponse.json(
-        { error: "Unknown settings type" },
+        { error: "Onbekend instellingentype" },
         { status: 400 }
       );
     }
@@ -40,7 +40,7 @@ export async function POST(
 
     if (!model) {
       return NextResponse.json(
-        { error: "Unknown settings type" },
+        { error: "Onbekend instellingentype" },
         { status: 400 }
       );
     }
