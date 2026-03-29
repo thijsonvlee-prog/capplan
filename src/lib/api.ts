@@ -10,7 +10,6 @@ import type {
   Scenario,
   Skill,
   StamtabelRecord,
-  UserPreference,
 } from "@/domain/types";
 
 // === Helpers ===
@@ -430,18 +429,6 @@ const preferences = {
     );
   },
 
-  getAll(userId?: string): Promise<UserPreference[]> {
-    return fetchJson<UserPreference[]>(
-      buildUrl("/api/preferences/all", { userId })
-    );
-  },
-
-  remove(key: string, userId?: string): Promise<void> {
-    return fetchJson<void>(
-      buildUrl("/api/preferences", { key, userId }),
-      deleteMethod()
-    );
-  },
 };
 
 // === Exported API Object ===
