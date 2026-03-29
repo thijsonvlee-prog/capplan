@@ -27,18 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-042: Remove dead preferences API methods from api.ts
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** `api.ts` defines `preferences.getAll()` which calls `/api/preferences/all` — a route that does not exist (would 404). Also defines `preferences.remove()` calling DELETE on `/api/preferences`, which is also unused. Neither method has any callers.
-- **Why this matters now:** Quick cleanup that removes dead code and a latent bug (404 endpoint reference).
-- **Scope notes:** Remove `getAll` and `remove` methods from the `preferences` namespace in `api.ts`. Remove the `UserPreference` type import if no longer needed.
-- **Dependencies:** None.
-- **Definition of done:** Dead methods removed. No callers broken. Passes `npm run verify`.
-- **Implementation note:** ~10 lines removed from `api.ts`. Verify no callers exist before removal.
-- **Source:** DE-REC-015.
+_No items currently ready._
 
 ---
 
@@ -105,6 +94,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-042: Remove dead preferences API methods from api.ts
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Removed unused `getAll()` and `remove()` methods from `preferences` namespace in `api.ts`. `getAll()` referenced non-existent `/api/preferences/all` route (would 404). Neither method had any callers. `UserPreference` type import also removed (type definition retained in `types.ts`).
 
 ### PB-039: Styled date input wrapper component
 - **Completed:** 2026-03-29

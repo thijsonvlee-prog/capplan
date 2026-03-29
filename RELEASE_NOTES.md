@@ -6,7 +6,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-### Datuminvoer en planningsrooster verfijning
+### Datuminvoer, planningsrooster verfijning en codekwaliteit
 
 #### UX / design verbeteringen
 
@@ -15,6 +15,10 @@ This is the central release log for CapPlan. All user-facing and significant int
 - Lege cellen in het planningsrooster zijn subtieler en vallen visueel minder op, waardoor de aandacht naar gevulde cellen gaat.
 - Geaggregeerde weergave (week/maand) gebruikt dezelfde statuschip-stijl als de dagweergave voor consistentie.
 - Celknoppen hebben een zachtere rand voor een meer product-achtige uitstraling.
+
+#### Interne kwaliteit
+
+- Ongebruikte `preferences.getAll()` en `preferences.remove()` methoden verwijderd uit de frontend API-laag. De `getAll()` methode verwees naar een niet-bestaand endpoint.
 
 ## Release History
 
