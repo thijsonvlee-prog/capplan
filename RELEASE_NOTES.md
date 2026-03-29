@@ -11,6 +11,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 - Toast notifications are now announced by screen readers via `aria-live` region. All CRUD success/error feedback is accessible to users with assistive technology.
 - SkillManager and RosterProfileEditor now show loading spinners during initial data fetch, matching the StamtabelManager pattern. Empty state messages only appear once data has genuinely loaded.
 
+### Reliability improvements
+
+- All remaining multi-step database operations are now wrapped in transactions. This covers: driver updates (skill reassignment), driver deletion, roster profile updates (day replacement), scenario duplication, scenario deletion, and skill deletion. Partial failures roll back cleanly.
+
+### Data consistency
+
+- Driver active/inactive status is now determined by employment records instead of a manually set flag. A driver is considered active when they have an employment record covering the current date. Both the planning grid and driver list now use this same logic, eliminating count discrepancies between views.
+
 ## Release History
 
 ### 2026-03-29 — Reliability, validation, and UX polish

@@ -16,6 +16,12 @@ export const driverInclude = {
 
 /** Transform a Prisma driver record to the API response shape */
 export function transformDriver(dbDriver: any) {
+  const employmentRecords = dbDriver.employmentRecords || [];
+  const today = new Date().toISOString().split("T")[0];
+  // Compute isActive from employment records (ESC-002: employment-based status is authoritative)
+  const isActive = employmentRecords.some(
+    (r: any) => r.startDate <= today && (!r.endDate || r.endDate >= today)
+  );
   return {
     id: dbDriver.id,
     firstName: dbDriver.firstName,
@@ -23,10 +29,10 @@ export function transformDriver(dbDriver: any) {
     employeeNumber: dbDriver.employeeNumber || undefined,
     licenseTypes: dbDriver.licenseTypes || [],
     skillIds: dbDriver.skills?.map((ds: any) => ds.skillId) || [],
-    employmentRecords: dbDriver.employmentRecords || [],
+    employmentRecords,
     functionRecords: dbDriver.functionRecords || [],
     rosterAssignments: dbDriver.rosterAssignments || [],
-    isActive: dbDriver.isActive,
+    isActive,
     createdAt: dbDriver.createdAt.toISOString(),
     updatedAt: dbDriver.updatedAt.toISOString(),
   };
@@ -114,6 +120,28 @@ export function validateRequired(
     }
   }
   return null;
+}
+
+// === Driver status utilities ===
+
+/**
+ * Prisma where clause to filter drivers with active employment (ESC-002).
+ * A driver is active if they have at least one employment record where
+ * startDate <= referenceDate AND (endDate is null OR endDate >= referenceDate).
+ */
+export function activeDriverWhereClause(referenceDate?: string) {
+  const ref = referenceDate || new Date().toISOString().split("T")[0];
+  return {
+    employmentRecords: {
+      some: {
+        startDate: { lte: ref },
+        OR: [
+          { endDate: null },
+          { endDate: { gte: ref } },
+        ],
+      },
+    },
+  };
 }
 
 // === Sub-record utilities ===

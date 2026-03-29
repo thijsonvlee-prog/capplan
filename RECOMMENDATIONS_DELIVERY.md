@@ -6,40 +6,48 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-004 (transaction wrapping on roster assignment) and PB-007 (API input validation) are now completed. The roster assignment POST handler is the only multi-step mutation currently protected by a transaction. Fresh codebase analysis reveals five additional multi-step mutations that lack transaction wrapping, plus opportunities for improved error handling and foreign key validation.
+PB-011 (transaction wrapping) and PB-003 (driver status consolidation) are now completed. All multi-step mutations are wrapped in `$transaction`. Driver active status is now computed from employment records across both planning grid and driver list (ESC-002). Fresh codebase analysis reveals several remaining improvement opportunities: error logging sanitization, sub-record route transactions, stale `isActive` field cleanup, and validation gaps.
 
 ## Recommended Next Improvements
-
-### DE-REC-006: Wrap remaining multi-step mutations in transactions
-
-- **Title:** Add transaction wrapping to driver update, roster profile update, scenario duplicate, scenario delete, and skill delete
-- **Problem:** Five API routes perform multiple sequential database operations without `$transaction`:
-  1. **PUT `/api/drivers/[id]`** — deletes all driver skills, recreates them, then updates driver. If update fails, skills are lost.
-  2. **PUT `/api/roster-profiles/[id]`** — updates name, deletes all days, recreates days. Partial failure leaves profile with no days.
-  3. **POST `/api/scenarios/[id]/duplicate`** — creates scenario, copies planning entries. Failure after create leaves empty scenario.
-  4. **DELETE `/api/scenarios/[id]`** — deletes scenario, then cleans up active preference. Failure leaves orphaned preference.
-  5. **DELETE `/api/settings/skills/[id]`** — deletes driver-skill associations, then deletes skill. Failure leaves orphaned associations.
-- **Proposed improvement:** Wrap each handler's database operations in `prisma.$transaction()`, following the pattern established in the roster assignment route.
-- **Expected product/technical value:** Eliminates data corruption risk from partial writes across all mutation endpoints. Consistent transaction usage across the codebase.
-- **Priority:** P2 High
-- **Effort:** Small (5 files, mechanical change following established pattern)
-- **Risk:** Low. All operations are compatible with interactive transactions.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** These are the remaining multi-step mutations after PB-004. The pattern is established and the risk of partial writes is real.
 
 ### DE-REC-007: Sanitize error logging in API catch blocks
 
 - **Title:** Prevent internal error details from leaking via console.error
-- **Problem:** All API route catch blocks log the full error object via `console.error("Error ...", error)`. Prisma errors can contain connection strings, SQL details, and schema internals. While these don't reach the client response (which returns generic messages), they appear in server logs and could be exposed via log aggregation tools.
-- **Proposed improvement:** Log only `error instanceof Error ? error.message : "Unknown error"` in catch blocks. Optionally log `error.code` for Prisma-specific errors to aid debugging without exposing internals.
+- **Problem:** All ~27 API route catch blocks log the full error object via `console.error("Error ...", error)`. Prisma errors can contain connection strings, SQL details, and schema internals in server logs.
+- **Proposed improvement:** Log only `error instanceof Error ? error.message : "Unknown error"` in catch blocks. Optionally log `error.code` for Prisma-specific errors to aid debugging.
 - **Expected product/technical value:** Reduces information disclosure risk in production logs. Aligns with CLAUDE.md security guidelines.
-- **Priority:** P3 Medium
-- **Effort:** Small (mechanical change across ~20 route files)
+- **Priority:** P2 High
+- **Effort:** Small (mechanical change across ~27 route files)
 - **Risk:** Low. Only affects logging, not response behavior.
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Low effort, broad defensive value. Good hygiene item.
+- **Why now:** Low effort, broad defensive value. Security hygiene item that should not wait.
+
+### DE-REC-009: Wrap employment and function POST handlers in transactions
+
+- **Title:** Add transaction wrapping to sub-record creation routes
+- **Problem:** Employment POST (`src/app/api/drivers/[id]/employment/route.ts`) and function POST (`src/app/api/drivers/[id]/functions/route.ts`) both call `autoCloseOpenRecords()` followed by a create — two separate operations without `$transaction`. A failure between auto-close and create leaves the driver with a closed record and no replacement.
+- **Proposed improvement:** Wrap both handlers in `prisma.$transaction()`, passing `tx` to `autoCloseOpenRecords()` and the create call. The roster-assignments route already follows this pattern.
+- **Expected product/technical value:** Eliminates data corruption risk on the two remaining unprotected sub-record creation paths.
+- **Priority:** P2 High
+- **Effort:** Small (2 files, follows established pattern)
+- **Risk:** Low. `autoCloseOpenRecords` already accepts a model delegate — passing `tx` sub-models is straightforward.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** These are the last two unprotected multi-step creation handlers. Completes the transaction coverage started in PB-004 and PB-011.
+
+### DE-REC-010: Remove isActive from driver PUT handler
+
+- **Title:** Stop allowing direct isActive updates now that status is employment-based
+- **Problem:** The driver PUT handler (`src/app/api/drivers/[id]/route.ts` lines 48-49) still allows setting `isActive` directly via the API. But after PB-003, `transformDriver` computes `isActive` from employment records, so the stored boolean is ignored on read. Writing it is misleading and creates silent inconsistency.
+- **Proposed improvement:** Remove the `isActive` field from the PUT handler's `updateData` object. The field remains in the schema (no migration) but becomes read-only/derived.
+- **Expected product/technical value:** Eliminates a confusing write path that has no effect. Prevents planners from thinking they can toggle driver status manually when it's actually employment-derived.
+- **Priority:** P3 Medium
+- **Effort:** Small (remove 2 lines)
+- **Risk:** Low. No frontend currently sets isActive via PUT.
+- **Dependencies:** PB-003 (completed).
+- **Suggested owner:** Delivery Agent
+- **Why now:** Cleanup after PB-003. The field is now dead on write.
 
 ### DE-REC-008: Add foreign key existence checks before relation creation
 
@@ -50,37 +58,53 @@ PB-004 (transaction wrapping on roster assignment) and PB-007 (API input validat
 - **Priority:** P3 Medium
 - **Effort:** Medium (touches several routes, needs careful scope)
 - **Risk:** Low. Only adds early-return guards.
-- **Dependencies:** DE-REC-006 (transaction wrapping) should be done first so validation + creation are atomic.
+- **Dependencies:** DE-REC-009 (transaction wrapping on employment/function) should be done first so validation + creation are atomic.
 - **Suggested owner:** Delivery Agent
 - **Why now:** Complements the input validation added in PB-007. Addresses a different class of invalid input.
+
+### DE-REC-011: Consolidate /drivers/[id]/computed into main driver transform
+
+- **Title:** Eliminate N+1 query pattern in computed fields endpoint
+- **Problem:** `src/app/api/drivers/[id]/computed/route.ts` makes 3 separate `findFirst()` queries (employment, function, roster) to compute active records for a single driver. This is redundant because the main driver endpoint already includes all these relations.
+- **Proposed improvement:** Remove the separate computed endpoint. The main GET `/api/drivers/[id]` already returns employment/function/roster records, and the client-side `getComputedFields()` helper already computes derived fields from them.
+- **Expected product/technical value:** Removes unnecessary API endpoint and 3 redundant queries. Simplifies the API surface.
+- **Priority:** P3 Medium
+- **Effort:** Small (remove route, update any callers)
+- **Risk:** Low. Need to verify no frontend code calls this endpoint.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Low-hanging fruit for API simplification.
 
 ### DE-REC-005: Add covering index for capacity aggregation query
 
 - **Title:** Add (scenarioId, date, status) index on PlanningEntry for capacity groupBy
 - **Problem:** The GET `/api/planning/capacity` endpoint uses `prisma.groupBy({ by: ["date", "status"], where: { date: { in: ... }, scenarioId: ... } })`. The existing `[scenarioId, date]` index helps with filtering but doesn't cover the `status` column used in groupBy, forcing a table scan for status values.
 - **Proposed improvement:** Add a composite index `@@index([scenarioId, date, status])` to PlanningEntry. This covers both the WHERE filter and the GROUP BY columns.
-- **Expected product/technical value:** Faster capacity calculations, especially as planning entry volume grows. The capacity endpoint is called frequently during normal planning workflow.
+- **Expected product/technical value:** Faster capacity calculations, especially as planning entry volume grows.
 - **Priority:** P3 Medium
 - **Effort:** Small (schema change + migration)
 - **Risk:** Low. Additive index, no schema changes.
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Capacity aggregation is a hot path. The index is cheap to maintain and directly benefits the most common read pattern.
+- **Why now:** Capacity aggregation is a hot path. The index is cheap to maintain.
 
 ## Risks / Watch-outs
 
-- **Transaction coverage gap:** Five multi-step mutations (DE-REC-006) still lack transaction wrapping. The driver update handler is particularly risky because it deletes all skill associations before recreating them — a failure between delete and create loses all driver skills.
-- **Sequence number race condition:** `getNextSequenceNumber()` reads the max sequence then increments. Concurrent requests for the same driver could compute the same number. This is mitigated for roster assignments by the new transaction, but employment and function records still use it outside a transaction. Low real-world risk (concurrent sub-record creation for the same driver is rare) but worth noting.
-- **No unique constraints on Driver or Scenario names:** Duplicate drivers and scenarios can be created. This is a schema-level issue that would require a migration and policy decision about handling existing duplicates.
+- **Employment/function creation race condition:** The employment and function POST handlers (DE-REC-009) still perform auto-close + create outside a transaction. This is the most significant remaining data integrity gap.
+- **Stale isActive field:** The `isActive` boolean on Driver is now computed on read but still writable via PUT. This will confuse developers and could confuse future agents. DE-REC-010 addresses this.
+- **Error logging exposure:** All API routes log full error objects (DE-REC-007). In a production environment with log aggregation, this could leak sensitive database information.
+- **Sequence number race condition:** `getNextSequenceNumber()` reads the max sequence then increments. Concurrent requests for the same driver could compute the same number. Low real-world risk but worth noting for future transaction coverage.
 
 ## Items Intentionally Not Recommended
 
 - **Migrate to a different ORM:** Prisma is well-integrated and the team is productive with it. Migration cost far outweighs any benefit.
 - **Add pagination to all list endpoints:** Current data volumes do not justify the added complexity. Revisit when a specific endpoint shows performance issues.
 - **Add authentication/authorization:** Flagged as a known gap in CLAUDE.md but explicitly out of scope unless tasked.
-- **Refactor PlanningGrid.tsx:** The component is complex (~650 lines) but stable. The two pre-existing ESLint warnings are non-blocking. Refactoring carries high risk for low payoff right now.
-- **Add date format validation to all endpoints:** While dates are not validated for format, Prisma/PostgreSQL reject invalid dates at the storage layer. Adding regex validation is defensive but low ROI given no reported issues.
-- **Add unique constraints on Driver/Scenario:** Requires a migration and potentially data cleanup. Product decision needed on whether duplicates should be allowed or prevented.
+- **Refactor PlanningGrid.tsx:** The component is complex (~650 lines) but stable. The two pre-existing ESLint warnings are non-blocking. Refactoring carries high risk for low payoff.
+- **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer. Adding regex validation is defensive but low ROI given no reported issues.
+- **Add unique constraints on Driver/Scenario names:** Requires a migration and potentially data cleanup. Product decision needed on whether duplicates should be allowed.
+- **Add enum validation for status fields:** Database columns are String type, not enums. Adding server-side enum validation is correct but requires defining the valid enum set server-side. Medium effort for low real-world risk (frontend already constrains values).
+- **Pre-index lookups in api-helpers.ts:** The `getComputedFields()` and `groupDrivers()` functions use `Array.find()` for lookups. Converting to Map would be faster but current data volumes (dozens of employers/departments) make this a micro-optimization.
 
 ## Recommendation Rules
 

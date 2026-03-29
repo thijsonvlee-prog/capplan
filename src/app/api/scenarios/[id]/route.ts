@@ -8,24 +8,26 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    await prisma.scenario.delete({
-      where: { id },
-    });
-
-    // If this was the active scenario, reset to default
-    const activePref = await prisma.userPreference.findFirst({
-      where: {
-        userId: "default",
-        key: "activeScenario",
-        value: id,
-      },
-    });
-
-    if (activePref) {
-      await prisma.userPreference.delete({
-        where: { id: activePref.id },
+    await prisma.$transaction(async (tx) => {
+      await tx.scenario.delete({
+        where: { id },
       });
-    }
+
+      // If this was the active scenario, reset to default
+      const activePref = await tx.userPreference.findFirst({
+        where: {
+          userId: "default",
+          key: "activeScenario",
+          value: id,
+        },
+      });
+
+      if (activePref) {
+        await tx.userPreference.delete({
+          where: { id: activePref.id },
+        });
+      }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

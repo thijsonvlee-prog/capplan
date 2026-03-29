@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { transformDriver, driverInclude } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, activeDriverWhereClause } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/drivers",
@@ -14,7 +14,12 @@ export const GET = withPerfLogging(
     const where: any = {};
 
     if (isActive !== null) {
-      where.isActive = isActive === "true";
+      if (isActive === "true") {
+        Object.assign(where, activeDriverWhereClause());
+      } else {
+        // Inactive = no active employment record (no overlapping record for today)
+        where.NOT = activeDriverWhereClause();
+      }
     }
 
     if (search) {

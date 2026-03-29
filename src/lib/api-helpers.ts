@@ -127,3 +127,20 @@ export function getComputedFields(
 export function getActiveRecord<T extends { endDate?: string }>(records: T[] | undefined): T | undefined {
   return (records || []).find((r) => !r.endDate);
 }
+
+/**
+ * Determine if a driver is active based on employment records.
+ * A driver is active if they have at least one employment record where:
+ * - startDate <= referenceDate AND (endDate is null OR endDate >= referenceDate)
+ * This is the single source of truth for driver active status (ESC-002).
+ */
+export function isDriverActiveByEmployment(
+  employmentRecords: { startDate: string; endDate?: string | null }[] | undefined,
+  referenceDate?: string
+): boolean {
+  if (!employmentRecords || employmentRecords.length === 0) return false;
+  const ref = referenceDate || new Date().toISOString().split("T")[0];
+  return employmentRecords.some(
+    (r) => r.startDate <= ref && (!r.endDate || r.endDate >= ref)
+  );
+}

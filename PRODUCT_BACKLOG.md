@@ -25,31 +25,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-011: Wrap remaining multi-step mutations in transactions
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** Five API routes perform multiple sequential database operations without `$transaction`: driver update (PUT), roster profile update (PUT), scenario duplicate (POST), scenario delete (DELETE), and skill delete (DELETE). Partial failures can corrupt data — e.g., the driver update handler deletes all skill associations before recreating them, so a failure between delete and create loses all driver skills.
-- **Why this matters now:** The pattern is established from PB-004 (roster assignment). These are the remaining unprotected multi-step mutations. The driver update handler is particularly risky.
-- **Scope notes:** Wrap each handler's database operations in `prisma.$transaction()` following the roster assignment pattern. Five files, mechanical change. Keep each route self-contained.
-- **Dependencies:** None.
-- **Definition of done:** All five handlers use `$transaction`. Passes `npm run verify`. No behavioral changes beyond atomicity.
-- **Implementation note:** Files: `src/app/api/drivers/[id]/route.ts` (PUT), `src/app/api/roster-profiles/[id]/route.ts` (PUT), `src/app/api/scenarios/[id]/duplicate/route.ts` (POST), `src/app/api/scenarios/[id]/route.ts` (DELETE), `src/app/api/settings/skills/[id]/route.ts` (DELETE).
-- **Source:** DE-REC-006.
-
-### PB-003: Consolidate driver status logic between planning grid and driver list
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** Driver active/inactive status is computed differently in the planning grid vs. the driver list page, leading to inconsistent counts. ESC-002 has been decided: employment-based status (planning grid logic) is authoritative.
-- **Why this matters now:** Planners see different driver counts depending on which screen they use. Decision is now made — employment-based status using active employment records with date overlap is the single source of truth.
-- **Scope notes:** Create a shared utility in `src/lib/` for employment-based status computation. Update the driver list page to use it. The `isActive` field on Driver may become a derived/computed value. Do not remove the field from the schema yet — just stop using it as the primary status indicator in the driver list.
-- **Dependencies:** None (ESC-002 decided).
-- **Definition of done:** Single source of truth for driver status. Both views show identical counts. Passes `npm run verify`.
-- **Implementation note:** Check `api-route-utils.ts` for existing status logic before creating new utilities. The planning grid already uses employment-based logic — extract and share it.
-- **Source:** ESC-002 decision (Option A).
+_No items currently ready._
 
 ---
 
@@ -116,6 +92,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-011: Wrap remaining multi-step mutations in transactions
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Wrapped all multi-step mutations in `prisma.$transaction()`: driver PUT (skill delete+create+update), driver DELETE (entries+driver), roster profile PUT (name+days replace), scenario duplicate POST (create+copy entries), scenario DELETE (delete+preference cleanup), skill DELETE (associations+skill). Also covered driver DELETE which was not in original scope but had the same pattern.
+
+### PB-003: Consolidate driver status logic between planning grid and driver list
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Created `isDriverActiveByEmployment()` in `api-helpers.ts` (client-side) and `activeDriverWhereClause()` in `api-route-utils.ts` (server-side Prisma filter). Updated planning grid API to use employment-based filtering instead of `isActive: true`. Updated driver list API `isActive` filter to use employment-based logic. Updated `transformDriver()` to compute `isActive` from employment records. Both views now use the same employment-based status as single source of truth (ESC-002).
 
 ### PB-012: Make toast notifications accessible to screen readers
 - **Completed:** 2026-03-29

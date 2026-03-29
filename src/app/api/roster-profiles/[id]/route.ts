@@ -47,32 +47,34 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    // Update profile name
-    await prisma.rosterProfile.update({
-      where: { id },
-      data: { name },
-    });
-
-    // Replace all days
-    if (entries !== undefined) {
-      await prisma.rosterProfileDay.deleteMany({
-        where: { rosterProfileId: id },
+    const profile = await prisma.$transaction(async (tx) => {
+      // Update profile name
+      await tx.rosterProfile.update({
+        where: { id },
+        data: { name },
       });
 
-      if (entries.length > 0) {
-        await prisma.rosterProfileDay.createMany({
-          data: entries.map((e: any) => ({
-            rosterProfileId: id,
-            dayOffset: e.dayOffset,
-            status: e.status,
-          })),
+      // Replace all days
+      if (entries !== undefined) {
+        await tx.rosterProfileDay.deleteMany({
+          where: { rosterProfileId: id },
         });
-      }
-    }
 
-    const profile = await prisma.rosterProfile.findUnique({
-      where: { id },
-      include: { days: { orderBy: { dayOffset: "asc" } } },
+        if (entries.length > 0) {
+          await tx.rosterProfileDay.createMany({
+            data: entries.map((e: any) => ({
+              rosterProfileId: id,
+              dayOffset: e.dayOffset,
+              status: e.status,
+            })),
+          });
+        }
+      }
+
+      return tx.rosterProfile.findUnique({
+        where: { id },
+        include: { days: { orderBy: { dayOffset: "asc" } } },
+      });
     });
 
     return NextResponse.json(transformProfile(profile));

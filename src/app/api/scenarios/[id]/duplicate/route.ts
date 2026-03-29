@@ -36,33 +36,37 @@ export const POST = withPerfLogging(
         );
       }
 
-      // Create the new scenario
-      const newScenario = await prisma.scenario.create({
-        data: {
-          name: name.trim(),
-        },
-      });
-
-      // Copy all planning entries from source to new scenario
-      const sourceEntries = await prisma.planningEntry.findMany({
-        where: {
-          scenarioId: sourceScenarioFilter,
-        },
-      });
-
-      if (sourceEntries.length > 0) {
-        await prisma.planningEntry.createMany({
-          data: sourceEntries.map((entry: any) => ({
-            driverId: entry.driverId,
-            date: entry.date,
-            status: entry.status,
-            leaveTypeId: entry.leaveTypeId,
-            sickPercentage: entry.sickPercentage,
-            notes: entry.notes,
-            scenarioId: newScenario.id,
-          })),
+      const newScenario = await prisma.$transaction(async (tx) => {
+        // Create the new scenario
+        const created = await tx.scenario.create({
+          data: {
+            name: name.trim(),
+          },
         });
-      }
+
+        // Copy all planning entries from source to new scenario
+        const sourceEntries = await tx.planningEntry.findMany({
+          where: {
+            scenarioId: sourceScenarioFilter,
+          },
+        });
+
+        if (sourceEntries.length > 0) {
+          await tx.planningEntry.createMany({
+            data: sourceEntries.map((entry: any) => ({
+              driverId: entry.driverId,
+              date: entry.date,
+              status: entry.status,
+              leaveTypeId: entry.leaveTypeId,
+              sickPercentage: entry.sickPercentage,
+              notes: entry.notes,
+              scenarioId: created.id,
+            })),
+          });
+        }
+
+        return created;
+      });
 
       return NextResponse.json(newScenario, { status: 201 });
     } catch (error) {
