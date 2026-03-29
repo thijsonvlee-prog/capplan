@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField } from "@/domain/enums";
 import type { DriverWithEntries, StamtabelRecord } from "@/domain/types";
-import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, GROUP_BY_LABELS, EMPLOYMENT_TYPE_LABELS, DEFAULT_PERIOD_DAYS } from "@/domain/constants";
+import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, STATUS_DOT_COLORS, GROUP_BY_LABELS, EMPLOYMENT_TYPE_LABELS, DEFAULT_PERIOD_DAYS } from "@/domain/constants";
 import { useApiData } from "@/hooks/useApi";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { api } from "@/lib/api";
@@ -633,7 +633,7 @@ function GroupRows({
                         {entry ? (
                           <StatusBadge status={entry.status} compact sickPercentage={entry.sickPercentage} />
                         ) : (
-                          <span className="text-text-tertiary text-xs">-</span>
+                          <span className="text-text-tertiary/50 text-[0.625rem]">&middot;</span>
                         )}
                       </div>
                     )}
@@ -653,13 +653,14 @@ function GroupRows({
                   <td key={col.key} className={`${dc.cellPad} text-center`}>
                     {dominant ? (
                       <div
-                        className={`rounded px-1 py-0.5 ${dc.fontSize} ${STATUS_COLORS[dominant[0] as PlanningStatus]}`}
+                        className={`status-chip-compact justify-center ${STATUS_COLORS[dominant[0] as PlanningStatus]}`}
                         title={Object.entries(statusCounts).map(([s, c]) => `${STATUS_CODES[s as PlanningStatus]}: ${c}/${total}`).join(", ")}
                       >
-                        {STATUS_CODES[dominant[0] as PlanningStatus]} {dominant[1]}
+                        <span className={`status-dot ${STATUS_DOT_COLORS[dominant[0] as PlanningStatus]}`} aria-hidden="true" />
+                        {STATUS_CODES[dominant[0] as PlanningStatus]}{dominant[1]}
                       </div>
                     ) : (
-                      <span className="text-text-tertiary text-xs">-</span>
+                      <span className="text-text-tertiary/50 text-[0.625rem]">&middot;</span>
                     )}
                   </td>
                 );

@@ -84,16 +84,16 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
         onMouseDown={(e) => { e.stopPropagation(); }}
         onClick={openSelector}
         className={cn(
-          "w-full rounded-sm flex items-center justify-center transition-colors cursor-pointer",
+          "w-full rounded-md flex items-center justify-center transition-all cursor-pointer",
           h,
-          entry ? "hover:opacity-80" : "bg-surface-secondary hover:bg-surface-tertiary"
+          entry ? "hover:brightness-95" : "bg-surface-secondary/50 hover:bg-surface-tertiary"
         )}
         title={title || undefined}
       >
         {entry ? (
           <StatusBadge status={entry.status} compact sickPercentage={entry.sickPercentage} />
         ) : (
-          <span className="text-text-tertiary text-xs">-</span>
+          <span className="text-text-tertiary/50 text-[0.625rem]">&middot;</span>
         )}
       </button>
 

@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { DateInput } from "@/components/ui/DateInput";
 
 type Props = {
   driverId: string;
@@ -122,12 +123,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="form-label">Ingangsdatum <span className="text-danger-600">*</span></label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="input-field w-full"
-              />
+              <DateInput value={startDate} onChange={setStartDate} className="w-full" />
             </div>
             <div>
               <label className="form-label">Uren/week (gemiddeld)</label>

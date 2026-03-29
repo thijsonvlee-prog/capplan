@@ -1,7 +1,7 @@
 "use client";
 
 import type { PlanningStatus } from "@/domain/enums";
-import { STATUS_LABELS, STATUS_COLORS, STATUS_CODES } from "@/domain/constants";
+import { STATUS_LABELS, STATUS_COLORS, STATUS_CODES, STATUS_DOT_COLORS } from "@/domain/constants";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -16,7 +16,7 @@ export function StatusBadge({ status, compact, sickPercentage }: Props) {
     return (
       <span
         className={cn(
-          "inline-flex items-center rounded-md font-medium overflow-hidden",
+          "inline-flex items-center gap-1 rounded-md font-medium overflow-hidden",
           compact ? "text-xs" : "text-sm"
         )}
         style={{
@@ -30,15 +30,28 @@ export function StatusBadge({ status, compact, sickPercentage }: Props) {
     );
   }
 
+  if (compact) {
+    return (
+      <span
+        className={cn(
+          "status-chip-compact",
+          STATUS_COLORS[status]
+        )}
+      >
+        <span className={cn("status-dot", STATUS_DOT_COLORS[status])} aria-hidden="true" />
+        {STATUS_CODES[status]}
+      </span>
+    );
+  }
+
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md font-medium",
-        compact ? "px-1.5 py-0.5 text-xs" : "px-2 py-1 text-sm",
+        "inline-flex items-center rounded-md px-2 py-1 text-sm font-medium",
         STATUS_COLORS[status]
       )}
     >
-      {compact ? STATUS_CODES[status] : STATUS_LABELS[status]}
+      {STATUS_LABELS[status]}
     </span>
   );
 }

@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import { getComputedFields } from "@/lib/api-helpers";
 import { SubTable } from "./SubTable";
 import { showToast } from "@/components/ui/Toast";
+import { DateInput } from "@/components/ui/DateInput";
 
 const LICENSE_OPTIONS = ["B", "C", "C1", "CE", "D", "DE"];
 
@@ -312,7 +313,7 @@ function EmploymentForm({
       <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="form-label">Begindatum <span className="text-danger-600">*</span></label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-field w-full" />
+          <DateInput value={startDate} onChange={setStartDate} className="w-full" />
         </div>
         <div>
           <label className="form-label">Type</label>
@@ -366,7 +367,7 @@ function PositionForm({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="form-label">Begindatum <span className="text-danger-600">*</span></label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-field w-full" />
+          <DateInput value={startDate} onChange={setStartDate} className="w-full" />
         </div>
         <div>
           <label className="form-label">Functie</label>
@@ -427,7 +428,7 @@ function RosterForm({
       <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="form-label">Begindatum <span className="text-danger-600">*</span></label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-field w-full" />
+          <DateInput value={startDate} onChange={setStartDate} className="w-full" />
         </div>
         <div>
           <label className="form-label">Roosterprofiel <span className="text-danger-600">*</span></label>

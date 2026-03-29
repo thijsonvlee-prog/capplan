@@ -2,34 +2,47 @@
 
 ## Summary
 
-PB-037 (DayCell popup repositioning), PB-038 (DayCell popup visual redesign), and PB-034 (planning grid Phase 2 row composition) are now completed. The planning grid has progressed significantly toward DESIGN.md alignment through two phases of structural improvement plus the DayCell popup redesign.
+PB-039 (styled date input wrapper) and PB-035 (planning grid Phase 3 cell rendering) are now completed. The planning grid redesign (ESC-003) is fully done across all three phases: surface layering, row composition, and cell rendering.
 
 **Design alignment with DESIGN.md:**
-- Planning grid surface uses tonal layering instead of borders (section 4.1 No-Line Rule) — Phase 1 complete.
-- Row composition now has clear typographic hierarchy: semibold last-name-first driver names, subdued `text-caption` metadata, and `btn-icon` action buttons (section 5.2, 7.4).
-- DayCell popup is now a contextual menu positioned near the click target, not a centered modal. This aligns with DESIGN.md section 2.2 (planning is the product — minimize workflow friction).
-- StatusSelector has color indicator dots, active-state check marks, and chevron navigation icons — feels more product-grade than the previous plain text buttons (section 7.5, 7.6).
-- Sticky identity columns now inherit alternating row tones, preventing visual break when scrolling.
+- Planning grid now uses tonal surface layering, strong row identity, and refined status chips with dot indicators (sections 4.1, 5.2, 7.4, 7.5).
+- DayCell popup functions as a contextual menu near the click target with color indicators and check marks (section 2.2).
+- Date inputs across all forms now use a styled wrapper with calendar icon, consistent with the design token system (section 7.7).
+- Empty cells use a subtle midpoint dot instead of a visible dash, reducing visual noise in the grid.
+- Status chips use a dot + letter pattern in compact mode for fast scanning at any density.
 
 **Where design quality is still below target:**
-- DayCell rendering uses basic colored fills without chip/badge refinement — Phase 3 (PB-035) addresses this.
+- Settings page (stamtabellen) uses generic list-of-cards layout without strong grouping or hierarchy — PB-041 planned.
 - RosterAssigner modal table still uses dense cell borders (PB-040).
 - StamtabelManager inputs still use inline Tailwind classes instead of `input-field` class (PB-010, deferred).
-- Date picker fields across the app use browser native styling (ESC-004, blocked).
+- Capacity page table uses basic `px-2 py-0.5 rounded` status badges — not yet aligned with the new chip pattern.
+- RosterProfileEditor grid uses bare STATUS_COLORS without dot indicators — functional but inconsistent with the planning grid.
 
 ## Recommended Next Improvements
 
-### EX-REC-019: Planning grid Phase 3 — cell rendering and status refinement
+### EX-REC-020: Settings page layout composition
 
-- **Title:** Refine DayCell visual output and status representation
-- **Problem:** DayCells use basic colored fills (StatusBadge with background color classes). In a dense planning grid, the cells could benefit from more refined spacing, chip treatment, and clearer status comprehension at a glance.
-- **Proposed improvement:** Refine DayCell visual output with better spacing within cells, subtle border radius treatment, and improved color contrast. Consider whether compact cells benefit from a dot/icon approach vs. the current code letter.
-- **Expected user value:** Faster status comprehension in dense planning views. More polished grid appearance.
+- **Title:** Elevate settings page beyond generic admin layout
+- **Problem:** The settings page (stamtabellen) is functional but uses a generic list-of-cards layout without strong grouping, hierarchy, or visual rhythm. With the planning grid now at DESIGN.md standard, the settings page is the most visible screen still at generic admin quality.
+- **Proposed improvement:** Group related settings categories visually. Strengthen section headers. Add subtle surface differentiation between categories. Consider whether a sidebar-navigation or tabbed approach would improve the settings experience.
+- **Expected user value:** Settings feel more organized and less like a technical admin interface. Easier navigation between categories.
 - **Priority:** P3 Medium
 - **Effort:** Medium
-- **Dependencies:** PB-034 (completed).
+- **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Phase 1 (surface) and Phase 2 (rows) are complete. Cell rendering is the final piece of the planning grid visual redesign.
+- **Why now:** The planning grid now fully meets DESIGN.md standards. The settings page is the next largest gap in perceived product quality.
+
+### EX-REC-021: Capacity page status badge consistency
+
+- **Title:** Align capacity page status badges with planning grid chip pattern
+- **Problem:** The capacity page (`CapacityTable.tsx`) uses basic `px-2 py-0.5 rounded` status badges without dot indicators. Now that the planning grid uses the refined `status-chip-compact` pattern, the capacity page feels visually dated in comparison.
+- **Proposed improvement:** Apply the same `status-chip-compact` + `status-dot` pattern from the planning grid to the capacity table status badges.
+- **Expected user value:** Visual consistency between planning and capacity views. Users who switch between these screens will see a unified status language.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Small effort, high consistency impact. Can be done opportunistically.
 
 ### EX-REC-018: Improve RosterAssigner modal table styling
 
@@ -42,18 +55,6 @@ PB-037 (DayCell popup repositioning), PB-038 (DayCell popup visual redesign), an
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Low effort consistency fix. Can be done opportunistically. Not urgent since the table is inside a modal.
-
-### EX-REC-020: Settings page layout composition
-
-- **Title:** Elevate settings page beyond generic admin layout
-- **Problem:** The settings page (stamtabellen) is functional but uses a generic list-of-cards layout without strong grouping, hierarchy, or visual rhythm. It reads as a standard admin panel rather than a designed product screen.
-- **Proposed improvement:** Group related settings categories visually. Strengthen section headers. Add subtle surface differentiation between categories. Consider whether a sidebar-navigation or tabbed approach would improve the settings experience for users managing many stamtabellen.
-- **Expected user value:** Settings feel more organized and less like a technical admin interface. Easier navigation between categories.
-- **Priority:** P3 Medium
-- **Effort:** Medium
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** With the planning grid approaching DESIGN.md alignment, the settings page becomes the most visible screen still at generic admin quality. The gap will become more noticeable as other screens improve.
 
 ### EX-REC-003: Standardize input field styling in StamtabelManager
 
@@ -69,10 +70,11 @@ PB-037 (DayCell popup repositioning), PB-038 (DayCell popup visual redesign), an
 
 ## Risks / Watch-outs
 
-- **Phase 3 (PB-035) is the remaining grid gap:** The grid surface and row composition are now strong, but the cells themselves are the final piece. Without Phase 3, the grid will have good macro-level design but basic micro-level rendering.
+- **Planning grid redesign is complete — do not regress:** All three phases are done. Any future changes to PlanningGrid.tsx, DayCell.tsx, or StatusBadge.tsx should preserve the tonal hierarchy, chip patterns, and dot indicators.
 - **RosterAssigner modal table inconsistency:** It uses dense cell borders while the planning grid does not. Users who interact with both surfaces in the same workflow will notice.
-- **DayCell popup max height estimate:** The popup positioning uses a `POPUP_MAX_HEIGHT` constant of 280px. If leave types grow significantly or the sick input layout changes, the actual popup may exceed this estimate and get clipped at viewport edges. Monitor after leave type additions.
-- **Last-name-first format change:** Driver names now display as "Achternaam, Voornaam" in the grid. This is a deliberate change for scanning efficiency (common in Dutch professional contexts) but differs from the "Voornaam Achternaam" format used elsewhere in the app (e.g. roster assigner title). Consider standardizing across all views.
+- **DayCell popup max height estimate:** The popup positioning uses a `POPUP_MAX_HEIGHT` constant of 280px. If leave types grow significantly, the actual popup may exceed this and get clipped at viewport edges.
+- **Last-name-first format:** Driver names now display as "Achternaam, Voornaam" in the grid but "Voornaam Achternaam" in the roster assigner title. Consider standardizing across all views.
+- **Date input showPicker compatibility:** The `showPicker()` API used by DateInput's calendar button is supported in modern browsers but may not work in older browsers. The native click-through on the picker indicator provides a fallback.
 
 ## Items Intentionally Not Recommended
 
@@ -81,8 +83,8 @@ PB-037 (DayCell popup repositioning), PB-038 (DayCell popup visual redesign), an
 - **Redesign of RosterProfileEditor grid:** The click-to-cycle interaction is unconventional but functional and consistent.
 - **Search loading indicators:** Marginal gain at current data volumes.
 - **Placeholder-to-label migration in settings forms:** Would improve accessibility but requires significant layout adjustments. Monitor for user feedback.
-- **Badge/pill component system:** Premature until Phase 3 (PB-035) establishes the chip/badge direction.
 - **Full sidebar redesign:** The sidebar works and is calm. Not a priority over core screen improvements.
+- **Custom calendar popup replacement:** ESC-004 decided Option B (styled wrapper). The native calendar popup is functional and maintained by browsers. Custom calendar would add significant complexity for marginal quality improvement.
 
 ## Recommendation Rules
 

@@ -33,6 +33,15 @@ export const STATUS_COLORS: Record<PlanningStatus, string> = {
   SICK: "bg-danger-500 text-text-inverse",
 };
 
+/** Dot indicator colors for compact cell rendering (CSS variable references) */
+export const STATUS_DOT_COLORS: Record<PlanningStatus, string> = {
+  ROSTER_FREE: "bg-surface-inset",
+  BASE_ROSTER: "bg-success-700",
+  AVAILABLE_EXTRA: "bg-success-300",
+  LEAVE: "bg-warning-300",
+  SICK: "bg-danger-500",
+};
+
 export const STATUS_CHART_COLORS: Record<PlanningStatus, string> = {
   ROSTER_FREE: "#9ca3af",
   BASE_ROSTER: "#15803d",

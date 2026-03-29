@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** SMI-004 drives bigger design steps toward DESIGN.md. Planning grid Phases 1 and 2 are complete. DayCell popup repositioning and visual redesign are complete. ESC-004 (custom date picker) decided: Option B (styled wrapper). PB-039 is now unblocked and ready. Phase 3 cell rendering (PB-035) remains the next major UX deliverable. Settings page layout (PB-041) is a new medium-priority item aligned with SMI-004.
+**Current direction:** SMI-004 drives bigger design steps toward DESIGN.md. All three planning grid redesign phases (surface, rows, cells) are complete. DayCell popup redesign is complete. Styled date input wrapper (PB-039) is deployed across all forms. Settings page layout (PB-041) is the next major UX deliverable, representing the most visible screen still at generic admin quality.
 
 ## Status Definitions
 
@@ -27,19 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-039: Styled date input wrapper component
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** All date fields use the browser's native date picker, which looks inconsistent with the application's design system. Affects perceived quality across driver management, employment dates, planning period selection, and roster assignments.
-- **Why this matters now:** Direct Scrum Master request (SMI-006). ESC-004 decided: Option B (styled wrapper). Aligns with SMI-004 design direction.
-- **Scope notes:** Create a custom wrapper component that uses the native `<input type="date">` underneath but adds a styled container, custom trigger button, and consistent typography/spacing aligned with the design system. The calendar popup itself remains native. Replace all date inputs across the app with this wrapper.
-- **Dependencies:** None (ESC-004 decided).
-- **Definition of done:** All date input fields in the application use the new styled wrapper. Visual styling aligns with design tokens and `input-field` pattern. Calendar popup remains native. Passes `npm run verify`.
-- **Implementation note:** Estimated 1 cycle. Keep the wrapper simple — styled container + trigger button + native input. Do not attempt to replace the native calendar popup.
-- **Source:** SMI-006, ESC-004 (Option B).
-
 ### PB-042: Remove dead preferences API methods from api.ts
 
 - **Owner:** Delivery Agent
@@ -52,18 +39,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** Dead methods removed. No callers broken. Passes `npm run verify`.
 - **Implementation note:** ~10 lines removed from `api.ts`. Verify no callers exist before removal.
 - **Source:** DE-REC-015.
-
-### PB-035: Planning grid Phase 3 — cell rendering and status refinement
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** DayCell visual output uses basic colored fills. Status representation could be richer with chip/badge treatment, better spacing, and clearer status comprehension.
-- **Why this matters now:** Phase 3 of ESC-003 Option B. Final visual refinement after structure (Phase 1) and composition (Phase 2) are complete.
-- **Scope notes:** Refine DayCell visual output, spacing, chip treatment. Consider dot/icon approach vs. current code letter for compact cells. Align status rendering with DESIGN.md standard.
-- **Dependencies:** PB-032 and PB-034 (both complete).
-- **Definition of done:** Cell rendering aligns with DESIGN.md product-grade standard. Status is immediately comprehensible. Passes `npm run verify`.
-- **Source:** EX-REC-019, ESC-003 (Option B Phase 3).
 
 ---
 
@@ -130,6 +105,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-039: Styled date input wrapper component
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Created `DateInput` component (`src/components/ui/DateInput.tsx`) with styled container, calendar icon trigger, and design-token CSS. Replaced all 4 date inputs across RosterAssigner and DriverForm. Native calendar popup retained. CSS classes added to `globals.css`.
+
+### PB-035: Planning grid Phase 3 — cell rendering and status refinement
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Compact cells now use dot-indicator + letter chip pattern (`status-chip-compact` CSS class) for faster status scanning. Empty cells show a subtle midpoint dot instead of a dash. Aggregated view uses the same chip pattern. Softer border radius on cell buttons. `STATUS_DOT_COLORS` constant added. All three phases of the planning grid redesign (ESC-003) are now complete.
 
 ### PB-024: Remove dead getComputedFields wrapper from api.ts
 - **Completed:** 2026-03-29

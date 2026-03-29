@@ -6,7 +6,15 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_No unreleased changes._
+### Datuminvoer en planningsrooster verfijning
+
+#### UX / design verbeteringen
+
+- Alle datumvelden in de applicatie gebruiken nu een gestylede invoer met kalenderknop, consistent met het ontwerpsysteem. De standaard browser-datuminvoer is vervangen door een wrapper met een zichtbaar kalendericoon.
+- Statuscellen in het planningsrooster tonen nu een kleurindicatorstip naast de statusletter voor snellere visuele herkenning bij scannen.
+- Lege cellen in het planningsrooster zijn subtieler en vallen visueel minder op, waardoor de aandacht naar gevulde cellen gaat.
+- Geaggregeerde weergave (week/maand) gebruikt dezelfde statuschip-stijl als de dagweergave voor consistentie.
+- Celknoppen hebben een zachtere rand voor een meer product-achtige uitstraling.
 
 ## Release History
 
