@@ -27,30 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-053: Add date validation to POST sub-record routes
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** PB-050 added `endDate >= startDate` validation to PUT routes for sub-records, but the corresponding POST routes (`/api/drivers/[id]/employment`, `/api/drivers/[id]/functions`, `/api/drivers/[id]/roster-assignments`) also accept date fields without this validation.
-- **Scope notes:** Add the same validation guard to the 3 POST routes. Same pattern as PB-050.
-- **Dependencies:** None.
-- **Definition of done:** All 3 POST routes reject `endDate < startDate` with a Dutch error message. Passes `npm run verify`.
-- **Why this matters now:** Complements just-completed PB-050. Same pattern, minimal effort. Closes the validation gap at API boundaries.
-- **Implementation note:** Use the same guard and Dutch error message as PB-050: `"Einddatum mag niet voor de startdatum liggen"`.
-- **Source:** DE-REC-027.
-
-### PB-054: Fix English error messages in settings API routes
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** `GET /api/settings/[type]` and `PUT /api/settings/[type]/[id]` return `"Unknown settings type"` in English. All other API error messages are in Dutch. This violates CLAUDE.md's requirement that all user-facing text is Dutch.
-- **Scope notes:** Change to `"Onbekend instellingentype"` in both routes. Two string changes.
-- **Dependencies:** None.
-- **Definition of done:** Both settings routes return Dutch error messages. Passes `npm run verify`.
-- **Why this matters now:** Quick CLAUDE.md compliance fix. Two lines of code.
-- **Source:** DE-REC-026.
+_No items currently ready._
 
 ---
 
@@ -115,6 +92,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-053: Add date validation to POST sub-record routes
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Added `endDate >= startDate` validation to POST routes for employment, functions, and roster assignments. Same guard and Dutch error message as existing PUT routes. Closes the validation gap at API boundaries.
+
+### PB-054: Fix English error messages in settings API routes
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Translated "Unknown settings type" to "Onbekend instellingentype" in all settings API routes (GET, POST, PUT, DELETE). All API error messages are now in Dutch.
 
 ### PB-052: SubTable tonal separator consistency
 - **Completed:** 2026-03-29

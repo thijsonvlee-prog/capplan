@@ -8,6 +8,16 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 _No unreleased changes._
 
+### 2026-03-29 (nacht 4) — API-validatie completering en taalafstemming
+
+#### Betrouwbaarheid
+
+- Dienstverband-, functie- en roostertoewijzing-aanmaakendpoints valideren nu dat de einddatum niet voor de startdatum ligt, net als de bewerkingsendpoints. Ongeldige datumbereiken worden afgewezen bij zowel aanmaken als bewerken.
+
+#### Taalafstemming
+
+- Alle foutmeldingen in de instellingen-API-routes zijn nu in het Nederlands. "Unknown settings type" is vertaald naar "Onbekend instellingentype" in GET, POST, PUT en DELETE routes.
+
 ### 2026-03-29 (nacht 3) — SubTable visuele consistentie
 
 #### UX / design verbeteringen
