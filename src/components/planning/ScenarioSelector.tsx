@@ -70,7 +70,7 @@ export function ScenarioSelector() {
       </select>
 
       {activeId !== "default" && (
-        <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-medium" title="Dit scenario is een werkkopie en heeft geen invloed op de actuele planning">
+        <span className="bg-warning-200 text-warning-900 px-2 py-0.5 rounded text-xs font-medium" title="Dit scenario is een werkkopie en heeft geen invloed op de actuele planning">
           Concept
         </span>
       )}

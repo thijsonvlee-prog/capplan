@@ -367,7 +367,8 @@ export function PlanningGrid() {
           </button>
         </div>
 
-        <div className="flex gap-1.5 flex-wrap ml-auto items-center">
+        <div className="control-group ml-auto">
+          <span className="control-group-label">Status</span>
           {ALL_PLANNING_STATUSES.map((s) => (
             <StatusBadge key={s} status={s} />
           ))}

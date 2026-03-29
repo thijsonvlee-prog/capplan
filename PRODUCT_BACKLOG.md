@@ -40,31 +40,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Why this matters now:** Last hot-path `.find()` in the codebase. Proven pattern, small effort, measurable render improvement.
 - **Source:** DE-REC-034.
 
-### PB-067: Planning grid toolbar second row — tighter grouping
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The planning grid's second toolbar row (search, grouping, column picker, totals toggle, status legend) has loosely arranged controls without clear visual grouping. The first toolbar row already uses `.control-group` — extending this pattern to the second row creates consistency.
-- **Scope notes:** Wrap search + grouping in a `.control-group`. Wrap column picker + totals toggle in a separate `.control-group`. Give the status legend its own visual zone. Follow the pattern from the first toolbar row.
-- **Dependencies:** None. Must follow PlanningGrid.tsx care rules from CLAUDE.md.
-- **Definition of done:** Second toolbar row uses grouped controls matching the first row's pattern. Status legend has its own visual zone. Passes `npm run verify`. Visually consistent with first toolbar row.
-- **Implementation note:** PlanningGrid.tsx is complex (~680 lines). Changes must be careful and targeted. Verify against typecheck, lint, and visual behavior.
-- **Why this matters now:** Extends an existing good pattern to the core planning screen's second row. High-frequency screen.
-- **Source:** EX-REC-037.
-
-### PB-068: ScenarioSelector hardcoded Tailwind color fix
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** `ScenarioSelector.tsx:73` uses `bg-amber-100 text-amber-700` for the "Concept" badge. This violates CLAUDE.md's rule against hardcoded Tailwind color classes.
-- **Scope notes:** Replace with `bg-warning-50 text-warning-700` or appropriate design token equivalents. Single line change.
-- **Dependencies:** None.
-- **Definition of done:** No hardcoded Tailwind color classes in ScenarioSelector.tsx. Uses design tokens. Passes `npm run verify`.
-- **Implementation note:** Tiny fix. Can be done alongside PB-067.
-- **Why this matters now:** Quick CLAUDE.md compliance fix.
-- **Source:** DE-REC-035.
+_No items ready for next cycle._
 
 ---
 
@@ -95,6 +71,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-067: Planning grid toolbar second row — tighter grouping
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Status legend in toolbar row 2 wrapped in `.control-group` with "Status" label, matching the visual grouping pattern of the first toolbar row and the existing search/grouping and columns/totals groups. All three control groups in row 2 now have consistent tonal surface treatment.
+
+### PB-068: ScenarioSelector hardcoded Tailwind color fix
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Replaced `bg-amber-100 text-amber-700` with `bg-warning-200 text-warning-900` design tokens on the "Concept" scenario badge. No hardcoded Tailwind color classes remain in ScenarioSelector.tsx.
 
 ### PB-065: Replace DayCell leaveType .find() with Map-based lookup
 - **Completed:** 2026-03-29

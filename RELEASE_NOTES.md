@@ -8,6 +8,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 _No unreleased changes._
 
+### 2026-03-29 — Planningsrooster werkbalk en kleurcorrectie
+
+#### UX / design verbeteringen
+
+- **Planningsrooster werkbalk:** Statuslegende in de tweede werkbalkrij heeft nu een eigen visuele groep met "Status" label, consistent met de groepering van de overige bedieningselementen.
+- **Scenario-badge:** "Concept" badge bij scenarioselectie gebruikt nu ontwerptokens in plaats van directe Tailwind-kleuren.
+
 ## Release History
 
 ### 2026-03-29 — Typografie, koptekst en prestatieoptimalisatie
