@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Copy, Trash2 } from "lucide-react";
 import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
+import { showToast } from "@/components/ui/Toast";
 
 export function ScenarioSelector() {
   const [showCreate, setShowCreate] = useState(false);
@@ -19,7 +20,9 @@ export function ScenarioSelector() {
     mutate(async () => {
       const s = await api.scenarios.create(newName.trim(), newDesc.trim() || undefined);
       await api.scenarios.setActiveId(s.id);
-    });
+    })
+      .then(() => showToast("Scenario aangemaakt"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     setNewName("");
     setNewDesc("");
     setShowCreate(false);
@@ -30,14 +33,18 @@ export function ScenarioSelector() {
     mutate(async () => {
       const s = await api.scenarios.duplicate(activeId, name);
       await api.scenarios.setActiveId(s.id);
-    });
+    })
+      .then(() => showToast("Scenario gedupliceerd"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
   }
 
   function handleDelete() {
     if (activeId === "default") return;
     const scenarioName = scenarios.find((s) => s.id === activeId)?.name || "dit scenario";
     if (!window.confirm(`Weet je zeker dat je "${scenarioName}" wilt verwijderen? Alle bijbehorende planningsdata gaat verloren.`)) return;
-    mutate(() => api.scenarios.remove(activeId));
+    mutate(() => api.scenarios.remove(activeId))
+      .then(() => showToast("Scenario verwijderd"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
   }
 
   return (

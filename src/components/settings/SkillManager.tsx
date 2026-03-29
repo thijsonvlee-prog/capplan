@@ -4,18 +4,26 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
+import { showToast } from "@/components/ui/Toast";
 
 export function SkillManager() {
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [showValidation, setShowValidation] = useState(false);
 
   const skills = useApiData(() => api.settings.getSkills(), [], []);
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!newName.trim()) return;
-    mutate(() => api.settings.createSkill(newName.trim()));
+    if (!newName.trim()) {
+      setShowValidation(true);
+      return;
+    }
+    setShowValidation(false);
+    mutate(() => api.settings.createSkill(newName.trim()))
+      .then(() => showToast("Vaardigheid toegevoegd"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     setNewName("");
   }
 
@@ -26,7 +34,9 @@ export function SkillManager() {
 
   function saveEdit() {
     if (editingId && editingName.trim()) {
-      mutate(() => api.settings.updateSkill(editingId, editingName.trim()));
+      mutate(() => api.settings.updateSkill(editingId, editingName.trim()))
+        .then(() => showToast("Vaardigheid bijgewerkt"))
+        .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     }
     setEditingId(null);
     setEditingName("");
@@ -34,7 +44,9 @@ export function SkillManager() {
 
   function handleDelete(id: string, name: string) {
     if (!window.confirm(`Weet je zeker dat je "${name}" wilt verwijderen?`)) return;
-    mutate(() => api.settings.deleteSkill(id));
+    mutate(() => api.settings.deleteSkill(id))
+      .then(() => showToast("Vaardigheid verwijderd"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
   }
 
   return (
@@ -57,6 +69,9 @@ export function SkillManager() {
           Toevoegen
         </button>
       </form>
+      {showValidation && !newName.trim() && (
+        <div className="px-4 pb-2 -mt-2 text-xs text-red-600">Vul een vaardigheidsnaam in.</div>
+      )}
 
       <div className="divide-y divide-border-subtle">
         {skills.map((skill) => (

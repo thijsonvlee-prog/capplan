@@ -31,22 +31,25 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 | Rooster toewijzen knop | "Toewijzen (1 jaar)" onduidelijk | Middel — gevolg niet helder | Opgelost | Helpertekst toegevoegd |
 | Dropdown placeholders | Inconsistent ("-- Selecteer --" vs "-- Selecteer profiel --") | Laag | Opgelost | Geconsistentiseerd |
 | Capaciteit loading | Geen loading state | Laag | Opgelost | Spinner toegevoegd |
-| Geen succesfeedback | Geen toast/melding na acties | Middel — onzekerheid | Open | Vereist toast-systeem, grotere wijziging |
+| Geen succesfeedback | Geen toast/melding na acties | Middel — onzekerheid | Opgelost | Toast-systeem geïmplementeerd in run 4 |
 | DriverList edit flow | Edit verschijnt inline, weinig onderscheid met create | Laag | Open | Overweeg modal of duidelijker visueel onderscheid |
 | Header leeg | Grotendeels ongebruikte ruimte | Laag | Open | Kan later benut worden voor breadcrumbs of contextuele info |
 | Ziekpercentage range | 0-99, niet 0-100 | Laag | Open | 100% aanwezig = niet ziek, maar range is vreemd voor gebruikers |
-| Geen succesfeedback | Geen toast/melding na acties (opslaan, verwijderen, toewijzen) | Middel | Open | Vereist toast-systeem, grotere wijziging |
+| Geen succesfeedback | Geen toast/melding na acties (opslaan, verwijderen, toewijzen) | Middel | Opgelost | Toast-systeem geïmplementeerd in run 4 |
 | StatusSelector inconsistentie | Verlof: klik op type = direct opslaan. Ziek: apart "Bevestigen" nodig | Laag | Open | Twee patronen voor hetzelfde type interactie |
 | DriverList niet sorteerbaar | Geen kolomsortering, bij veel chauffeurs moeilijk navigeerbaar | Middel | Open | PlanningGrid heeft wél sortering |
-| DriverForm computed velden | Actuele gegevens lijken bewerkbaar maar zijn read-only | Laag | Open | Visueel onderscheid ontbreekt (bijv. disabled styling) |
+| DriverForm computed velden | Actuele gegevens lijken bewerkbaar maar zijn read-only | Laag | Opgelost | Achtergrondkleur (surface-tertiary) toegevoegd in run 4 |
 | ScenarioSelector dubbel dupliceren | "Kopie van Kopie van..." bij herhaald dupliceren | Laag | Open | Naamgeving wordt onwerkbaar |
 | Documentatie loading/error | Download-knop toont geen feedback bij fout of verwerking | Laag | Open | Geen loading state op download button |
 | Capaciteitspagina error state | Geen foutmelding bij mislukte API-calls | Middel | Open | Pagina toont alleen loading spinner |
 | Instellingenpagina loading state | Geen loading indicator bij initieel laden van stamtabellen | Laag | Open | Data verschijnt plotseling |
-| StamtabelManager stille validatie | Lege code/omschrijving: form submit doet niets | Middel | Open | Geen foutmelding bij lege velden |
-| SkillManager stille validatie | Lege vaardigheidsnaam: form submit doet niets | Middel | Open | Geen foutmelding bij leeg veld |
+| StamtabelManager stille validatie | Lege code/omschrijving: form submit doet niets | Middel | Opgelost | Inline foutmelding toegevoegd in run 4 |
+| SkillManager stille validatie | Lege vaardigheidsnaam: form submit doet niets | Middel | Opgelost | Inline foutmelding toegevoegd in run 4 |
 
 ## Bewezen effectieve verbeteringen
+- Lichtgewicht toast-systeem met globaal listener-patroon: geen context/provider nodig, werkt vanuit elk component via showToast()
+- Inline formuliervalidatie met showValidation-state: klein, lokaal, nul risico
+- Visueel onderscheid computed velden via achtergrondkleur: simpele CSS-wijziging, direct duidelijk
 - Bevestigingsdialogen bij verwijderacties: direct hoge waarde, nul risico op regressies
 - Specifieke verwijderbevestigingen (met naam/datum): meer vertrouwen voor de gebruiker, nul extra risico
 - Taalconsistentie in labels: kleine moeite, merkbaar effect op professionaliteit
@@ -70,7 +73,7 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 - Controleer of afkortingen in de UI uitgeschreven of tenminste verklaard zijn
 - Controleer of nieuwe icon-only knoppen aria-labels hebben
 - Controleer of nieuwe formulieren foutfeedback geven bij lege verplichte velden (geen stille validatie)
-- Overweeg een toast/notificatiesysteem voor succesfeedback na acties (hoogste prioriteit, al drie keer opgemerkt)
+- Toast-systeem is geïmplementeerd — controleer bij nieuwe features of toast-feedback wordt toegevoegd bij mutaties
 - Overweeg of de DriverForm edit-flow beter kan (modal vs inline)
 - Controleer of documentatiepagina nog actueel is na architectuurwijzigingen
 - Let op of het ziekpercentage-bereik (0-99) verwarring oplevert bij gebruikers
@@ -78,7 +81,8 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 - DriverList heeft geen sortering — bij groei van chauffeursbestand wordt dit problematisch
 - StatusSelector heeft twee verschillende interactiepatronen voor Verlof en Ziek — harmoniseren?
 - ScenarioSelector: dupliceernaamgeving "Kopie van..." kan onwerkbaar worden bij herhaald gebruik
-- StamtabelManager, SkillManager, ScenarioSelector: stille validatie bij lege formulieren
+- StamtabelManager en SkillManager: stille validatie opgelost (inline foutmeldingen). ScenarioSelector gebruikt HTML required attribuut, wat voldoende is.
+- RosterProfileEditor: stille validatie opgelost (inline foutmelding bij lege profielnaam)
 - Capaciteitspagina en instellingenpagina: ontbreken error states bij mislukte API-calls
 
 ## Scan- en wijzigingsgeschiedenis
@@ -213,9 +217,61 @@ Dit bestand bevat de verzamelde learnings van terugkerende UX- en flowscans op d
 - Het woord "records" (Engels/technisch) komt op meerdere plekken in de UI terug — gebruik liever "gegevens" of domeinspecifieke termen
 
 **Aanbevolen vervolgstappen**
-1. Toast/succesfeedback implementeren (al drie scans de hoogste prioriteit — overweeg een lightweight eigen component zonder externe dependency)
-2. Stille validatie oplossen in StamtabelManager, SkillManager en ScenarioSelector (toon inline foutmelding bij lege velden)
+1. ~~Toast/succesfeedback implementeren~~ → Opgelost in run 4
+2. ~~Stille validatie oplossen in StamtabelManager, SkillManager~~ → Opgelost in run 4
 3. DriverList kolomsortering toevoegen
 4. StatusSelector Verlof/Ziek-flow harmoniseren
 5. Error states toevoegen aan capaciteitspagina en instellingenpagina
-6. DriverForm computed velden visueel onderscheiden (disabled styling)
+6. ~~DriverForm computed velden visueel onderscheiden~~ → Opgelost in run 4
+
+### 2026-03-29 (run 4)
+**Samenvatting**
+- Vierde UX-scan met focus op de drie langststaande open punten: toast/succesfeedback (#1 al 3 runs), stille formuliervalidatie, en visueel onderscheid computed velden.
+
+**Gebruikte context**
+- CLAUDE.md (branchbeleid, stack, conventies)
+- BUILD_STABILITY_LEARNINGS.md (verify-script, PlanningGrid warnings)
+- UX_LEARNINGS.md (eerdere 3 runs, open punten)
+- PRODUCT_OWNER_LEARNINGS.md (toast als #1 cross-domain prioriteit, PlanningGrid convergentiepunt)
+- DESIGN_LEARNINGS.md (tokensysteem, component classes)
+
+**Geanalyseerd**
+- Alle 6 pagina's en 19+ componenten doorgelopen op open UX-punten
+- Focus op: succesfeedback, stille validatie, computed velden, error states, consistentie
+- StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector, DriverList, DriverForm, RosterAssigner, capaciteitspagina
+
+**Doorgevoerd**
+1. **Toast/notificatiesysteem** (lichtgewicht, eigen component):
+   - `src/components/ui/Toast.tsx`: globaal listener-patroon (geen context/provider), auto-dismiss na 3.5s, success/error varianten
+   - `globals.css`: slide-in animatie
+   - Layout: ToastContainer gemount
+   - Geïntegreerd in 9 componenten: settings page (4 stamtabellen), SkillManager, RosterProfileEditor, ScenarioSelector, DriverList, DriverForm (3 sub-tabellen), RosterAssigner
+   - Alle create/update/delete acties tonen nu een toast met specifieke melding
+   - Error handling: fouten tonen een rode toast met "Er ging iets mis. Probeer het opnieuw."
+2. **Stille formuliervalidatie opgelost**:
+   - StamtabelManager: inline foutmelding "Vul zowel een code als een omschrijving in." bij lege submit
+   - SkillManager: inline foutmelding "Vul een vaardigheidsnaam in." bij lege submit
+   - RosterProfileEditor: inline foutmelding "Vul een profielnaam in." bij lege submit + rode border op input
+3. **DriverForm computed velden visueel onderscheid**:
+   - Actuele gegevens-velden krijgen bg-surface-tertiary achtergrond + padding + rounded, waardoor ze duidelijk verschillen van bewerkbare velden
+
+**Niet doorgevoerd**
+- DriverList kolomsortering: vereist state management + UI voor sorteerknoppen, middelgroot (P2)
+- StatusSelector Verlof/Ziek-flow harmonisatie: vereist UX-besluit over gewenst interactiepatroon (P2)
+- Error states capaciteitspagina/instellingenpagina: vereist error handling in useApiData hook of per-component try/catch (P2)
+- ScenarioSelector dupliceernaamgeving ("Kopie van Kopie van..."): klein maar gevoelig, vereist logica voor nummering (P3)
+- Planning grid status-wijziging toast: bewust niet toegevoegd, zou te frequent triggeren bij drag-selectie (P4)
+
+**Nieuwe learnings**
+- Het globale listener-patroon (zoals invalidate() in useApi.ts) werkt uitstekend voor toast-meldingen: geen context nodig, werkt vanuit elk component, eenvoudig te testen
+- Toast bij elke mutatie voegt meetbaar vertrouwen toe — gebruikers zien direct dat hun actie is verwerkt
+- Bij hoog-frequente acties (planning grid status-wijzigingen, drag-selectie) is toast juist ongewenst — selectief toepassen
+- Inline formuliervalidatie met een showValidation boolean is het simpelste patroon: toon foutmelding pas na eerste submit-poging, niet eerder
+- Computed velden visueel onderscheiden is een eenregelige CSS-wijziging met groot effect op begrijpelijkheid
+
+**Aanbevolen vervolgstappen**
+1. DriverList kolomsortering (klik op kolomkop voor naam, werkgever, etc.)
+2. StatusSelector Verlof/Ziek-flow harmoniseren (zelfde interactiepatroon)
+3. Error states toevoegen aan capaciteitspagina en instellingenpagina
+4. Toast-feedback toevoegen aan eventuele nieuwe mutatie-acties
+5. ScenarioSelector: dupliceernaamgeving verbeteren ("Kopie 1", "Kopie 2" i.p.v. "Kopie van Kopie van...")

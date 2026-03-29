@@ -19,10 +19,15 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editCode, setEditCode] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [showValidation, setShowValidation] = useState(false);
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!newCode.trim() || !newDesc.trim()) return;
+    if (!newCode.trim() || !newDesc.trim()) {
+      setShowValidation(true);
+      return;
+    }
+    setShowValidation(false);
     onCreate(newCode.trim(), newDesc.trim());
     setNewCode("");
     setNewDesc("");
@@ -68,6 +73,9 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
           Toevoegen
         </button>
       </form>
+      {showValidation && (!newCode.trim() || !newDesc.trim()) && (
+        <div className="px-4 pb-2 -mt-2 text-xs text-red-600">Vul zowel een code als een omschrijving in.</div>
+      )}
 
       <div className="divide-y divide-border-subtle">
         {records.map((r) => (

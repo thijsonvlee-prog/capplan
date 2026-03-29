@@ -7,6 +7,7 @@ import type { Driver } from "@/domain/types";
 import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { getComputedFields } from "@/lib/api-helpers";
+import { showToast } from "@/components/ui/Toast";
 
 export function DriverList() {
   const [showForm, setShowForm] = useState(false);
@@ -23,13 +24,17 @@ export function DriverList() {
   const skillMap = new Map(skills.map((s) => [s.id, s.name]));
 
   function handleCreate(data: Omit<Driver, "id" | "isActive" | "createdAt" | "updatedAt">) {
-    mutate(() => api.drivers.create(data));
+    mutate(() => api.drivers.create(data))
+      .then(() => showToast("Chauffeur toegevoegd"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     setShowForm(false);
   }
 
   function handleUpdate(data: Partial<Omit<Driver, "id" | "createdAt">>) {
     if (!editingDriver) return;
-    mutate(() => api.drivers.update(editingDriver.id, data));
+    mutate(() => api.drivers.update(editingDriver.id, data))
+      .then(() => showToast("Chauffeur bijgewerkt"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     setEditingDriver(null);
   }
 

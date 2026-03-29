@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
+import { showToast } from "@/components/ui/Toast";
 
 type Props = {
   driverId: string;
@@ -26,7 +27,9 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
       rosterProfileId: profileId,
       weeklyHours: weeklyHours !== "" ? weeklyHours : undefined,
       scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId,
-    }));
+    }))
+      .then(() => showToast("Roosterprofiel toegewezen"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     setProfileId("");
     setStartDate("");
     setWeeklyHours("");
@@ -36,7 +39,9 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
     const record = records.find((r) => r.id === recordId);
     const recordLabel = record ? `${record.profileName} vanaf ${record.startDate}` : "dit roosterrecord";
     if (!window.confirm(`Weet je zeker dat je "${recordLabel}" wilt verwijderen?`)) return;
-    mutate(() => api.drivers.deleteRosterAssignment(driverId, recordId));
+    mutate(() => api.drivers.deleteRosterAssignment(driverId, recordId))
+      .then(() => showToast("Roostertoewijzing verwijderd"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
   }
 
   return (

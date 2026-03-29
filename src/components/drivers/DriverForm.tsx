@@ -8,6 +8,7 @@ import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { getComputedFields } from "@/lib/api-helpers";
 import { SubTable } from "./SubTable";
+import { showToast } from "@/components/ui/Toast";
 
 const LICENSE_OPTIONS = ["B", "C", "C1", "CE", "D", "DE"];
 
@@ -192,7 +193,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
                 ].map((f) => (
                   <div key={f.label}>
                     <span className="text-text-tertiary text-xs">{f.label}</span>
-                    <div className="text-text-secondary">{f.value || "-"}</div>
+                    <div className="bg-surface-tertiary text-text-secondary px-2 py-1 rounded text-sm">{f.value || "-"}</div>
                   </div>
                 ))}
               </div>
@@ -218,8 +219,8 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
             { key: "employmentType", label: "Type", render: (v) => v ? EMPLOYMENT_TYPE_LABELS[v as EmploymentType] : "-" },
             { key: "employerId", label: "Werkgever", render: (v) => (v && employerMap.get(v)) || "-" },
           ]}
-          onAdd={(data) => mutate(() => api.drivers.addEmploymentRecord(initialData.id, data))}
-          onDelete={(id) => mutate(() => api.drivers.deleteEmploymentRecord(initialData.id, id))}
+          onAdd={(data) => mutate(() => api.drivers.addEmploymentRecord(initialData.id, data)).then(() => showToast("Dienstverband toegevoegd")).catch(() => showToast("Er ging iets mis.", "error"))}
+          onDelete={(id) => mutate(() => api.drivers.deleteEmploymentRecord(initialData.id, id)).then(() => showToast("Dienstverband verwijderd")).catch(() => showToast("Er ging iets mis.", "error"))}
           emptyMessage="Geen dienstverbanden"
           renderForm={(onSubmit, onCancel) => (
             <EmploymentForm employers={employers} onSubmit={onSubmit} onCancel={onCancel} />
@@ -237,8 +238,8 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
             { key: "departmentId", label: "Afdeling", render: (v) => (v && departmentMap.get(v)) || "-" },
             { key: "manager", label: "Leidinggevende", render: (v) => v || "-" },
           ]}
-          onAdd={(data) => mutate(() => api.drivers.addFunctionRecord(initialData.id, data))}
-          onDelete={(id) => mutate(() => api.drivers.deleteFunctionRecord(initialData.id, id))}
+          onAdd={(data) => mutate(() => api.drivers.addFunctionRecord(initialData.id, data)).then(() => showToast("Functiegegevens toegevoegd")).catch(() => showToast("Er ging iets mis.", "error"))}
+          onDelete={(id) => mutate(() => api.drivers.deleteFunctionRecord(initialData.id, id)).then(() => showToast("Functiegegevens verwijderd")).catch(() => showToast("Er ging iets mis.", "error"))}
           emptyMessage="Geen functiegegevens"
           renderForm={(onSubmit, onCancel) => (
             <PositionForm departments={departments} locations={locations} onSubmit={onSubmit} onCancel={onCancel} />
@@ -254,8 +255,8 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
             { key: "profileName", label: "Roosterprofiel" },
             { key: "weeklyHours", label: "Uren/week", render: (v) => v !== undefined && v !== null ? String(v) : "-" },
           ]}
-          onAdd={(data) => mutate(() => api.drivers.addRosterAssignment(initialData.id, { ...data, scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId }))}
-          onDelete={(id) => mutate(() => api.drivers.deleteRosterAssignment(initialData.id, id))}
+          onAdd={(data) => mutate(() => api.drivers.addRosterAssignment(initialData.id, { ...data, scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId })).then(() => showToast("Roostertoewijzing toegevoegd")).catch(() => showToast("Er ging iets mis.", "error"))}
+          onDelete={(id) => mutate(() => api.drivers.deleteRosterAssignment(initialData.id, id)).then(() => showToast("Roostertoewijzing verwijderd")).catch(() => showToast("Er ging iets mis.", "error"))}
           emptyMessage="Geen roostergegevens"
           renderForm={(onSubmit, onCancel) => (
             <RosterForm profiles={profiles} onSubmit={onSubmit} onCancel={onCancel} />

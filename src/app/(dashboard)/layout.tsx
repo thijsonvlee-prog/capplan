@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { ToastContainer } from "@/components/ui/Toast";
 
 export default function DashboardLayout({
   children,
@@ -15,6 +16,7 @@ export default function DashboardLayout({
         <Header />
         <main className="flex-1 p-6 bg-surface-secondary overflow-auto flex flex-col min-h-0">{children}</main>
       </div>
+      <ToastContainer />
     </div>
   );
 }

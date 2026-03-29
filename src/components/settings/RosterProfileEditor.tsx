@@ -7,6 +7,7 @@ import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { ROSTER_PROFILE_STATUSES, STATUS_CODES, STATUS_COLORS, DAY_LABELS, type RosterProfileStatus } from "@/domain/constants";
 import { cn } from "@/lib/utils";
+import { showToast } from "@/components/ui/Toast";
 
 function emptyGrid(): RosterProfileEntry[] {
   return Array.from({ length: 28 }, (_, i) => ({ dayOffset: i, status: "ROSTER_FREE" as const }));
@@ -18,18 +19,21 @@ export function RosterProfileEditor() {
   const [isNew, setIsNew] = useState(false);
   const [name, setName] = useState("");
   const [grid, setGrid] = useState<RosterProfileEntry[]>(emptyGrid());
+  const [showValidation, setShowValidation] = useState(false);
 
   function startNew() {
     setIsNew(true);
     setEditingProfile(null);
     setName("");
     setGrid(emptyGrid());
+    setShowValidation(false);
   }
 
   function startEdit(profile: RosterProfile) {
     setEditingProfile(profile);
     setIsNew(false);
     setName(profile.name);
+    setShowValidation(false);
     // Ensure all 28 days have an entry
     const g = emptyGrid();
     for (const e of profile.entries) {
@@ -51,11 +55,19 @@ export function RosterProfileEditor() {
   }
 
   function handleSave() {
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setShowValidation(true);
+      return;
+    }
+    setShowValidation(false);
     if (isNew) {
-      mutate(() => api.rosterProfiles.create(name.trim(), grid));
+      mutate(() => api.rosterProfiles.create(name.trim(), grid))
+        .then(() => showToast("Roosterprofiel aangemaakt"))
+        .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     } else if (editingProfile) {
-      mutate(() => api.rosterProfiles.update(editingProfile.id, name.trim(), grid));
+      mutate(() => api.rosterProfiles.update(editingProfile.id, name.trim(), grid))
+        .then(() => showToast("Roosterprofiel bijgewerkt"))
+        .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     }
     setEditingProfile(null);
     setIsNew(false);
@@ -63,7 +75,9 @@ export function RosterProfileEditor() {
 
   function handleDelete(id: string, name: string) {
     if (!window.confirm(`Weet je zeker dat je roosterprofiel "${name}" wilt verwijderen?`)) return;
-    mutate(() => api.rosterProfiles.remove(id));
+    mutate(() => api.rosterProfiles.remove(id))
+      .then(() => showToast("Roosterprofiel verwijderd"))
+      .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
   }
 
   const showEditor = isNew || editingProfile;
@@ -84,14 +98,19 @@ export function RosterProfileEditor() {
 
       {showEditor && (
         <div className="p-4 border-b border-border-subtle space-y-3">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Profielnaam..."
-            className="input-field w-64"
-            autoFocus
-          />
+          <div>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => { setName(e.target.value); if (e.target.value.trim()) setShowValidation(false); }}
+              placeholder="Profielnaam..."
+              className={`input-field w-64 ${showValidation && !name.trim() ? "border-red-400" : ""}`}
+              autoFocus
+            />
+            {showValidation && !name.trim() && (
+              <div className="text-xs text-red-600 mt-1">Vul een profielnaam in.</div>
+            )}
+          </div>
           <div className="text-caption mb-1">Klik op een cel om de status te wisselen: Roostervrij → Basisrooster → Aanvullend beschikbaar</div>
           <div className="overflow-x-auto">
             <table className="border-collapse text-xs">
