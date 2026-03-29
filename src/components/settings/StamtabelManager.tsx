@@ -121,7 +121,10 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
           </div>
         ))}
         {records.length === 0 && (
-          <div className="p-4 text-center text-text-tertiary text-sm">Nog geen {title.toLowerCase()} toegevoegd.</div>
+          <div className="p-6 text-center">
+            <p className="text-sm text-text-secondary">Nog geen {title.toLowerCase()} toegevoegd.</p>
+            <p className="text-xs text-text-tertiary mt-1">Vul hierboven een code en omschrijving in en klik op &quot;Toevoegen&quot; om te beginnen.</p>
+          </div>
         )}
       </div>
     </div>

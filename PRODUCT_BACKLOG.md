@@ -23,18 +23,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-001: Improve empty state guidance across stamtabel managers
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** Several stamtabel screens show minimal empty states ("Geen gegevens") without guidance on what the user should do next.
-- **Why this matters now:** New users encounter these screens during onboarding and get stuck without clear next steps.
-- **Scope notes:** Update empty states in werkgevers, afdelingen, locaties, and verloftypes managers. Use the existing StamtabelManager component pattern.
-- **Dependencies:** None.
-- **Definition of done:** All four stamtabel managers show actionable Dutch-language empty states with a prompt to add the first item. Passes `npm run verify`.
-- **Implementation note:** Modify the shared StamtabelManager component if possible; otherwise update each instance individually.
-
 ### PB-002: Add composite database indexes for planning grid queries
 
 - **Owner:** Delivery Agent
@@ -66,6 +54,18 @@ Items are ordered by priority within each section. Ties are broken by expected u
 _No items currently in progress._
 
 ## Completed Recently
+
+### PB-001: Improve empty state guidance across stamtabel managers
+
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Completed
+- **Problem / opportunity:** Stamtabel screens showed minimal empty states without guidance on what the user should do next.
+- **Why this matters now:** Completed — all four stamtabel managers now show actionable empty states.
+- **Scope notes:** Updated the shared StamtabelManager component.
+- **Dependencies:** None.
+- **Definition of done:** All four stamtabel managers show actionable Dutch-language empty states with a prompt to add the first item. Passes `npm run verify`.
+- **Implementation note:** Modified the shared StamtabelManager component — single change propagates to all four stamtabel types.
 
 ### PB-000: Implement toast notifications for all CRUD operations
 

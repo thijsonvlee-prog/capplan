@@ -8,7 +8,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ### UX / usability improvements
 
-- _No unreleased UX changes._
+- Stamtabel empty states (werkgevers, afdelingen, standplaatsen, verloftypes) now show instructional text guiding users to fill in the form and click "Toevoegen" to add their first item.
 
 ### Functional improvements
 
