@@ -6,37 +6,24 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-065 (DayCell leaveType Map lookup) is complete. The Map-based lookup pattern is now consistent across all component render paths. A fresh codebase scan confirms: no N+1 patterns, comprehensive error handling across all 26 API routes, zero ESLint warnings. The codebase is in strong shape.
+PB-066 (PlanningGrid per-cell entry lookup) is complete. All hot-path `.find()` calls in PlanningGrid are now replaced with Map-based O(1) lookups. The Map-based lookup pattern is fully consistent across the production codebase. A fresh scan confirms: no N+1 patterns, comprehensive error handling across all API routes, zero ESLint warnings, zero hardcoded Tailwind colors in components, zero console.log statements.
 
-The most impactful remaining opportunity is optimizing the per-cell `.find()` in the PlanningGrid render loop (DE-REC-034), which runs for every driver×date cell. The ScenarioSelector hardcoded Tailwind color (DE-REC-035) is a small design token compliance fix. The existing deferred items (DE-REC-005, DE-REC-014, DE-REC-030, DE-REC-031) remain valid but low urgency.
+The one remaining `.find()` in a render-hot path is in `CapacitySummaryRow.tsx` (POC), which iterates drivers×dates×entries. This is a new recommendation (DE-REC-036). The existing deferred items remain valid but low urgency.
 
 ## Recommended Next Improvements
 
-### DE-REC-034: PlanningGrid per-cell entry lookup optimization
+### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
-- **Title:** Replace `planningEntries.find()` with Map-based lookup in PlanningGrid cell rendering
-- **Problem:** `PlanningGrid.tsx:613` uses `driver.planningEntries.find((e) => e.date === date)` inside the per-cell render loop. This runs for every driver×date combination in the grid. With 50 drivers × 90 days, that's 4,500 `.find()` calls, each scanning the driver's entries array.
-- **Proposed improvement:** Pre-build a `Map<string, PlanningEntry>` keyed by date for each driver's entries (either in the data transform or via useMemo), and use `.get(date)` in the render loop.
-- **Expected product/technical value:** Consistent O(1) lookup pattern. Measurable render performance improvement on large grids.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low. Same proven pattern as PB-060/PB-065.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** This is the last hot-path `.find()` in the codebase. The pattern is proven and the change is small.
-
-### DE-REC-035: ScenarioSelector hardcoded Tailwind color
-
-- **Title:** Replace hardcoded `bg-amber-100 text-amber-700` in ScenarioSelector with design tokens
-- **Problem:** `ScenarioSelector.tsx:73` uses `bg-amber-100 text-amber-700` for the "Concept" badge. This violates CLAUDE.md's rule against hardcoded Tailwind color classes.
-- **Proposed improvement:** Replace with `bg-warning-50 text-warning-700` or appropriate design token equivalents.
-- **Expected product/technical value:** CLAUDE.md compliance. Design consistency.
+- **Title:** Replace `planningEntries.find()` with Map-based lookup in CapacitySummaryRow
+- **Problem:** `CapacitySummaryRow.tsx:47` uses `driver.planningEntries.find((e) => e.date === date)` inside a nested loop over drivers × dates. This is the same hot-path pattern that was fixed in PlanningGrid (PB-066), but lives in the POC capacity summary component.
+- **Proposed improvement:** Either pass the `entryMaps` from PlanningGrid down to CapacitySummaryRow, or build a local Map inside the component. Alternatively, if the POC is to be promoted to production quality, this should be part of that effort.
+- **Expected product/technical value:** Consistent O(1) lookup pattern. Performance improvement for large grids when totals row is visible.
 - **Priority:** P4 Low
-- **Effort:** Small (single line change)
-- **Risk:** Low.
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Quick compliance fix. Can be bundled with any UX cycle.
+- **Effort:** Small
+- **Risk:** Low. Same proven pattern.
+- **Dependencies:** Decision on whether CapacitySummaryRow POC should be promoted or removed.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Small fix, but depends on the POC's future. If the POC stays, it should use the same optimized pattern.
 
 ### DE-REC-030: Extract hardcoded API limits to constants
 
@@ -94,7 +81,7 @@ The most impactful remaining opportunity is optimizing the per-cell `.find()` in
 
 - **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory. At ~200 bytes/row this is ~10 MB per request. Acceptable now but worth documenting as a known ceiling.
 - **Date timezone handling in aggregation:** `aggregation.ts` and `utils.ts` parse date strings using `new Date(date + "T00:00:00")` without timezone specifier. Vercel serverless runs in UTC so this is not a current production risk, but could surface if the server environment changes.
-- **`any` types in API routes:** ~12 uses of `any` type across API routes (route parameters, query builders, map callbacks). These are functional but reduce type safety. Not worth a dedicated backlog item — fix opportunistically when touching these files.
+- **`any` types in source code:** ~38 uses of `any` across 12 source files (excluding generated). These are functional but reduce type safety. Not worth a dedicated backlog item — fix opportunistically when touching these files.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". This should either be promoted to production quality or removed to avoid dead code confusion.
 
 ## Items Intentionally Not Recommended
@@ -102,7 +89,7 @@ The most impactful remaining opportunity is optimizing the per-cell `.find()` in
 - **Migrate to a different ORM:** Prisma is well-integrated. Migration cost far outweighs any benefit.
 - **Add pagination to all list endpoints:** Current data volumes don't justify the complexity.
 - **Add authentication/authorization:** Known gap in CLAUDE.md, explicitly out of scope unless tasked.
-- **Refactor PlanningGrid.tsx broadly:** The component is complex (~680 lines) but stable. Targeted fixes are preferred over a full rewrite.
+- **Refactor PlanningGrid.tsx broadly:** The component is complex (~695 lines) but stable. Targeted fixes are preferred over a full rewrite.
 - **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer.
 - **Add unique constraints on Driver/Scenario names:** Requires a product decision on whether duplicates should be allowed.
 - **Add enum validation for status fields:** Frontend already constrains values. Low real-world risk.
@@ -113,7 +100,8 @@ The most impactful remaining opportunity is optimizing the per-cell `.find()` in
 - **Standardize `validateRequired` usage in drivers POST:** The drivers POST route uses inline validation instead of `validateRequired()`. Functionally equivalent, not worth a dedicated fix.
 - **Translate console.error messages:** Console messages are developer/server-facing logging, not user-facing. They should remain in English for debugging clarity. CLAUDE.md's Dutch requirement applies to user-facing text only.
 - **Split DriverForm.tsx (~475 lines):** Large but well-structured with tab-based organization. Would add complexity without clear payoff at current size.
-- **Other `.find()` calls in render paths (scenarios, roster assignments):** The remaining `.find()` calls in ScenarioSelector, RosterAssigner, capacity page, and Header operate on small arrays (typically <10 items). The performance benefit of Map conversion is negligible. Only DE-REC-034 (planning entries) operates on a hot path with meaningful volume.
+- **Other `.find()` calls in render paths (scenarios, roster assignments):** The remaining `.find()` calls in ScenarioSelector, RosterAssigner, capacity page, and Header operate on small arrays (typically <10 items). The performance benefit of Map conversion is negligible. Only DE-REC-036 (CapacitySummaryRow) operates on a hot path with meaningful volume.
+- **DE-REC-035 (ScenarioSelector hardcoded Tailwind color):** Completed as PB-068. No longer needed.
 
 ## Recommendation Rules
 

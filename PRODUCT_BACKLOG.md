@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The codebase is in strong shape — 0 ESLint warnings, Map-based lookups consistent across the codebase, all API routes hardened with validation and Dutch error messages. Design alignment with DESIGN.md is high. The next cycle focuses on the last hot-path render optimization, planning grid toolbar polish, and a small design token compliance fix.
+**Current direction:** The codebase is in strong shape — 0 ESLint warnings, Map-based lookups fully consistent across PlanningGrid and all component render paths, all API routes hardened with validation and Dutch error messages. Design alignment with DESIGN.md is high. No hot-path `.find()` calls remain in PlanningGrid. The CapacitySummaryRow (POC) has a remaining `.find()` pattern that can be addressed if the POC is promoted to production quality.
 
 ## Status Definitions
 
@@ -26,19 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-066: PlanningGrid per-cell entry lookup optimization
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** `PlanningGrid.tsx:613` uses `driver.planningEntries.find((e) => e.date === date)` inside the per-cell render loop. With 50 drivers × 90 days = 4,500 `.find()` calls. This is the last hot-path `.find()` in the codebase.
-- **Scope notes:** Pre-build a `Map<string, PlanningEntry>` keyed by date for each driver's entries (via `useMemo` or data transform), then use `.get(date)` in the render loop. Same proven pattern as PB-060/PB-065.
-- **Dependencies:** None.
-- **Definition of done:** Per-cell entry lookup uses Map-based O(1) lookup. No `.find()` remains in hot render paths. Passes `npm run verify`.
-- **Implementation note:** Small change. Follow the established `buildLookupMaps` / `useMemo` pattern.
-- **Why this matters now:** Last hot-path `.find()` in the codebase. Proven pattern, small effort, measurable render improvement.
-- **Source:** DE-REC-034.
 
 _No items ready for next cycle._
 
@@ -71,6 +58,12 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-066: PlanningGrid per-cell entry lookup optimization
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Replaced `planningEntries.find()` and `.filter()` in PlanningGrid's per-cell and aggregated-view render paths with O(1) Map-based lookups via a `useEntryMaps` hook in GroupRows. Also optimizes the aggregated column entry collection. Passes `npm run verify` with 0 errors.
+- **Follow-up:** `CapacitySummaryRow.tsx` (POC) has the same `.find()` pattern at line 47. Noted in DE-REC-036.
 
 ### PB-067: Planning grid toolbar second row — tighter grouping
 - **Completed:** 2026-03-29

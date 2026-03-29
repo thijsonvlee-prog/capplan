@@ -8,6 +8,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 _No unreleased changes._
 
+### 2026-03-29 — Planningsrooster celoptimalisatie
+
+#### Prestaties
+
+- **Planningsrooster cel-lookup:** Per-cel planning-entry lookup in het planningsrooster geoptimaliseerd van lineair zoeken (.find) naar O(1) Map-lookup voor zowel dagweergave als geaggregeerde weergave. Bij 50 chauffeurs × 90 dagen scheelt dit 4.500 lineaire zoekopdrachten per renderbeurt.
+
 ### 2026-03-29 — Planningsrooster werkbalk en kleurcorrectie
 
 #### UX / design verbeteringen
