@@ -144,6 +144,43 @@ export function activeDriverWhereClause(referenceDate?: string) {
   };
 }
 
+// === Foreign key validation utilities ===
+
+/**
+ * Validate that referenced foreign key IDs exist in their respective tables.
+ * Returns a Dutch error message if any reference is invalid, or null if all valid.
+ * Uses batch findMany to avoid N+1 lookups.
+ */
+export async function validateForeignKeys(
+  checks: { ids: string[]; model: { count: (args: any) => Promise<number> }; label: string }[]
+): Promise<string | null> {
+  for (const { ids, model, label } of checks) {
+    if (ids.length === 0) continue;
+    const count = await model.count({ where: { id: { in: ids } } });
+    if (count !== ids.length) {
+      return `Eén of meer opgegeven ${label} bestaan niet`;
+    }
+  }
+  return null;
+}
+
+/**
+ * Validate a single optional foreign key reference.
+ * Returns a Dutch error message if the reference is invalid, or null if valid or not provided.
+ */
+export async function validateOptionalForeignKey(
+  id: string | null | undefined,
+  model: { count: (args: any) => Promise<number> },
+  label: string
+): Promise<string | null> {
+  if (!id) return null;
+  const count = await model.count({ where: { id } });
+  if (count === 0) {
+    return `De opgegeven ${label} bestaat niet`;
+  }
+  return null;
+}
+
 // === Sub-record utilities ===
 
 /**

@@ -6,29 +6,16 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-055 (Dutch API error messages) and PB-056 (transaction wrapping on PUT routes) are complete. All API response error messages are now in Dutch across all 24 route files. All sub-record PUT routes use `prisma.$transaction` for find-then-update operations. The codebase passes verify with 0 errors and 0 warnings.
+PB-018 (FK existence checks) is now complete. All relation-creating API routes validate referenced foreign keys before insert, returning clear 400 errors in Dutch. Combined with the previously completed Dutch error messages (PB-055), transaction wrapping (PB-056), and date validation (PB-053), the API validation layer is now comprehensive.
 
-Fresh scan reveals: (1) hardcoded magic numbers in API routes that should be constants, (2) foreign key existence checks still missing on relation creation, (3) capacity aggregation index opportunity, (4) chart colors still hardcoded. Previously deferred items PB-018, PB-009, PB-030 remain valid.
+The codebase is in good shape. Remaining improvement opportunities are lower priority: (1) centralizing magic numbers, (2) capacity aggregation index, (3) chart color extraction. The connectivity hub (PB-015/016) is the next significant feature work.
 
 ## Recommended Next Improvements
-
-### DE-REC-008: Add foreign key existence checks before relation creation
-
-- **Title:** Validate foreign key references before creating related records
-- **Problem:** The driver PUT handler accepts `skillIds` and creates `DriverSkill` records without verifying those skill IDs exist. Similarly, employment/function POST handlers accept `employerId`, `locationId`, `departmentId` without existence checks. Invalid IDs cause Prisma foreign key constraint errors that return generic 500 responses.
-- **Proposed improvement:** Before creating related records, verify referenced IDs exist with a `findMany` count check. Return a clear 400 error with Dutch message if any reference is invalid.
-- **Expected product/technical value:** Better error UX when invalid references are submitted. Prevents confusing 500 errors.
-- **Priority:** P3 Medium
-- **Effort:** Medium (touches several routes)
-- **Risk:** Low.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** PB-018 already exists for this. Complements existing input validation work. Now that all error messages are Dutch, this is the next validation gap.
 
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 90 (max dates per request), 366 (max bulk dates), 100 (max code length). These are hard to discover and maintain.
+- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 100 (max code length). These are hard to discover and maintain.
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts` and reference it from the relevant routes.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
@@ -49,7 +36,7 @@ Fresh scan reveals: (1) hardcoded magic numbers in API routes that should be con
 - **Risk:** Low.
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** PB-009 exists. Capacity aggregation is a hot path.
+- **Why now:** PB-009 exists. Capacity aggregation is a hot path. Worth revisiting when data volume grows.
 
 ### DE-REC-014: Move hardcoded comparison chart colors to constants
 
@@ -64,9 +51,21 @@ Fresh scan reveals: (1) hardcoded magic numbers in API routes that should be con
 - **Suggested owner:** Delivery Agent
 - **Why now:** PB-030 exists. Quick compliance fix.
 
+### DE-REC-031: Add PerformanceEvent table cleanup
+
+- **Title:** Call `cleanupOldEvents()` or add TTL-based cleanup for PerformanceEvent
+- **Problem:** `cleanupOldEvents()` in `src/lib/perf.ts` is defined but never called anywhere. The `PerformanceEvent` table will grow indefinitely. While traffic is low now, this is unbounded growth.
+- **Proposed improvement:** Either call `cleanupOldEvents()` at the end of `withPerfLogging`, or add a periodic cleanup mechanism. Alternatively, if the perf system isn't actively used, consider removing it to reduce dead code.
+- **Expected product/technical value:** Prevents unbounded table growth. Reduces maintenance surface if unused code is removed.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Low urgency but good hygiene. Easy fix.
+
 ## Risks / Watch-outs
 
-- **PerformanceEvent table growth:** `cleanupOldEvents()` in `perf.ts` is defined but never called anywhere in the codebase. The `PerformanceEvent` table will grow indefinitely. Low urgency given low traffic, but worth noting.
 - **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory. At ~200 bytes/row this is ~10 MB per request. Acceptable now but worth documenting as a known ceiling.
 - **Date timezone handling in aggregation:** `aggregation.ts` and `utils.ts` parse date strings using `new Date(date + "T00:00:00")` without timezone specifier. Vercel serverless runs in UTC so this is not a current production risk, but could surface if the server environment changes.
 - **`any` types in API routes:** ~12 uses of `any` type across API routes (route parameters, query builders, map callbacks). These are functional but reduce type safety. Not worth a dedicated backlog item — fix opportunistically when touching these files.

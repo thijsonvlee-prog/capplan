@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired } from "@/lib/api-route-utils";
+import { validateRequired, validateOptionalForeignKey } from "@/lib/api-route-utils";
 
 export async function PUT(
   request: NextRequest,
@@ -20,6 +20,21 @@ export async function PUT(
 
     if (body.endDate && body.startDate && new Date(body.endDate) < new Date(body.startDate)) {
       return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
+    }
+
+    const fkChecks = [];
+    if (body.locationId !== undefined) {
+      fkChecks.push(validateOptionalForeignKey(body.locationId, prisma.location, "locatie"));
+    }
+    if (body.departmentId !== undefined) {
+      fkChecks.push(validateOptionalForeignKey(body.departmentId, prisma.department, "afdeling"));
+    }
+    if (fkChecks.length > 0) {
+      const fkErrors = await Promise.all(fkChecks);
+      const fkError = fkErrors.find((e) => e !== null);
+      if (fkError) {
+        return NextResponse.json({ error: fkError }, { status: 400 });
+      }
     }
 
     const record = await prisma.$transaction(async (tx) => {

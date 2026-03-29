@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { transformDriver, driverInclude } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, validateForeignKeys } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -45,6 +45,15 @@ export async function PUT(
       updateData.employeeNumber = driverData.employeeNumber || null;
     if (driverData.licenseTypes !== undefined)
       updateData.licenseTypes = driverData.licenseTypes;
+
+    if (skillIds !== undefined && Array.isArray(skillIds) && skillIds.length > 0) {
+      const fkError = await validateForeignKeys([
+        { ids: skillIds, model: prisma.skill, label: "competenties" },
+      ]);
+      if (fkError) {
+        return NextResponse.json({ error: fkError }, { status: 400 });
+      }
+    }
 
     const driver = await prisma.$transaction(async (tx) => {
       if (skillIds !== undefined) {

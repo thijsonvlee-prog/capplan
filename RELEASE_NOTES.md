@@ -10,6 +10,12 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 (nacht 8) — Referentievalidatie op alle relatieroutes
+
+#### Betrouwbaarheid
+
+- Alle API-routes die gerelateerde records aanmaken of bijwerken, valideren nu dat de opgegeven referenties (werkgever, locatie, afdeling, competenties, verloftype) daadwerkelijk bestaan. Ongeldige referenties geven nu een duidelijke 400-fout in het Nederlands in plaats van een cryptische 500-serverfout.
+
 ### 2026-03-29 (nacht 7) — Naamformaat en werkbalkgroeperingen
 
 #### UX / design verbeteringen

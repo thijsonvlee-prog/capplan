@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major redesign work is complete. API validation is hardened. ESLint is clean (0 warnings). All API error messages are in Dutch. All sub-record PUT routes use transactions. The active backlog now focuses on: (1) remaining validation gaps (PB-018), (2) small UX consistency fixes, and (3) connectivity hub (PB-015/016) when higher-priority work is done.
+**Current direction:** All major redesign work is complete. API validation is fully hardened including FK existence checks. ESLint is clean (0 warnings). All API error messages are in Dutch. All sub-record PUT routes use transactions. The active backlog now focuses on: (1) small UX consistency fixes, and (2) connectivity hub (PB-015/016) when higher-priority work is done.
 
 ## Status Definitions
 
@@ -26,19 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-018: Add foreign key existence checks before relation creation
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The driver PUT handler accepts `skillIds` and creates `DriverSkill` records without verifying those skill IDs exist. Similarly, employment/function POST handlers accept `employerId`, `locationId`, `departmentId` without existence checks. Invalid IDs cause Prisma foreign key constraint errors that return generic 500 responses.
-- **Scope notes:** Before creating related records, verify referenced IDs exist with a `findMany` count check. Return a clear 400 error with Dutch message if any reference is invalid. Focus on the highest-traffic routes first: driver PUT (skillIds), employment POST (employerId, locationId, departmentId), function POST (functionId references).
-- **Dependencies:** None.
-- **Definition of done:** All relation-creating routes validate that referenced foreign keys exist before insert. Invalid references return 400 with a Dutch error message. Passes `npm run verify`.
-- **Implementation note:** Use batch `findMany` with `where: { id: { in: ids } }` and compare count to input length. Avoid N+1 lookups.
-- **Source:** DE-REC-008.
-- **Why this matters now:** All error messages are now Dutch, and date validation is complete. FK existence checks are the next logical validation gap. Prevents confusing 500 errors for users.
 
 _No items ready for next cycle._
 
@@ -83,6 +70,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-018: Add foreign key existence checks before relation creation
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Added `validateForeignKeys` and `validateOptionalForeignKey` helpers to `api-route-utils.ts`. Applied FK existence validation to 8 routes: driver PUT (skillIds), employment POST/PUT (employerId), function POST/PUT (locationId, departmentId), roster-assignment POST/PUT (rosterProfileId), and planning bulk POST (leaveTypeId). Invalid references now return 400 with a Dutch error message instead of causing 500 FK constraint errors.
 
 ### PB-058: RosterAssigner driver name format consistency
 - **Completed:** 2026-03-29

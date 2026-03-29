@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired } from "@/lib/api-route-utils";
+import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -43,6 +43,15 @@ export async function POST(
 
     if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
       return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
+    }
+
+    const fkErrors = await Promise.all([
+      validateOptionalForeignKey(locationId, prisma.location, "locatie"),
+      validateOptionalForeignKey(departmentId, prisma.department, "afdeling"),
+    ]);
+    const fkError = fkErrors.find((e) => e !== null);
+    if (fkError) {
+      return NextResponse.json({ error: fkError }, { status: 400 });
     }
 
     const record = await prisma.$transaction(async (tx) => {

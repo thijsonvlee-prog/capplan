@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber, validateRequired } from "@/lib/api-route-utils";
+import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/drivers/[id]/roster-assignments",
@@ -56,6 +56,11 @@ export const POST = withPerfLogging(
 
       if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
         return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
+      }
+
+      const fkError = await validateOptionalForeignKey(rosterProfileId, prisma.rosterProfile, "roosterprofiel");
+      if (fkError) {
+        return NextResponse.json({ error: fkError }, { status: 400 });
       }
 
       const record = await prisma.$transaction(async (tx) => {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId } from "@/lib/api-route-utils";
+import { resolveScenarioId, validateOptionalForeignKey } from "@/lib/api-route-utils";
 
 export const POST = withPerfLogging(
   "POST /api/planning/bulk",
@@ -25,6 +25,11 @@ export const POST = withPerfLogging(
       }
 
       const resolvedScenarioId = resolveScenarioId(scenarioId);
+
+      const fkError = await validateOptionalForeignKey(leaveTypeId, prisma.leaveType, "verloftype");
+      if (fkError) {
+        return NextResponse.json({ error: fkError }, { status: 400 });
+      }
 
       const entryData = {
         status,
