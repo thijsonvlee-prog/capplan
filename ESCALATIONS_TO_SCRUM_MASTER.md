@@ -33,7 +33,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 **Choose one option:**
 
 - ( ) **Option A — Full custom date picker component.** Build a complete calendar dropdown from scratch: month grid, year/month navigation, keyboard support, locale-aware formatting. Replaces all native date inputs. Estimated 2-3 cycles of Experience Agent work. Highest design quality but highest effort and risk.
-- ( ) **Option B — Styled date input wrapper.** Create a custom wrapper component that uses the native `<input type="date">` underneath but adds styled container, custom trigger button, and consistent typography/spacing aligned with the design system. The calendar popup itself remains native. Estimated 1 cycle. Good visual improvement with low risk.
+- ( ) **Option B — Styled date input wrapper.** (X) Create a custom wrapper component that uses the native `<input type="date">` underneath but adds styled container, custom trigger button, and consistent typography/spacing aligned with the design system. The calendar popup itself remains native. Estimated 1 cycle. Good visual improvement with low risk.
 - ( ) **Option C — Defer until after planning grid redesign.** The planning grid phases (PB-034, PB-035) and DayCell popup (PB-037, PB-038) are higher-impact UX improvements. Defer the date picker to a future cycle after core workflow improvements are complete.
 
 **Trade-offs:**
