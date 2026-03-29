@@ -27,31 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-069: Expand warning design token scale
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** The warning token set only has 3 values (`warning-200`, `warning-300`, `warning-900`), while success has 8 and danger has 6. This limits nuanced badge/chip styling for warning states. The "Concept" scenario badge works but uses a wide jump between `warning-200` and `warning-900`.
-- **Scope:** Add `warning-50` (~`#fefce8`), `warning-500` (~`#eab308`), and `warning-700` (~`#a16207`) to the design token set in `globals.css`. Optionally update the ScenarioSelector "Concept" badge to use the new `warning-50`/`warning-700` for a softer badge treatment.
-- **Dependencies:** None.
-- **Definition of done:** New warning tokens added to `globals.css`. No hardcoded color values. Passes `npm run verify`.
-- **Implementation note:** 3 CSS variable additions. Tiny scope.
-- **Why this matters now:** Quick win that completes the design token system. No risk, no complexity.
-- **Source:** EX-REC-040.
-
-### PB-070: Header contextual enhancements
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The header bar is clean (PB-064 removed border and redundant label) but still minimal — just a page title. DESIGN.md section 7.1 describes a composed header zone with contextual subtitle, status, or timeframe. Adding contextual information (current period, scenario name, driver count) improves the page opening.
-- **Scope:** Add contextual subtitles to the header for the planning page (current period or active scenario name), capacity page (active scenario), and drivers page (active driver count). The header must remain calm and uncluttered — only add information that provides immediate value. Use existing data already available on each page.
-- **Dependencies:** None. Header base is stable after PB-064.
-- **Definition of done:** At least 2 pages show contextual information in the header. Subtitle is visually subordinate to the page title (use `.text-caption` or equivalent). No new API calls — use data already fetched by the page. Passes `npm run verify`.
-- **Implementation note:** Requires per-page context data to be passed to the header component. Medium effort.
-- **Why this matters now:** The header is the right base to build on after PB-064. Every page benefits from better contextual opening.
-- **Source:** EX-REC-039.
+_No items ready for next cycle._
 
 ---
 
@@ -82,6 +58,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-070: Header contextual enhancements
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Created `HeaderSubtitleProvider` context and `useHeaderSubtitle` hook. Header now shows contextual subtitles: capacity page displays active scenario name ("Basisplanning" or scenario name), drivers page shows driver count ("42 chauffeurs"). Subtitles render in `.text-caption` style, visually subordinate to the page title. No new API calls — uses data already fetched by each page.
+
+### PB-069: Expand warning design token scale
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added `warning-50` (#fefce8), `warning-500` (#eab308), and `warning-700` (#a16207) to the design token set. Updated ScenarioSelector "Concept" badge to use softer `warning-50`/`warning-700` instead of `warning-200`/`warning-900`.
 
 ### PB-066: PlanningGrid per-cell entry lookup optimization
 - **Completed:** 2026-03-29

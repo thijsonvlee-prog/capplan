@@ -8,6 +8,7 @@ import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { getComputedFields, buildLookupMaps } from "@/lib/api-helpers";
 import { showToast } from "@/components/ui/Toast";
+import { useHeaderSubtitle } from "@/hooks/useHeaderSubtitle";
 
 type ViewMode = "list" | "create" | "edit";
 
@@ -22,6 +23,8 @@ export function DriverList() {
   const departments = useApiData(() => api.settings.getDepartments(), [], []);
   const locations = useApiData(() => api.settings.getLocations(), [], []);
   const rosterProfiles = useApiData(() => api.rosterProfiles.list(), [], []);
+
+  useHeaderSubtitle(drivers.length > 0 ? `${drivers.length} chauffeurs` : "");
 
   const skillMap = new Map(skills.map((s) => [s.id, s.name]));
 

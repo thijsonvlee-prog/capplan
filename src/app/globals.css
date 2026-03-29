@@ -63,8 +63,11 @@
   --color-danger-800: #991b1b;
 
   /* --- Functional Colors: Warning --- */
+  --color-warning-50: #fefce8;
   --color-warning-200: #fef08a;
   --color-warning-300: #fde047;
+  --color-warning-500: #eab308;
+  --color-warning-700: #a16207;
   --color-warning-900: #713f12;
 
   /* --- Shadows --- */

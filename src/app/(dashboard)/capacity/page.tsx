@@ -12,8 +12,7 @@ import { ZoomSelector } from "@/components/planning/ZoomSelector";
 import { DEFAULT_PERIOD_DAYS } from "@/domain/constants";
 import { getDateRange, getMondayStart } from "@/lib/utils";
 import { getAggregatedColumns } from "@/lib/aggregation";
-
-
+import { useHeaderSubtitle } from "@/hooks/useHeaderSubtitle";
 
 export default function CapacityPage() {
   const [startDate, setStartDate] = useState(getMondayStart);
@@ -23,6 +22,11 @@ export default function CapacityPage() {
 
   const activeId = useApiData(() => api.scenarios.getActiveId(), [], "default");
   const scenarios = useApiData(() => api.scenarios.list(), [], []);
+
+  const activeScenarioLabel = activeId === "default"
+    ? "Basisplanning"
+    : scenarios.find((s) => s.id === activeId)?.name || "";
+  useHeaderSubtitle(activeScenarioLabel);
 
   const allDates = useMemo(() => {
     if (!startDate) return [];

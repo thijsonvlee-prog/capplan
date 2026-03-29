@@ -6,7 +6,8 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_No unreleased changes._
+- **Koptekst met context:** De koptekstbalk toont nu contextuele informatie per pagina. De capaciteitspagina toont het actieve scenario ("Basisplanning" of scenarionaam). De chauffeurspagina toont het aantal chauffeurs.
+- **Waarschuwingstokens uitgebreid:** Drie nieuwe waarschuwingskleuren toegevoegd (warning-50, warning-500, warning-700) voor meer genuanceerde badge-styling. "Concept" scenario-badge gebruikt nu een subtielere kleurcombinatie.
 
 ## Release History
 

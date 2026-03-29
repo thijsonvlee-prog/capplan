@@ -3,25 +3,37 @@
 ## Summary
 
 **What was improved this cycle:**
-- PB-067: Planning grid toolbar second row now has full `.control-group` consistency. The status legend is wrapped in its own visual zone with a "Status" label, matching the tonal surface treatment of the search/grouping and columns/totals groups. All three groups in row 2 now match the first toolbar row's pattern.
-- PB-068: ScenarioSelector "Concept" badge now uses `bg-warning-200 text-warning-900` design tokens instead of hardcoded `bg-amber-100 text-amber-700`. CLAUDE.md compliance restored.
+- PB-070: Header contextual enhancements. Created a `HeaderSubtitleProvider` context with `useHeaderSubtitle` hook. The shared header bar now shows contextual subtitles on the capacity page (active scenario name or "Basisplanning") and the drivers page (driver count). Subtitles use `.text-caption` styling, visually subordinate to the page title. This aligns with DESIGN.md 7.1 (composed header zone with contextual subtitle).
+- PB-069: Warning design token scale expanded. Added `warning-50`, `warning-500`, `warning-700` to complete the warning color family. ScenarioSelector "Concept" badge updated to use softer `warning-50`/`warning-700` for a more refined treatment consistent with the `success-50`/`success-700` pattern.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: well-aligned (section 7.8). Calm, dark, well-spaced, clear active states.
 - Settings page: well-aligned (sections 2.5, 7.1, 7.2). Composed tabs, clear hierarchy.
 - Typography: improved. Manrope on page titles creates editorial contrast per section 5.1/5.3.
-- Header: improved. No-Line Rule followed. Clean tonal separation.
-- Capacity page: well-aligned. Scenario toggle uses brand semantics. Toolbar grouping is good.
-- Planning grid toolbar: now well-aligned. Both rows use consistent `.control-group` pattern with labels. Status legend has its own visual zone per DESIGN.md 8.3.
+- Header: improved. Contextual subtitles on 2 pages per section 7.1. No-Line Rule followed.
+- Capacity page: well-aligned. Scenario toggle uses brand semantics. Header shows active scenario.
+- Planning grid toolbar: well-aligned. Both rows use consistent `.control-group` pattern with labels.
+- Design tokens: warning scale now matches the nuance of success and danger families.
 - Planning grid matrix: partially aligned. Status chips and tonal row composition are good. Grid border structure and row composition have room for improvement.
-- Drivers page: partially aligned. Page header is composed. Table is still table-first with generic CRUD feel.
+- Drivers page: partially aligned. Page header is composed with contextual subtitle. Table is still table-first with generic CRUD feel.
 
 **Where design quality is still below target:**
 - The drivers table still reads as standard admin CRUD with alternating backgrounds, row borders, and table-first layout.
 - The planning grid matrix uses 1px row borders for structure. Pure tonal separation would be more aligned with DESIGN.md but risks reducing scanability in dense data.
-- Warning token set is sparse (only `warning-200`, `warning-300`, `warning-900`). A `warning-50` and `warning-700` would allow more nuanced badge/chip styling consistent with the success and danger token scales.
+- Header contextual subtitles could be extended to the planning page (active scenario) if PlanningGrid is refactored to expose scenario data upward.
 
 ## Recommended Next Improvements
+
+### EX-REC-041: Planning page header subtitle
+
+- **Problem:** The planning page header currently shows only the page title. The capacity and drivers pages now show contextual subtitles (scenario name, driver count). The planning page could show the active scenario name for consistency, but PlanningGrid currently fetches `activeScenarioId` without the scenario name — ScenarioSelector fetches the list separately.
+- **Proposed improvement:** Have PlanningGrid (or a small wrapper) call `useHeaderSubtitle` with the active scenario name. This requires either lifting the scenarios list fetch to PlanningGrid or reading it from ScenarioSelector's data.
+- **Expected user value:** Consistent contextual header across all major pages. Immediate orientation on which scenario is active.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** PB-070 (completed). Requires minor data flow change in PlanningGrid.
+- **Suggested owner:** Experience Agent
+- **Why now:** Low effort, high consistency value. Natural follow-up to PB-070.
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
 
@@ -45,33 +57,12 @@
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-risk follow-up to PB-063. Should be evaluated visually before applying broadly.
 
-### EX-REC-039: Header contextual enhancements
-
-- **Problem:** The header bar is now clean (no border, no redundant label) but still minimal — just a page title. DESIGN.md section 7.1 describes a composed header zone with contextual subtitle, status, or timeframe where useful, plus grouped utilities and a primary action.
-- **Proposed improvement:** For planning and capacity pages, consider adding a contextual subtitle (e.g., current period or scenario name). For the drivers page, consider showing the active driver count. This should be done carefully — the header must remain calm, not cluttered.
-- **Expected user value:** Better context at a glance without scrolling into page content. Stronger page opening per DESIGN.md 7.1.
-- **Priority:** P3 Medium
-- **Effort:** Medium (requires per-page context data to be passed to header)
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** The header is the right base to build on after PB-064. Adding context improves every page's opening.
-
-### EX-REC-040: Expand warning design token scale
-
-- **Problem:** The warning token set only has 3 values (`warning-200`, `warning-300`, `warning-900`), while success has 8 and danger has 6. This makes it difficult to style warning badges, chips, and backgrounds with the same nuance as other functional colors. The ScenarioSelector "Concept" badge now uses `warning-200`/`warning-900` which works but is less refined than the `success-50`/`success-700` pattern available for positive states.
-- **Proposed improvement:** Add `warning-50` (~`#fefce8`), `warning-500` (~`#eab308`), and `warning-700` (~`#a16207`) to the design token set in `globals.css`. This enables consistent badge/chip styling across all functional color families.
-- **Expected user value:** More consistent visual language for caution/warning states across the application.
-- **Priority:** P4 Low
-- **Effort:** Small (3 CSS variable additions)
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Quick fix that improves design system completeness. No risk.
-
 ## Risks / Watch-outs
 
 - **PlanningGrid.tsx complexity.** The file is ~679 lines. Any further changes to the planning toolbar or grid must be verified carefully against typecheck, lint, and visual behavior. The file has known exhaustive-deps warnings that are pre-existing and non-blocking.
 - **Manrope font weight on Vercel.** The font is loaded via `next/font/google` with `display: swap`. Verify on deployed build that Manrope renders correctly and does not cause layout shift.
 - **Consistency after partial typographic changes.** Manrope on page titles + Inter on section titles is the intended hierarchy. If Manrope is extended further (EX-REC-038), verify the contrast still reads well and doesn't flatten the hierarchy.
+- **HeaderSubtitleProvider context.** The new context is lightweight and only stores a string. Performance impact is negligible. But pages that unmount should clean up their subtitle (the hook handles this via useEffect cleanup).
 - **Drivers table column density.** Removing alternating backgrounds (EX-REC-036) only helps if the remaining visual treatment (hover, spacing) provides enough row distinction at high driver counts.
 - **Planning grid No-Line Rule.** The grid's 1px row borders serve a functional purpose in dense data. Replacing them with pure tonal separation risks reducing scanability. Should be explored in a dedicated visual pass, not as a standalone change.
 
