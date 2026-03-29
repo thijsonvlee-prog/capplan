@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
-import { useApiData, mutate } from "@/hooks/useApi";
+import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
 
@@ -12,7 +12,7 @@ export function SkillManager() {
   const [editingName, setEditingName] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
-  const skills = useApiData(() => api.settings.getSkills(), [], []);
+  const [skills, loading] = useApiDataWithLoading(() => api.settings.getSkills(), [], []);
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -74,7 +74,12 @@ export function SkillManager() {
       )}
 
       <div className="divide-y divide-border-subtle">
-        {skills.map((skill) => (
+        {loading && (
+          <div className="p-6 flex justify-center">
+            <div className="spinner" />
+          </div>
+        )}
+        {!loading && skills.map((skill) => (
           <div key={skill.id} className="flex items-center justify-between p-3 hover:bg-surface-secondary">
             {editingId === skill.id ? (
               <div className="flex items-center gap-2 flex-1">
@@ -108,7 +113,7 @@ export function SkillManager() {
             )}
           </div>
         ))}
-        {skills.length === 0 && (
+        {!loading && skills.length === 0 && (
           <div className="p-4 text-center text-text-tertiary text-sm">
             Nog geen vaardigheden. Voeg een vaardigheid toe om deze aan chauffeurs te koppelen.
           </div>

@@ -38,19 +38,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Implementation note:** Files: `src/app/api/drivers/[id]/route.ts` (PUT), `src/app/api/roster-profiles/[id]/route.ts` (PUT), `src/app/api/scenarios/[id]/duplicate/route.ts` (POST), `src/app/api/scenarios/[id]/route.ts` (DELETE), `src/app/api/settings/skills/[id]/route.ts` (DELETE).
 - **Source:** DE-REC-006.
 
-### PB-012: Make toast notifications accessible to screen readers
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The toast container in `Toast.tsx` lacks `role="status"` and `aria-live="polite"` attributes. Screen readers do not announce toast messages, making success/error feedback invisible to users with assistive technology.
-- **Why this matters now:** Every CRUD operation now shows a toast (PB-000). Making these accessible has broad impact. One-line change.
-- **Scope notes:** Add `role="status"` and `aria-live="polite"` to the toast container element. Minimal change.
-- **Dependencies:** None.
-- **Definition of done:** Toast container has aria-live attributes. Passes `npm run verify`.
-- **Implementation note:** Single attribute addition to the container div in `src/components/ui/Toast.tsx`.
-- **Source:** EX-REC-007.
-
 ### PB-003: Consolidate driver status logic between planning grid and driver list
 
 - **Owner:** Delivery Agent
@@ -63,19 +50,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** Single source of truth for driver status. Both views show identical counts. Passes `npm run verify`.
 - **Implementation note:** Check `api-route-utils.ts` for existing status logic before creating new utilities. The planning grid already uses employment-based logic — extract and share it.
 - **Source:** ESC-002 decision (Option A).
-
-### PB-013: Extend loading state pattern to SkillManager and RosterProfileEditor
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** StamtabelManager now shows a spinner during data fetch (PB-006), but SkillManager and RosterProfileEditor still flash their empty states briefly before data arrives. Inconsistency within the same settings page.
-- **Why this matters now:** The infrastructure (`useApiDataWithLoading` hook) is already in place from PB-006. Quick consistency fix.
-- **Scope notes:** Use `useApiDataWithLoading` in SkillManager and RosterProfileEditor. Show the `.spinner` class during initial load, matching the StamtabelManager pattern.
-- **Dependencies:** None.
-- **Definition of done:** All three settings components show spinners during initial load. No empty state flash. Passes `npm run verify`.
-- **Implementation note:** Follow exact same pattern as StamtabelManager's loading prop implementation.
-- **Source:** EX-REC-005.
 
 ---
 
@@ -142,6 +116,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-012: Make toast notifications accessible to screen readers
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added `role="status"` and `aria-live="polite"` to the toast container in `Toast.tsx`. Screen readers now announce toast messages.
+
+### PB-013: Extend loading state pattern to SkillManager and RosterProfileEditor
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Replaced `useApiData` with `useApiDataWithLoading` in both components. Added spinner during initial load, guarded list and empty state rendering behind `!loading`. Matches StamtabelManager pattern.
 
 ### PB-004: Wrap roster assignment creation in a database transaction
 - **Completed:** 2026-03-29

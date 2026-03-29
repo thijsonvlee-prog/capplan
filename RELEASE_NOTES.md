@@ -6,7 +6,10 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_No unreleased changes._
+### Accessibility & UX consistency
+
+- Toast notifications are now announced by screen readers via `aria-live` region. All CRUD success/error feedback is accessible to users with assistive technology.
+- SkillManager and RosterProfileEditor now show loading spinners during initial data fetch, matching the StamtabelManager pattern. Empty state messages only appear once data has genuinely loaded.
 
 ## Release History
 

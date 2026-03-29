@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Save } from "lucide-react";
 import type { RosterProfileEntry, RosterProfile } from "@/domain/types";
-import { useApiData, mutate } from "@/hooks/useApi";
+import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { ROSTER_PROFILE_STATUSES, STATUS_CODES, STATUS_COLORS, DAY_LABELS, type RosterProfileStatus } from "@/domain/constants";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ function emptyGrid(): RosterProfileEntry[] {
 }
 
 export function RosterProfileEditor() {
-  const profiles = useApiData(() => api.rosterProfiles.list(), [], []);
+  const [profiles, loading] = useApiDataWithLoading(() => api.rosterProfiles.list(), [], []);
   const [editingProfile, setEditingProfile] = useState<RosterProfile | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [name, setName] = useState("");
@@ -161,7 +161,12 @@ export function RosterProfileEditor() {
       )}
 
       <div className="divide-y divide-border-subtle">
-        {profiles.map((p) => (
+        {loading && (
+          <div className="p-6 flex justify-center">
+            <div className="spinner" />
+          </div>
+        )}
+        {!loading && profiles.map((p) => (
           <div key={p.id} className="flex items-center justify-between p-3 hover:bg-surface-secondary">
             <div>
               <span className="text-sm text-text-primary font-medium">{p.name}</span>
@@ -180,7 +185,7 @@ export function RosterProfileEditor() {
             </div>
           </div>
         ))}
-        {profiles.length === 0 && !showEditor && (
+        {!loading && profiles.length === 0 && !showEditor && (
           <div className="p-4 text-center text-text-tertiary text-sm">Nog geen roosterprofielen. Maak een profiel aan om het aan chauffeurs toe te wijzen.</div>
         )}
       </div>
