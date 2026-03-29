@@ -23,19 +23,24 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-Er moeten grotere stappen gemaakt worden in het redesign om te voldoen aan design.md 
+### SMI-004: Bigger design steps toward DESIGN.md compliance
 
-Stuur aan op grotere verbeteringen, minder schaven aan bestaand ontwerp, maar echt componenten en schermen opnieuw ontwerpen obv design.md. Luister dus ook goed naar de aanbevelingen van de experience agent.
+- **Type:** Priority signal / direction change
+- **Status:** Planned (partially escalated)
+- **Input:** Er moeten grotere stappen gemaakt worden in het redesign om te voldoen aan design.md. Stuur aan op grotere verbeteringen, minder schaven aan bestaand ontwerp, maar echt componenten en schermen opnieuw ontwerpen obv design.md. Luister dus ook goed naar de aanbevelingen van de experience agent.
+- **Why this matters:** The Scrum Master is signaling that incremental polish is no longer sufficient. The product needs visible, meaningful redesign steps that bring screens closer to the DESIGN.md standard. Experience Agent recommendations should be given higher weight in prioritization.
+- **Product Owner action:** Elevated design-focused backlog items to P2 High priority. Created PB-031 (page headers for remaining screens), upgraded PB-020 (custom confirmation dialogs) from P4 Deferred to P2 Ready. Planning grid redesign (EX-REC-016) escalated as ESC-003 due to component complexity. SMI-002 constraint updated to exempt design work from incremental-only restriction.
+- **Backlog linkage:** PB-031, PB-020 (upgraded), PB-032 (blocked on ESC-003).
 
 ### SMI-002: Keep improvements incremental during stabilization
 
 - **Type:** Constraint
-- **Status:** Planned
+- **Status:** Planned (updated by SMI-004)
 - **Input:** While core workflows (planning grid, roster assignment, driver management) are still stabilizing, all improvements must be incremental. Avoid broad redesigns, large refactors, or architectural changes that touch multiple domains at once.
-- **Why this matters:** Multiple agents operate on this codebase. Large cross-cutting changes increase the risk of conflicts, regressions, and broken deploys. Stability and predictability are more valuable than speed right now.
-- **Expected outcome:** Each cycle delivers small, focused, independently verifiable improvements. No single change should touch more than 2-3 files outside its primary domain.
+- **Update (2026-03-29):** SMI-004 relaxes this constraint for design work. Meaningful redesign toward DESIGN.md compliance is now expected, but must still be phased and independently verifiable. Technical/architectural refactors remain subject to the incremental constraint.
+- **Expected outcome:** Design improvements may be larger in scope. Technical changes remain small, focused, and independently verifiable. No single change should break the deploy.
 - **Constraints / preferences:** If a valuable improvement requires broad changes, break it into smaller phases. Each phase must be independently deployable and pass `npm run verify`.
-- **Product Owner instruction:** Applied as a standing constraint to all backlog items.
+- **Product Owner instruction:** Applied as a standing constraint to technical backlog items. Design items follow the updated directive from SMI-004.
 - **Backlog linkage:** Applied as a standing constraint to all backlog items.
 
 ### SMI-001: Connectivity hub for external data sources

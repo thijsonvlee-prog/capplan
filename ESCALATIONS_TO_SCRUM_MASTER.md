@@ -22,7 +22,39 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-_No open escalations._
+### ESC-003: Planning grid visual redesign — scope and phasing
+
+- **Status:** Open
+- **Date / run context:** 2026-03-29 — triggered by SMI-004 (bigger design steps directive) and EX-REC-016
+- **Decision needed:** How should the planning grid visual redesign be scoped and phased?
+- **Why it matters:** The planning grid is the core product surface and the largest gap between the current UI and the DESIGN.md standard. However, `PlanningGrid.tsx` is ~650 lines, the most complex component in the codebase, and CLAUDE.md explicitly says "handle with extreme care." A full visual redesign in one pass carries significant regression risk. The Scrum Master has directed bigger design steps (SMI-004), but this specific component requires careful scoping.
+- **Recommendation from Product Owner Agent:** Option B — phased redesign that delivers visible progress per cycle while managing risk.
+
+**Choose one option:**
+
+- ( ) **Option A — Full redesign in one cycle**
+  Redesign the entire planning grid visual structure (cells, rows, headers, summaries, group rows) in a single cycle. Maximum alignment with DESIGN.md in one step. High risk: touches the most complex component extensively, difficult to verify, high regression potential.
+
+- ( ) **Option B — Phased redesign across 2-3 cycles** *(recommended)*
+  Phase 1: Surface layering and row tonal hierarchy (replace border-heavy structure with tonal contrast, differentiate header/data/group/totals rows). Phase 2: Row composition and identity (improve how driver name, metadata, and planning cells relate). Phase 3: Cell rendering and status refinement (DayCell visual output, spacing, chip treatment). Each phase is independently deployable and verifiable.
+
+- ( ) **Option C — Surface-only quick pass**
+  Only replace the most visible border-heavy patterns with tonal contrast. Minimal scope, minimal risk. Leaves row composition and cell rendering unchanged. Fastest but least aligned with DESIGN.md ambitions.
+
+- ( ) **Option D — Defer planning grid redesign, prioritize other screens first**
+  Apply DESIGN.md improvements to settings, capacity, and other simpler screens first. Build confidence and patterns before touching the most complex component. Planning grid redesign follows in a later cycle.
+
+**Trade-offs:**
+- Option A: Maximum speed, maximum risk. One broken deploy could set back the planning screen.
+- Option B: Balanced progress. Each phase delivers visible improvement. Manageable review scope per cycle.
+- Option C: Safe but underwhelming given the SM directive for bigger steps.
+- Option D: Lowest risk but delays the highest-impact design improvement.
+
+**What the Scrum Master must do:** Place `(X)` next to exactly one option.
+
+**Product Owner action after choice:** Translate chosen option into concrete backlog items with clear scope per phase.
+
+---
 
 ## Chosen / Awaiting Planning
 

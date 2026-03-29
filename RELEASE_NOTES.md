@@ -6,70 +6,59 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-### Accessibility
-
-- All modal overlays (scenario aanmaken, roosterprofiel toewijzen, kolommen selecteren, bulk status instellen, dagstatus instellen) hebben nu `role="dialog"`, `aria-modal="true"`, en beschrijvende `aria-label` attributen voor screenreaders.
-
-### UX / instellingenpagina
-
-- De instellingenpagina is gegroepeerd in drie secties: Stamgegevens, Competenties en Roosters. Elke sectie heeft een koptekst. De pagina opent met een korte introductietekst.
-
-### UX / planningsscherm
-
-- De werkbalk van het planningsscherm is gegroepeerd in logische secties: Periode (navigatie + zoom), Weergave (dichtheid + scenario), Zoeken & Filteren (zoekveld + groeperen), en Weergaveopties (kolommen + totalen). Elke groep is visueel onderscheiden door een subtiele achtergrondcontainer.
-
-### UX / chauffeursoverzicht
-
-- Het chauffeursoverzicht heeft een volledige paginakop met de titel "Chauffeurs", een teller-badge met het aantal chauffeurs, en een zoekbalk met zoekicoon. De knop "Chauffeur toevoegen" is nu visueel prominent als primaire actie.
+_No unreleased changes._
 
 ## Release History
 
-### 2026-03-29 — Planning grid fix, accessibility, transactions, and error hardening
+### 2026-03-29 — Design verbetering, planning grid fix, accessibility, en betrouwbaarheid
 
-#### Bug fix
+#### UX / design verbeteringen
 
-- Fixed a regression where drivers without active employment records were hidden from the planning grid. All drivers now appear in the planning grid regardless of employment status.
+- De werkbalk van het planningsscherm is gegroepeerd in logische secties: Periode (navigatie + zoom), Weergave (dichtheid + scenario), Zoeken & Filteren (zoekveld + groeperen), en Weergaveopties (kolommen + totalen). Elke groep is visueel onderscheiden.
+- Het chauffeursoverzicht heeft een volledige paginakop met de titel "Chauffeurs", een teller-badge met het aantal chauffeurs, en een zoekbalk met zoekicoon. De knop "Chauffeur toevoegen" is nu visueel prominent als primaire actie.
+- De instellingenpagina is gegroepeerd in drie secties: Stamgegevens, Competenties en Roosters. Elke sectie heeft een koptekst en de pagina opent met een korte introductietekst.
+- Verplichte formuliervelden zijn nu gemarkeerd met rode sterretjes.
 
-#### UX / usability improvements
+#### Toegankelijkheid
 
-- All icon-only buttons (edit, delete, save, cancel, navigation) now have `aria-label` attributes for screen reader users.
-- Required form fields are now visually marked with red asterisks before submission.
-- Toast notifications are announced by screen readers via `aria-live` region.
-- SkillManager and RosterProfileEditor show loading spinners during initial data fetch.
+- Alle modale vensters (scenario aanmaken, roosterprofiel toewijzen, kolommen selecteren, bulk status instellen, dagstatus instellen) hebben `role="dialog"`, `aria-modal="true"`, en beschrijvende labels voor screenreaders.
+- Alle icoon-knoppen (bewerken, verwijderen, opslaan, annuleren, navigatie) hebben beschrijvende labels voor screenreaders.
+- Toastmeldingen worden nu aangekondigd door screenreaders.
+- SkillManager en RosterProfileEditor tonen laadspinners tijdens het ophalen van data.
 
-#### Reliability improvements
+#### Bugfix
 
-- All multi-step database operations are now wrapped in transactions (driver updates, driver deletion, roster profile updates, scenario duplication, scenario deletion, skill deletion, employment creation, function creation, roster assignment creation).
+- Probleem opgelost waarbij chauffeurs zonder actief dienstverband niet zichtbaar waren in het planningsscherm. Alle chauffeurs zijn nu altijd zichtbaar.
 
-#### Data consistency
+#### Betrouwbaarheid
 
-- Driver active/inactive status is now determined by employment records instead of a manually set flag.
-- The `isActive` field can no longer be set directly via the driver update API.
+- Alle meervoudige databasebewerkingen zijn nu verpakt in transacties (chauffeur bijwerken, chauffeur verwijderen, roosterprofiel bijwerken, scenario dupliceren, scenario verwijderen, competentie verwijderen, dienstverband aanmaken, functie aanmaken, roostertoewijzing aanmaken).
+- Chauffeur actief/inactief status wordt nu bepaald op basis van dienstverbandgegevens in plaats van een handmatig ingestelde vlag.
 
-#### Security / internal
+#### Interne kwaliteit
 
-- All API route error logging now logs only the error message instead of the full error object, preventing connection strings and schema internals from appearing in production logs.
+- Foutlogging in alle API-routes is opgeschoond — alleen foutmeldingen worden gelogd, geen volledige foutobjecten of verbindingsgegevens.
 
-### 2026-03-29 — Reliability, validation, and UX polish
+### 2026-03-29 — Betrouwbaarheid, validatie en UX-verbeteringen
 
-#### Performance / reliability improvements
+#### Betrouwbaarheid
 
-- Roster assignment creation wraps all database operations in a single transaction.
-- All POST and PUT API endpoints validate required fields before processing.
-- Added composite database index on roster assignments for faster date-range lookups.
+- Roostertoewijzing verpakt alle databasebewerkingen in één transactie.
+- Alle POST en PUT API-endpoints valideren verplichte velden.
+- Samengestelde database-index op roostertoewijzingen voor snellere opzoekingen.
 
-#### UX / usability improvements
+#### UX / usability
 
-- Driver creation form shows inline error messages when required fields are left empty.
-- Settings page shows loading spinners while data is being fetched.
-- Delete confirmation dialogs now specify what type of record is being deleted.
-- Toast notifications appear for all create, update, and delete operations.
-- Stamtabel empty states show instructional guidance text.
+- Formulier voor chauffeur aanmaken toont foutmeldingen bij lege verplichte velden.
+- Instellingenpagina toont laadspinners tijdens het ophalen van data.
+- Bevestigingsdialogen bij verwijderen specificeren nu welk type gegeven wordt verwijderd.
+- Toastmeldingen verschijnen bij alle aanmaak-, wijzig- en verwijderacties.
+- Lege stamtabellen tonen instructietekst.
 
 ### 2026-03-29 — Workflow setup
 
-- Established multi-agent coordination workflow with Product Backlog, recommendation files, release notes, and escalation tracking.
-- No application code changes in this release.
+- Multi-agent coördinatieworkflow opgezet met Product Backlog, aanbevelingsbestanden, release notes en escalatietracking.
+- Geen applicatiecodewijzigingen in deze release.
 
 ## Release Note Rules
 
