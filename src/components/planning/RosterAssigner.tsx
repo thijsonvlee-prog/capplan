@@ -45,7 +45,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Roosterprofiel toewijzen aan ${driverName}`}>
       <div className="bg-surface-primary rounded-lg shadow-modal p-6 w-[520px] space-y-4 max-h-[80vh] overflow-y-auto">
         <h3 className="text-section-title">Roosterprofiel — {driverName}</h3>
 

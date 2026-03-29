@@ -6,7 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_No unreleased changes._
+### Accessibility
+
+- All modal overlays (scenario aanmaken, roosterprofiel toewijzen, kolommen selecteren, bulk status instellen, dagstatus instellen) hebben nu `role="dialog"`, `aria-modal="true"`, en beschrijvende `aria-label` attributen voor screenreaders.
+
+### UX / instellingenpagina
+
+- De instellingenpagina is gegroepeerd in drie secties: Stamgegevens, Competenties en Roosters. Elke sectie heeft een koptekst. De pagina opent met een korte introductietekst.
 
 ## Release History
 

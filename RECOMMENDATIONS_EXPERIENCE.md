@@ -2,11 +2,9 @@
 
 ## Summary
 
-PB-021 (aria-labels on icon-only buttons) and PB-014 (required field indicators) are now completed. All 16 icon-only buttons across the application have `aria-label` attributes. All required form fields show visual indicators — red asterisks for label-based forms, `*` suffix in placeholders for inline forms.
+PB-019 (semantic dialog attributes) and PB-026 (settings page section grouping) are now completed. All 5 modal overlays have `role="dialog"`, `aria-modal="true"`, and descriptive `aria-label` attributes. The settings page now has three logical sections (Stamgegevens, Competenties, Roosters) with section headings and a page introduction.
 
-The application is now compliant with CLAUDE.md's icon-only button accessibility rule. Form usability is improved by setting expectations before submission.
-
-**Design alignment with DESIGN.md:** The application remains materially below the intended design standard in several areas. The completed work addresses usability fundamentals but does not yet move toward the product-grade visual hierarchy, surface layering, and composed page structure described in DESIGN.md. The main gaps are: weak page headers, flat control grouping on the planning screen, generic card styling on settings, and absence of visual personality across all pages.
+**Design alignment with DESIGN.md:** The settings page improvement moves the screen from a flat list toward structured grouping, which aligns with DESIGN.md sections 2.5 (composed screens) and 7.1 (page headers). However, the settings page still uses the same card styling throughout — it does not yet use surface layering (section 4.1) or strong hierarchy to feel truly product-grade. The planning screen toolbar and driver list page remain materially below the design standard.
 
 ## Recommended Next Improvements
 
@@ -20,43 +18,19 @@ The application is now compliant with CLAUDE.md's icon-only button accessibility
 - **Effort:** Medium (layout restructuring of PlanningGrid toolbar, no logic changes)
 - **Dependencies:** None. Should be coordinated carefully given PlanningGrid complexity.
 - **Suggested owner:** Experience Agent
-- **Why now:** The planning screen is the primary product surface. DESIGN.md explicitly calls out that it should feel premium and product-led (section 9). Current toolbar layout is the most visible gap between current state and design standard.
-
-### EX-REC-012: Add section grouping and icons to settings page
-
-- **Title:** Improve settings page visual hierarchy and structure
-- **Problem:** The settings page renders 8 identical card components (StamtabelManagers, SkillManager, RosterProfileEditor) in a flat vertical list with no category grouping, section headers, or visual differentiation. This conflicts with DESIGN.md sections 2.5 (composed screens), 7.1 (page headers), and 3.2 (anti-pattern: flat screens with weak hierarchy). The page reads like a generic CMS admin panel.
-- **Proposed improvement:** Group settings into logical categories (e.g., "Stamgegevens" for werkgevers/afdelingen/locaties/verloftypes, "Competenties" for vaardigheden, "Roosters" for roosterprofielen). Add category headings and optional section icons. Add a brief page introduction.
-- **Expected user value:** Easier navigation of settings, clearer mental model of what each section controls, more professional feel.
-- **Priority:** P3 Medium
-- **Effort:** Small (wrapper divs, section headings, no logic changes)
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Quick win that improves one of the most generic-feeling screens. Foundation for future settings improvements.
+- **Why now:** The planning screen is the primary product surface. DESIGN.md explicitly calls out that it should feel premium and product-led (section 9). Current toolbar layout is the most visible gap between current state and design standard. Already backlogged as PB-028.
 
 ### EX-REC-013: Improve driver list page header and action structure
 
 - **Title:** Add proper page header to driver overview
-- **Problem:** The driver list page has a minimal header: just a search field and an add button in a flat row. No page title visible in the content area, no driver count or summary context. When editing a driver, the form appears inline without clear visual framing. This conflicts with DESIGN.md sections 7.1 (page headers) and 8.2 (action placement).
-- **Proposed improvement:** Add a page header zone with title, driver count badge, and grouped action area. Wrap the inline edit form in a more distinct container with clear edit-mode indication.
+- **Problem:** The driver list page has a minimal header: just a search field and an add button in a flat row. No page title visible in the content area, no driver count or summary context. This conflicts with DESIGN.md sections 7.1 (page headers) and 8.2 (action placement).
+- **Proposed improvement:** Add a page header zone with title, driver count badge, and grouped action area.
 - **Expected user value:** Clearer page identity, immediate context (how many drivers), better edit experience.
 - **Priority:** P3 Medium
 - **Effort:** Small (layout additions, no logic changes)
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** The driver list is a frequently used screen. Current layout is functional but below the composed standard in DESIGN.md.
-
-### EX-REC-008: Add semantic dialog attributes to modal overlays
-
-- **Title:** Add semantic dialog attributes to modal overlays
-- **Problem:** Multiple modal components (ScenarioSelector create dialog, RosterAssigner, PlanningGrid column picker, PlanningGrid bulk selector, DayCell status selector) use `fixed inset-0` backdrop overlays without `role="dialog"` or `aria-modal="true"`. Keyboard users and screen reader users cannot navigate these modals properly.
-- **Proposed improvement:** Add `role="dialog"`, `aria-modal="true"`, and `aria-label` to each modal container. Consider adding focus trap for keyboard navigation in a follow-up.
-- **Expected user value:** Improved accessibility for keyboard and screen reader users. Foundation for proper focus management later.
-- **Priority:** P3 Medium
-- **Effort:** Small (attribute additions to ~5 components)
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Toast accessibility (PB-012) and icon-button labels (PB-021) are done. This is the natural next accessibility improvement. Already backlogged as PB-019.
+- **Why now:** The driver list is a frequently used screen. Current layout is functional but below the composed standard in DESIGN.md. Already backlogged as PB-029.
 
 ### EX-REC-003: Standardize input field styling in StamtabelManager
 
@@ -74,26 +48,37 @@ The application is now compliant with CLAUDE.md's icon-only button accessibility
 
 - **Title:** Replace native browser confirmation dialogs
 - **Problem:** All delete confirmation dialogs use `window.confirm()` (found in SubTable, ScenarioSelector, SkillManager, RosterProfileEditor, StamtabelManager). This renders a browser-native dialog that cannot be styled, does not match the application's design, and varies across browsers/platforms.
-- **Proposed improvement:** Create a reusable `ConfirmDialog` component using the existing modal pattern (backdrop + card). Use design tokens for styling. Replace all `window.confirm()` calls.
+- **Proposed improvement:** Create a reusable `ConfirmDialog` component using the existing modal pattern (backdrop + card). Use design tokens for styling. Replace all `window.confirm()` calls. Include `role="dialog"` and `aria-modal="true"` from the start.
 - **Expected user value:** Consistent, branded confirmation experience. Better visual hierarchy. Foundation for richer confirm dialogs.
 - **Priority:** P4 Low
 - **Effort:** Medium (new component + 5 migration points)
-- **Dependencies:** Should be done after PB-019 (dialog accessibility) so the new component starts accessible.
+- **Dependencies:** PB-019 is now completed, so the new component can use dialog attributes immediately.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent — `window.confirm` works. But it's the most visible UX inconsistency remaining. Already backlogged as PB-020. Recommend scheduling after PB-019.
+- **Why now:** PB-019 dependency is resolved. `window.confirm` is the most visible UX inconsistency remaining. Already backlogged as PB-020.
+
+### EX-REC-014: Add focus trap to modal overlays
+
+- **Title:** Trap keyboard focus within open modals
+- **Problem:** Modal overlays now have semantic dialog attributes (PB-019 done) but do not trap focus. Users can tab out of the modal and interact with background content, which breaks the expected modal interaction pattern.
+- **Proposed improvement:** Create a lightweight focus trap utility or hook. Apply to the 4 true modals (ScenarioSelector, RosterAssigner, bulk selector, DayCell selector). The column picker is a dropdown, not a true modal — focus trap is not appropriate there.
+- **Expected user value:** Complete keyboard accessibility for modal workflows.
+- **Priority:** P3 Medium
+- **Effort:** Medium (new utility + integration in 4 components)
+- **Dependencies:** PB-019 (completed).
+- **Suggested owner:** Experience Agent
+- **Why now:** Natural next step after PB-019. Without focus trap, dialog semantics are incomplete.
 
 ## Risks / Watch-outs
 
-- **Planning screen toolbar complexity:** EX-REC-011 touches PlanningGrid.tsx, the most complex component (~650 lines, 2 pre-existing lint warnings). Layout restructuring must be done carefully to avoid regressions. However, the change is purely structural (HTML/CSS), not logic.
-- **Design standard gap is structural, not cosmetic:** The gap between current state and DESIGN.md cannot be closed through small styling tweaks alone. Several screens need layout-level restructuring (planning toolbar, settings grouping, driver page headers). Recommend staged redesign work rather than attempting everything at once.
-- **Placeholder-only forms lack proper labels:** StamtabelManager, SkillManager, RosterProfileEditor, and ScenarioSelector use placeholders instead of explicit `<label>` elements. This limits accessibility and constrains how required indicators can be displayed. A future pass should add proper labels to these forms, but this is a larger change that affects layout.
+- **Planning screen toolbar complexity:** EX-REC-011/PB-028 touches PlanningGrid.tsx, the most complex component (~650 lines, 2 pre-existing lint warnings). Layout restructuring must be done carefully to avoid regressions. However, the change is purely structural (HTML/CSS), not logic.
+- **Design standard gap is structural, not cosmetic:** The gap between current state and DESIGN.md cannot be closed through small styling tweaks alone. The planning screen, driver list, and scenario comparison views all need layout-level work. Recommend staged redesign rather than attempting everything at once.
+- **Placeholder-only forms lack proper labels:** StamtabelManager, SkillManager, RosterProfileEditor, and ScenarioSelector use placeholders instead of explicit `<label>` elements. This limits accessibility. A future pass should add proper labels, but this is a larger change that affects layout.
 
 ## Items Intentionally Not Recommended
 
 - **Dark mode support:** No user demand. Design token system supports it structurally but effort is significant.
 - **Drag-and-drop reordering in tables:** Current sort/filter approach works well. Adds complexity without clear user value.
 - **Redesign of RosterProfileEditor grid:** The click-to-cycle interaction is unconventional but functional and consistent.
-- **Focus trap in modals:** Valuable long-term but requires a utility component. Better to add after dialog roles (PB-019) are in place.
 - **Search loading indicators:** Marginal gain at current data volumes.
 - **Placeholder-to-label migration in settings forms:** Would improve accessibility but requires significant layout adjustments. Monitor for user feedback.
 - **Badge/pill component system:** DriverList uses inline badge styling. Consolidating into reusable classes would be cleaner but is premature until more badge variants emerge.

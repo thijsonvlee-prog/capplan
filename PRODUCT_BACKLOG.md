@@ -25,30 +25,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-019: Add semantic dialog attributes to modal overlays
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** Multiple modal components (ScenarioSelector create dialog, RosterAssigner, PlanningGrid column picker, PlanningGrid bulk selector, DayCell status selector) use `fixed inset-0` backdrop overlays without `role="dialog"` or `aria-modal="true"`. Keyboard and screen reader users cannot navigate these modals properly.
-- **Why this matters now:** PB-021 (aria-labels) and PB-012 (toast accessibility) are done. This is the natural next accessibility improvement. Dependency on PB-021 is resolved.
-- **Scope notes:** Add `role="dialog"`, `aria-modal="true"`, and `aria-label` to each modal container (~5 components). No focus trap in this item.
-- **Dependencies:** None (PB-021 completed).
-- **Definition of done:** All modal overlays have semantic dialog attributes. Passes `npm run verify`.
-- **Source:** EX-REC-008.
-
-### PB-026: Improve settings page visual hierarchy with section grouping
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The settings page renders 8 identical card components in a flat vertical list with no category grouping, section headers, or visual differentiation. The page reads like a generic CMS admin panel.
-- **Why this matters now:** Quick win that improves one of the most generic-feeling screens. Small effort, no logic changes, follows SMI-002 constraint (incremental, focused).
-- **Scope notes:** Group settings into logical categories (e.g., "Stamgegevens" for werkgevers/afdelingen/locaties/verloftypes, "Competenties" for vaardigheden, "Roosters" for roosterprofielen). Add category headings using `.text-section-title`. Add a brief page introduction. Use existing design tokens. No new components needed.
-- **Dependencies:** None.
-- **Definition of done:** Settings page has visible section grouping with Dutch-language headings. Passes `npm run verify`.
-- **Source:** EX-REC-012.
-
 ### PB-024: Consolidate /drivers/[id]/computed into main driver transform
 
 - **Owner:** Delivery Agent
@@ -138,6 +114,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-026: Improve settings page visual hierarchy with section grouping
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Grouped settings into three logical sections (Stamgegevens, Competenties, Roosters) with section headings and a page introduction. Removed flat list layout.
+
+### PB-019: Add semantic dialog attributes to modal overlays
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added `role="dialog"`, `aria-modal="true"`, and descriptive `aria-label` to all 5 modal overlays: ScenarioSelector create dialog, RosterAssigner, PlanningGrid column picker, PlanningGrid bulk selector, and DayCell status selector.
 
 ### PB-025: Fix planning grid not showing drivers
 - **Completed:** 2026-03-29

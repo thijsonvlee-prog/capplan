@@ -67,6 +67,9 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
       {showSelector && (
         <div
           className="fixed inset-0 z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Status instellen — ${date}`}
           onMouseDown={(e) => {
             e.stopPropagation();
             e.preventDefault();

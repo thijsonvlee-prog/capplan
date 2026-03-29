@@ -96,7 +96,7 @@ export function ScenarioSelector() {
       )}
 
       {showCreate && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Nieuw scenario aanmaken">
           <form onSubmit={handleCreate} className="bg-surface-primary rounded-lg shadow-modal p-6 w-96 space-y-3">
             <h3 className="text-section-title">Nieuw scenario</h3>
             <input

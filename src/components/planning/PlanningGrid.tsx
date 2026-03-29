@@ -327,7 +327,7 @@ export function PlanningGrid() {
           {showColumnPicker && (
             <>
               <div className="fixed inset-0 z-20" onClick={() => setShowColumnPicker(false)} />
-              <div className="absolute top-full left-0 mt-1 bg-surface-primary border border-border-default rounded-lg shadow-dropdown z-30 py-1 min-w-[200px]">
+              <div className="absolute top-full left-0 mt-1 bg-surface-primary border border-border-default rounded-lg shadow-dropdown z-30 py-1 min-w-[200px]" role="dialog" aria-modal="true" aria-label="Kolommen selecteren">
                 {DRIVER_COLUMNS.map((col) => (
                   <label key={col.key} className="flex items-center gap-2 px-3 py-1.5 hover:bg-surface-secondary cursor-pointer text-sm">
                     <input
@@ -458,7 +458,7 @@ export function PlanningGrid() {
 
       {/* Bulk status selector after drag */}
       {showBulkSelector && dragState && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Status instellen voor ${dragState.dates.length} dagen`}>
           <div className="bg-surface-primary rounded-lg shadow-modal p-4 min-w-[280px]">
             <div className="text-section-title mb-2">
               Status instellen voor {dragState.dates.length} dagen
