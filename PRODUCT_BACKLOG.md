@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major redesign work is complete (planning grid 3 phases, DayCell popup, date input, settings tabs, drivers page, SubTable). Input styling standardized. API validation hardened. ESLint clean (0 warnings). Focus now shifts to: (1) remaining visual consistency gaps on other surfaces (PB-047, PB-040), (2) completing API validation coverage (PB-053, PB-054), and (3) connectivity hub (PB-015/016) when capacity allows.
+**Current direction:** All major redesign work is complete. API validation is hardened. ESLint is clean (0 warnings). Focus now shifts to: (1) CLAUDE.md compliance — translating remaining English API error messages (PB-055), (2) data consistency — transaction wrapping on PUT routes (PB-056), (3) remaining visual consistency gaps (PB-047, PB-040), and (4) connectivity hub (PB-015/016) when capacity allows.
 
 ## Status Definitions
 
@@ -27,7 +27,29 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-055: Translate remaining English error messages across all API routes
+
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** ~24 English error messages remain across API routes after PB-054 fixed the settings routes. Messages like "Record not found", "Driver not found", "code is required", "firstName is required", "Maximum 90 dates allowed per request" violate CLAUDE.md's requirement that all user-facing text is Dutch.
+- **Scope notes:** Audit all API routes in `src/app/api/`. Translate every English error message to Dutch. Standardize patterns: "niet gevonden" for 404s, "is verplicht" for required fields, "Maximaal X per verzoek" for limits.
+- **Dependencies:** None.
+- **Definition of done:** Zero English error messages in API routes. Consistent Dutch error patterns. Passes `npm run verify`.
+- **Implementation note:** String-only changes, no logic modification. ~12 files affected.
+- **Source:** DE-REC-028.
+
+### PB-056: Wrap find-then-update PUT routes in transactions
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The PUT routes for employment, functions, and roster assignments each do a `findFirst` followed by a separate `update` without a transaction. Race conditions on concurrent edits are possible. POST routes already use transactions.
+- **Scope notes:** Wrap the find + update in `prisma.$transaction` in all 3 sub-record PUT routes.
+- **Dependencies:** None.
+- **Definition of done:** All 3 PUT routes use `prisma.$transaction`. Passes `npm run verify`.
+- **Implementation note:** Small change — wrap existing code blocks. Same pattern as POST routes.
+- **Source:** DE-REC-029.
 
 ---
 
@@ -49,11 +71,22 @@ _No items currently ready._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Planned (future cycle)
-- **Problem / opportunity:** The RosterAssigner modal table uses dense cell borders, conflicting with DESIGN.md and visually inconsistent with the planning grid.
+- **Problem / opportunity:** The RosterAssigner modal table uses dense cell borders, conflicting with DESIGN.md and visually inconsistent with the planning grid, drivers table, and SubTable.
 - **Scope notes:** Apply tonal separator approach: remove cell borders, use subtle row separators, keep header bottom edge.
 - **Dependencies:** None.
 - **Definition of done:** RosterAssigner table uses tonal separators. Passes `npm run verify`.
 - **Source:** EX-REC-018.
+
+### PB-057: RosterProfileEditor status dot indicators
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Planned (future cycle)
+- **Problem / opportunity:** The RosterProfileEditor grid uses bare `STATUS_COLORS` for cell backgrounds without the compact dot indicators used in the planning grid. Minor visual inconsistency in the settings flow.
+- **Scope notes:** Add small status dots to RosterProfileEditor grid cells, matching the planning grid pattern.
+- **Dependencies:** None.
+- **Definition of done:** RosterProfileEditor grid cells show status dots consistent with the planning grid. Passes `npm run verify`.
+- **Source:** EX-REC-024.
 
 ### PB-015: Connectivity hub — data model and import source API
 
@@ -96,37 +129,37 @@ _No items currently in progress._
 ### PB-053: Add date validation to POST sub-record routes
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Added `endDate >= startDate` validation to POST routes for employment, functions, and roster assignments. Same guard and Dutch error message as existing PUT routes. Closes the validation gap at API boundaries.
+- **Summary:** Added `endDate >= startDate` validation to POST routes for employment, functions, and roster assignments.
 
 ### PB-054: Fix English error messages in settings API routes
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Translated "Unknown settings type" to "Onbekend instellingentype" in all settings API routes (GET, POST, PUT, DELETE). All API error messages are now in Dutch.
+- **Summary:** Translated "Unknown settings type" to "Onbekend instellingentype" in all settings API routes.
 
 ### PB-052: SubTable tonal separator consistency
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Replaced dense per-cell borders with tonal row separators (`border-b border-border-subtle`), tonal row alternation (`bg-surface-secondary/50`), `text-label` header styling, card surface wrapping (`shadow-card`), and `bg-success-50` highlight for active records. Consistent with DriverList and PlanningGrid patterns.
+- **Summary:** Replaced dense cell borders with tonal row separators, alternating backgrounds, card surface, and consistent header styling.
 
 ### PB-049: Fix handleDragEnd stale closure in PlanningGrid useEffect
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Wrapped `handleDragEnd` in `useCallback` with `[dragState]` dependency and added it to the useEffect dependency array. Eliminates the last ESLint `react-hooks/exhaustive-deps` warning. Codebase now has 0 ESLint warnings.
+- **Summary:** Eliminated the last ESLint warning. Codebase now has 0 ESLint warnings.
 
 ### PB-050: Add date logic validation to sub-record PUT routes
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Added `endDate >= startDate` validation to PUT routes for employment, functions, and roster assignments. Returns 400 with Dutch error message.
+- **Summary:** Added `endDate >= startDate` validation to PUT routes for employment, functions, and roster assignments.
 
 ### PB-051: Validate source scenario exists before duplication
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Added `findUnique` check before duplicating a scenario. Returns 404 with Dutch error message if the source scenario ID is invalid.
+- **Summary:** Added 404 guard when source scenario ID is invalid.
 
 ### PB-048: Drivers page header and layout composition
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Redesigned drivers page: composed header, view-mode state management, tonal row alternation, "Achternaam, Voornaam" format, form section headers, improved empty states.
+- **Summary:** Redesigned drivers page: composed header, tonal row alternation, "Achternaam, Voornaam" format, form section headers.
 
 ---
 
@@ -148,13 +181,13 @@ _No items currently in progress._
 - **Reason:** Current query performance is acceptable. Revisit when capacity endpoint shows measurable slowness.
 - **Source:** DE-REC-005.
 
-### PB-030: Move hardcoded comparison chart colors to constants
+### PB-030: Move hardcoded constants and chart colors to centralized config
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** CLAUDE.md compliance fix but low user impact. Schedule when capacity allows.
-- **Source:** DE-REC-014.
+- **Reason:** Low user impact. Includes both chart colors (DE-REC-014) and API magic numbers (DE-REC-030). Schedule when capacity allows.
+- **Source:** DE-REC-014, DE-REC-030.
 
 ---
 

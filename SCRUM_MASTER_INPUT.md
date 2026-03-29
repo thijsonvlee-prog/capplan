@@ -29,8 +29,8 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Status:** Planned
 - **Input:** Er moeten grotere stappen gemaakt worden in het redesign om te voldoen aan design.md. Stuur aan op grotere verbeteringen, minder schaven aan bestaand ontwerp, maar echt componenten en schermen opnieuw ontwerpen obv design.md. Luister dus ook goed naar de aanbevelingen van de experience agent.
 - **Why this matters:** The Scrum Master is signaling that incremental polish is no longer sufficient. The product needs visible, meaningful redesign steps.
-- **Product Owner action:** All major redesign deliverables complete: planning grid (3 phases), DayCell popup, date input wrapper, settings page tab navigation, drivers page composition. Focus now shifts to remaining visual consistency gaps within existing pages (SubTable PB-052, capacity badges PB-047, RosterAssigner PB-040).
-- **Backlog linkage:** PB-032 (done), PB-034 (done), PB-035 (done), PB-037 (done), PB-038 (done), PB-039 (done), PB-041 (done), PB-048 (done), PB-052 (ready).
+- **Product Owner action:** All major redesign deliverables complete: planning grid (3 phases), DayCell popup, date input wrapper, settings page tab navigation, drivers page composition, SubTable consistency. Three low-priority visual polish items remain: capacity badges (PB-047), RosterAssigner table (PB-040), RosterProfileEditor dots (PB-057).
+- **Backlog linkage:** PB-032 (done), PB-034 (done), PB-035 (done), PB-037 (done), PB-038 (done), PB-039 (done), PB-041 (done), PB-048 (done), PB-052 (done), PB-047, PB-040, PB-057.
 
 ### SMI-002: Keep improvements incremental during stabilization
 
