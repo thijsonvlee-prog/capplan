@@ -2,7 +2,6 @@
 
 > **This file is the primary steering document for all Claude Code runs and scheduled agents.**
 > Read it fully before making any changes. Adhere to every rule unless explicitly overridden by the user.
-> Detailed history and rationale live in the `*LEARNINGS*.md` files — this document contains the binding rules.
 
 ---
 
@@ -28,8 +27,8 @@ CapPlan is a **driver workforce planning tool** (Dutch-language UI) for managing
 
 ## 3. Git / Branch / Deploy Workflow
 
-- **Work on the branch specified in the task instructions.** Do NOT create new feature branches or PRs unless explicitly asked.
-- Commit and push directly to the assigned branch.
+- **Always work on and push to the `claude/driver-planning-tool-Qv7lL` branch.** This is the production branch that Vercel deploys from.
+- Do NOT create new feature branches or PRs unless explicitly asked.
 - **Never push to `master` or `main`.**
 - Run `npm run verify` (prisma generate + typecheck + lint) before every commit. Do not push code that fails verify.
 - Migrations run automatically on deploy via `scripts/migrate.mjs` + `prisma migrate deploy`.
@@ -162,9 +161,7 @@ Multiple scheduled agents (Product Owner, UX/Design, Technical/Functional) opera
 
 ### Before Starting
 1. Read this entire `CLAUDE.md`.
-2. Read `BUILD_STABILITY_LEARNINGS.md` to confirm verify still works.
-3. Read your domain-specific `*LEARNINGS*.md` file.
-4. Run `npm run verify` to confirm clean starting state.
+2. Run `npm run verify` to confirm clean starting state.
 
 ### During Work
 - **Make small, focused, logically grouped changes.** Do not combine unrelated fixes in one commit.
@@ -176,8 +173,6 @@ Multiple scheduled agents (Product Owner, UX/Design, Technical/Functional) opera
 
 ### After Finishing
 - Run `npm run verify` and confirm 0 errors.
-- Record significant new learnings (patterns discovered, pitfalls avoided, decisions made) in the appropriate `*LEARNINGS*.md` file.
-- Do not update learnings files with trivial observations or changelog entries.
 
 ### Conflict Prevention
 - Do not rewrite files that another agent is likely working on simultaneously.
@@ -224,14 +219,3 @@ Multiple scheduled agents (Product Owner, UX/Design, Technical/Functional) opera
 | `eslint.config.mjs` | ESLint flat config |
 | `scripts/migrate.mjs` | Auto-migration on deploy |
 | `prisma/schema.prisma` | Database schema |
-| `*LEARNINGS*.md` | Domain-specific learnings (history & detail) |
-
----
-
-## 14. Learnings File Protocol
-
-- Each domain has its own learnings file (UX, Design, Performance, Tech Debt, Build Stability, Product Owner).
-- Write new learnings **only** when they are structural, reusable, or prevent future mistakes.
-- Do not duplicate information already in this `CLAUDE.md`.
-- Do not add changelog-style entries. Focus on patterns, decisions, and pitfalls.
-- Cross-reference other learnings files when a finding spans domains.
