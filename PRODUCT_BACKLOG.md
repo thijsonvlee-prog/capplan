@@ -27,29 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-024: Remove dead getComputedFields wrapper from api.ts
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The `drivers.getComputedFields()` wrapper in `api.ts` calls a non-existent endpoint (route file already deleted). Dead code creates confusion.
-- **Why this matters now:** Low effort cleanup. Remove dead API surface.
-- **Scope notes:** Remove the `getComputedFields` method from `src/lib/api.ts`. Verify no frontend code calls it.
-- **Dependencies:** None.
-- **Definition of done:** `drivers.getComputedFields()` removed from `api.ts`. No regressions. Passes `npm run verify`.
-- **Source:** DE-REC-012.
-
-### PB-027: Add input validation to preferences and active-scenario PUT handlers
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** `src/app/api/preferences/route.ts` (PUT) and `src/app/api/scenarios/active/route.ts` (PUT) accept request bodies without `validateRequired()` checks.
-- **Why this matters now:** Small gap in otherwise complete validation coverage. Quick fix.
-- **Scope notes:** Add `validateRequired()` calls to both handlers. Preferences PUT needs `key` and `value`. Active-scenario PUT needs `activeId`.
-- **Dependencies:** None.
-- **Definition of done:** Both PUT handlers validate required fields. Invalid requests return clear 400 responses. Passes `npm run verify`.
-- **Source:** DE-REC-013.
+_No items currently ready._
 
 ---
 
@@ -126,6 +104,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-024: Remove dead getComputedFields wrapper from api.ts
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Deleted the unused `/api/drivers/[id]/computed` route file and removed the `drivers.getComputedFields()` method and `DriverComputedFields` import from `api.ts`. No callers existed — frontend uses the client-side `getComputedFields()` from `api-helpers.ts`.
+
+### PB-027: Add input validation to preferences and active-scenario PUT handlers
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Added `validateRequired()` checks to `/api/preferences` PUT (requires `key` and `value`) and `/api/scenarios/active` PUT (requires `activeId`). Missing fields now return 400 with Dutch error messages, consistent with all other mutation endpoints.
 
 ### PB-037: DayCell popup — reposition near click target
 - **Completed:** 2026-03-29

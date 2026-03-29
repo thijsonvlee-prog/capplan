@@ -1,6 +1,5 @@
 import type {
   Driver,
-  DriverComputedFields,
   DriverEmploymentRecord,
   DriverFunctionRecord,
   DriverRosterAssignment,
@@ -94,10 +93,6 @@ const drivers = {
 
   remove(id: string): Promise<void> {
     return fetchJson<void>(`/api/drivers/${id}`, deleteMethod());
-  },
-
-  getComputedFields(id: string): Promise<DriverComputedFields> {
-    return fetchJson<DriverComputedFields>(`/api/drivers/${id}/computed`);
   },
 
   getEmploymentRecords(id: string): Promise<DriverEmploymentRecord[]> {

@@ -10,6 +10,13 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 — API-opschoning en validatie
+
+#### Interne kwaliteit
+
+- Ongebruikt API-endpoint `/api/drivers/[id]/computed` verwijderd, inclusief de bijbehorende `getComputedFields` methode in de frontend API-wrapper. Chauffeursvelden worden al client-side berekend.
+- Invoervalidatie toegevoegd aan de PUT-endpoints voor voorkeuren en actief scenario. Ontbrekende velden geven nu een duidelijke 400-foutmelding.
+
 ### 2026-03-29 — DayCell popup en planningsrooster rijcompositie
 
 #### UX / design verbeteringen

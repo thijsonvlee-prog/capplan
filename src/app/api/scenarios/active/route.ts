@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateRequired } from "@/lib/api-route-utils";
 
 const DEFAULT_USER_ID = "default";
 const PREFERENCE_KEY = "activeScenario";
@@ -26,6 +27,14 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
+
+    const validationError = validateRequired(body, [
+      { field: "activeId", label: "Actief scenario" },
+    ]);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+
     const { activeId } = body;
 
     if (activeId === "default") {

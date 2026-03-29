@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateRequired } from "@/lib/api-route-utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,6 +35,15 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
+
+    const validationError = validateRequired(body, [
+      { field: "key", label: "Sleutel" },
+      { field: "value", label: "Waarde" },
+    ]);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+
     const { key, value } = body;
     // userId is server-determined; do not accept from client to prevent cross-user access
     const userId = "default";

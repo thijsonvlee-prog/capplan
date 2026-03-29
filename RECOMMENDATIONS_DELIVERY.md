@@ -6,35 +6,22 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-All four assigned backlog items (PB-025, PB-022, PB-023, PB-017) are completed. The planning grid regression is fixed, all sub-record creation handlers are transaction-protected, the stale `isActive` write path is removed, and error logging is sanitized across all API routes. A fresh codebase scan reveals remaining opportunities around API surface cleanup, validation gaps, and minor code hygiene.
+PB-024 and PB-027 are now complete. All API mutation endpoints have input validation. The dead computed fields endpoint and its API wrapper have been removed. A fresh codebase scan reveals a small set of remaining opportunities: dead code in `api.ts`, the existing PB-018 (foreign key checks) and PB-030 (chart colors) items remain valid, and the deferred PB-009 (capacity index) is still worth monitoring.
 
 ## Recommended Next Improvements
 
-### DE-REC-012: Remove unused /drivers/[id]/computed endpoint
+### DE-REC-015: Remove dead preferences.getAll and preferences.remove from api.ts
 
-- **Title:** Delete redundant computed fields API endpoint
-- **Problem:** `src/app/api/drivers/[id]/computed/route.ts` makes 3 separate `findFirst()` queries to compute active employment/function/roster for a single driver. The frontend never calls this endpoint — it uses the client-side `getComputedFields()` helper from `api-helpers.ts` which computes the same fields from the main driver response. The `api.ts` wrapper `drivers.getComputedFields()` exists but has zero callers.
-- **Proposed improvement:** Delete the route file and remove the `getComputedFields` method from `api.ts`. No frontend changes needed.
-- **Expected product/technical value:** Removes dead code, eliminates 3 redundant queries from the API surface, simplifies maintenance.
+- **Title:** Remove unused preferences API methods
+- **Problem:** `api.ts` defines `preferences.getAll()` which calls `/api/preferences/all` — a route that does not exist. It also defines `preferences.remove()` which calls DELETE on `/api/preferences`. Neither method is called anywhere in the frontend. The `getAll` method would 404 if ever called.
+- **Proposed improvement:** Remove `getAll` and `remove` methods from the `preferences` namespace in `api.ts`. Remove the `UserPreference` type import if no longer needed.
+- **Expected product/technical value:** Removes dead code and a latent bug (404 endpoint reference). Simplifies maintenance.
 - **Priority:** P3 Medium
-- **Effort:** Small (delete 1 route file, remove 3 lines from api.ts)
-- **Risk:** Low. Verified no frontend code calls this endpoint.
+- **Effort:** Small (remove ~10 lines from api.ts)
+- **Risk:** Low. Verified no callers exist.
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Low effort cleanup. Dead code creates confusion for agents and developers.
-
-### DE-REC-013: Add validateRequired to preferences and active-scenario PUT handlers
-
-- **Title:** Add input validation to two unvalidated PUT routes
-- **Problem:** `src/app/api/preferences/route.ts` (PUT) and `src/app/api/scenarios/active/route.ts` (PUT) accept request bodies without `validateRequired()` checks. Missing `key`/`value` or `activeId` fields would cause unclear errors downstream.
-- **Proposed improvement:** Add `validateRequired()` calls to both handlers, consistent with all other POST/PUT routes.
-- **Expected product/technical value:** Completes input validation coverage. Consistent error behavior across all mutation endpoints.
-- **Priority:** P3 Medium
-- **Effort:** Small (add ~5 lines per file)
-- **Risk:** Low. Only adds early-return guards.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Small gap in otherwise complete validation coverage.
+- **Why now:** Quick cleanup. The `getAll` method references a non-existent route, which could cause confusion.
 
 ### DE-REC-008: Add foreign key existence checks before relation creation
 
@@ -45,9 +32,9 @@ All four assigned backlog items (PB-025, PB-022, PB-023, PB-017) are completed. 
 - **Priority:** P3 Medium
 - **Effort:** Medium (touches several routes, needs careful scope)
 - **Risk:** Low. Only adds early-return guards.
-- **Dependencies:** PB-022 completed. PB-018 already exists for this work.
+- **Dependencies:** None (PB-022 completed).
 - **Suggested owner:** Delivery Agent
-- **Why now:** Dependency is resolved. Complements the input validation already in place.
+- **Why now:** Dependency is resolved. Complements the input validation already in place. PB-018 already exists for this work.
 
 ### DE-REC-005: Add covering index for capacity aggregation query
 
@@ -79,7 +66,7 @@ All four assigned backlog items (PB-025, PB-022, PB-023, PB-017) are completed. 
 
 - **Sequence number race condition:** `getNextSequenceNumber()` reads max sequence then increments. Concurrent requests for the same driver could compute the same number. Currently mitigated by transaction wrapping, but the function itself is not inherently safe if used outside a transaction. Low real-world risk given single-user usage patterns.
 - **Roster profile deletion orphaning:** Deleting a roster profile does not cascade-delete the associated `RosterProfileDay` records. Prisma's `onDelete: Cascade` may handle this at the schema level — worth verifying before it becomes a data integrity issue.
-- **activeDriverWhereClause still used in /api/drivers:** The driver list route still uses `activeDriverWhereClause()` for optional filtering. This is intentional (it's a query parameter toggle), but worth noting that the function remains in use and should not be removed from `api-route-utils.ts`.
+- **Dead preferences API methods:** `preferences.getAll()` calls a non-existent `/api/preferences/all` route. If ever called, it would return a 404. Covered by DE-REC-015 above.
 
 ## Items Intentionally Not Recommended
 
@@ -92,6 +79,7 @@ All four assigned backlog items (PB-025, PB-022, PB-023, PB-017) are completed. 
 - **Add enum validation for status fields:** Database columns are String type, not enums. Adding server-side enum validation is correct but requires defining the valid enum set server-side. Medium effort for low real-world risk (frontend already constrains values).
 - **Pre-index lookups in api-helpers.ts:** The `getComputedFields()` and `groupDrivers()` functions use `Array.find()` for lookups. Converting to Map would be faster but current data volumes (dozens of employers/departments) make this a micro-optimization.
 - **Type safety improvements on API route bodies:** Multiple routes use `any` for request body typing. While stricter typing would catch errors at compile time, this would require defining request DTOs for every endpoint — medium effort for low real-world risk.
+- **Remove UserPreference type from types.ts:** It may still be useful for future preferences features. Removing it now could require re-adding it later.
 
 ## Recommendation Rules
 
