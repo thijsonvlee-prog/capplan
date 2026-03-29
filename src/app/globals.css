@@ -350,3 +350,40 @@ body {
   background-color: var(--color-brand-50);
   border-radius: 9999px;
 }
+
+/* ===================================================================
+   Planning Grid Surface System
+   Tonal hierarchy replaces border-heavy grid structure.
+   =================================================================== */
+
+.planning-grid {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Header: strong bottom edge, no cell borders */
+.planning-grid thead th {
+  border-bottom: 2px solid var(--color-border-default);
+}
+
+/* Data rows: subtle bottom separator */
+.planning-grid tbody tr {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+/* Group header row: distinct surface with stronger edges */
+.planning-grid .grid-group-row td {
+  background-color: var(--color-surface-inset);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+/* Totals section: top edge separates from data */
+.planning-grid .grid-totals-row {
+  border-top: 2px solid var(--color-border-default);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+/* Sticky column right-edge shadow for scroll separation */
+.grid-sticky-edge {
+  box-shadow: 2px 0 6px -2px rgb(0 0 0 / 0.06);
+}

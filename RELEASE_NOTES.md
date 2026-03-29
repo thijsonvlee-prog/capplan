@@ -6,7 +6,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_Geen onuitgebrachte wijzigingen._
+### UX / design verbeteringen
+
+- Het planningsrooster gebruikt nu tonale lagen in plaats van rasterlijnen. Koprij, datarijen, groepsrijen en totaalrijen zijn visueel onderscheiden door achtergrondkleur en subtiele scheidingslijnen. Vastgezette kolommen (chauffeursnaam, extra kolommen) tonen een zijschaduw bij scrollen.
+- Datarijen in het planningsrooster hebben licht afwisselende achtergrondtinten voor betere leesbaarheid.
+
+### Toegankelijkheid
+
+- Alle modale vensters (scenario aanmaken, roosterprofiel toewijzen, statuskeuzescherm, bulkselectie) sluiten nu bij het indrukken van de Escape-toets.
 
 ## Release History
 

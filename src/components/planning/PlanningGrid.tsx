@@ -382,11 +382,15 @@ export function PlanningGrid() {
         </div>
       ) : (
         <div className="overflow-auto bg-surface-primary rounded-lg shadow-card border border-border-subtle flex-1 min-h-0">
-          <table className="border-collapse" style={{ minWidth: `${driverColWidth + extraColumns.length * extraColWidth + columnHeaders.length * dc.minW}px` }}>
+          <table className="planning-grid" style={{ minWidth: `${driverColWidth + extraColumns.length * extraColWidth + columnHeaders.length * dc.minW}px` }}>
             <thead className="sticky top-0 z-20">
               <tr className="bg-surface-tertiary">
                 <th
-                  className={`text-left ${dc.cellPad} border border-border-default font-semibold ${dc.fontSize} sticky left-0 bg-surface-tertiary z-30 cursor-pointer whitespace-nowrap`}
+                  className={cn(
+                    "text-left font-semibold sticky left-0 bg-surface-tertiary z-30 cursor-pointer whitespace-nowrap",
+                    dc.cellPad, dc.fontSize,
+                    extraColumns.length === 0 && "grid-sticky-edge"
+                  )}
                   style={{ minWidth: driverColWidth }}
                   onClick={() => handleSort("name")}
                 >
@@ -394,10 +398,15 @@ export function PlanningGrid() {
                 </th>
                 {extraColumns.map((colKey, i) => {
                   const colDef = DRIVER_COLUMNS.find((c) => c.key === colKey)!;
+                  const isLast = i === extraColumns.length - 1;
                   return (
                     <th
                       key={colKey}
-                      className={`text-left ${dc.cellPad} border border-border-default font-medium ${dc.fontSize} sticky bg-surface-tertiary z-30 cursor-pointer whitespace-nowrap`}
+                      className={cn(
+                        "text-left font-medium sticky bg-surface-tertiary z-30 cursor-pointer whitespace-nowrap",
+                        dc.cellPad, dc.fontSize,
+                        isLast && "grid-sticky-edge"
+                      )}
                       style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth }}
                       onClick={() => handleSort(colKey)}
                     >
@@ -408,7 +417,7 @@ export function PlanningGrid() {
                 {columnHeaders.map((col) => (
                   <th
                     key={col.key}
-                    className={`border border-border-default text-center font-medium ${dc.cellPad} ${dc.fontSize}`}
+                    className={cn("text-center font-medium", dc.cellPad, dc.fontSize)}
                     style={{ minWidth: dc.minW }}
                   >
                     <div>{col.label}</div>
@@ -464,7 +473,7 @@ export function PlanningGrid() {
 
       {/* Bulk status selector after drag */}
       {showBulkSelector && dragState && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Status instellen voor ${dragState.dates.length} dagen`}>
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Status instellen voor ${dragState.dates.length} dagen`} onKeyDown={(e) => { if (e.key === "Escape") { setShowBulkSelector(false); setDragState(null); } }}>
           <div ref={bulkSelectorFocusTrapRef} className="bg-surface-primary rounded-lg shadow-modal p-4 min-w-[280px]">
             <div className="text-section-title mb-2">
               Status instellen voor {dragState.dates.length} dagen
@@ -530,15 +539,19 @@ function GroupRows({
   return (
     <>
       {group.label && (
-        <tr className="bg-surface-inset">
-          <td colSpan={columnHeaders.length + 1 + extraColumns.length} className={`${dc.cellPad} ${dc.fontSize} font-semibold text-text-secondary sticky left-0`}>
+        <tr className="grid-group-row">
+          <td colSpan={columnHeaders.length + 1 + extraColumns.length} className={`${dc.cellPad} ${dc.fontSize} font-semibold text-text-secondary sticky left-0 bg-surface-inset`}>
             {group.label} ({group.drivers.length})
           </td>
         </tr>
       )}
-      {group.drivers.map((driver) => (
-        <tr key={driver.id} className="hover:bg-surface-secondary/50">
-          <td className={`${dc.cellPad} border border-border-default sticky left-0 bg-surface-primary z-10`} style={{ minWidth: driverColWidth }}>
+      {group.drivers.map((driver, driverIdx) => (
+        <tr key={driver.id} className={cn("hover:bg-surface-secondary/50", driverIdx % 2 === 1 && "bg-surface-secondary/30")}>
+          <td className={cn(
+              dc.cellPad,
+              "sticky left-0 bg-surface-primary z-10",
+              extraColumns.length === 0 && "grid-sticky-edge"
+            )} style={{ minWidth: driverColWidth }}>
             <div className="flex items-center justify-between">
               <div>
                 {(() => {
@@ -569,15 +582,22 @@ function GroupRows({
               </button>
             </div>
           </td>
-          {extraColumns.map((colKey, i) => (
-            <td
-              key={colKey}
-              className={`${dc.cellPad} border border-border-default ${dc.fontSize} text-text-secondary sticky bg-surface-primary z-10 whitespace-nowrap`}
-              style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth, maxWidth: extraColWidth }}
-            >
-              <div className="truncate">{resolveColumnValue(driver, colKey) || "-"}</div>
-            </td>
-          ))}
+          {extraColumns.map((colKey, i) => {
+            const isLast = i === extraColumns.length - 1;
+            return (
+              <td
+                key={colKey}
+                className={cn(
+                  dc.cellPad, dc.fontSize,
+                  "text-text-secondary sticky bg-surface-primary z-10 whitespace-nowrap",
+                  isLast && "grid-sticky-edge"
+                )}
+                style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth, maxWidth: extraColWidth }}
+              >
+                <div className="truncate">{resolveColumnValue(driver, colKey) || "-"}</div>
+              </td>
+            );
+          })}
           {isDayLevel
             ? columnHeaders.map((col) => {
                 const date = col.dates[0];
@@ -588,7 +608,7 @@ function GroupRows({
                   <td
                     key={col.key}
                     className={cn(
-                      "relative border border-border-default",
+                      "relative",
                       dc.cellPad,
                       isSelected && "ring-2 ring-inset ring-brand-400"
                     )}
@@ -627,7 +647,7 @@ function GroupRows({
                 const dominant = Object.entries(statusCounts).sort((a, b) => b[1] - a[1])[0];
                 const total = col.dates.length;
                 return (
-                  <td key={col.key} className={`border border-border-default ${dc.cellPad} text-center`}>
+                  <td key={col.key} className={`${dc.cellPad} text-center`}>
                     {dominant ? (
                       <div
                         className={`rounded px-1 py-0.5 ${dc.fontSize} ${STATUS_COLORS[dominant[0] as PlanningStatus]}`}

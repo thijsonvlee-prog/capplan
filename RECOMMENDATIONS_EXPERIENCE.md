@@ -2,41 +2,46 @@
 
 ## Summary
 
-PB-033 (focus trap), PB-020 (ConfirmDialog), and PB-031 (page headers for settings/capacity) are now completed. All major screens now have composed page headers. All modal overlays trap keyboard focus. All destructive actions use a custom-styled confirmation dialog with specific context.
+PB-032 (planning grid Phase 1) and PB-036 (Escape key handling) are now completed. The planning grid no longer uses dense 1px borders on every cell. Structure is created through tonal surface layering, subtle row separators, and sticky column edge shadows. All modal overlays now support Escape key dismissal.
 
 **Design alignment with DESIGN.md:**
-- All screens now have composed page headers with title, context, and action zones, aligning with DESIGN.md section 7.1.
-- Modal interactions are now fully accessible with focus trapping, consistent with product-grade quality expectations.
-- Confirmation dialogs use design tokens, danger color treatment, and intentional layout — no longer browser-native popups. Aligns with DESIGN.md section 2.1 (product-grade over template-grade).
-- Capacity page comparison buttons now use design tokens instead of hardcoded Tailwind colors.
-- The planning grid itself still uses 1px borders extensively (conflicts with section 4.1 No-Line Rule). PB-032 (Phase 1) is ready to address this.
-- StamtabelManager form inputs still use inline Tailwind classes instead of `input-field` class (PB-010, deferred).
+- Planning grid now aligns with section 4.1 (No-Line Rule): borders replaced by tonal contrast and minimal separators.
+- Header, data, group, and totals rows are visually differentiated through surface hierarchy (section 2.3).
+- The grid reads more as a product surface than a spreadsheet (section 7.4), though row composition and cell rendering still need work (Phase 2 and Phase 3).
+- All modal interactions now support Escape key, completing the accessible interaction pattern.
+- Page headers, toolbar grouping, confirm dialogs, and focus trapping are all complete from prior cycles.
+
+**Where design quality is still below target:**
+- Row composition (driver name + metadata + cells) is still flat — Phase 2 (PB-034) addresses this.
+- DayCell rendering uses basic colored fills without chip/badge refinement — Phase 3 (PB-035) addresses this.
+- RosterAssigner internal table still uses dense `border border-border-default` on every cell (not in scope for PB-032 since it's a modal, not the planning grid surface).
+- StamtabelManager inputs still use inline Tailwind classes instead of `input-field` class (PB-010, deferred).
 
 ## Recommended Next Improvements
 
-### EX-REC-016: Planning grid deeper redesign — surface layering and row composition
+### EX-REC-016: Planning grid Phase 2 — row composition and identity
 
-- **Title:** Redesign planning grid visual structure toward DESIGN.md standard
-- **Problem:** The planning grid still uses dense 1px borders for all structure (cells, headers, columns). This conflicts with DESIGN.md section 4.1 (No-Line Rule) and section 7.4 (planning grid is a product surface, not a spreadsheet). Row composition combines name, metadata, and planning cells in a flat table structure without clear tonal hierarchy.
-- **Proposed improvement:** Phase 1 (PB-032) replaces border-heavy cell structure with tonal contrast. Phase 2 (PB-034) improves row composition. Phase 3 (PB-035) refines cell rendering.
-- **Expected user value:** The planning screen moves from a spreadsheet-like tool to a modern planning product surface. Faster scanning, clearer status comprehension.
-- **Priority:** P2 High
-- **Effort:** Large (phased across 3 cycles)
-- **Dependencies:** PB-033 done. PB-032 is unblocked and ready.
-- **Suggested owner:** Experience Agent
-- **Why now:** The planning grid is the core product surface and the largest remaining gap between the current UI and the DESIGN.md standard. All prerequisite work (toolbar grouping, focus trap, confirm dialogs, page headers) is now complete.
-
-### EX-REC-017: Add Escape key handling to all modal overlays
-
-- **Title:** Consistent Escape key dismissal for modals
-- **Problem:** The new ConfirmDialog supports Escape key to close, but the other 4 modal overlays (ScenarioSelector create, RosterAssigner, bulk selector, DayCell selector) do not have explicit Escape key handling. Users may expect Escape to dismiss any modal.
-- **Proposed improvement:** Add `onKeyDown` handler for Escape to the 4 remaining modal overlays, calling the existing close/cancel callback.
-- **Expected user value:** Consistent keyboard dismissal across all modals.
+- **Title:** Improve planning grid row composition
+- **Problem:** Row composition combines name, metadata, and planning cells in a flat table structure. Driver identity (name, employee number, metadata) doesn't have clear visual hierarchy within each row.
+- **Proposed improvement:** Stronger row identity zone — driver name with more confident typography, metadata as subdued supporting text, clearer visual separation between identity columns and planning columns.
+- **Expected user value:** Faster driver identification when scanning. Better visual rhythm across rows.
 - **Priority:** P3 Medium
-- **Effort:** Small (4 small additions)
-- **Dependencies:** PB-033 (completed).
+- **Effort:** Medium
+- **Dependencies:** PB-032 (completed).
 - **Suggested owner:** Experience Agent
-- **Why now:** Simple follow-up to PB-033. Low risk, high consistency value.
+- **Why now:** Phase 1 surface layering is complete. Row composition is the next structural improvement before cell rendering refinement.
+
+### EX-REC-018: Improve RosterAssigner modal table styling
+
+- **Title:** Apply surface layering to RosterAssigner roster history table
+- **Problem:** The RosterAssigner modal contains a table with dense `border border-border-default` on every cell. This conflicts with DESIGN.md section 4.1 and is visually inconsistent with the now-updated planning grid.
+- **Proposed improvement:** Apply the same tonal separator approach used in the planning grid: remove cell borders, use subtle row separators, keep header bottom edge.
+- **Expected user value:** Visual consistency between the planning grid and modal tables. More refined modal experience.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Low effort consistency fix. Can be done opportunistically. Not urgent since the table is inside a modal.
 
 ### EX-REC-003: Standardize input field styling in StamtabelManager
 
@@ -52,9 +57,9 @@ PB-033 (focus trap), PB-020 (ConfirmDialog), and PB-031 (page headers for settin
 
 ## Risks / Watch-outs
 
-- **Planning grid visual redesign is the largest remaining gap:** The toolbar, page headers, dialogs, and focus trapping are all done. The grid itself (cells, rows, headers, summaries) is now the primary area still below DESIGN.md standard. PB-032 Phase 1 is the critical next step.
-- **Escape key inconsistency across modals:** ConfirmDialog supports Escape but other modals do not. Minor but noticeable for keyboard users.
-- **StamtabelManager inline button styling:** The "Toevoegen" button in StamtabelManager uses inline Tailwind classes instead of `btn-primary`. Not visually broken but inconsistent with the pattern used everywhere else.
+- **Phase 2 (PB-034) is the next critical gap:** With Phase 1 complete, the grid surface no longer looks like a spreadsheet, but row composition still feels flat. Phase 2 should be scheduled soon to build on this momentum.
+- **RosterAssigner modal table is now the most visible inconsistency:** It uses dense cell borders while the planning grid does not. Users who interact with both surfaces will notice the difference.
+- **Sticky column shadow on wide screens:** The `grid-sticky-edge` shadow is subtle by design. On very wide screens with many extra columns, the rightmost sticky column edge might not be immediately obvious. Monitor for user feedback.
 
 ## Items Intentionally Not Recommended
 
@@ -63,7 +68,7 @@ PB-033 (focus trap), PB-020 (ConfirmDialog), and PB-031 (page headers for settin
 - **Redesign of RosterProfileEditor grid:** The click-to-cycle interaction is unconventional but functional and consistent.
 - **Search loading indicators:** Marginal gain at current data volumes.
 - **Placeholder-to-label migration in settings forms:** Would improve accessibility but requires significant layout adjustments. Monitor for user feedback.
-- **Badge/pill component system:** Premature until more badge variants emerge.
+- **Badge/pill component system:** Premature until Phase 3 (PB-035) establishes the chip/badge direction.
 - **Full sidebar redesign:** The sidebar works and is calm. Not a priority over core screen improvements.
 
 ## Recommendation Rules

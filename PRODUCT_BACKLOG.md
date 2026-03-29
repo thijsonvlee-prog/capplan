@@ -27,19 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-032: Planning grid Phase 1 — surface layering and row tonal hierarchy
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The planning grid uses dense 1px borders for all structure (cells, headers, columns). This conflicts with DESIGN.md section 4.1 (No-Line Rule) and section 7.4 (planning grid is a product surface, not a spreadsheet).
-- **Why this matters now:** All prerequisite work is complete (PB-028 toolbar grouping, PB-033 focus trap, PB-020 confirm dialogs, PB-031 page headers). The planning grid is the core product surface and the largest remaining gap between the current UI and the DESIGN.md standard. SMI-004 calls for bigger design steps.
-- **Scope notes:** Replace border-heavy structure with tonal contrast. Differentiate header, data rows, group rows, and totals rows through surface layering. Use design tokens for surface tiers. Do NOT change row composition or cell rendering in this phase.
-- **Dependencies:** None remaining. All prereqs completed.
-- **Definition of done:** Border-heavy structure replaced with tonal contrast. Header/data/group/totals rows visually differentiated. Grid reads as a product surface, not a spreadsheet. Passes `npm run verify`.
-- **Implementation note:** PlanningGrid.tsx is ~650 lines and the most complex component. Handle with extreme care. Test thoroughly.
-- **Source:** EX-REC-016, SMI-004, ESC-003 (Option B Phase 1).
-
 ### PB-024: Consolidate /drivers/[id]/computed into main driver transform
 
 - **Owner:** Delivery Agent
@@ -64,18 +51,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** Both PUT handlers validate required fields. Invalid requests return clear 400 responses. Passes `npm run verify`.
 - **Source:** DE-REC-013.
 
-### PB-036: Add Escape key handling to remaining modal overlays
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The ConfirmDialog supports Escape key to close, but the other 4 modal overlays (ScenarioSelector create form, RosterAssigner, PlanningGrid bulk selector, DayCell selector) do not have explicit Escape key handling. Users expect Escape to dismiss any modal.
-- **Why this matters now:** Simple follow-up to PB-033 (focus trap). Low risk, high consistency value. Completes the modal interaction pattern.
-- **Scope notes:** Add `onKeyDown` handler for Escape to the 4 remaining modal overlays, calling the existing close/cancel callback. Small change per component.
-- **Dependencies:** PB-033 (completed).
-- **Definition of done:** All 4 modal overlays dismiss on Escape key. Passes `npm run verify`.
-- **Source:** EX-REC-017.
-
 ---
 
 ## Planned (Next Cycles)
@@ -88,7 +63,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Problem / opportunity:** Row composition combines name, metadata, and planning cells in a flat table structure without clear visual hierarchy.
 - **Why this matters now:** Phase 2 of ESC-003 Option B. Builds on Phase 1 surface layering.
 - **Scope notes:** Improve how driver name, metadata, and planning cells relate within each row. Better row identity composition. Do NOT change cell rendering in this phase.
-- **Dependencies:** PB-032 (Phase 1 must be complete first).
+- **Dependencies:** PB-032 (completed).
 - **Definition of done:** Row composition shows clear visual hierarchy between identity, metadata, and planning content. Passes `npm run verify`.
 - **Source:** EX-REC-016, ESC-003 (Option B Phase 2).
 
@@ -135,6 +110,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-032: Planning grid Phase 1 — surface layering and row tonal hierarchy
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Replaced border-heavy grid structure with tonal surface system. Added planning grid CSS classes. Header/data/group/totals rows differentiated through surface layering, subtle separators, and alternating row tones. Sticky columns use right-edge shadow.
+
+### PB-036: Add Escape key handling to remaining modal overlays
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added Escape key dismiss handler to ScenarioSelector, RosterAssigner, bulk selector, and DayCell selector. All modals now consistently support Escape to close.
 
 ### PB-033: Add focus trap to modal overlays
 - **Completed:** 2026-03-29

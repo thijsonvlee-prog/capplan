@@ -72,6 +72,7 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
           role="dialog"
           aria-modal="true"
           aria-label={`Status instellen — ${date}`}
+          onKeyDown={(e) => { if (e.key === "Escape") setShowSelector(false); }}
           onMouseDown={(e) => {
             e.stopPropagation();
             e.preventDefault();
