@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major redesign work is complete. API validation is fully hardened including FK existence checks. ESLint is clean (0 warnings). All API error messages are in Dutch. All sub-record PUT routes use transactions. The active backlog now focuses on: (1) small UX consistency fixes, and (2) connectivity hub (PB-015/016) when higher-priority work is done.
+**Current direction:** All major redesign work and API validation hardening is complete. ESLint is clean (0 warnings). All API error messages are in Dutch. The active backlog now focuses on: (1) a small performance improvement (Map-based lookups), and (2) the connectivity hub initiative (PB-015/016). The Experience Agent has no outstanding recommendations — UX work is paused until new needs emerge.
 
 ## Status Definitions
 
@@ -27,23 +27,34 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-060: Replace linear .find() lookups with Map-based lookups in api-helpers.ts
 
----
-
-## Planned (Future Cycles)
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** `src/lib/api-helpers.ts` uses `.find()` inside loops to resolve employer, location, and department names (`groupDrivers`, `getComputedFields`). With N drivers × M records, this is O(N×M) per lookup array. `PlanningGrid.tsx` has a similar pattern in `resolveColumnValue`. The skill lookup already uses a Map pattern (PlanningGrid line ~106).
+- **Scope notes:** Pre-build `Map<id, name>` from employer/location/department arrays once, then use `.get()` for O(1) lookups. Apply in `api-helpers.ts` and `PlanningGrid.tsx` `resolveColumnValue`. Follow the existing `skillMap` pattern.
+- **Dependencies:** None.
+- **Definition of done:** All `.find()` lookups on employer/location/department arrays in `api-helpers.ts` and `PlanningGrid.tsx` replaced with Map-based lookups. Passes `npm run verify`. No behavior change.
+- **Implementation note:** Small, focused change. Do not refactor beyond the specific lookup patterns.
+- **Source:** DE-REC-032.
+- **Why this matters now:** Active backlog is empty. This is a well-scoped, low-risk performance improvement that follows an existing pattern.
 
 ### PB-015: Connectivity hub — data model and import source API
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Planned (future cycle)
+- **Status:** Ready
 - **Problem / opportunity:** First phase of the connectivity hub MVP (ESC-001 decision: CSV-only, field mapping UI, no scheduled execution).
 - **Scope notes:** Design and implement Prisma schema additions for import source configuration. Create API routes for CRUD. No UI, no import execution logic.
 - **Dependencies:** None.
-- **Definition of done:** Prisma migration for import source tables. API routes for CRUD. Passes `npm run verify`.
-- **Implementation note:** Keep schema minimal: ImportSource (id, name, type=CSV, fieldMappings as JSON, createdAt, updatedAt).
+- **Definition of done:** Prisma migration for import source tables. API routes for CRUD with proper validation and Dutch error messages. Passes `npm run verify`.
+- **Implementation note:** Keep schema minimal: ImportSource (id, name, type=CSV, fieldMappings as JSON, createdAt, updatedAt). Follow existing API route patterns including FK validation, transaction wrapping where needed, and consistent response shapes.
 - **Source:** ESC-001 decision (Option A), SMI-001.
+
+---
+
+## Planned (Future Cycles)
 
 ### PB-016: Connectivity hub — admin screen for import source configuration
 
@@ -52,7 +63,7 @@ _No items ready for next cycle._
 - **Status:** Planned (future cycle)
 - **Problem / opportunity:** Second phase of connectivity hub MVP. Admin screen for CSV import source configuration with field mapping.
 - **Dependencies:** PB-015.
-- **Definition of done:** Working admin screen for managing CSV import sources with field mapping. Passes `npm run verify`.
+- **Definition of done:** Working admin screen for managing CSV import sources with field mapping. Follows existing design token system and component patterns. Passes `npm run verify`.
 - **Source:** ESC-001 decision (Option A), SMI-001.
 
 ---
@@ -74,22 +85,22 @@ _No items currently in progress._
 ### PB-018: Add foreign key existence checks before relation creation
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Added `validateForeignKeys` and `validateOptionalForeignKey` helpers to `api-route-utils.ts`. Applied FK existence validation to 10 routes: driver POST (all nested FKs) and PUT (skillIds), employment POST/PUT (employerId), function POST/PUT (locationId, departmentId), roster-assignment POST/PUT (rosterProfileId), planning POST and bulk POST (leaveTypeId). Invalid references now return 400 with a Dutch error message instead of causing 500 FK constraint errors.
+- **Summary:** Added `validateForeignKeys` and `validateOptionalForeignKey` helpers. Applied FK existence validation to 10 routes. Invalid references now return 400 with Dutch error messages.
 
 ### PB-058: RosterAssigner driver name format consistency
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Changed the name format passed to RosterAssigner from "Voornaam Achternaam" to "Achternaam, Voornaam", matching the convention used in the drivers table and planning grid.
+- **Summary:** Changed name format in RosterAssigner to "Achternaam, Voornaam", matching drivers table and planning grid.
 
 ### PB-059: Capacity page control bar grouping
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Grouped period/zoom controls and compare controls into contained toolbar sections with `bg-surface-tertiary` backgrounds, tonal dividers, and structured spacing. Compare buttons use elevated pill style with shadow.
+- **Summary:** Grouped period/zoom and compare controls into contained toolbar sections with tonal backgrounds and dividers.
 
 ### PB-055: Translate remaining English error messages across all API routes
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Translated ~70 English API response error messages to Dutch across 24 route files.
+- **Summary:** Translated ~70 English API error messages to Dutch across 24 route files.
 
 ### PB-056: Wrap find-then-update PUT routes in transactions
 - **Completed:** 2026-03-29
@@ -99,17 +110,17 @@ _No items currently in progress._
 ### PB-047: Capacity page status badge consistency
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Replaced basic inline status badges with `status-chip-compact` + `status-dot` pattern. Tonal separators, alternating rows.
+- **Summary:** Status badges replaced with `status-chip-compact` + `status-dot` pattern.
 
 ### PB-040: RosterAssigner modal table styling
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Tonal row separators, alternating backgrounds, card surface wrapping. Active records use `bg-success-50`.
+- **Summary:** Tonal row separators, alternating backgrounds, card surface wrapping.
 
 ### PB-057: RosterProfileEditor status dot indicators
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Added `status-dot` indicators to roster profile editor grid cells, matching the planning grid pattern.
+- **Summary:** Added `status-dot` indicators to roster profile editor grid cells.
 
 ### PB-053: Add date validation to POST sub-record routes
 - **Completed:** 2026-03-29
@@ -133,8 +144,17 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low user impact. Includes both chart colors (DE-REC-014) and API magic numbers (DE-REC-030). Schedule when capacity allows.
+- **Reason:** Low user impact. Includes API magic numbers (DE-REC-030) and chart colors (DE-REC-014). Schedule when capacity allows.
 - **Source:** DE-REC-014, DE-REC-030.
+
+### PB-061: Add PerformanceEvent table cleanup mechanism
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** `cleanupOldEvents()` in `perf.ts` is defined but never called. Table grows unbounded, but traffic is low. Low urgency.
+- **Scope notes:** Either call `cleanupOldEvents()` at the end of `withPerfLogging`, add a periodic cleanup, or remove the perf system if unused.
+- **Source:** DE-REC-031.
 
 ---
 
