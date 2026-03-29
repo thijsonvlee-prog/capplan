@@ -2,7 +2,7 @@
 
 import { memo, useState, useRef } from "react";
 import type { PlanningStatus, DensityLevel } from "@/domain/enums";
-import type { PlanningEntry, StamtabelRecord } from "@/domain/types";
+import type { PlanningEntry } from "@/domain/types";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -20,7 +20,7 @@ type Props = {
   date: string;
   compact?: boolean;
   baseRosterHours?: number;
-  leaveTypes?: StamtabelRecord[];
+  leaveTypeMap?: Map<string, string>;
   density?: DensityLevel;
   onUpdate: (driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) => void;
 };
@@ -29,7 +29,7 @@ const POPUP_WIDTH = 224; // w-56 = 14rem
 const POPUP_MAX_HEIGHT = 280;
 const VIEWPORT_PAD = 8;
 
-export const DayCell = memo(function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypes, density = "comfortable", onUpdate }: Props) {
+export const DayCell = memo(function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypeMap, density = "comfortable", onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
   const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -64,9 +64,9 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
   if (entry) {
     if (entry.status === "BASE_ROSTER" && baseRosterHours !== undefined) {
       title = `Basisrooster: ${baseRosterHours} uur`;
-    } else if (entry.status === "LEAVE" && entry.leaveTypeId && leaveTypes) {
-      const lt = leaveTypes.find((l) => l.id === entry.leaveTypeId);
-      title = lt ? `Verlof: ${lt.description}` : "Verlof";
+    } else if (entry.status === "LEAVE" && entry.leaveTypeId && leaveTypeMap) {
+      const ltDesc = leaveTypeMap.get(entry.leaveTypeId);
+      title = ltDesc ? `Verlof: ${ltDesc}` : "Verlof";
     } else if (entry.status === "SICK") {
       title = entry.sickPercentage !== undefined && entry.sickPercentage > 0
         ? `Ziek (${entry.sickPercentage}% aanwezig)`

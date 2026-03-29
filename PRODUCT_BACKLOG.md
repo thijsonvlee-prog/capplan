@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major redesign work, API validation hardening, and performance optimizations are complete. ESLint is clean (0 warnings). The connectivity hub data model and API (PB-015) are shipped. The active backlog contains small UX polish items (design system alignment, semantic color fixes) and one technical cleanup item. PB-016 (connectivity hub admin UI) remains planned for a future cycle.
+**Current direction:** All major redesign work, API validation hardening, and performance optimizations are complete. ESLint is clean (0 warnings). Map-based lookup pattern is now consistent across the entire codebase. The connectivity hub data model and API (PB-015) are shipped. No active backlog items remain for the current cycle. PB-016 (connectivity hub admin UI) remains planned for a future cycle.
 
 ## Status Definitions
 
@@ -27,18 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-065: Replace DayCell leaveType .find() with Map-based lookup
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** `DayCell.tsx:68` uses `leaveTypes.find()` inside render. DayCell is rendered once per driver x date, running this lookup hundreds of times with the same array. The Map-based lookup pattern has been applied everywhere else (PB-060) but this spot was missed.
-- **Why this matters now:** Completes the Map-based lookup pattern across the entire codebase. Small, safe change.
-- **Scope notes:** Pass a pre-built `leaveTypeMap: Map<string, string>` as a prop instead of the full `leaveTypes` array, following the pattern from PB-060.
-- **Dependencies:** None.
-- **Definition of done:** DayCell uses Map-based lookup for leaveType. No `.find()` calls remain for lookups in render paths. Passes `npm run verify`.
-- **Implementation note:** Follow the existing `skillMap` / `buildLookupMaps` pattern from PB-060.
-- **Source:** DE-REC-033.
+_No items ready for next cycle._
 
 ---
 
@@ -69,6 +58,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-065: Replace DayCell leaveType .find() with Map-based lookup
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Replaced `leaveTypes.find()` in DayCell render path with `leaveTypeMap.get()` using a pre-built `Map<string, string>`. Map is constructed via `useMemo` in PlanningGrid and passed through GroupRows. Completes the Map-based lookup pattern across the entire codebase.
 
 ### PB-062: Fix capacity page scenario toggle color semantics
 - **Completed:** 2026-03-29

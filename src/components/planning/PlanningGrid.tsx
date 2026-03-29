@@ -105,6 +105,7 @@ export function PlanningGrid() {
 
   const skillMap = useMemo(() => new Map(skills.map((s) => [s.id, s.name])), [skills]);
   const employerMap = useMemo(() => new Map(employers.map((e) => [e.id, e.description])), [employers]);
+  const leaveTypeMap = useMemo(() => new Map(leaveTypes.map((l) => [l.id, l.description])), [leaveTypes]);
   const departmentMap = useMemo(() => new Map(departments.map((d) => [d.id, d.description])), [departments]);
   const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.description])), [locations]);
 
@@ -440,7 +441,7 @@ export function PlanningGrid() {
                   extraColumns={extraColumns}
                   aggregation={aggregation}
                   density={density}
-                  leaveTypes={leaveTypes}
+                  leaveTypeMap={leaveTypeMap}
                   employers={employers}
                   driverColWidth={driverColWidth}
                   extraColWidth={extraColWidth}
@@ -510,7 +511,7 @@ function GroupRows({
   extraColumns,
   aggregation,
   density,
-  leaveTypes,
+  leaveTypeMap,
   employers,
   driverColWidth,
   extraColWidth,
@@ -526,7 +527,7 @@ function GroupRows({
   extraColumns: DriverColumnKey[];
   aggregation: AggregationLevel;
   density: DensityLevel;
-  leaveTypes: StamtabelRecord[];
+  leaveTypeMap: Map<string, string>;
   employers: StamtabelRecord[];
   driverColWidth: number;
   extraColWidth: number;
@@ -629,7 +630,7 @@ function GroupRows({
                         driverId={driver.id}
                         date={date}
                         compact={isCompact}
-                        leaveTypes={leaveTypes}
+                        leaveTypeMap={leaveTypeMap}
                         onUpdate={onUpdate}
                         density={density}
                       />
