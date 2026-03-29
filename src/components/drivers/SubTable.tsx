@@ -90,6 +90,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
                     onClick={() => { if (window.confirm(`Weet je zeker dat je ${entityName} vanaf ${row.startDate} wilt verwijderen?`)) onDelete(row.id); }}
                     className="btn-icon-danger"
                     title="Verwijderen"
+                    aria-label="Verwijderen"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

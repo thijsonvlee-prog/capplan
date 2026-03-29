@@ -78,6 +78,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
                         onClick={() => handleDelete(r.id)}
                         className="btn-icon-danger"
                         title="Verwijderen"
+                        aria-label="Verwijderen"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -92,7 +93,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
         <div className="border-t border-border-default pt-4 space-y-3">
           <div className="text-caption font-medium">Nieuw roosterprofiel toewijzen</div>
           <div>
-            <label className="form-label">Roosterprofiel</label>
+            <label className="form-label">Roosterprofiel <span className="text-danger-600">*</span></label>
             <select
               value={profileId}
               onChange={(e) => setProfileId(e.target.value)}
@@ -110,7 +111,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="form-label">Ingangsdatum</label>
+              <label className="form-label">Ingangsdatum <span className="text-danger-600">*</span></label>
               <input
                 type="date"
                 value={startDate}

@@ -59,14 +59,14 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
           type="text"
           value={newCode}
           onChange={(e) => setNewCode(e.target.value)}
-          placeholder="Code..."
+          placeholder="Code *"
           className="w-24 px-3 py-2 border border-border-default rounded-lg text-sm bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
         />
         <input
           type="text"
           value={newDesc}
           onChange={(e) => setNewDesc(e.target.value)}
-          placeholder="Omschrijving..."
+          placeholder="Omschrijving *"
           className="flex-1 px-3 py-2 border border-border-default rounded-lg text-sm bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
         />
         <button type="submit" className="flex items-center gap-1 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium shadow-xs transition-colors">
@@ -101,10 +101,10 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
                   className="input-field flex-1"
                   onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
                 />
-                <button onClick={saveEdit} className="p-1 text-success-600 hover:bg-success-50 rounded-md">
+                <button onClick={saveEdit} className="p-1 text-success-600 hover:bg-success-50 rounded-md" aria-label="Opslaan">
                   <Check className="w-4 h-4" />
                 </button>
-                <button onClick={() => setEditingId(null)} className="btn-icon">
+                <button onClick={() => setEditingId(null)} className="btn-icon" aria-label="Annuleren">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -115,10 +115,10 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
                   <span className="text-sm text-text-primary">{r.description}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => startEdit(r)} className="btn-icon">
+                  <button onClick={() => startEdit(r)} className="btn-icon" aria-label="Bewerken">
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => { if (window.confirm(`Weet je zeker dat je "${r.description}" wilt verwijderen?`)) onDelete(r.id); }} className="btn-icon-danger">
+                  <button onClick={() => { if (window.confirm(`Weet je zeker dat je "${r.description}" wilt verwijderen?`)) onDelete(r.id); }} className="btn-icon-danger" aria-label="Verwijderen">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

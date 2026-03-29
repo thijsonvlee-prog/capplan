@@ -557,6 +557,7 @@ function GroupRows({
                 onClick={() => onAssignRoster(driver.id, `${driver.firstName} ${driver.lastName}`)}
                 className="p-1 text-text-tertiary hover:text-brand-600 hover:bg-brand-50 rounded"
                 title="Roosterprofiel toewijzen"
+                aria-label="Roosterprofiel toewijzen"
               >
                 <CalendarCog className="w-3.5 h-3.5" />
               </button>

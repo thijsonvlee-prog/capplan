@@ -55,24 +55,26 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Ready
+- **Status:** Completed
 - **Problem / opportunity:** Edit and delete icon-only buttons in SkillManager and RosterProfileEditor lack `aria-label` attributes. CLAUDE.md requires all icon-only buttons to have `aria-label`. Screen reader users cannot identify button actions.
 - **Why this matters now:** Compliance gap with codebase rules. Quick fix with broad accessibility impact.
 - **Scope notes:** Add `aria-label="Bewerken"` to edit buttons and `aria-label="Verwijderen"` to delete buttons in SkillManager and RosterProfileEditor. Also check SubTable and StamtabelManager for the same gap.
 - **Dependencies:** None.
 - **Definition of done:** All icon-only buttons in settings components have `aria-label`. Passes `npm run verify`.
 - **Source:** EX-REC-010.
+- **Implementation note:** Added `aria-label` to all 16 icon-only buttons across SkillManager, RosterProfileEditor, StamtabelManager, SubTable, DriverList, RosterAssigner, PlanningGrid, and WeekSelector. Labels: Bewerken, Verwijderen, Opslaan, Annuleren, Eerder, Later, Vandaag, Roosterprofiel toewijzen.
 
 ### PB-014: Add visible required field indicators to forms
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
+- **Status:** Completed
 - **Problem / opportunity:** No form visually marks required fields before submission. Users must submit and encounter errors to learn which fields are mandatory.
 - **Scope notes:** Add red asterisk (`*`) after required field labels using `text-danger-600`. Apply across DriverForm, StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector, and sub-table forms.
 - **Dependencies:** None.
 - **Definition of done:** All required fields have visual indicators. Passes `npm run verify`.
 - **Source:** EX-REC-006.
+- **Implementation note:** Added red asterisk indicators to all required fields: DriverForm (Voornaam, Achternaam), EmploymentForm (Begindatum), PositionForm (Begindatum), RosterForm (Begindatum, Roosterprofiel), RosterAssigner (Roosterprofiel, Ingangsdatum). For placeholder-only forms (StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector), updated placeholder text to include `*` suffix since these lack explicit labels.
 
 ### PB-023: Remove isActive from driver PUT handler
 

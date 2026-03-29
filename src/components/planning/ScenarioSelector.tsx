@@ -103,7 +103,7 @@ export function ScenarioSelector() {
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Naam..."
+              placeholder="Naam *"
               className="input-field w-full"
               autoFocus
               required

@@ -10,6 +10,15 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 — Accessibility labels and required field indicators
+
+#### UX / usability improvements
+
+- All icon-only buttons (edit, delete, save, cancel, navigation) now have `aria-label` attributes. Screen reader users can identify every button action across the entire application.
+- Required form fields are now visually marked before submission. Label-based forms (driver details, employment, function, roster) show a red asterisk next to required field names. Inline forms (settings, scenario creation) show `*` in placeholder text. Users no longer need to submit and fail to discover which fields are mandatory.
+
+
+
 ### 2026-03-29 — Accessibility, transactions, and employment-based driver status
 
 #### UX / usability improvements

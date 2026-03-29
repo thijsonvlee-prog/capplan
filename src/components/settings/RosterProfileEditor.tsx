@@ -103,7 +103,7 @@ export function RosterProfileEditor() {
               type="text"
               value={name}
               onChange={(e) => { setName(e.target.value); if (e.target.value.trim()) setShowValidation(false); }}
-              placeholder="Profielnaam..."
+              placeholder="Profielnaam *"
               className={`input-field w-64 ${showValidation && !name.trim() ? "border-danger-400" : ""}`}
               autoFocus
             />
@@ -176,10 +176,10 @@ export function RosterProfileEditor() {
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => startEdit(p)} className="btn-icon">
+              <button onClick={() => startEdit(p)} className="btn-icon" aria-label="Bewerken">
                 <Pencil className="w-4 h-4" />
               </button>
-              <button onClick={() => handleDelete(p.id, p.name)} className="btn-icon-danger">
+              <button onClick={() => handleDelete(p.id, p.name)} className="btn-icon-danger" aria-label="Verwijderen">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>

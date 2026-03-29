@@ -61,7 +61,7 @@ export function SkillManager() {
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="Nieuwe vaardigheid..."
+          placeholder="Nieuwe vaardigheid *"
           className="input-field flex-1"
         />
         <button type="submit" className="btn-primary">
@@ -91,10 +91,10 @@ export function SkillManager() {
                   autoFocus
                   onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
                 />
-                <button onClick={saveEdit} className="p-1 text-success-600 hover:bg-success-50 rounded-md">
+                <button onClick={saveEdit} className="p-1 text-success-600 hover:bg-success-50 rounded-md" aria-label="Opslaan">
                   <Check className="w-4 h-4" />
                 </button>
-                <button onClick={() => setEditingId(null)} className="btn-icon">
+                <button onClick={() => setEditingId(null)} className="btn-icon" aria-label="Annuleren">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -102,10 +102,10 @@ export function SkillManager() {
               <>
                 <span className="text-sm text-text-primary">{skill.name}</span>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => startEdit(skill.id, skill.name)} className="btn-icon">
+                  <button onClick={() => startEdit(skill.id, skill.name)} className="btn-icon" aria-label="Bewerken">
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(skill.id, skill.name)} className="btn-icon-danger">
+                  <button onClick={() => handleDelete(skill.id, skill.name)} className="btn-icon-danger" aria-label="Verwijderen">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

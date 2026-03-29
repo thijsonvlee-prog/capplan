@@ -132,7 +132,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="form-label">Voornaam</label>
+              <label className="form-label">Voornaam <span className="text-danger-600">*</span></label>
               <input
                 type="text"
                 value={firstName}
@@ -144,7 +144,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
               )}
             </div>
             <div>
-              <label className="form-label">Achternaam</label>
+              <label className="form-label">Achternaam <span className="text-danger-600">*</span></label>
               <input
                 type="text"
                 value={lastName}
@@ -311,7 +311,7 @@ function EmploymentForm({
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="form-label">Begindatum</label>
+          <label className="form-label">Begindatum <span className="text-danger-600">*</span></label>
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-field w-full" />
         </div>
         <div>
@@ -365,7 +365,7 @@ function PositionForm({
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="form-label">Begindatum</label>
+          <label className="form-label">Begindatum <span className="text-danger-600">*</span></label>
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-field w-full" />
         </div>
         <div>
@@ -426,11 +426,11 @@ function RosterForm({
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="form-label">Begindatum</label>
+          <label className="form-label">Begindatum <span className="text-danger-600">*</span></label>
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-field w-full" />
         </div>
         <div>
-          <label className="form-label">Roosterprofiel</label>
+          <label className="form-label">Roosterprofiel <span className="text-danger-600">*</span></label>
           <select value={rosterProfileId} onChange={(e) => setRosterProfileId(e.target.value)} className="input-field w-full">
             <option value="">-- Selecteer --</option>
             {profiles.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}

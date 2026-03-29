@@ -141,6 +141,7 @@ export function DriverList() {
                       onClick={() => startEdit(d)}
                       className="btn-icon"
                       title="Bewerken"
+                      aria-label="Bewerken"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
