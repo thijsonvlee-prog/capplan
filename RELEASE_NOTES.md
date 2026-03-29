@@ -10,31 +10,21 @@ _No unreleased changes._
 
 ## Release History
 
-### 2026-03-29 — Transaction safety and API input validation
+### 2026-03-29 — Reliability, validation, and UX polish
 
 #### Performance / reliability improvements
 
-- The roster assignment creation endpoint now wraps all database operations (auto-close, sequence number, create assignment, generate 364 planning entries) in a single database transaction. If any step fails, all changes roll back cleanly — no more partial roster data on error.
-- All POST and PUT API endpoints now validate required fields before processing. Missing or empty fields return a clear Dutch-language error message (e.g., "Startdatum is verplicht") instead of a cryptic database error. Validation covers: employment records, function records, roster assignments, roster profiles, scenarios, settings, and skills.
-
-### 2026-03-29 — Form validation, loading states, and delete dialog improvements
-
-#### UX / usability improvements
-
-- The driver creation form now shows inline Dutch-language error messages when required fields (voornaam, achternaam) are left empty. Input fields highlight in red on validation failure and errors clear as the user types.
-- The settings page now shows loading spinners while data is being fetched. Empty state messages ("Nog geen werkgevers toegevoegd") only appear when data has genuinely loaded and is empty, preventing a misleading flash.
-- Delete confirmation dialogs in the driver editing sub-tables (dienstverband, functiegegevens, roostertoewijzing) now specify what type of record is being deleted instead of the generic "het record".
-
-### 2026-03-29 — Empty states, toast notifications, and performance indexes
+- Roster assignment creation now wraps all database operations in a single transaction. Partial failures roll back cleanly — no more incomplete roster data on error.
+- All POST and PUT API endpoints now validate required fields before processing. Missing or empty fields return a clear Dutch-language error message (e.g., "Startdatum is verplicht") instead of a database error.
+- Added composite database index on roster assignments for faster date-range lookups.
 
 #### UX / usability improvements
 
-- Toast notifications now appear for all create, update, and delete operations across the application, giving users clear feedback when data is saved or removed.
-- Stamtabel empty states (werkgevers, afdelingen, standplaatsen, verloftypes) now show instructional guidance text prompting users to add their first item.
-
-#### Performance / reliability improvements
-
-- Added composite database index on DriverRosterAssignment (driverId, startDate, endDate) to improve roster assignment query performance for date-range lookups.
+- Driver creation form shows inline error messages when required fields are left empty. Fields highlight in red on validation failure and errors clear as the user types.
+- Settings page shows loading spinners while data is being fetched. Empty state messages only appear when data has genuinely loaded and is empty.
+- Delete confirmation dialogs in driver editing now specify what type of record is being deleted (e.g., "het dienstverband vanaf 2026-01-01") instead of generic text.
+- Toast notifications appear for all create, update, and delete operations, giving users clear feedback when data is saved or removed.
+- Stamtabel empty states show instructional guidance text prompting users to add their first item.
 
 ### 2026-03-29 — Workflow setup
 

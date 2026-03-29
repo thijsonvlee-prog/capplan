@@ -21,87 +21,179 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Completed**: Done, verified, and deployed.
 - **Deferred**: Intentionally postponed. Reason documented.
 
+---
+
 ## Ready for Next Cycle
 
-### PB-004: Wrap roster assignment creation in a database transaction
+### PB-011: Wrap remaining multi-step mutations in transactions
 
 - **Owner:** Delivery Agent
 - **Priority:** P2 High
-- **Status:** Completed (2026-03-29)
-- **Summary:** Wrapped all 7 database operations in the roster assignment POST handler in `prisma.$transaction()`. The transaction client (`tx`) is passed to `autoCloseOpenRecords`, `getNextSequenceNumber`, and all subsequent Prisma calls. Partial failures now roll back cleanly. Single file change.
-- **Implementation note:** Utility functions `autoCloseOpenRecords` and `getNextSequenceNumber` already accepted model delegates, so passing `tx.driverRosterAssignment` instead of `prisma.driverRosterAssignment` required no signature changes.
+- **Status:** Ready
+- **Problem / opportunity:** Five API routes perform multiple sequential database operations without `$transaction`: driver update (PUT), roster profile update (PUT), scenario duplicate (POST), scenario delete (DELETE), and skill delete (DELETE). Partial failures can corrupt data — e.g., the driver update handler deletes all skill associations before recreating them, so a failure between delete and create loses all driver skills.
+- **Why this matters now:** The pattern is established from PB-004 (roster assignment). These are the remaining unprotected multi-step mutations. The driver update handler is particularly risky.
+- **Scope notes:** Wrap each handler's database operations in `prisma.$transaction()` following the roster assignment pattern. Five files, mechanical change. Keep each route self-contained.
+- **Dependencies:** None.
+- **Definition of done:** All five handlers use `$transaction`. Passes `npm run verify`. No behavioral changes beyond atomicity.
+- **Implementation note:** Files: `src/app/api/drivers/[id]/route.ts` (PUT), `src/app/api/roster-profiles/[id]/route.ts` (PUT), `src/app/api/scenarios/[id]/duplicate/route.ts` (POST), `src/app/api/scenarios/[id]/route.ts` (DELETE), `src/app/api/settings/skills/[id]/route.ts` (DELETE).
+- **Source:** DE-REC-006.
 
-### PB-007: Add input validation to API route POST/PUT handlers
+### PB-012: Make toast notifications accessible to screen readers
 
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Completed (2026-03-29)
-- **Summary:** Added `validateRequired()` helper in `api-route-utils.ts` that checks for missing/empty required fields and returns Dutch-language error messages. Applied validation to 12 POST/PUT handlers across 10 route files: employment (POST/PUT), functions (POST/PUT), roster-assignments (POST/PUT), roster-profiles (POST/PUT), scenarios (POST), settings (PUT), skills (POST/PUT). Routes that already had validation (drivers POST, planning POST/bulk, settings POST, scenario duplicate POST) were left unchanged.
-- **Implementation note:** Shared `validateRequired(body, fields)` helper returns first failing field's Dutch label + "is verplicht", or null if all valid. Consistent 400 response with `{ error: "..." }` shape.
-
-## Blocked / Needs Decision
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** The toast container in `Toast.tsx` lacks `role="status"` and `aria-live="polite"` attributes. Screen readers do not announce toast messages, making success/error feedback invisible to users with assistive technology.
+- **Why this matters now:** Every CRUD operation now shows a toast (PB-000). Making these accessible has broad impact. One-line change.
+- **Scope notes:** Add `role="status"` and `aria-live="polite"` to the toast container element. Minimal change.
+- **Dependencies:** None.
+- **Definition of done:** Toast container has aria-live attributes. Passes `npm run verify`.
+- **Implementation note:** Single attribute addition to the container div in `src/components/ui/Toast.tsx`.
+- **Source:** EX-REC-007.
 
 ### PB-003: Consolidate driver status logic between planning grid and driver list
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked
-- **Problem / opportunity:** Driver active/inactive status is computed differently in the planning grid vs. the driver list page, leading to inconsistent counts.
-- **Why this matters now:** Planners have reported confusion when driver counts differ between views.
-- **Scope notes:** Unify status computation into a shared utility in `src/lib/`. Update both consumers.
-- **Dependencies:** Needs Scrum Master decision on ESC-002 (which computation is authoritative).
+- **Status:** Ready
+- **Problem / opportunity:** Driver active/inactive status is computed differently in the planning grid vs. the driver list page, leading to inconsistent counts. ESC-002 has been decided: employment-based status (planning grid logic) is authoritative.
+- **Why this matters now:** Planners see different driver counts depending on which screen they use. Decision is now made — employment-based status using active employment records with date overlap is the single source of truth.
+- **Scope notes:** Create a shared utility in `src/lib/` for employment-based status computation. Update the driver list page to use it. The `isActive` field on Driver may become a derived/computed value. Do not remove the field from the schema yet — just stop using it as the primary status indicator in the driver list.
+- **Dependencies:** None (ESC-002 decided).
 - **Definition of done:** Single source of truth for driver status. Both views show identical counts. Passes `npm run verify`.
-- **Implementation note:** Check `api-route-utils.ts` for existing status logic before creating new utilities.
+- **Implementation note:** Check `api-route-utils.ts` for existing status logic before creating new utilities. The planning grid already uses employment-based logic — extract and share it.
+- **Source:** ESC-002 decision (Option A).
+
+### PB-013: Extend loading state pattern to SkillManager and RosterProfileEditor
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** StamtabelManager now shows a spinner during data fetch (PB-006), but SkillManager and RosterProfileEditor still flash their empty states briefly before data arrives. Inconsistency within the same settings page.
+- **Why this matters now:** The infrastructure (`useApiDataWithLoading` hook) is already in place from PB-006. Quick consistency fix.
+- **Scope notes:** Use `useApiDataWithLoading` in SkillManager and RosterProfileEditor. Show the `.spinner` class during initial load, matching the StamtabelManager pattern.
+- **Dependencies:** None.
+- **Definition of done:** All three settings components show spinners during initial load. No empty state flash. Passes `npm run verify`.
+- **Implementation note:** Follow exact same pattern as StamtabelManager's loading prop implementation.
+- **Source:** EX-REC-005.
+
+---
+
+## Blocked / Needs Decision
+
+_No items currently blocked._
+
+---
 
 ## In Progress
 
 _No items currently in progress._
 
-## Completed Recently
+---
 
-### PB-008: Improve delete confirmation dialogs with specific context
+## Planned (Future Cycles)
 
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Completed (2026-03-29)
-- **Summary:** Audited all delete dialogs. SubTable (used for employment, function, and roster sub-tables in driver editing) was the only component with generic text. Added `entityName` prop so each usage specifies what is being deleted (e.g., "het dienstverband vanaf 2026-01-01"). All other dialogs (StamtabelManager, SkillManager, RosterProfileEditor, RosterAssigner, ScenarioSelector) already had specific context.
-
-### PB-006: Show loading spinners while settings page data loads
+### PB-014: Add visible required field indicators to forms
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Completed (2026-03-29)
-- **Summary:** Added backward-compatible `useApiDataWithLoading` hook that returns `[data, loading]` tuple. Added optional `loading` prop to StamtabelManager. Settings page now shows spinners during initial data fetch; empty states only appear when data is genuinely empty.
+- **Status:** Planned (future cycle)
+- **Problem / opportunity:** No form visually marks required fields before submission. Users must submit and encounter errors to learn which fields are mandatory.
+- **Scope notes:** Add red asterisk (`*`) after required field labels using `text-danger-600`. Apply across DriverForm, StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector, and sub-table forms.
+- **Dependencies:** None.
+- **Definition of done:** All required fields have visual indicators. Passes `npm run verify`.
+- **Source:** EX-REC-006.
 
-### PB-005: Add inline validation feedback to driver creation form
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Completed (2026-03-29)
-- **Summary:** Added `showValidation` pattern to DriverForm matching existing StamtabelManager/SkillManager/RosterProfileEditor pattern. Voornaam and achternaam fields show inline Dutch error messages and red border on validation failure. Errors clear as user types.
-
-### PB-002: Add composite database indexes for planning grid queries
+### PB-015: Connectivity hub — data model and import source API
 
 - **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Completed (2026-03-29)
-- **Summary:** Added composite index on DriverRosterAssignment (driverId, startDate, endDate). PlanningEntry already had adequate composite indexes.
+- **Priority:** P3 Medium
+- **Status:** Planned (future cycle)
+- **Problem / opportunity:** CapPlan operates standalone. The Scrum Master wants a connectivity hub for external data sources (SMI-001). ESC-001 decided: Option A — Configuration-first MVP (CSV only, field mapping UI, no scheduled execution).
+- **Why this matters now:** First phase of the connectivity hub. Must establish the data model before the UI can be built.
+- **Scope notes:** Design and implement Prisma schema additions for import source configuration (source name, file type, field mappings). Create API routes for CRUD operations on import sources. No UI in this item. No import execution logic.
+- **Dependencies:** None.
+- **Definition of done:** Prisma migration for import source tables. API routes for CRUD. Passes `npm run verify`.
+- **Implementation note:** Keep schema minimal: ImportSource (id, name, type=CSV, fieldMappings as JSON, createdAt, updatedAt). Migration required.
+- **Source:** ESC-001 decision (Option A), SMI-001.
+
+### PB-016: Connectivity hub — admin screen for import source configuration
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Planned (future cycle)
+- **Problem / opportunity:** Second phase of connectivity hub MVP. Admin screen to create, edit, and delete CSV import sources with field mapping.
+- **Scope notes:** New page in the application for configuring import sources. Follow existing patterns (StamtabelManager-style CRUD). Field mapping UI to map CSV columns to CapPlan entity fields. Dutch-language UI throughout.
+- **Dependencies:** PB-015 (data model and API must exist first).
+- **Definition of done:** Working admin screen for managing CSV import sources with field mapping. Passes `npm run verify`.
+- **Source:** ESC-001 decision (Option A), SMI-001.
+
+### PB-017: Sanitize error logging in API catch blocks
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Planned (future cycle)
+- **Problem / opportunity:** All API route catch blocks log the full error object. Prisma errors can contain connection strings and SQL details in server logs.
+- **Scope notes:** Log only `error.message` (or "Unknown error") in catch blocks. Optionally log `error.code` for Prisma errors. Mechanical change across ~20 route files.
+- **Dependencies:** None.
+- **Definition of done:** No full error objects logged. Only message + code. Passes `npm run verify`.
+- **Source:** DE-REC-007.
+
+---
+
+## Completed Recently
+
+### PB-004: Wrap roster assignment creation in a database transaction
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Wrapped all 7 database operations in the roster assignment POST handler in `prisma.$transaction()`.
+
+### PB-007: Add input validation to API route POST/PUT handlers
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Added `validateRequired()` helper and applied validation to 12 POST/PUT handlers across 10 route files.
+
+### PB-008: Improve delete confirmation dialogs with specific context
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added `entityName` prop to SubTable for contextual delete confirmation text.
+
+### PB-006: Show loading spinners while settings page data loads
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added `useApiDataWithLoading` hook and loading spinners to StamtabelManager.
+
+### PB-005: Add inline validation feedback to driver creation form
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added `showValidation` pattern to DriverForm with inline Dutch error messages.
+
+### PB-002: Add composite database indexes for planning grid queries
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Added composite index on DriverRosterAssignment (driverId, startDate, endDate).
 
 ### PB-001: Improve empty state guidance across stamtabel managers
-
+- **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Completed (2026-03-29)
-- **Summary:** All four stamtabel managers now show actionable Dutch-language empty states via the shared StamtabelManager component.
+- **Summary:** All four stamtabel managers show actionable Dutch-language empty states.
 
 ### PB-000: Implement toast notifications for all CRUD operations
-
+- **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Completed (2026-03-29)
-- **Summary:** All create/update/delete flows now show Dutch-language toast notifications via the existing Toast component.
+- **Summary:** All create/update/delete flows show Dutch-language toast notifications.
+
+---
 
 ## Deferred
+
+### PB-018: Add foreign key existence checks before relation creation
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Depends on PB-011 (transaction wrapping) being completed first so validation + creation are atomic. Schedule after PB-011.
+- **Source:** DE-REC-008.
 
 ### PB-009: Add covering index for capacity aggregation query
 
@@ -109,7 +201,6 @@ _No items currently in progress._
 - **Priority:** P3 Medium
 - **Status:** Deferred
 - **Reason:** Current query performance is acceptable. Revisit when capacity endpoint shows measurable slowness under real data volumes.
-- **Scope notes:** Add composite index `@@index([scenarioId, date, status])` on PlanningEntry.
 - **Source:** DE-REC-005.
 
 ### PB-010: Standardize input field styling across settings forms
@@ -118,8 +209,25 @@ _No items currently in progress._
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** Minor visual inconsistency. Can be done opportunistically alongside other settings page work.
-- **Scope notes:** Migrate StamtabelManager form inputs to use the `input-field` CSS class for consistency with SkillManager.
 - **Source:** EX-REC-003.
+
+### PB-019: Add semantic dialog attributes to modal overlays
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Low effort but lower priority than toast accessibility (PB-012). Schedule after PB-012.
+- **Source:** EX-REC-008.
+
+### PB-020: Replace window.confirm with custom confirmation component
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** `window.confirm` works. This is the most visible UX inconsistency but requires a new component + 6 migration points. Schedule when higher-priority work is done.
+- **Source:** EX-REC-009.
+
+---
 
 ## Backlog Hygiene Rules
 

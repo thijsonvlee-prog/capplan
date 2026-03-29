@@ -22,75 +22,33 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-### ESC-001: Define MVP scope for connectivity hub
-
-- **Status:** Open
-- **Date / run context:** 2026-03-29 — triggered by SMI-001 in `SCRUM_MASTER_INPUT.md`
-- **Decision needed:** What should the MVP scope be for the connectivity hub initiative?
-- **Why it matters:** The connectivity hub is a large initiative. Without a clear MVP boundary, there is a risk of overbuilding or delivering something too narrow to be useful. Agents need a defined scope before any planning or implementation can begin.
-- **Recommendation from Product Owner Agent:** Option A — start with configuration and manual import only. This is the lowest-risk path that delivers immediate value and can be extended later.
-
-#### Choose one option
-
-> Place `(X)` next to exactly one option.
-
-- [ ] **Option A — Configuration-first MVP** (X)
-  - Scope: Admin screen to configure import sources (CSV only). Field mapping UI. No scheduled execution.
-  - Impact: Planners can import driver/employment data from CSV files. Fast to build, low risk. Foundation for future API support.
-
-- [ ] **Option B — Configuration + execution MVP**
-  - Scope: Everything in Option A, plus a manual "run import" action that processes the configured source and creates/updates records.
-  - Impact: End-to-end import flow in one release. More useful immediately, but larger scope and more error handling needed.
-
-- [ ] **Option C — Full integration management MVP**
-  - Scope: Everything in Option B, plus scheduled imports, import history/logs, and conflict resolution UI.
-  - Impact: Production-ready integration platform. Significantly larger effort. Risk of destabilizing core workflows during development.
-
-- [ ] **Option D — Do not prioritize now**
-  - Scope: Defer the connectivity hub entirely. Focus current cycles on stabilizing existing workflows.
-  - Impact: No new capability. Frees up capacity for reliability and UX improvements. Revisit in a future cycle.
-
-- **Recommended option:** Option A
-- **Trade-offs:** Option A delivers the least functionality but carries the lowest risk and respects the incremental improvement constraint (SMI-002). Options B and C deliver more but increase scope and risk. Option D is safe but delays a strategic initiative.
-- **What the Scrum Master must do:** Place `(X)` next to one option above.
-- **Product Owner action after choice:** Translate the chosen scope into backlog items in `PRODUCT_BACKLOG.md`, link back to SMI-001, and update this escalation status to `Chosen`.
-
-### ESC-002: Conflicting driver status computation between views
-
-- **Status:** Open
-- **Date / run context:** 2026-03-29 — blocking PB-003
-- **Decision needed:** Which computation of driver active/inactive status is authoritative?
-- **Why it matters:** Planners see different driver counts depending on which screen they use (planning grid vs. driver list). This undermines trust in the data and creates confusion during shift planning.
-- **Recommendation from Product Owner Agent:** Option A — employment-based status is more accurate and automatically reflects contract changes without manual toggling.
-
-#### Choose one option
-
-> Place `(X)` next to exactly one option.
-
-- [ ] **Option A — Employment-based status (planning grid logic)** (X)
-  - Use active employment records with date overlap as the single source of truth.
-  - Impact: More accurate, automatic. The `isActive` field on Driver may become redundant. Driver list page needs updating.
-
-- [ ] **Option B — Manual isActive field (driver list logic)**
-  - Use the `isActive` field on the Driver model as the single source of truth.
-  - Impact: Simpler, but requires manual toggling. Risk of stale status when contracts change.
-
-- [ ] **Option C — Combine both**
-  - Require both an active employment record AND `isActive = true`.
-  - Impact: Most restrictive. Two things must be true. Most complex to maintain.
-
-- **Recommended option:** Option A
-- **Trade-offs:** Option A requires updating the driver list page but is the most reliable long-term. Option B is simpler but error-prone. Option C adds complexity without proportional value.
-- **What the Scrum Master must do:** Place `(X)` next to one option above.
-- **Product Owner action after choice:** Unblock PB-003, update scope based on chosen option, assign to Delivery Agent.
+_No open escalations._
 
 ## Chosen / Awaiting Planning
 
-_None yet._
+_None._
 
 ## Closed Escalations
 
-_None yet._
+### ESC-001: Define MVP scope for connectivity hub
+
+- **Status:** Planned
+- **Date / run context:** 2026-03-29 — triggered by SMI-001 in `SCRUM_MASTER_INPUT.md`
+- **Decision needed:** What should the MVP scope be for the connectivity hub initiative?
+- **Chosen option:** Option A — Configuration-first MVP
+  - Scope: Admin screen to configure import sources (CSV only). Field mapping UI. No scheduled execution.
+  - Impact: Planners can import driver/employment data from CSV files. Fast to build, low risk. Foundation for future API support.
+- **Product Owner action:** Created PB-015 (data model + API) and PB-016 (admin screen UI) as phased backlog items. Both are in Planned (Future Cycles) status. SMI-001 updated to Planned.
+
+### ESC-002: Conflicting driver status computation between views
+
+- **Status:** Planned
+- **Date / run context:** 2026-03-29 — blocking PB-003
+- **Decision needed:** Which computation of driver active/inactive status is authoritative?
+- **Chosen option:** Option A — Employment-based status (planning grid logic)
+  - Use active employment records with date overlap as the single source of truth.
+  - Impact: More accurate, automatic. The `isActive` field on Driver may become redundant. Driver list page needs updating.
+- **Product Owner action:** PB-003 unblocked and updated with employment-based scope. Moved to Ready for Next Cycle.
 
 ## Escalation Rules
 
