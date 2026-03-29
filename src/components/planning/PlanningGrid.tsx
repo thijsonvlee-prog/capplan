@@ -104,6 +104,9 @@ export function PlanningGrid() {
   );
 
   const skillMap = useMemo(() => new Map(skills.map((s) => [s.id, s.name])), [skills]);
+  const employerMap = useMemo(() => new Map(employers.map((e) => [e.id, e.description])), [employers]);
+  const departmentMap = useMemo(() => new Map(departments.map((d) => [d.id, d.description])), [departments]);
+  const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.description])), [locations]);
 
   // Local data layer: mirrors API data but allows instant optimistic updates.
   // Resets when the API returns new data (date range / scenario change).
@@ -115,15 +118,15 @@ export function PlanningGrid() {
     const pos = getActiveRecord(driver.functionRecords);
     switch (col) {
       case "employeeNumber": return driver.employeeNumber || "";
-      case "employer": return (emp?.employerId && employers.find((e) => e.id === emp.employerId)?.description) || "";
-      case "department": return (pos?.departmentId && departments.find((d) => d.id === pos.departmentId)?.description) || "";
-      case "location": return (pos?.locationId && locations.find((l) => l.id === pos.locationId)?.description) || "";
+      case "employer": return (emp?.employerId && employerMap.get(emp.employerId)) || "";
+      case "department": return (pos?.departmentId && departmentMap.get(pos.departmentId)) || "";
+      case "location": return (pos?.locationId && locationMap.get(pos.locationId)) || "";
       case "employmentType": return emp?.employmentType ? (EMPLOYMENT_TYPE_LABELS[emp.employmentType as keyof typeof EMPLOYMENT_TYPE_LABELS] || "") : "";
       case "manager": return pos?.manager || "";
       case "licenseTypes": return driver.licenseTypes?.join(", ") || "";
       case "skills": return driver.skillIds?.map((id) => skillMap.get(id) || id).join(", ") || "";
     }
-  }, [skillMap, employers, departments, locations]);
+  }, [skillMap, employerMap, departmentMap, locationMap]);
 
   // Shared helper for optimistic entry updates (used by single + bulk)
   function applyOptimisticEntries(

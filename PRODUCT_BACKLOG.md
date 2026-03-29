@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major redesign work and API validation hardening is complete. ESLint is clean (0 warnings). All API error messages are in Dutch. The active backlog now focuses on: (1) a small performance improvement (Map-based lookups), and (2) the connectivity hub initiative (PB-015/016). The Experience Agent has no outstanding recommendations — UX work is paused until new needs emerge.
+**Current direction:** All major redesign work, API validation hardening, and performance optimizations are complete. ESLint is clean (0 warnings). The connectivity hub data model and API (PB-015) are shipped; the next phase is the admin UI (PB-016, Experience Agent). The active backlog is empty — new work should come from recommendations or the Scrum Master.
 
 ## Status Definitions
 
@@ -27,30 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-060: Replace linear .find() lookups with Map-based lookups in api-helpers.ts
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** `src/lib/api-helpers.ts` uses `.find()` inside loops to resolve employer, location, and department names (`groupDrivers`, `getComputedFields`). With N drivers × M records, this is O(N×M) per lookup array. `PlanningGrid.tsx` has a similar pattern in `resolveColumnValue`. The skill lookup already uses a Map pattern (PlanningGrid line ~106).
-- **Scope notes:** Pre-build `Map<id, name>` from employer/location/department arrays once, then use `.get()` for O(1) lookups. Apply in `api-helpers.ts` and `PlanningGrid.tsx` `resolveColumnValue`. Follow the existing `skillMap` pattern.
-- **Dependencies:** None.
-- **Definition of done:** All `.find()` lookups on employer/location/department arrays in `api-helpers.ts` and `PlanningGrid.tsx` replaced with Map-based lookups. Passes `npm run verify`. No behavior change.
-- **Implementation note:** Small, focused change. Do not refactor beyond the specific lookup patterns.
-- **Source:** DE-REC-032.
-- **Why this matters now:** Active backlog is empty. This is a well-scoped, low-risk performance improvement that follows an existing pattern.
-
-### PB-015: Connectivity hub — data model and import source API
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** First phase of the connectivity hub MVP (ESC-001 decision: CSV-only, field mapping UI, no scheduled execution).
-- **Scope notes:** Design and implement Prisma schema additions for import source configuration. Create API routes for CRUD. No UI, no import execution logic.
-- **Dependencies:** None.
-- **Definition of done:** Prisma migration for import source tables. API routes for CRUD with proper validation and Dutch error messages. Passes `npm run verify`.
-- **Implementation note:** Keep schema minimal: ImportSource (id, name, type=CSV, fieldMappings as JSON, createdAt, updatedAt). Follow existing API route patterns including FK validation, transaction wrapping where needed, and consistent response shapes.
-- **Source:** ESC-001 decision (Option A), SMI-001.
+_No items currently ready._
 
 ---
 
@@ -81,6 +58,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-060: Replace linear .find() lookups with Map-based lookups
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Replaced O(N×M) `.find()` lookups with O(1) Map-based lookups in `api-helpers.ts` (`groupDrivers`, `getComputedFields`) and `PlanningGrid.tsx` (`resolveColumnValue`). Added `buildLookupMaps` helper for pre-building Maps from stamtabel arrays. `DriverList.tsx` now pre-builds maps once before iterating drivers. Follows existing `skillMap` pattern.
+
+### PB-015: Connectivity hub — data model and import source API
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Added `ImportSource` model to Prisma schema (id, name, type=CSV, targetEntity, fieldMappings as JSONB, description, timestamps). Created migration. Implemented full CRUD API at `/api/import-sources` and `/api/import-sources/[id]` with validation (required fields, valid target entities, CSV-only type constraint, object shape for fieldMappings) and Dutch error messages.
 
 ### PB-018: Add foreign key existence checks before relation creation
 - **Completed:** 2026-03-29

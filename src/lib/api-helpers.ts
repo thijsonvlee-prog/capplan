@@ -20,6 +20,10 @@ export function groupDrivers(
     return [{ label: "", drivers }];
   }
 
+  const employerMap = new Map(lookups.employers.map((e) => [e.id, e.description]));
+  const departmentMap = new Map(lookups.departments.map((d) => [d.id, d.description]));
+  const locationMap = new Map(lookups.locations.map((l) => [l.id, l.description]));
+
   const groups = new Map<string, DriverWithEntries[]>();
 
   for (const driver of drivers) {
@@ -30,25 +34,19 @@ export function groupDrivers(
     switch (groupBy) {
       case "employer":
         keys = [
-          (emp?.employerId &&
-            lookups.employers.find((e) => e.id === emp.employerId)
-              ?.description) ||
+          (emp?.employerId && employerMap.get(emp.employerId)) ||
             UNKNOWN_LABEL,
         ];
         break;
       case "department":
         keys = [
-          (pos?.departmentId &&
-            lookups.departments.find((d) => d.id === pos.departmentId)
-              ?.description) ||
+          (pos?.departmentId && departmentMap.get(pos.departmentId)) ||
             UNKNOWN_LABEL,
         ];
         break;
       case "location":
         keys = [
-          (pos?.locationId &&
-            lookups.locations.find((l) => l.id === pos.locationId)
-              ?.description) ||
+          (pos?.locationId && locationMap.get(pos.locationId)) ||
             UNKNOWN_LABEL,
         ];
         break;
@@ -79,6 +77,23 @@ export function groupDrivers(
     .map(([label, drivers]) => ({ label, drivers }));
 }
 
+// Pre-build lookup Maps from stamtabel arrays for O(1) access
+export function buildLookupMaps(lookups: {
+  employers: StamtabelRecord[];
+  departments: StamtabelRecord[];
+  locations: StamtabelRecord[];
+  rosterProfiles?: { id: string; name: string }[];
+}) {
+  return {
+    employerMap: new Map(lookups.employers.map((e) => [e.id, e.description])),
+    departmentMap: new Map(lookups.departments.map((d) => [d.id, d.description])),
+    locationMap: new Map(lookups.locations.map((l) => [l.id, l.description])),
+    rosterProfileMap: lookups.rosterProfiles
+      ? new Map(lookups.rosterProfiles.map((p) => [p.id, p.name]))
+      : new Map<string, string>(),
+  };
+}
+
 // Get computed fields from driver sub-records (client-side, using pre-fetched lookups)
 export function getComputedFields(
   driver: any,
@@ -87,17 +102,17 @@ export function getComputedFields(
     departments: StamtabelRecord[];
     locations: StamtabelRecord[];
     rosterProfiles: { id: string; name: string }[];
-  }
+  },
+  maps?: ReturnType<typeof buildLookupMaps>
 ): DriverComputedFields {
+  const m = maps || buildLookupMaps(lookups);
   const emp: any = getActiveRecord(driver.employmentRecords);
   const pos: any = getActiveRecord(driver.functionRecords);
   const ros: any = getActiveRecord(driver.rosterAssignments);
 
   return {
     currentEmployer:
-      (emp?.employerId &&
-        lookups.employers.find((e) => e.id === emp.employerId)?.description) ||
-      "",
+      (emp?.employerId && m.employerMap.get(emp.employerId)) || "",
     currentEmploymentType: emp?.employmentType
       ? EMPLOYMENT_TYPE_LABELS[
           emp.employmentType as keyof typeof EMPLOYMENT_TYPE_LABELS
@@ -105,20 +120,12 @@ export function getComputedFields(
       : "",
     currentPosition: pos?.position || "",
     currentDepartment:
-      (pos?.departmentId &&
-        lookups.departments.find((d) => d.id === pos.departmentId)
-          ?.description) ||
-      "",
+      (pos?.departmentId && m.departmentMap.get(pos.departmentId)) || "",
     currentLocation:
-      (pos?.locationId &&
-        lookups.locations.find((l) => l.id === pos.locationId)?.description) ||
-      "",
+      (pos?.locationId && m.locationMap.get(pos.locationId)) || "",
     currentManager: pos?.manager || "",
     currentRosterProfile:
-      (ros?.rosterProfileId &&
-        lookups.rosterProfiles.find((p) => p.id === ros.rosterProfileId)
-          ?.name) ||
-      "",
+      (ros?.rosterProfileId && m.rosterProfileMap.get(ros.rosterProfileId)) || "",
     currentWeeklyHours: ros?.weeklyHours,
   };
 }

@@ -8,6 +8,17 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 _No unreleased changes._
 
+### 2026-03-29 — Prestatieoptimalisatie en connectiviteitshub datamodel
+
+#### Prestaties
+
+- **Map-gebaseerde lookups:** Werkgever-, afdeling- en standplaatslookups in het planningsrooster, chauffeurslijst en groeperingsfuncties zijn geoptimaliseerd van O(N×M) naar O(1) per lookup via vooraf opgebouwde Maps.
+
+#### Connectiviteitshub
+
+- **Importbronnen datamodel:** Nieuw `ImportSource` model toegevoegd aan de database voor het configureren van CSV-importbronnen met veldkoppelingen.
+- **Importbronnen API:** Volledige CRUD API (`/api/import-sources`) met validatie van verplichte velden, doelentiteiten en veldkoppelingsformaat. Foutmeldingen in het Nederlands.
+
 ## Release History
 
 ### 2026-03-29 — Visueel herontwerp, API-hardening en kwaliteitsslag

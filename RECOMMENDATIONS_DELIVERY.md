@@ -6,11 +6,24 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-018 (FK existence checks) is now complete. All relation-creating API routes validate referenced foreign keys before insert, returning clear 400 errors in Dutch. Combined with the previously completed Dutch error messages (PB-055), transaction wrapping (PB-056), and date validation (PB-053), the API validation layer is now comprehensive.
+PB-060 (Map-based lookups) and PB-015 (connectivity hub data model + API) are now complete. All lookup patterns consistently use O(1) Maps. The ImportSource CRUD API is live with full validation and Dutch error messages, unblocking PB-016 (admin UI).
 
-The codebase is in good shape. Remaining improvement opportunities are lower priority: (1) centralizing magic numbers, (2) capacity aggregation index, (3) chart color extraction. The connectivity hub (PB-015/016) is the next significant feature work.
+The codebase is in strong shape. A fresh scan confirms: no N+1 patterns, no hardcoded colors in components, comprehensive error handling across all routes, zero ESLint warnings. The remaining improvement opportunities are maintenance-level items.
 
 ## Recommended Next Improvements
+
+### DE-REC-033: DayCell leaveType lookup optimization
+
+- **Title:** Replace `.find()` lookup in DayCell with Map-based lookup
+- **Problem:** `src/components/planning/DayCell.tsx:68` uses `leaveTypes.find((l) => l.id === entry.leaveTypeId)` inside render. DayCell is rendered once per driver×date, so this runs hundreds of times with the same leaveTypes array.
+- **Proposed improvement:** Pass a pre-built `leaveTypeMap: Map<string, string>` as a prop instead of the full `leaveTypes` array, following the same pattern just applied in PlanningGrid.
+- **Expected product/technical value:** Consistent pattern across all lookups. Marginal performance gain on large grids.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Completes the Map-based lookup pattern across the entire codebase.
 
 ### DE-REC-030: Extract hardcoded API limits to constants
 
@@ -51,19 +64,6 @@ The codebase is in good shape. Remaining improvement opportunities are lower pri
 - **Suggested owner:** Delivery Agent
 - **Why now:** PB-030 exists. Quick compliance fix.
 
-### DE-REC-032: Replace linear .find() lookups with Map-based lookups in api-helpers.ts
-
-- **Title:** Pre-build Maps for employer/location/department lookups in groupDrivers and getComputedFields
-- **Problem:** `src/lib/api-helpers.ts` uses `.find()` inside loops to resolve employer, location, and department names. With N drivers × M records, this is O(N×M) per lookup array. `PlanningGrid.tsx` has a similar pattern in `resolveColumnValue` for the same lookup arrays.
-- **Proposed improvement:** Pre-build `Map<id, name>` from employer/location/department arrays once, then use `.get()` for O(1) lookups. The skill lookup already uses this pattern (line 106 in PlanningGrid).
-- **Expected product/technical value:** Faster rendering for large driver lists. Consistent with existing skillMap pattern.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Straightforward performance improvement. Follows existing pattern. Benefits users with larger datasets.
-
 ### DE-REC-031: Add PerformanceEvent table cleanup
 
 - **Title:** Call `cleanupOldEvents()` or add TTL-based cleanup for PerformanceEvent
@@ -88,17 +88,17 @@ The codebase is in good shape. Remaining improvement opportunities are lower pri
 - **Migrate to a different ORM:** Prisma is well-integrated. Migration cost far outweighs any benefit.
 - **Add pagination to all list endpoints:** Current data volumes don't justify the complexity.
 - **Add authentication/authorization:** Known gap in CLAUDE.md, explicitly out of scope unless tasked.
-- **Refactor PlanningGrid.tsx broadly:** The component is complex but stable. Targeted fixes are preferred over a full rewrite.
+- **Refactor PlanningGrid.tsx broadly:** The component is complex (~677 lines) but stable. Targeted fixes are preferred over a full rewrite.
 - **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer.
 - **Add unique constraints on Driver/Scenario names:** Requires a product decision on whether duplicates should be allowed.
 - **Add enum validation for status fields:** Frontend already constrains values. Low real-world risk.
 - **Extend withPerfLogging to all routes:** Inconsistent wrapping exists but the perf system itself has unused analysis functions. Fix the analysis layer before expanding collection.
-- **Remove ExternalSourceMetadata types:** Preparatory types for the connectivity hub (PB-015). Will be needed when that feature ships.
 - **Replace `any` types broadly:** Low impact. The types are internal and well-contained. Fix opportunistically.
 - **Add settings code length validation to PUT route:** Minor inconsistency — POST validates code length <= 100 but PUT does not. Low impact since codes are typically short.
 - **Add duplicate employeeNumber check on driver creation:** Requires a product decision on whether duplicate employee numbers should be allowed.
 - **Standardize `validateRequired` usage in drivers POST:** The drivers POST route uses inline validation instead of `validateRequired()`. Functionally equivalent, not worth a dedicated fix.
 - **Translate console.error messages:** Console messages are developer/server-facing logging, not user-facing. They should remain in English for debugging clarity. CLAUDE.md's Dutch requirement applies to user-facing text only.
+- **Split DriverForm.tsx (~475 lines):** Large but well-structured with tab-based organization. Would add complexity without clear payoff at current size.
 
 ## Recommendation Rules
 

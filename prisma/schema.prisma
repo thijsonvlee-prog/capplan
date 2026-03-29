@@ -238,6 +238,21 @@ model RosterProfileDay {
   @@index([rosterProfileId])
 }
 
+// === Connectivity Hub ===
+
+model ImportSource {
+  id            String   @id @default(uuid())
+  name          String
+  type          String   @default("CSV") // CSV (extensible to other types later)
+  targetEntity  String   // Which entity to import: "drivers", "employers", "departments", "locations"
+  fieldMappings Json     @db.JsonB // { sourceColumn: targetField } mapping
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([type])
+}
+
 // === Performance Observability ===
 
 model PerformanceEvent {

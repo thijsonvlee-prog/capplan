@@ -6,7 +6,7 @@ import { DriverForm } from "./DriverForm";
 import type { Driver } from "@/domain/types";
 import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
-import { getComputedFields } from "@/lib/api-helpers";
+import { getComputedFields, buildLookupMaps } from "@/lib/api-helpers";
 import { showToast } from "@/components/ui/Toast";
 
 type ViewMode = "list" | "create" | "edit";
@@ -52,6 +52,7 @@ export function DriverList() {
   }
 
   const lookups = { employers, departments, locations, rosterProfiles };
+  const lookupMaps = buildLookupMaps(lookups);
   const isFormOpen = viewMode === "create" || viewMode === "edit";
 
   return (
@@ -154,7 +155,7 @@ export function DriverList() {
             </thead>
             <tbody>
               {drivers.map((d, idx) => {
-                const computed = getComputedFields(d, lookups);
+                const computed = getComputedFields(d, lookups, lookupMaps);
                 return (
                   <tr
                     key={d.id}
