@@ -577,7 +577,7 @@ function GroupRows({
                 })()}
               </div>
               <button
-                onClick={() => onAssignRoster(driver.id, `${driver.firstName} ${driver.lastName}`)}
+                onClick={() => onAssignRoster(driver.id, `${driver.lastName}, ${driver.firstName}`)}
                 className="btn-icon shrink-0"
                 title="Roosterprofiel toewijzen"
                 aria-label="Roosterprofiel toewijzen"

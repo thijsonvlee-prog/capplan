@@ -40,31 +40,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Source:** DE-REC-008.
 - **Why this matters now:** All error messages are now Dutch, and date validation is complete. FK existence checks are the next logical validation gap. Prevents confusing 500 errors for users.
 
-### PB-058: RosterAssigner driver name format consistency
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** The RosterAssigner modal title displays the driver name as "Voornaam Achternaam" while the drivers table and planning grid use "Achternaam, Voornaam". Users who open the modal from the planning grid see an inconsistent name format.
-- **Scope notes:** Format the modal title name to match the "Achternaam, Voornaam" convention used elsewhere. The name is passed as a prop from the parent component — either pass the pre-formatted name or format it in the modal.
-- **Dependencies:** None.
-- **Definition of done:** RosterAssigner modal title shows name as "Achternaam, Voornaam". Passes `npm run verify`.
-- **Implementation note:** Small change — likely just reformatting the prop display in the modal header.
-- **Source:** EX-REC-025.
-- **Why this matters now:** Tiny effort, removes a visible inconsistency across surfaces that share the same driver context.
-
-### PB-059: Capacity page control bar grouping
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** The capacity page toolbar (period selector, zoom, compare buttons) is a flat row of controls with weak visual grouping. The compare scenario buttons are small pill-style toggles that don't feel strongly grouped. This is functional but below the DESIGN.md standard for toolbar composition (section 7.2).
-- **Scope notes:** Group the period/zoom controls into a contained toolbar section. Separate the compare controls into a distinct group with a subtle background or framing. Ensure the primary content area (chart + table) feels clearly separated from controls.
-- **Dependencies:** None.
-- **Definition of done:** Capacity page toolbar has clear visual grouping between control sections. Passes `npm run verify`.
-- **Implementation note:** Use existing design tokens (surface/border tokens, card patterns). Do not introduce new CSS classes unless necessary.
-- **Source:** EX-REC-026.
-- **Why this matters now:** The capacity page table is now visually aligned. The control bar is the remaining area that feels generic. Small effort.
+_No items ready for next cycle._
 
 ---
 
@@ -107,6 +83,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-058: RosterAssigner driver name format consistency
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Changed the name format passed to RosterAssigner from "Voornaam Achternaam" to "Achternaam, Voornaam", matching the convention used in the drivers table and planning grid.
+
+### PB-059: Capacity page control bar grouping
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Grouped period/zoom controls and compare controls into contained toolbar sections with `bg-surface-tertiary` backgrounds, tonal dividers, and structured spacing. Compare buttons use elevated pill style with shadow.
 
 ### PB-055: Translate remaining English error messages across all API routes
 - **Completed:** 2026-03-29

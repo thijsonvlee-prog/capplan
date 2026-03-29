@@ -10,6 +10,13 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 (nacht 7) — Naamformaat en werkbalkgroeperingen
+
+#### UX / design verbeteringen
+
+- Het roosterprofieltoewijzingsvenster toont nu de chauffeurnaam als "Achternaam, Voornaam", consistent met het planningsrooster en de chauffeurstabel.
+- De werkbalk op de capaciteitspagina groepeert nu periode-/zoomknoppen en vergelijkingsknoppen in duidelijk afgebakende secties met achtergrondkleur en scheidingslijnen.
+
 ### 2026-03-29 (nacht 6) — API-taalafstemming en transactieveiligheid
 
 #### Taalafstemming

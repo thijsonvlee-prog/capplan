@@ -107,28 +107,32 @@ export default function CapacityPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <div className="flex items-center gap-1.5 bg-surface-tertiary rounded-lg px-2 py-1.5">
           <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
+          <div className="w-px h-5 bg-border-subtle mx-1" />
           <ZoomSelector value={aggregation} onChange={setAggregation} />
         </div>
 
         {scenarios.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-text-tertiary">Vergelijk:</span>
-            {scenarios.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => toggleCompare(s.id)}
-                className={`px-2 py-1 text-xs rounded border transition-colors ${
-                  compareIds.includes(s.id)
-                    ? "bg-warning-50 text-warning-700 border-warning-200"
-                    : "bg-surface-primary text-text-secondary border-border-default hover:bg-surface-secondary"
-                }`}
-              >
-                {s.name}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 bg-surface-tertiary rounded-lg px-3 py-1.5">
+            <span className="text-caption text-text-tertiary font-medium uppercase tracking-wide">Vergelijk</span>
+            <div className="w-px h-4 bg-border-subtle" />
+            <div className="flex items-center gap-1.5">
+              {scenarios.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => toggleCompare(s.id)}
+                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                    compareIds.includes(s.id)
+                      ? "bg-warning-50 text-warning-700 shadow-sm"
+                      : "bg-surface-primary text-text-secondary hover:bg-surface-secondary shadow-sm"
+                  }`}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
