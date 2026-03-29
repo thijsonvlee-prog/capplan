@@ -91,3 +91,9 @@ _No deferred items._
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
 - Backlog IDs are sequential and never reused.
+- Do not let the active backlog grow indefinitely.
+- Completed items should be moved out of active execution sections.
+- Stale or superseded items should be removed or deferred.
+- Overlapping items should be merged.
+- Vague items must be rewritten or split before they are ready for execution.
+- The backlog should be rewritten into a clean current state, not endlessly appended to.
