@@ -23,6 +23,8 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+Er is een probleem met het planningsoverzicht, daar staan nu geen chaufeurs meer zichtbaar terwijl deze chauffeurs wel bestaan in het chauffeursoverzicht. los dat op!
+
 ### SMI-001: Connectivity hub for external data sources
 
 - **Type:** Initiative
