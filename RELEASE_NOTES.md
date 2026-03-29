@@ -6,12 +6,21 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
+_No unreleased changes._
+
+## Release History
+
+### 2026-03-29 — Typografie, koptekst en prestatieoptimalisatie
+
+#### UX / design verbeteringen
+
 - **Typografie:** Manrope lettertype toegevoegd voor paginatitels. Titels hebben nu een sterker visueel gewicht en duidelijkere hiërarchie.
 - **Koptekstbalk:** Rand onder de koptekst verwijderd; scheiding gebeurt nu via kleurverschil tussen oppervlakken. Overtollig "CapPlan" label verwijderd.
 - **Capaciteitspagina:** Actieve scenariotoggle gebruikt nu merkkleuren in plaats van waarschuwingskleuren.
-- **Prestaties:** Verloftype-lookup in planningsroostercellen geoptimaliseerd van lineair zoeken naar O(1) Map-lookup, consistent met het patroon in de rest van de applicatie.
 
-## Release History
+#### Prestaties
+
+- **Verloftype-lookup:** Verloftype-lookup in planningsroostercellen geoptimaliseerd van lineair zoeken naar O(1) Map-lookup, consistent met het patroon in de rest van de applicatie.
 
 ### 2026-03-29 — Prestatieoptimalisatie, connectiviteitshub en API-hardening
 

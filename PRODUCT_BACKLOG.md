@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major redesign work, API validation hardening, and performance optimizations are complete. ESLint is clean (0 warnings). Map-based lookup pattern is now consistent across the entire codebase. The connectivity hub data model and API (PB-015) are shipped. No active backlog items remain for the current cycle. PB-016 (connectivity hub admin UI) remains planned for a future cycle.
+**Current direction:** The codebase is in strong shape — 0 ESLint warnings, Map-based lookups consistent across the codebase, all API routes hardened with validation and Dutch error messages. Design alignment with DESIGN.md is high. The next cycle focuses on the last hot-path render optimization, planning grid toolbar polish, and a small design token compliance fix.
 
 ## Status Definitions
 
@@ -27,7 +27,44 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-066: PlanningGrid per-cell entry lookup optimization
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** `PlanningGrid.tsx:613` uses `driver.planningEntries.find((e) => e.date === date)` inside the per-cell render loop. With 50 drivers × 90 days = 4,500 `.find()` calls. This is the last hot-path `.find()` in the codebase.
+- **Scope notes:** Pre-build a `Map<string, PlanningEntry>` keyed by date for each driver's entries (via `useMemo` or data transform), then use `.get(date)` in the render loop. Same proven pattern as PB-060/PB-065.
+- **Dependencies:** None.
+- **Definition of done:** Per-cell entry lookup uses Map-based O(1) lookup. No `.find()` remains in hot render paths. Passes `npm run verify`.
+- **Implementation note:** Small change. Follow the established `buildLookupMaps` / `useMemo` pattern.
+- **Why this matters now:** Last hot-path `.find()` in the codebase. Proven pattern, small effort, measurable render improvement.
+- **Source:** DE-REC-034.
+
+### PB-067: Planning grid toolbar second row — tighter grouping
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The planning grid's second toolbar row (search, grouping, column picker, totals toggle, status legend) has loosely arranged controls without clear visual grouping. The first toolbar row already uses `.control-group` — extending this pattern to the second row creates consistency.
+- **Scope notes:** Wrap search + grouping in a `.control-group`. Wrap column picker + totals toggle in a separate `.control-group`. Give the status legend its own visual zone. Follow the pattern from the first toolbar row.
+- **Dependencies:** None. Must follow PlanningGrid.tsx care rules from CLAUDE.md.
+- **Definition of done:** Second toolbar row uses grouped controls matching the first row's pattern. Status legend has its own visual zone. Passes `npm run verify`. Visually consistent with first toolbar row.
+- **Implementation note:** PlanningGrid.tsx is complex (~680 lines). Changes must be careful and targeted. Verify against typecheck, lint, and visual behavior.
+- **Why this matters now:** Extends an existing good pattern to the core planning screen's second row. High-frequency screen.
+- **Source:** EX-REC-037.
+
+### PB-068: ScenarioSelector hardcoded Tailwind color fix
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** `ScenarioSelector.tsx:73` uses `bg-amber-100 text-amber-700` for the "Concept" badge. This violates CLAUDE.md's rule against hardcoded Tailwind color classes.
+- **Scope notes:** Replace with `bg-warning-50 text-warning-700` or appropriate design token equivalents. Single line change.
+- **Dependencies:** None.
+- **Definition of done:** No hardcoded Tailwind color classes in ScenarioSelector.tsx. Uses design tokens. Passes `npm run verify`.
+- **Implementation note:** Tiny fix. Can be done alongside PB-067.
+- **Why this matters now:** Quick CLAUDE.md compliance fix.
+- **Source:** DE-REC-035.
 
 ---
 
@@ -62,77 +99,22 @@ _No items currently in progress._
 ### PB-065: Replace DayCell leaveType .find() with Map-based lookup
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Replaced `leaveTypes.find()` in DayCell render path with `leaveTypeMap.get()` using a pre-built `Map<string, string>`. Map is constructed via `useMemo` in PlanningGrid and passed through GroupRows. Completes the Map-based lookup pattern across the entire codebase.
+- **Summary:** Replaced `leaveTypes.find()` in DayCell render path with `leaveTypeMap.get()` using a pre-built `Map<string, string>`. Completes the Map-based lookup pattern across the entire codebase.
 
 ### PB-062: Fix capacity page scenario toggle color semantics
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Changed active scenario toggle from `warning-50`/`warning-700` (undefined tokens, wrong semantics) to `brand-50`/`brand-700`. Active selection now uses correct brand color.
+- **Summary:** Changed active scenario toggle from undefined warning tokens to `brand-50`/`brand-700`.
 
 ### PB-063: Add Manrope typeface for display and headline levels
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Added Manrope via `next/font/google` with `--font-display` CSS variable. Applied to `.text-page-title` with weight 700 and tighter letter-spacing. Typographic hierarchy is now visibly stronger on every page.
+- **Summary:** Added Manrope via `next/font/google`. Applied to `.text-page-title` with weight 700 and tighter letter-spacing.
 
 ### PB-064: Strengthen header component composition
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Removed `border-b` from header (No-Line Rule alignment). Removed redundant "CapPlan" label. Header now uses tonal surface contrast for separation.
-
-### PB-060: Replace linear .find() lookups with Map-based lookups
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Replaced O(N×M) `.find()` lookups with O(1) Map-based lookups in `api-helpers.ts`, `PlanningGrid.tsx`, and `DriverList.tsx`. Added `buildLookupMaps` helper.
-
-### PB-015: Connectivity hub — data model and import source API
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Added `ImportSource` model with full CRUD API at `/api/import-sources`. Validation and Dutch error messages.
-
-### PB-018: Add foreign key existence checks before relation creation
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** FK existence validation on 10 routes. Invalid references return 400 with Dutch messages.
-
-### PB-058: RosterAssigner driver name format consistency
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Name format changed to "Achternaam, Voornaam" in RosterAssigner.
-
-### PB-059: Capacity page control bar grouping
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Period/zoom and compare controls grouped into contained toolbar sections.
-
-### PB-055: Translate remaining English error messages across all API routes
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** ~70 English API error messages translated to Dutch across 24 route files.
-
-### PB-056: Wrap find-then-update PUT routes in transactions
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** `prisma.$transaction` applied to employment, functions, and roster assignment PUT routes.
-
-### PB-047: Capacity page status badge consistency
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Status badges replaced with `status-chip-compact` + `status-dot` pattern.
-
-### PB-040: RosterAssigner modal table styling
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Tonal row separators, alternating backgrounds, card surface wrapping.
-
-### PB-057: RosterProfileEditor status dot indicators
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Added `status-dot` indicators to roster profile editor grid cells.
-
-### PB-053: Add date validation to POST sub-record routes
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** `endDate >= startDate` validation on employment, functions, and roster assignment POST routes.
+- **Summary:** Removed `border-b` from header. Removed redundant "CapPlan" label. Tonal surface contrast for separation.
 
 ---
 
@@ -160,8 +142,31 @@ _No items currently in progress._
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** `cleanupOldEvents()` in `perf.ts` is defined but never called. Table grows unbounded, but traffic is low. Low urgency.
-- **Scope notes:** Either call `cleanupOldEvents()` at the end of `withPerfLogging`, add a periodic cleanup, or remove the perf system if unused.
 - **Source:** DE-REC-031.
+
+### EX-REC-036: Drivers table — reduce generic admin feel
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** The drivers page is functional and the alternating backgrounds are a minor visual issue. Defer until higher-priority UX work is complete.
+- **Source:** EX-REC-036.
+
+### EX-REC-038: Extend Manrope to section titles and modal headers
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Low-risk follow-up to PB-063 but needs visual evaluation before broad application. Defer until next UX cycle.
+- **Source:** EX-REC-038.
+
+### EX-REC-039: Header contextual enhancements
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Good idea but requires per-page context data plumbing. Defer until the current toolbar grouping work is done and the header base is stable.
+- **Source:** EX-REC-039.
 
 ---
 
