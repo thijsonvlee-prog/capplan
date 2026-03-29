@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All three planning grid redesign phases and DayCell popup redesign are complete. Styled date input wrapper is deployed. Focus now shifts to: (1) fixing the planning upsert race condition (DE-REC-016), (2) settings page layout redesign (PB-041) as the next major UX deliverable, and (3) small quality/safety improvements to API routes. The connectivity hub (PB-015/016) remains planned for a future cycle.
+**Current direction:** All three planning grid redesign phases and DayCell popup redesign are complete. Styled date input wrapper is deployed. Settings page (PB-041) now uses tab-based navigation with stronger hierarchy. Input styling standardized (PB-010). Focus shifts to: (1) fixing the planning upsert race condition (PB-043), (2) small quality/safety improvements to API routes, and (3) remaining design gaps (RosterAssigner modal PB-040, capacity page badges). The connectivity hub (PB-015/016) remains planned for a future cycle.
 
 ## Status Definitions
 
@@ -44,12 +44,10 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
+- **Status:** Completed
+- **Completed:** 2026-03-29
 - **Problem / opportunity:** The settings page (stamtabellen) is functional but uses a generic list-of-cards layout without strong grouping, hierarchy, or visual rhythm. It reads as a standard admin panel rather than a designed product screen.
-- **Why this matters now:** With the planning grid fully at DESIGN.md standard, the settings page is the most visible screen still at generic admin quality. Aligns with SMI-004 direction.
-- **Scope notes:** Group related settings categories visually. Strengthen section headers. Add subtle surface differentiation. Consider sidebar-navigation or tabbed approach for category navigation. Keep changes within existing component patterns.
-- **Dependencies:** None.
-- **Definition of done:** Settings page has clear category grouping, improved visual hierarchy, and feels designed rather than generic. Passes `npm run verify`.
+- **Implementation note:** Replaced flat vertical scroll layout with tab-based navigation (Stamgegevens / Competenties / Roosters). Each tab has a section header with title and contextual description. Stamgegevens tab shows a count badge. Layout widened from `max-w-2xl` to `max-w-3xl`. New CSS classes added to `globals.css` for tabs, tab badges, and section intros. Page subtitle made more concise. Also fixed PB-010 in the same pass.
 - **Source:** EX-REC-020.
 
 ### PB-044: Add date range guard to GET /api/planning
@@ -189,8 +187,9 @@ _No items currently in progress._
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** May be addressed naturally as part of PB-041 (settings page layout).
+- **Status:** Completed
+- **Completed:** 2026-03-29
+- **Implementation note:** Addressed as part of PB-041. StamtabelManager add-form inputs now use the `input-field` CSS class and the add button uses `btn-primary`, matching SkillManager and RosterProfileEditor patterns.
 - **Source:** EX-REC-003.
 
 ### PB-009: Add covering index for capacity aggregation query

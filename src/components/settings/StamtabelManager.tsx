@@ -62,16 +62,16 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
           value={newCode}
           onChange={(e) => setNewCode(e.target.value)}
           placeholder="Code *"
-          className="w-24 px-3 py-2 border border-border-default rounded-lg text-sm bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
+          className="input-field w-24"
         />
         <input
           type="text"
           value={newDesc}
           onChange={(e) => setNewDesc(e.target.value)}
           placeholder="Omschrijving *"
-          className="flex-1 px-3 py-2 border border-border-default rounded-lg text-sm bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
+          className="input-field flex-1"
         />
-        <button type="submit" className="flex items-center gap-1 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium shadow-xs transition-colors">
+        <button type="submit" className="btn-primary">
           <Plus className="w-4 h-4" />
           Toevoegen
         </button>

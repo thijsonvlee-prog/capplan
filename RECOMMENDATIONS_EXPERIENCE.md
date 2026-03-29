@@ -2,35 +2,22 @@
 
 ## Summary
 
-PB-039 (styled date input wrapper) and PB-035 (planning grid Phase 3 cell rendering) are now completed. The planning grid redesign (ESC-003) is fully done across all three phases: surface layering, row composition, and cell rendering.
+PB-041 (settings page layout composition) and PB-010 (standardize input field styling) are now completed. The settings page uses tab-based navigation with stronger section hierarchy, contextual descriptions, and consistent input styling.
 
 **Design alignment with DESIGN.md:**
-- Planning grid now uses tonal surface layering, strong row identity, and refined status chips with dot indicators (sections 4.1, 5.2, 7.4, 7.5).
-- DayCell popup functions as a contextual menu near the click target with color indicators and check marks (section 2.2).
-- Date inputs across all forms now use a styled wrapper with calendar icon, consistent with the design token system (section 7.7).
-- Empty cells use a subtle midpoint dot instead of a visible dash, reducing visual noise in the grid.
-- Status chips use a dot + letter pattern in compact mode for fast scanning at any density.
+- Planning grid fully aligned across all three phases: surface layering, row composition, cell rendering (sections 4.1, 5.2, 7.4, 7.5).
+- DayCell popup functions as a contextual menu near the click target (section 2.2).
+- Date inputs across all forms use a styled wrapper with calendar icon (section 7.7).
+- Settings page now uses tab navigation with section framing, moving it from generic admin layout toward composed product screen (sections 2.5, 7.1, 7.2).
+- StamtabelManager inputs now use the shared `input-field` class, matching all other form controls (section 7.7).
 
 **Where design quality is still below target:**
-- Settings page (stamtabellen) uses generic list-of-cards layout without strong grouping or hierarchy — PB-041 planned.
-- RosterAssigner modal table still uses dense cell borders (PB-040).
-- StamtabelManager inputs still use inline Tailwind classes instead of `input-field` class (PB-010, deferred).
-- Capacity page table uses basic `px-2 py-0.5 rounded` status badges — not yet aligned with the new chip pattern.
+- RosterAssigner modal table still uses dense cell borders (PB-040 planned).
+- Capacity page status badges use basic inline styles, not the new chip pattern.
 - RosterProfileEditor grid uses bare STATUS_COLORS without dot indicators — functional but inconsistent with the planning grid.
+- Sidebar and drivers page are functional but have not been evaluated against DESIGN.md section 7.8 and section 7.1 respectively.
 
 ## Recommended Next Improvements
-
-### EX-REC-020: Settings page layout composition
-
-- **Title:** Elevate settings page beyond generic admin layout
-- **Problem:** The settings page (stamtabellen) is functional but uses a generic list-of-cards layout without strong grouping, hierarchy, or visual rhythm. With the planning grid now at DESIGN.md standard, the settings page is the most visible screen still at generic admin quality.
-- **Proposed improvement:** Group related settings categories visually. Strengthen section headers. Add subtle surface differentiation between categories. Consider whether a sidebar-navigation or tabbed approach would improve the settings experience.
-- **Expected user value:** Settings feel more organized and less like a technical admin interface. Easier navigation between categories.
-- **Priority:** P3 Medium
-- **Effort:** Medium
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** The planning grid now fully meets DESIGN.md standards. The settings page is the next largest gap in perceived product quality.
 
 ### EX-REC-021: Capacity page status badge consistency
 
@@ -47,26 +34,26 @@ PB-039 (styled date input wrapper) and PB-035 (planning grid Phase 3 cell render
 ### EX-REC-018: Improve RosterAssigner modal table styling
 
 - **Title:** Apply surface layering to RosterAssigner roster history table
-- **Problem:** The RosterAssigner modal contains a table with dense `border border-border-default` on every cell. This conflicts with DESIGN.md section 4.1 and is visually inconsistent with the now-updated planning grid.
+- **Problem:** The RosterAssigner modal contains a table with dense `border border-border-default` on every cell. This conflicts with DESIGN.md section 4.1 and is visually inconsistent with the updated planning grid.
 - **Proposed improvement:** Apply the same tonal separator approach used in the planning grid: remove cell borders, use subtle row separators, keep header bottom edge.
 - **Expected user value:** Visual consistency between the planning grid and modal tables. More refined modal experience.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Low effort consistency fix. Can be done opportunistically. Not urgent since the table is inside a modal.
+- **Why now:** Low effort consistency fix. Can be done opportunistically. Already planned as PB-040.
 
-### EX-REC-003: Standardize input field styling in StamtabelManager
+### EX-REC-022: Drivers page header and layout composition
 
-- **Title:** Use CSS component classes consistently in StamtabelManager inputs
-- **Problem:** The StamtabelManager form inputs use inline Tailwind classes for styling, while all other components use the `input-field` CSS class. Minor inconsistency in border radius, focus style, and sizing.
-- **Proposed improvement:** Migrate StamtabelManager form inputs to use the `input-field` class.
-- **Expected user value:** Visually consistent input fields across the entire settings page and application.
-- **Priority:** P4 Low
-- **Effort:** Small (two class replacements in one file)
+- **Title:** Evaluate and improve drivers page composition
+- **Problem:** The drivers page has not been reviewed against DESIGN.md standards. It likely follows the same pattern as the pre-redesign settings page — functional but potentially generic. As more screens are elevated, inconsistency between redesigned and un-redesigned screens becomes more visible.
+- **Proposed improvement:** Review the drivers page header, filter grouping, table layout, and overall composition against DESIGN.md sections 2.5, 7.1, 7.2. Apply tab or surface grouping patterns if needed.
+- **Expected user value:** Consistent product quality across all main screens. Users navigating between planning, settings, and drivers should feel the same design standard.
+- **Priority:** P3 Medium
+- **Effort:** Medium
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Simple cleanup. Can be done opportunistically. Already backlogged as PB-010.
+- **Why now:** With planning grid and settings page elevated, the drivers page is the next most visible screen to users. Consistency gap becomes more noticeable.
 
 ## Risks / Watch-outs
 
@@ -75,6 +62,7 @@ PB-039 (styled date input wrapper) and PB-035 (planning grid Phase 3 cell render
 - **DayCell popup max height estimate:** The popup positioning uses a `POPUP_MAX_HEIGHT` constant of 280px. If leave types grow significantly, the actual popup may exceed this and get clipped at viewport edges.
 - **Last-name-first format:** Driver names now display as "Achternaam, Voornaam" in the grid but "Voornaam Achternaam" in the roster assigner title. Consider standardizing across all views.
 - **Date input showPicker compatibility:** The `showPicker()` API used by DateInput's calendar button is supported in modern browsers but may not work in older browsers. The native click-through on the picker indicator provides a fallback.
+- **Tab state not persisted:** The settings page tab selection resets on navigation away and back. This is standard behavior but could be slightly jarring if users frequently switch between settings and other pages mid-configuration.
 
 ## Items Intentionally Not Recommended
 
@@ -85,6 +73,7 @@ PB-039 (styled date input wrapper) and PB-035 (planning grid Phase 3 cell render
 - **Placeholder-to-label migration in settings forms:** Would improve accessibility but requires significant layout adjustments. Monitor for user feedback.
 - **Full sidebar redesign:** The sidebar works and is calm. Not a priority over core screen improvements.
 - **Custom calendar popup replacement:** ESC-004 decided Option B (styled wrapper). The native calendar popup is functional and maintained by browsers. Custom calendar would add significant complexity for marginal quality improvement.
+- **Settings tab URL persistence:** Could persist active tab via URL hash or query param. Low impact — settings is a low-frequency page.
 
 ## Recommendation Rules
 

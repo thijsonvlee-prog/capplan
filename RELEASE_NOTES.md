@@ -6,7 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_No unreleased changes._
+### Instellingenpagina herontwerp
+
+#### UX / design verbeteringen
+
+- De instellingenpagina gebruikt nu tabnavigatie (Stamgegevens, Competenties, Roosters) in plaats van een lange verticale lijst. Elke tab toont een duidelijke sectietitel met contextbeschrijving. Het tabblad Stamgegevens toont een totaalbadge.
+- Invoervelden in stamtabelbeheer gebruiken nu dezelfde gestylede `input-field` klasse als de rest van de applicatie, voor consistente focus- en randstijlen.
 
 ## Release History
 
