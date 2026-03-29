@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformDriver } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformDriver, transformPlanningEntry } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning/for-range",
@@ -57,21 +57,12 @@ export const GET = withPerfLogging(
       });
 
       // Group entries by driverId
-      const entriesByDriver: Record<string, any[]> = {};
+      const entriesByDriver: Record<string, ReturnType<typeof transformPlanningEntry>[]> = {};
       for (const entry of entries) {
         if (!entriesByDriver[entry.driverId]) {
           entriesByDriver[entry.driverId] = [];
         }
-        entriesByDriver[entry.driverId].push({
-          id: entry.id,
-          driverId: entry.driverId,
-          date: entry.date,
-          status: entry.status,
-          leaveTypeId: entry.leaveTypeId || undefined,
-          sickPercentage: entry.sickPercentage ?? undefined,
-          notes: entry.notes || undefined,
-          scenarioId: entry.scenarioId || undefined,
-        });
+        entriesByDriver[entry.driverId].push(transformPlanningEntry(entry));
       }
 
       // Join drivers with their planning entries

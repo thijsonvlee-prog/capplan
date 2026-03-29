@@ -1,3 +1,4 @@
+import { MONTH_SHORT } from "@/domain/constants";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
@@ -46,8 +47,7 @@ export function getMonthDates(year: number, month: number): Date[] {
 }
 
 export function getYearMonths(year: number): { label: string; startDate: string; endDate: string }[] {
-  const MONTH_LABELS = ["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
-  return MONTH_LABELS.map((label, i) => {
+  return MONTH_SHORT.map((label, i) => {
     const start = startOfMonth(new Date(year, i));
     const end = endOfMonth(new Date(year, i));
     return {
@@ -56,6 +56,14 @@ export function getYearMonths(year: number): { label: string; startDate: string;
       endDate: format(end, "yyyy-MM-dd"),
     };
   });
+}
+
+/** Get today's date snapped to the preceding Monday (ISO string) */
+export function getMondayStart(): string {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  return addDays(today, mondayOffset).toISOString().split("T")[0];
 }
 
 // Generate a range of consecutive dates from a start date

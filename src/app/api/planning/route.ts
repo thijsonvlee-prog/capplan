@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformPlanningEntry } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning",
@@ -32,18 +32,7 @@ export const GET = withPerfLogging(
 
     const entries = await prisma.planningEntry.findMany({ where });
 
-    const result = entries.map((e) => ({
-      id: e.id,
-      driverId: e.driverId,
-      date: e.date,
-      status: e.status,
-      leaveTypeId: e.leaveTypeId || undefined,
-      sickPercentage: e.sickPercentage ?? undefined,
-      notes: e.notes || undefined,
-      scenarioId: e.scenarioId || undefined,
-    }));
-
-    return NextResponse.json(result);
+    return NextResponse.json(entries.map(transformPlanningEntry));
   } catch (error) {
     console.error("Error fetching planning entries:", error);
     return NextResponse.json(
@@ -104,16 +93,7 @@ export const POST = withPerfLogging(
       });
     }
 
-    return NextResponse.json({
-      id: entry.id,
-      driverId: entry.driverId,
-      date: entry.date,
-      status: entry.status,
-      leaveTypeId: entry.leaveTypeId || undefined,
-      sickPercentage: entry.sickPercentage ?? undefined,
-      notes: entry.notes || undefined,
-      scenarioId: entry.scenarioId || undefined,
-    });
+    return NextResponse.json(transformPlanningEntry(entry));
   } catch (error) {
     console.error("Error creating planning entry:", error);
     return NextResponse.json(

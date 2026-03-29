@@ -9,25 +9,15 @@ import { CapacityTable } from "@/components/capacity/CapacityTable";
 import { CapacityChart } from "@/components/capacity/CapacityChart";
 import { PeriodSelector } from "@/components/planning/WeekSelector";
 import { ZoomSelector } from "@/components/planning/ZoomSelector";
-import { DAY_LABELS } from "@/domain/constants";
-import {
-  getDateRange,
-  getISOWeekNumber,
-} from "@/lib/utils";
-import { addDays } from "date-fns";
+import { DEFAULT_PERIOD_DAYS } from "@/domain/constants";
+import { getDateRange, getMondayStart } from "@/lib/utils";
+import { getAggregatedColumns } from "@/lib/aggregation";
 
-type ColumnHeader = { key: string; label: string };
 
-const DEFAULT_CAPACITY_DAYS = 56;
 
 export default function CapacityPage() {
-  const [startDate, setStartDate] = useState(() => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    return addDays(today, mondayOffset).toISOString().split("T")[0];
-  });
-  const [dayCount] = useState(DEFAULT_CAPACITY_DAYS);
+  const [startDate, setStartDate] = useState(getMondayStart);
+  const [dayCount] = useState(DEFAULT_PERIOD_DAYS);
   const [aggregation, setAggregation] = useState<AggregationLevel>("week");
   const [compareIds, setCompareIds] = useState<string[]>([]);
 
@@ -39,95 +29,12 @@ export default function CapacityPage() {
     return getDateRange(startDate, dayCount);
   }, [startDate, dayCount]);
 
-  // Compute aggregated column headers + date groups
-  const { columnHeaders, dateGroups } = useMemo(() => {
-    if (allDates.length === 0) return { columnHeaders: [] as ColumnHeader[], dateGroups: [] as string[][] };
-    const MONTH_SHORT = ["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
-    const headers: ColumnHeader[] = [];
-    const groups: string[][] = [];
-
-    switch (aggregation) {
-      case "day":
-        for (const date of allDates) {
-          const d = new Date(date + "T00:00:00");
-          const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
-          headers.push({ key: date, label: `${DAY_LABELS[dayIdx]} ${d.getDate()}` });
-          groups.push([date]);
-        }
-        break;
-      case "week": {
-        const weekMap = new Map<string, string[]>();
-        for (const date of allDates) {
-          const wk = getISOWeekNumber(date);
-          const yr = new Date(date + "T00:00:00").getFullYear();
-          const key = `${yr}-W${wk}`;
-          if (!weekMap.has(key)) weekMap.set(key, []);
-          weekMap.get(key)!.push(date);
-        }
-        Array.from(weekMap.entries()).forEach(([key, dates]) => {
-          headers.push({ key, label: `Wk ${key.split("-W")[1]}` });
-          groups.push(dates);
-        });
-        break;
-      }
-      case "4weeks": {
-        for (let i = 0; i < allDates.length; i += 28) {
-          const blockDates = allDates.slice(i, i + 28);
-          if (blockDates.length === 0) break;
-          const firstWk = getISOWeekNumber(blockDates[0]);
-          const lastWk = getISOWeekNumber(blockDates[blockDates.length - 1]);
-          headers.push({ key: `4w-${i}`, label: `Wk ${firstWk}–${lastWk}` });
-          groups.push(blockDates);
-        }
-        break;
-      }
-      case "month": {
-        const monthMap = new Map<string, string[]>();
-        for (const date of allDates) {
-          const d = new Date(date + "T00:00:00");
-          const key = `${d.getFullYear()}-${d.getMonth()}`;
-          if (!monthMap.has(key)) monthMap.set(key, []);
-          monthMap.get(key)!.push(date);
-        }
-        Array.from(monthMap.entries()).forEach(([key, dates]) => {
-          const [yr, m] = key.split("-").map(Number);
-          headers.push({ key, label: `${MONTH_SHORT[m]} ${yr}` });
-          groups.push(dates);
-        });
-        break;
-      }
-      case "quarter": {
-        const qMap = new Map<string, string[]>();
-        for (const date of allDates) {
-          const d = new Date(date + "T00:00:00");
-          const q = Math.floor(d.getMonth() / 3) + 1;
-          const key = `${d.getFullYear()}-Q${q}`;
-          if (!qMap.has(key)) qMap.set(key, []);
-          qMap.get(key)!.push(date);
-        }
-        Array.from(qMap.entries()).forEach(([key, dates]) => {
-          headers.push({ key, label: key.replace("-", " ") });
-          groups.push(dates);
-        });
-        break;
-      }
-      case "year": {
-        const yMap = new Map<string, string[]>();
-        for (const date of allDates) {
-          const yr = new Date(date + "T00:00:00").getFullYear().toString();
-          if (!yMap.has(yr)) yMap.set(yr, []);
-          yMap.get(yr)!.push(date);
-        }
-        Array.from(yMap.entries()).forEach(([key, dates]) => {
-          headers.push({ key, label: key });
-          groups.push(dates);
-        });
-        break;
-      }
-    }
-
-    return { columnHeaders: headers, dateGroups: groups };
-  }, [allDates, aggregation]);
+  // Compute aggregated column headers (shared logic with PlanningGrid)
+  const columnHeaders = useMemo(
+    () => getAggregatedColumns(allDates, aggregation),
+    [allDates, aggregation]
+  );
+  const dateGroups = useMemo(() => columnHeaders.map((col) => col.dates), [columnHeaders]);
 
   const emptyCapacity: Record<string, Record<PlanningStatus, number>> = {};
   const rawCapacity = useApiData(

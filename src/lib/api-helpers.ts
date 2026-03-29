@@ -4,7 +4,7 @@ import type {
   StamtabelRecord,
 } from "@/domain/types";
 import type { GroupByField } from "@/domain/enums";
-import { EMPLOYMENT_TYPE_LABELS } from "@/domain/constants";
+import { EMPLOYMENT_TYPE_LABELS, UNKNOWN_LABEL } from "@/domain/constants";
 
 // Group drivers by field (client-side, using pre-fetched data)
 export function groupDrivers(
@@ -33,7 +33,7 @@ export function groupDrivers(
           (emp?.employerId &&
             lookups.employers.find((e) => e.id === emp.employerId)
               ?.description) ||
-            "Onbekend",
+            UNKNOWN_LABEL,
         ];
         break;
       case "department":
@@ -41,7 +41,7 @@ export function groupDrivers(
           (pos?.departmentId &&
             lookups.departments.find((d) => d.id === pos.departmentId)
               ?.description) ||
-            "Onbekend",
+            UNKNOWN_LABEL,
         ];
         break;
       case "location":
@@ -49,11 +49,11 @@ export function groupDrivers(
           (pos?.locationId &&
             lookups.locations.find((l) => l.id === pos.locationId)
               ?.description) ||
-            "Onbekend",
+            UNKNOWN_LABEL,
         ];
         break;
       case "licenseType":
-        keys = driver.licenseTypes?.length ? driver.licenseTypes : ["Onbekend"];
+        keys = driver.licenseTypes?.length ? driver.licenseTypes : [UNKNOWN_LABEL];
         break;
       case "employmentType":
         keys = [
@@ -61,11 +61,11 @@ export function groupDrivers(
             ? EMPLOYMENT_TYPE_LABELS[
                 emp.employmentType as keyof typeof EMPLOYMENT_TYPE_LABELS
               ]
-            : "Onbekend",
+            : UNKNOWN_LABEL,
         ];
         break;
       default:
-        keys = ["Onbekend"];
+        keys = [UNKNOWN_LABEL];
     }
 
     for (const key of keys) {

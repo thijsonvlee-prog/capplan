@@ -65,3 +65,13 @@ export const GROUP_BY_LABELS: Record<GroupByField, string> = {
 // === UI Constants ===
 
 export const DAY_LABELS = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"] as const;
+
+export const MONTH_SHORT = ["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"] as const;
+
+// === Planning defaults ===
+
+/** Default number of days shown in planning grid and capacity page (8 weeks) */
+export const DEFAULT_PERIOD_DAYS = 56;
+
+/** Fallback label for unknown/missing lookup values */
+export const UNKNOWN_LABEL = "Onbekend";

@@ -48,6 +48,31 @@ export function transformProfile(profile: any) {
   };
 }
 
+// === Planning entry utilities ===
+
+/** Transform a Prisma planning entry to the API response shape */
+export function transformPlanningEntry(entry: {
+  id: string;
+  driverId: string;
+  date: string;
+  status: string;
+  leaveTypeId: string | null;
+  sickPercentage: number | null;
+  notes: string | null;
+  scenarioId: string | null;
+}) {
+  return {
+    id: entry.id,
+    driverId: entry.driverId,
+    date: entry.date,
+    status: entry.status,
+    leaveTypeId: entry.leaveTypeId || undefined,
+    sickPercentage: entry.sickPercentage ?? undefined,
+    notes: entry.notes || undefined,
+    scenarioId: entry.scenarioId || undefined,
+  };
+}
+
 // === Scenario utilities ===
 
 /** Normalize scenario ID: treat "default" and empty strings as null (base scenario) */

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField } from "@/domain/enums";
 import type { DriverWithEntries, StamtabelRecord } from "@/domain/types";
-import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, GROUP_BY_LABELS, DAY_LABELS, EMPLOYMENT_TYPE_LABELS } from "@/domain/constants";
+import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, GROUP_BY_LABELS, EMPLOYMENT_TYPE_LABELS, DEFAULT_PERIOD_DAYS } from "@/domain/constants";
 import { useApiData } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { groupDrivers, getActiveRecord } from "@/lib/api-helpers";
@@ -18,12 +18,12 @@ import { CapacitySummaryRow } from "./CapacitySummaryRow";
 import { CalendarCog, Columns3, ArrowUp, ArrowDown, Maximize2, Minus, AlignJustify } from "lucide-react";
 import {
   getDateRange,
-  getISOWeekNumber,
+  getMondayStart,
   cn,
 } from "@/lib/utils";
-import { addDays } from "date-fns";
+import { getAggregatedColumns } from "@/lib/aggregation";
+import type { ColumnHeader } from "@/lib/aggregation";
 
-const DEFAULT_DAY_COUNT = 56;
 
 // Available extra columns from driver master data
 type DriverColumnKey = "employeeNumber" | "employer" | "department" | "location" | "employmentType" | "manager" | "licenseTypes" | "skills";
@@ -54,18 +54,10 @@ const DENSITY_ICONS: Record<DensityLevel, typeof Maximize2> = {
   compact: Minus,
 };
 
-// Aggregation column header type
-type ColumnHeader = { key: string; label: string; sub?: string; dates: string[] };
-
 export function PlanningGrid() {
-  // Start date for the visible range (snapped to Monday — computed synchronously to avoid empty first render)
-  const [startDate, setStartDate] = useState(() => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    return addDays(today, mondayOffset).toISOString().split("T")[0];
-  });
-  const [dayCount] = useState(DEFAULT_DAY_COUNT);
+  // Start date for the visible range (snapped to Monday)
+  const [startDate, setStartDate] = useState(getMondayStart);
+  const [dayCount] = useState(DEFAULT_PERIOD_DAYS);
   const [aggregation, setAggregation] = useState<AggregationLevel>("day");
   const [density, setDensity] = useState<DensityLevel>("comfortable");
   const [filter, setFilter] = useState("");
@@ -97,86 +89,11 @@ export function PlanningGrid() {
     return getDateRange(startDate, dayCount);
   }, [startDate, dayCount]);
 
-  // Compute aggregated column headers
-  const columnHeaders = useMemo((): ColumnHeader[] => {
-    if (allDates.length === 0) return [];
-
-    switch (aggregation) {
-      case "day":
-        return allDates.map((date) => {
-          const d = new Date(date + "T00:00:00");
-          const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
-          return { key: date, label: DAY_LABELS[dayIdx], sub: `${d.getDate()}/${d.getMonth() + 1}`, dates: [date] };
-        });
-
-      case "week": {
-        const weekMap = new Map<string, string[]>();
-        for (const date of allDates) {
-          const wk = getISOWeekNumber(date);
-          const yr = new Date(date + "T00:00:00").getFullYear();
-          const key = `${yr}-W${wk}`;
-          if (!weekMap.has(key)) weekMap.set(key, []);
-          weekMap.get(key)!.push(date);
-        }
-        return Array.from(weekMap.entries()).map(([key, dates]) => ({
-          key, label: `Wk ${key.split("-W")[1]}`, dates,
-        }));
-      }
-
-      case "4weeks": {
-        const blocks: ColumnHeader[] = [];
-        for (let i = 0; i < allDates.length; i += 28) {
-          const blockDates = allDates.slice(i, i + 28);
-          if (blockDates.length === 0) break;
-          const firstWk = getISOWeekNumber(blockDates[0]);
-          const lastWk = getISOWeekNumber(blockDates[blockDates.length - 1]);
-          blocks.push({ key: `4w-${i}`, label: `Wk ${firstWk}–${lastWk}`, dates: blockDates });
-        }
-        return blocks;
-      }
-
-      case "month": {
-        const monthMap = new Map<string, string[]>();
-        const MONTH_SHORT = ["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
-        for (const date of allDates) {
-          const d = new Date(date + "T00:00:00");
-          const key = `${d.getFullYear()}-${d.getMonth()}`;
-          if (!monthMap.has(key)) monthMap.set(key, []);
-          monthMap.get(key)!.push(date);
-        }
-        return Array.from(monthMap.entries()).map(([key, dates]) => {
-          const [yr, m] = key.split("-").map(Number);
-          return { key, label: `${MONTH_SHORT[m]} ${yr}`, dates };
-        });
-      }
-
-      case "quarter": {
-        const qMap = new Map<string, string[]>();
-        for (const date of allDates) {
-          const d = new Date(date + "T00:00:00");
-          const q = Math.floor(d.getMonth() / 3) + 1;
-          const key = `${d.getFullYear()}-Q${q}`;
-          if (!qMap.has(key)) qMap.set(key, []);
-          qMap.get(key)!.push(date);
-        }
-        return Array.from(qMap.entries()).map(([key, dates]) => ({
-          key, label: key.replace("-", " "), dates,
-        }));
-      }
-
-      case "year": {
-        const yMap = new Map<string, string[]>();
-        for (const date of allDates) {
-          const yr = new Date(date + "T00:00:00").getFullYear().toString();
-          if (!yMap.has(yr)) yMap.set(yr, []);
-          yMap.get(yr)!.push(date);
-        }
-        return Array.from(yMap.entries()).map(([key, dates]) => ({
-          key, label: key, dates,
-        }));
-      }
-    }
-  }, [allDates, aggregation]);
+  // Compute aggregated column headers (shared logic with CapacityPage)
+  const columnHeaders = useMemo(
+    () => getAggregatedColumns(allDates, aggregation),
+    [allDates, aggregation]
+  );
 
   const data = useApiData(
     () => allDates.length > 0 ? api.planning.getForRange(allDates, activeScenarioId) : Promise.resolve(null),
@@ -206,29 +123,40 @@ export function PlanningGrid() {
     }
   }, [skillMap, employers, departments, locations]);
 
-  function handleUpdate(driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
-    // Optimistic update — modify local state immediately, no full refetch
+  // Shared helper for optimistic entry updates (used by single + bulk)
+  function applyOptimisticEntries(
+    driverId: string,
+    dates: string[],
+    status: PlanningStatus,
+    options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }
+  ) {
     setLocalData(prev => {
       if (!prev) return prev;
       return {
         ...prev,
         drivers: prev.drivers.map(d => {
           if (d.id !== driverId) return d;
-          const idx = d.planningEntries.findIndex(e => e.date === date);
-          const entry = {
-            id: idx >= 0 ? d.planningEntries[idx].id : `temp-${Date.now()}`,
-            driverId, date, status,
-            leaveTypeId: options?.leaveTypeId,
-            sickPercentage: options?.sickPercentage,
-            notes: options?.notes,
-            scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId,
-          };
           const entries = [...d.planningEntries];
-          if (idx >= 0) entries[idx] = entry; else entries.push(entry);
+          for (const date of dates) {
+            const idx = entries.findIndex(e => e.date === date);
+            const entry = {
+              id: idx >= 0 ? entries[idx].id : `temp-${date}-${Date.now()}`,
+              driverId, date, status,
+              leaveTypeId: options?.leaveTypeId,
+              sickPercentage: options?.sickPercentage,
+              notes: options?.notes,
+              scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId,
+            };
+            if (idx >= 0) entries[idx] = entry; else entries.push(entry);
+          }
           return { ...d, planningEntries: entries };
         }),
       };
     });
+  }
+
+  function handleUpdate(driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
+    applyOptimisticEntries(driverId, [date], status, options);
     // Fire and forget — no invalidation, no refetch storm
     api.planning.upsert({ driverId, date, status, ...options, scenarioId: activeScenarioId });
   }
@@ -282,30 +210,7 @@ export function PlanningGrid() {
   function handleBulkSelect(status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) {
     if (!dragState) return;
     const { driverId, dates } = dragState;
-    // Optimistic update for all selected dates
-    setLocalData(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        drivers: prev.drivers.map(d => {
-          if (d.id !== driverId) return d;
-          const entries = [...d.planningEntries];
-          for (const date of dates) {
-            const idx = entries.findIndex(e => e.date === date);
-            const entry = {
-              id: idx >= 0 ? entries[idx].id : `temp-${date}`,
-              driverId, date, status,
-              leaveTypeId: options?.leaveTypeId,
-              sickPercentage: options?.sickPercentage,
-              notes: options?.notes,
-              scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId,
-            };
-            if (idx >= 0) entries[idx] = entry; else entries.push(entry);
-          }
-          return { ...d, planningEntries: entries };
-        }),
-      };
-    });
+    applyOptimisticEntries(driverId, dates, status, options);
     api.planning.upsertBulk({ driverId, dates, status, ...options, scenarioId: activeScenarioId });
     setDragState(null);
     setShowBulkSelector(false);
