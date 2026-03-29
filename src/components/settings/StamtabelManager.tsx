@@ -11,9 +11,10 @@ type Props = {
   onCreate: (code: string, description: string) => void;
   onUpdate: (id: string, code: string, description: string) => void;
   onDelete: (id: string) => void;
+  loading?: boolean;
 };
 
-export function StamtabelManager({ title, description, records, onCreate, onUpdate, onDelete }: Props) {
+export function StamtabelManager({ title, description, records, onCreate, onUpdate, onDelete, loading }: Props) {
   const [newCode, setNewCode] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,7 +79,12 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
       )}
 
       <div className="divide-y divide-border-subtle">
-        {records.map((r) => (
+        {loading && (
+          <div className="p-6 flex justify-center">
+            <div className="spinner" />
+          </div>
+        )}
+        {!loading && records.map((r) => (
           <div key={r.id} className="flex items-center justify-between p-3 hover:bg-surface-secondary">
             {editingId === r.id ? (
               <div className="flex items-center gap-2 flex-1">
@@ -120,7 +126,7 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
             )}
           </div>
         ))}
-        {records.length === 0 && (
+        {!loading && records.length === 0 && (
           <div className="p-6 text-center">
             <p className="text-sm text-text-secondary">Nog geen {title.toLowerCase()} toegevoegd.</p>
             <p className="text-xs text-text-tertiary mt-1">Vul hierboven een code en omschrijving in en klik op &quot;Toevoegen&quot; om te beginnen.</p>

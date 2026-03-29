@@ -74,6 +74,58 @@ export function useApiData<T>(
   return data;
 }
 
+/**
+ * Same as useApiData but also returns a loading boolean.
+ * Returns a tuple [data, loading] where loading is true during the initial fetch.
+ */
+export function useApiDataWithLoading<T>(
+  fetcher: () => Promise<T>,
+  deps: unknown[] = [],
+  defaultValue: T
+): [T, boolean] {
+  const key = cacheKey(fetcher, deps);
+  const entry = cache.get(key);
+  const [data, setData] = useState<T>(
+    () => (entry ? (entry.data as T) : defaultValue)
+  );
+  const [loading, setLoading] = useState(() => !entry);
+  const fetcherRef = useRef(fetcher);
+  const keyRef = useRef(key);
+
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+    keyRef.current = key;
+  });
+
+  const doFetch = useCallback(() => {
+    fetcherRef
+      .current()
+      .then((result) => {
+        cache.set(keyRef.current, { data: result, fetchedAt: Date.now() });
+        setData(result);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    const cached = cache.get(key);
+    const isFresh = cached && Date.now() - cached.fetchedAt < STALE_MS;
+    if (!isFresh) doFetch();
+
+    const cb = () => doFetch();
+    listeners.add(cb);
+    return () => {
+      listeners.delete(cb);
+    };
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return [data, loading];
+}
+
 // Helper for mutations that auto-invalidates
 export async function mutate<T>(fn: () => Promise<T>): Promise<T> {
   const result = await fn();

@@ -10,6 +10,14 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 — Form validation, loading states, and delete dialog improvements
+
+#### UX / usability improvements
+
+- The driver creation form now shows inline Dutch-language error messages when required fields (voornaam, achternaam) are left empty. Input fields highlight in red on validation failure and errors clear as the user types.
+- The settings page now shows loading spinners while data is being fetched. Empty state messages ("Nog geen werkgevers toegevoegd") only appear when data has genuinely loaded and is empty, preventing a misleading flash.
+- Delete confirmation dialogs in the driver editing sub-tables (dienstverband, functiegegevens, roostertoewijzing) now specify what type of record is being deleted instead of the generic "het record".
+
 ### 2026-03-29 — Empty states, toast notifications, and performance indexes
 
 #### UX / usability improvements

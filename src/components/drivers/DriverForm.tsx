@@ -44,6 +44,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
   const [employeeNumber, setEmployeeNumber] = useState(initialData?.employeeNumber || "");
   const [licenseTypes, setLicenseTypes] = useState<string[]>(initialData?.licenseTypes || []);
   const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.skillIds || []);
+  const [showValidation, setShowValidation] = useState(false);
 
   const skills = useApiData(() => api.settings.getSkills(), [], []);
   const employers = useApiData(() => api.settings.getEmployers(), [], []);
@@ -79,9 +80,14 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!firstName.trim() || !lastName.trim()) {
+      setShowValidation(true);
+      return;
+    }
+    setShowValidation(false);
     onSubmit({
-      firstName,
-      lastName,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
       ...(employeeNumber && { employeeNumber }),
       ...(licenseTypes.length > 0 && { licenseTypes }),
       ...(selectedSkills.length > 0 && { skillIds: selectedSkills }),
@@ -127,11 +133,27 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="form-label">Voornaam</label>
-              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="input-field w-full" required />
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => { setFirstName(e.target.value); if (e.target.value.trim()) setShowValidation(false); }}
+                className={`input-field w-full ${showValidation && !firstName.trim() ? "border-danger-400" : ""}`}
+              />
+              {showValidation && !firstName.trim() && (
+                <div className="text-xs text-danger-600 mt-1">Vul een voornaam in.</div>
+              )}
             </div>
             <div>
               <label className="form-label">Achternaam</label>
-              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className="input-field w-full" required />
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => { setLastName(e.target.value); if (e.target.value.trim()) setShowValidation(false); }}
+                className={`input-field w-full ${showValidation && !lastName.trim() ? "border-danger-400" : ""}`}
+              />
+              {showValidation && !lastName.trim() && (
+                <div className="text-xs text-danger-600 mt-1">Vul een achternaam in.</div>
+              )}
             </div>
           </div>
 
@@ -222,6 +244,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           onAdd={(data) => mutate(() => api.drivers.addEmploymentRecord(initialData.id, data)).then(() => showToast("Dienstverband toegevoegd")).catch(() => showToast("Er ging iets mis.", "error"))}
           onDelete={(id) => mutate(() => api.drivers.deleteEmploymentRecord(initialData.id, id)).then(() => showToast("Dienstverband verwijderd")).catch(() => showToast("Er ging iets mis.", "error"))}
           emptyMessage="Geen dienstverbanden"
+          entityName="het dienstverband"
           renderForm={(onSubmit, onCancel) => (
             <EmploymentForm employers={employers} onSubmit={onSubmit} onCancel={onCancel} />
           )}
@@ -241,6 +264,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           onAdd={(data) => mutate(() => api.drivers.addFunctionRecord(initialData.id, data)).then(() => showToast("Functiegegevens toegevoegd")).catch(() => showToast("Er ging iets mis.", "error"))}
           onDelete={(id) => mutate(() => api.drivers.deleteFunctionRecord(initialData.id, id)).then(() => showToast("Functiegegevens verwijderd")).catch(() => showToast("Er ging iets mis.", "error"))}
           emptyMessage="Geen functiegegevens"
+          entityName="de functiegegevens"
           renderForm={(onSubmit, onCancel) => (
             <PositionForm departments={departments} locations={locations} onSubmit={onSubmit} onCancel={onCancel} />
           )}
@@ -258,6 +282,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           onAdd={(data) => mutate(() => api.drivers.addRosterAssignment(initialData.id, { ...data, scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId })).then(() => showToast("Roostertoewijzing toegevoegd")).catch(() => showToast("Er ging iets mis.", "error"))}
           onDelete={(id) => mutate(() => api.drivers.deleteRosterAssignment(initialData.id, id)).then(() => showToast("Roostertoewijzing verwijderd")).catch(() => showToast("Er ging iets mis.", "error"))}
           emptyMessage="Geen roostergegevens"
+          entityName="de roostertoewijzing"
           renderForm={(onSubmit, onCancel) => (
             <RosterForm profiles={profiles} onSubmit={onSubmit} onCancel={onCancel} />
           )}

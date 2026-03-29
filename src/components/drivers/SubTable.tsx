@@ -16,6 +16,7 @@ type SubTableProps<T extends { id: string; sequenceNumber: number; startDate: st
   onDelete: (id: string) => void;
   renderForm: (onSubmit: (data: any) => void, onCancel: () => void) => React.ReactNode;
   emptyMessage?: string;
+  entityName?: string;
 };
 
 export function SubTable<T extends { id: string; sequenceNumber: number; startDate: string; endDate?: string }>({
@@ -25,6 +26,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
   onDelete,
   renderForm,
   emptyMessage = "Geen records",
+  entityName = "het record",
 }: SubTableProps<T>) {
   const [showForm, setShowForm] = useState(false);
 
@@ -85,7 +87,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
                 ))}
                 <td className="p-1 border border-border-default text-center">
                   <button
-                    onClick={() => { if (window.confirm(`Weet je zeker dat je het record vanaf ${row.startDate} wilt verwijderen?`)) onDelete(row.id); }}
+                    onClick={() => { if (window.confirm(`Weet je zeker dat je ${entityName} vanaf ${row.startDate} wilt verwijderen?`)) onDelete(row.id); }}
                     className="btn-icon-danger"
                     title="Verwijderen"
                   >

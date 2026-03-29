@@ -35,30 +35,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** All database operations in the roster assignment POST handler are wrapped in an interactive transaction. Partial failures roll back cleanly. Passes `npm run verify`.
 - **Implementation note:** All existing operations are compatible with interactive transactions. Single file change. Source: DE-REC-003.
 
-### PB-005: Add inline validation feedback to driver creation form
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** When a user submits the driver creation form with missing required fields, no inline error messages appear. The form silently fails or shows a generic error.
-- **Why this matters now:** Driver creation is a core daily workflow. Missing validation creates frustration for new planners. The `showValidation` pattern already exists in StamtabelManager and SkillManager.
-- **Scope notes:** Add field-level validation messages (in Dutch) that appear when the user leaves a required field empty. Use the existing `showValidation` pattern.
-- **Dependencies:** None.
-- **Definition of done:** All required fields on the driver creation form show inline Dutch-language error messages on validation failure. Passes `npm run verify`.
-- **Implementation note:** Follow the existing `showValidation` pattern in StamtabelManager and SkillManager. Source: EX-REC-001.
-
-### PB-006: Show loading spinners while settings page data loads
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** When the settings page loads, each stamtabel section briefly shows "Nog geen [type] toegevoegd" before data arrives, causing a misleading flash of empty state.
-- **Why this matters now:** The improved empty states from PB-001 make this flash more noticeable. Worth addressing to prevent user confusion.
-- **Scope notes:** Add a loading state using the `.spinner` CSS class that displays while `useApiData` is fetching. Show the empty state only after loading completes and records are genuinely empty.
-- **Dependencies:** May need changes to the `useApiData` hook to expose loading state — must be backward-compatible.
-- **Definition of done:** Settings page shows loading spinners during data fetch. Empty state text only appears when data has loaded and is genuinely empty. Passes `npm run verify`.
-- **Implementation note:** Check whether `useApiData` already exposes a loading state before adding one. Source: EX-REC-004.
-
 ### PB-007: Add input validation to API route POST/PUT handlers
 
 - **Owner:** Delivery Agent
@@ -70,18 +46,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Dependencies:** None.
 - **Definition of done:** All POST/PUT API routes validate required fields and return clear Dutch-language error messages for missing/invalid input. No Prisma constraint errors leak to the frontend. Passes `npm run verify`.
 - **Implementation note:** Touches ~10 route files. Add a shared validation helper in `api-route-utils.ts`. Source: DE-REC-004.
-
-### PB-008: Improve delete confirmation dialogs with specific context
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** Some delete confirmation dialogs use generic text like "Weet u het zeker?" without specifying what will be deleted.
-- **Why this matters now:** Low-effort, high-trust improvement. StamtabelManager and SkillManager already do this correctly — other screens need to be audited and updated.
-- **Scope notes:** Audit all delete dialogs outside StamtabelManager/SkillManager. Update them to include the name/description of the item being deleted (e.g., "Chauffeur Jan de Vries verwijderen?").
-- **Dependencies:** None.
-- **Definition of done:** All delete confirmation dialogs across the app show the specific item name/description. All text in Dutch. Passes `npm run verify`.
-- **Implementation note:** Source: EX-REC-002.
 
 ## Blocked / Needs Decision
 
@@ -102,6 +66,27 @@ Items are ordered by priority within each section. Ties are broken by expected u
 _No items currently in progress._
 
 ## Completed Recently
+
+### PB-008: Improve delete confirmation dialogs with specific context
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Completed (2026-03-29)
+- **Summary:** Audited all delete dialogs. SubTable (used for employment, function, and roster sub-tables in driver editing) was the only component with generic text. Added `entityName` prop so each usage specifies what is being deleted (e.g., "het dienstverband vanaf 2026-01-01"). All other dialogs (StamtabelManager, SkillManager, RosterProfileEditor, RosterAssigner, ScenarioSelector) already had specific context.
+
+### PB-006: Show loading spinners while settings page data loads
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Completed (2026-03-29)
+- **Summary:** Added backward-compatible `useApiDataWithLoading` hook that returns `[data, loading]` tuple. Added optional `loading` prop to StamtabelManager. Settings page now shows spinners during initial data fetch; empty states only appear when data is genuinely empty.
+
+### PB-005: Add inline validation feedback to driver creation form
+
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Completed (2026-03-29)
+- **Summary:** Added `showValidation` pattern to DriverForm matching existing StamtabelManager/SkillManager/RosterProfileEditor pattern. Voornaam and achternaam fields show inline Dutch error messages and red border on validation failure. Errors clear as user types.
 
 ### PB-002: Add composite database indexes for planning grid queries
 
