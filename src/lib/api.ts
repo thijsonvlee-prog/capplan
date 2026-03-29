@@ -49,14 +49,6 @@ function putBody(data: unknown): RequestInit {
   };
 }
 
-function patchBody(data: unknown): RequestInit {
-  return {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  };
-}
-
 function deleteMethod(): RequestInit {
   return { method: "DELETE" };
 }
@@ -416,19 +408,18 @@ const rosterProfiles = {
 };
 
 const preferences = {
-  get(key: string, userId?: string): Promise<string | null> {
+  get(key: string): Promise<string | null> {
     return fetchJson<string | null>(
-      buildUrl("/api/preferences", { key, userId })
+      buildUrl("/api/preferences", { key })
     );
   },
 
-  set(key: string, value: string, userId?: string): Promise<void> {
+  set(key: string, value: string): Promise<void> {
     return fetchJson<void>(
       "/api/preferences",
-      putBody({ key, value, userId })
+      putBody({ key, value })
     );
   },
-
 };
 
 // === Exported API Object ===

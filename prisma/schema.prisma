@@ -195,10 +195,10 @@ model PlanningEntry {
   leaveType LeaveType? @relation(fields: [leaveTypeId], references: [id], onDelete: SetNull)
   scenario  Scenario?  @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
 
+  @@unique([driverId, date, scenarioId])
   @@index([driverId])
   @@index([date])
   @@index([scenarioId])
-  @@index([driverId, date, scenarioId])
   @@index([scenarioId, date])
 }
 

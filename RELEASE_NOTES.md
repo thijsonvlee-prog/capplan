@@ -13,6 +13,21 @@ This is the central release log for CapPlan. All user-facing and significant int
 - De instellingenpagina gebruikt nu tabnavigatie (Stamgegevens, Competenties, Roosters) in plaats van een lange verticale lijst. Elke tab toont een duidelijke sectietitel met contextbeschrijving. Het tabblad Stamgegevens toont een totaalbadge.
 - Invoervelden in stamtabelbeheer gebruiken nu dezelfde gestylede `input-field` klasse als de rest van de applicatie, voor consistente focus- en randstijlen.
 
+### Technische verbeteringen en betrouwbaarheid
+
+#### Betrouwbaarheid
+
+- Race condition opgelost bij gelijktijdige planningsbewerkingen: de database voorkomt nu dubbele planningregels per chauffeur/datum/scenario via een unieke constraint. Zowel enkele als bulk-planningsoperaties zijn beschermd met transacties.
+- Het planning-API-endpoint vereist nu een datum- of chauffeurfilter, waardoor onbegrensde queries die alle planningsregels ophalen niet meer mogelijk zijn.
+
+#### Prestaties
+
+- Het planningsrooster herberekent de gefilterde en gesorteerde chauffeurlijst alleen wanneer data of filter daadwerkelijk wijzigen, in plaats van bij elke render. ESLint-waarschuwingen teruggebracht van 2 naar 1.
+
+#### Interne kwaliteit
+
+- Ongebruikte `patchBody` helper, `isDriverActiveByEmployment` functie, misleidende `userId` parameter in voorkeuren-API en overbodige cascade-verwijderingen opgeruimd.
+
 ## Release History
 
 ### 2026-03-29 (avond) — Datuminvoer, planningsrooster verfijning en codekwaliteit

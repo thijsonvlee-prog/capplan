@@ -26,57 +26,53 @@ export const POST = withPerfLogging(
 
       const resolvedScenarioId = resolveScenarioId(scenarioId);
 
-      // Batch: fetch all existing entries in one query
-      const existingEntries = await prisma.planningEntry.findMany({
-        where: {
-          driverId,
-          date: { in: dates },
-          scenarioId: resolvedScenarioId,
-        },
-        select: { id: true, date: true },
-      });
+      const entryData = {
+        status,
+        leaveTypeId: leaveTypeId || null,
+        sickPercentage: sickPercentage ?? null,
+        notes: notes || null,
+      };
 
-      const existingByDate = new Map(
-        existingEntries.map((e) => [e.date, e.id])
-      );
-
-      const updateIds: string[] = [];
-      const toCreate: { driverId: string; date: string; status: string; leaveTypeId: string | null; sickPercentage: number | null; notes: string | null; scenarioId: string | null }[] = [];
-
-      for (const date of dates) {
-        const existingId = existingByDate.get(date);
-        if (existingId) {
-          updateIds.push(existingId);
-        } else {
-          toCreate.push({
+      // Wrap in transaction to prevent TOCTOU race with the unique constraint
+      await prisma.$transaction(async (tx) => {
+        const existingEntries = await tx.planningEntry.findMany({
+          where: {
             driverId,
-            date,
-            status,
-            leaveTypeId: leaveTypeId || null,
-            sickPercentage: sickPercentage ?? null,
-            notes: notes || null,
+            date: { in: dates },
             scenarioId: resolvedScenarioId,
+          },
+          select: { id: true, date: true },
+        });
+
+        const existingByDate = new Map(
+          existingEntries.map((e) => [e.date, e.id])
+        );
+
+        const updateIds: string[] = [];
+        const toCreate: { driverId: string; date: string; status: string; leaveTypeId: string | null; sickPercentage: number | null; notes: string | null; scenarioId: string | null }[] = [];
+
+        for (const date of dates) {
+          const existingId = existingByDate.get(date);
+          if (existingId) {
+            updateIds.push(existingId);
+          } else {
+            toCreate.push({
+              driverId, date, scenarioId: resolvedScenarioId, ...entryData,
+            });
+          }
+        }
+
+        if (updateIds.length > 0) {
+          await tx.planningEntry.updateMany({
+            where: { id: { in: updateIds } },
+            data: entryData,
           });
         }
-      }
 
-      // Batch update all existing entries at once
-      if (updateIds.length > 0) {
-        await prisma.planningEntry.updateMany({
-          where: { id: { in: updateIds } },
-          data: {
-            status,
-            leaveTypeId: leaveTypeId || null,
-            sickPercentage: sickPercentage ?? null,
-            notes: notes || null,
-          },
-        });
-      }
-
-      // Batch create all new entries at once
-      if (toCreate.length > 0) {
-        await prisma.planningEntry.createMany({ data: toCreate });
-      }
+        if (toCreate.length > 0) {
+          await tx.planningEntry.createMany({ data: toCreate });
+        }
+      });
 
       return NextResponse.json({ success: true });
     } catch (error) {

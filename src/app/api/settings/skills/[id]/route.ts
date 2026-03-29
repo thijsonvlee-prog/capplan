@@ -41,16 +41,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    await prisma.$transaction(async (tx) => {
-      // Delete all DriverSkill records for this skill
-      await tx.driverSkill.deleteMany({
-        where: { skillId: id },
-      });
-
-      await tx.skill.delete({
-        where: { id },
-      });
-    });
+    await prisma.skill.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

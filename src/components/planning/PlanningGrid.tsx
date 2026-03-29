@@ -229,12 +229,14 @@ export function PlanningGrid() {
     return () => document.removeEventListener("mouseup", onMouseUp);
   }, [dragState]);
 
-  const filteredDrivers =
+  const filteredDrivers = useMemo(() =>
     localData?.drivers.filter(
       (d) =>
         !filter ||
         `${d.firstName} ${d.lastName}`.toLowerCase().includes(filter.toLowerCase())
-    ) || [];
+    ) || [],
+    [localData, filter]
+  );
 
   // Apply sorting
   const sortedDrivers = useMemo(() => {

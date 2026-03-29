@@ -12,6 +12,13 @@ export const GET = withPerfLogging(
     const dates = searchParams.get("dates");
     const driverId = searchParams.get("driverId");
 
+    if (!dates && !driverId) {
+      return NextResponse.json(
+        { error: "Parameter 'dates' of 'driverId' is verplicht." },
+        { status: 400 }
+      );
+    }
+
     const where: any = {};
 
     const resolvedScenarioId = resolveScenarioId(scenarioId);
@@ -59,39 +66,31 @@ export const POST = withPerfLogging(
 
     const resolvedScenarioId = resolveScenarioId(scenarioId);
 
-    // Find existing entry for same driverId+date+scenarioId
-    const existing = await prisma.planningEntry.findFirst({
-      where: {
-        driverId,
-        date,
-        scenarioId: resolvedScenarioId,
-      },
-    });
+    const entryData = {
+      status,
+      leaveTypeId: leaveTypeId || null,
+      sickPercentage: sickPercentage ?? null,
+      notes: notes || null,
+    };
 
-    let entry;
-    if (existing) {
-      entry = await prisma.planningEntry.update({
-        where: { id: existing.id },
-        data: {
-          status,
-          leaveTypeId: leaveTypeId || null,
-          sickPercentage: sickPercentage ?? null,
-          notes: notes || null,
-        },
+    // Use transaction with findFirst+update/create to handle nullable scenarioId.
+    // The DB-level unique index prevents duplicates even under concurrent requests.
+    const entry = await prisma.$transaction(async (tx) => {
+      const existing = await tx.planningEntry.findFirst({
+        where: { driverId, date, scenarioId: resolvedScenarioId },
       });
-    } else {
-      entry = await prisma.planningEntry.create({
-        data: {
-          driverId,
-          date,
-          status,
-          leaveTypeId: leaveTypeId || null,
-          sickPercentage: sickPercentage ?? null,
-          notes: notes || null,
-          scenarioId: resolvedScenarioId,
-        },
+
+      if (existing) {
+        return tx.planningEntry.update({
+          where: { id: existing.id },
+          data: entryData,
+        });
+      }
+
+      return tx.planningEntry.create({
+        data: { driverId, date, scenarioId: resolvedScenarioId, ...entryData },
       });
-    }
+    });
 
     return NextResponse.json(transformPlanningEntry(entry));
   } catch (error) {

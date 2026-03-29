@@ -6,100 +6,48 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-042 is complete — dead `preferences.getAll` and `preferences.remove` methods removed from `api.ts`. A fresh codebase scan reveals several new opportunities: a race condition in the planning upsert route, dead code (`patchBody`, `isDriverActiveByEmployment`), misleading `userId` params in preferences API, redundant cascade deletes, and a `filteredDrivers` memoization gap in PlanningGrid. Previously identified items PB-018, PB-009, and PB-030 remain valid and deferred in the backlog.
+PB-043 (race condition), PB-044 (API guard), PB-045 (memoization), and PB-046 (dead code batch) are all complete. ESLint warnings reduced from 2 to 1. The codebase is in good shape. Remaining opportunities focus on: fixing the last ESLint warning (handleDragEnd), adding date logic validation to sub-record PUT routes, and source existence validation in the scenario duplicate endpoint. Previously identified items PB-018, PB-009, and PB-030 remain valid and deferred in the backlog.
 
 ## Recommended Next Improvements
 
-### DE-REC-016: Fix TOCTOU race condition in POST /api/planning upsert
+### DE-REC-023: Fix handleDragEnd stale closure in PlanningGrid useEffect
 
-- **Title:** Use transaction or upsert for planning entry creation
-- **Problem:** `POST /api/planning` does a `findFirst` then either `update` or `create` in two separate queries without a transaction. Concurrent requests for the same `(driverId, date, scenarioId)` can both find no existing record and both attempt `create`, causing a unique-constraint violation that surfaces as an unhandled 500. The schema also lacks a `@@unique([driverId, date, scenarioId])` constraint on `PlanningEntry`.
-- **Proposed improvement:** Add a `@@unique([driverId, date, scenarioId])` constraint to the schema and use Prisma's `upsert` with the composite key. This eliminates the race and simplifies the code. Requires a migration.
-- **Expected product/technical value:** Prevents intermittent 500 errors during concurrent planning edits. Enforces data integrity at the DB level.
-- **Priority:** P2 High
-- **Effort:** Medium (schema migration + route refactor)
-- **Risk:** Medium. Migration adds a unique constraint — must verify no duplicate rows exist first.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** This is a real data integrity risk. Multi-user scenarios (or even fast double-clicks) can trigger it.
-
-### DE-REC-017: Add date range guard to GET /api/planning
-
-- **Title:** Prevent unbounded planning entry queries
-- **Problem:** `GET /api/planning` returns all planning entries for a scenario when no `dates` parameter is provided. With growing data, this can return hundreds of thousands of rows with no LIMIT, potentially causing OOM or timeouts on serverless.
-- **Proposed improvement:** Require `dates` or `driverId` parameter. Return 400 if neither is provided.
-- **Expected product/technical value:** Prevents accidental full-table scans. Improves API robustness.
-- **Priority:** P3 Medium
-- **Effort:** Small (add early-return guard)
-- **Risk:** Low. Verify all callers pass dates or driverId.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Cheap safety guard against a latent scalability issue.
-
-### DE-REC-018: Remove dead patchBody helper from api.ts
-
-- **Title:** Remove unused patchBody function
-- **Problem:** `patchBody()` in `api.ts` builds a PATCH request, but no PATCH endpoint exists anywhere in the codebase. Zero callers.
-- **Proposed improvement:** Delete the function.
-- **Expected product/technical value:** Dead code removal. Simplifies maintenance.
-- **Priority:** P4 Low
-- **Effort:** Small (delete ~6 lines)
-- **Risk:** Low.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick cleanup, can be bundled with other small items.
-
-### DE-REC-019: Remove dead isDriverActiveByEmployment from api-helpers.ts
-
-- **Title:** Remove unused exported function
-- **Problem:** `isDriverActiveByEmployment` in `api-helpers.ts` is exported but has zero callers. The same logic already exists in `transformDriver` in `api-route-utils.ts`.
-- **Proposed improvement:** Delete the function.
-- **Expected product/technical value:** Removes dead code and a duplicate logic path.
-- **Priority:** P4 Low
-- **Effort:** Small (delete ~10 lines)
-- **Risk:** Low.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick cleanup, can be bundled with DE-REC-018.
-
-### DE-REC-020: Remove misleading userId parameter from preferences API methods
-
-- **Title:** Remove unused userId params from preferences.get and preferences.set
-- **Problem:** The `preferences.get()` and `preferences.set()` methods in `api.ts` accept a `userId` parameter and pass it to the server. The server explicitly ignores client-supplied `userId` (hardcoded to `"default"`) to prevent cross-user access. The client-side signature creates a false impression of multi-user support.
-- **Proposed improvement:** Remove the `userId` parameter from both methods.
-- **Expected product/technical value:** Eliminates misleading API surface. Reduces confusion for future development.
-- **Priority:** P4 Low
-- **Effort:** Small (remove parameter from 2 methods, verify callers)
-- **Risk:** Low.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Small cleanup for API clarity.
-
-### DE-REC-021: Remove redundant cascade deletes in driver and skill deletion
-
-- **Title:** Remove manual deleteMany before cascade-covered deletes
-- **Problem:** `DELETE /api/drivers/[id]` manually deletes `planningEntries` before deleting the driver, but the schema already has `onDelete: Cascade` on `PlanningEntry.driverId`. Similarly, `DELETE /api/settings/skills/[id]` manually deletes `DriverSkill` records before deleting the skill, but `DriverSkill` has `onDelete: Cascade` on both relations. These are redundant round-trips.
-- **Proposed improvement:** Remove the redundant `deleteMany` calls.
-- **Expected product/technical value:** Removes misleading code and one unnecessary DB round-trip per delete.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low. Verify cascade is correctly defined in schema before removing.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Low effort, improves code clarity.
-
-### DE-REC-022: Memoize filteredDrivers in PlanningGrid
-
-- **Title:** Wrap filteredDrivers in useMemo to prevent unnecessary re-renders
-- **Problem:** `filteredDrivers` in `PlanningGrid.tsx` is an inline `.filter()` call that creates a new array reference on every render. The downstream `sortedDrivers` useMemo lists `filteredDrivers` as a dependency, causing it to also re-compute on every render even when data and filter haven't changed.
-- **Proposed improvement:** Wrap `filteredDrivers` in `useMemo` with `[localData, filter]` as deps.
-- **Expected product/technical value:** Reduces unnecessary re-computation in the most complex component. Fixes the root cause of one of the two pre-existing ESLint warnings.
+- **Title:** Memoize handleDragEnd to fix remaining ESLint warning
+- **Problem:** The `useEffect` at line ~222 of `PlanningGrid.tsx` references `handleDragEnd` in its callback but doesn't include it in the dependency array. This causes a stale closure and triggers the remaining ESLint `react-hooks/exhaustive-deps` warning.
+- **Proposed improvement:** Wrap `handleDragEnd` in `useCallback` with `[dragState]` deps, then include it in the useEffect dependency array.
+- **Expected product/technical value:** Eliminates the last ESLint warning in PlanningGrid. Fixes a potential stale closure bug during drag operations.
 - **Priority:** P3 Medium
 - **Effort:** Small
-- **Risk:** Medium. PlanningGrid is the most complex component — any change needs careful verification.
+- **Risk:** Medium. PlanningGrid is the most complex component — any change needs careful verification. The drag interaction must still work correctly.
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Addresses a real performance gap and a pre-existing ESLint warning.
+- **Why now:** It's the last ESLint warning in the codebase. The fix is small and well-scoped.
+
+### DE-REC-024: Add date logic validation to sub-record PUT routes
+
+- **Title:** Validate endDate >= startDate in employment, function, and roster assignment updates
+- **Problem:** The PUT routes for `/api/drivers/[id]/employment/[recordId]`, `/api/drivers/[id]/functions/[recordId]`, and `/api/drivers/[id]/roster-assignments/[recordId]` accept date fields without validating that `endDate >= startDate`. Invalid date ranges are accepted silently.
+- **Proposed improvement:** Add validation that returns 400 with a Dutch error message if `endDate` is provided and is before `startDate`.
+- **Expected product/technical value:** Prevents invalid data at the API boundary. Better UX — planners get immediate feedback instead of silently corrupted records.
+- **Priority:** P3 Medium
+- **Effort:** Small (add one guard to 3 routes)
+- **Risk:** Low.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Simple defensive validation at system boundary, per CLAUDE.md guidelines.
+
+### DE-REC-025: Validate source scenario exists before duplication
+
+- **Title:** Return 404 if source scenario doesn't exist in duplicate endpoint
+- **Problem:** `POST /api/scenarios/[id]/duplicate` doesn't verify the source scenario exists. If called with an invalid ID, it silently creates an empty scenario with no planning entries.
+- **Proposed improvement:** Check that the source scenario exists at the start of the transaction. Return 404 with a Dutch error message if not found.
+- **Expected product/technical value:** Prevents creation of orphan empty scenarios from invalid API calls.
+- **Priority:** P4 Low
+- **Effort:** Small (add one findUnique check)
+- **Risk:** Low.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Quick safety fix. Low effort.
 
 ### DE-REC-008: Add foreign key existence checks before relation creation
 
@@ -142,8 +90,7 @@ PB-042 is complete — dead `preferences.getAll` and `preferences.remove` method
 
 ## Risks / Watch-outs
 
-- **Planning entry race condition (DE-REC-016):** The TOCTOU pattern in `POST /api/planning` is a real data integrity risk. Concurrent edits can produce duplicates or 500 errors. The schema lacks the `@@unique` constraint that would prevent duplicates at the DB level. This is the highest-priority technical risk.
-- **Unbounded GET /api/planning:** Without a date or driver filter, this endpoint can return the entire planning table. Currently mitigated by the frontend always passing dates, but the API itself is unguarded.
+- **handleDragEnd stale closure (DE-REC-023):** The remaining ESLint warning in PlanningGrid indicates a stale closure in the drag mouseup handler. In rare timing scenarios, this could cause drag interactions to behave incorrectly. Low real-world impact but worth fixing.
 - **PerformanceEvent table growth:** `cleanupOldEvents()` in `perf.ts` is defined but never called. The `PerformanceEvent` table will grow indefinitely. Low urgency given low traffic, but worth noting.
 - **StamtabelType enum mismatch:** `StamtabelType.LEAVE_TYPES = "leaveTypes"` does not match the API route segment `"leave-types"`. If the enum is ever used in route construction it will fail silently. Currently the enum is unused by route logic.
 - **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory. At ~200 bytes/row this is ~10 MB per request. Acceptable now but worth documenting as a known ceiling.
@@ -153,7 +100,7 @@ PB-042 is complete — dead `preferences.getAll` and `preferences.remove` method
 - **Migrate to a different ORM:** Prisma is well-integrated. Migration cost far outweighs any benefit.
 - **Add pagination to all list endpoints:** Current data volumes don't justify the complexity.
 - **Add authentication/authorization:** Known gap in CLAUDE.md, explicitly out of scope unless tasked.
-- **Refactor PlanningGrid.tsx broadly:** The component is complex but stable. Targeted fixes (DE-REC-022) are preferred over a full rewrite.
+- **Refactor PlanningGrid.tsx broadly:** The component is complex but stable. Targeted fixes are preferred over a full rewrite.
 - **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer.
 - **Add unique constraints on Driver/Scenario names:** Requires a product decision on whether duplicates should be allowed.
 - **Add enum validation for status fields:** Frontend already constrains values. Low real-world risk.

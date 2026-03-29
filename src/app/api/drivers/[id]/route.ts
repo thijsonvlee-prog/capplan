@@ -80,10 +80,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    await prisma.$transaction(async (tx) => {
-      await tx.planningEntry.deleteMany({ where: { driverId: id } });
-      await tx.driver.delete({ where: { id } });
-    });
+    await prisma.driver.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

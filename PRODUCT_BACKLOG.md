@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All three planning grid redesign phases and DayCell popup redesign are complete. Styled date input wrapper is deployed. Settings page (PB-041) now uses tab-based navigation with stronger hierarchy. Input styling standardized (PB-010). Focus shifts to: (1) fixing the planning upsert race condition (PB-043), (2) small quality/safety improvements to API routes, and (3) remaining design gaps (RosterAssigner modal PB-040, capacity page badges). The connectivity hub (PB-015/016) remains planned for a future cycle.
+**Current direction:** All three planning grid redesign phases and DayCell popup redesign are complete. Styled date input wrapper is deployed. Settings page (PB-041) now uses tab-based navigation with stronger hierarchy. Input styling standardized (PB-010). Planning upsert race condition fixed (PB-043). API safety guard added (PB-044). PlanningGrid performance improved (PB-045). Dead code batch removed (PB-046). Focus shifts to: (1) remaining design gaps (RosterAssigner modal PB-040, capacity page badges), (2) connectivity hub (PB-015/016), and (3) deferred technical items.
 
 ## Status Definitions
 
@@ -27,19 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-043: Fix TOCTOU race condition in POST /api/planning upsert
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** `POST /api/planning` does a `findFirst` then either `update` or `create` without a transaction. Concurrent requests for the same `(driverId, date, scenarioId)` can both find no existing record and both attempt `create`, causing a unique-constraint violation (500 error). The schema also lacks a `@@unique([driverId, date, scenarioId])` constraint.
-- **Why this matters now:** This is a real data integrity risk. Multi-user scenarios or fast double-clicks can trigger it. Highest-priority technical issue.
-- **Scope notes:** Add `@@unique([driverId, date, scenarioId])` to `PlanningEntry` in the Prisma schema. Replace the `findFirst`+`create`/`update` pattern with Prisma `upsert` using the composite key. Requires a migration. Verify no duplicate rows exist before adding the constraint.
-- **Dependencies:** None.
-- **Definition of done:** Migration applied. `POST /api/planning` uses `upsert`. No duplicate rows possible. Passes `npm run verify`.
-- **Implementation note:** Check for existing duplicate `(driverId, date, scenarioId)` rows before migration. If duplicates exist, deduplicate first.
-- **Source:** DE-REC-016.
-
 ### PB-041: Settings page layout composition
 
 - **Owner:** Experience Agent
@@ -49,47 +36,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Problem / opportunity:** The settings page (stamtabellen) is functional but uses a generic list-of-cards layout without strong grouping, hierarchy, or visual rhythm. It reads as a standard admin panel rather than a designed product screen.
 - **Implementation note:** Replaced flat vertical scroll layout with tab-based navigation (Stamgegevens / Competenties / Roosters). Each tab has a section header with title and contextual description. Stamgegevens tab shows a count badge. Layout widened from `max-w-2xl` to `max-w-3xl`. New CSS classes added to `globals.css` for tabs, tab badges, and section intros. Page subtitle made more concise. Also fixed PB-010 in the same pass.
 - **Source:** EX-REC-020.
-
-### PB-044: Add date range guard to GET /api/planning
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** `GET /api/planning` returns all planning entries for a scenario when no `dates` parameter is provided. With growing data, this can return the entire table with no LIMIT, causing potential OOM or timeouts on serverless.
-- **Why this matters now:** Cheap safety guard against a latent scalability issue. All current callers pass dates, but the API itself is unguarded.
-- **Scope notes:** Require `dates` or `driverId` parameter. Return 400 with Dutch error message if neither is provided. Verify all frontend callers pass the required parameters.
-- **Dependencies:** None.
-- **Definition of done:** GET /api/planning returns 400 when called without `dates` or `driverId`. Existing callers unaffected. Passes `npm run verify`.
-- **Source:** DE-REC-017.
-
-### PB-045: Memoize filteredDrivers in PlanningGrid
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** `filteredDrivers` in `PlanningGrid.tsx` is an inline `.filter()` that creates a new array reference on every render. The downstream `sortedDrivers` useMemo depends on it, causing unnecessary re-computation. This is also the root cause of one of the two pre-existing ESLint warnings.
-- **Why this matters now:** Addresses a real performance gap in the most complex component and fixes an ESLint warning.
-- **Scope notes:** Wrap `filteredDrivers` in `useMemo` with `[localData, filter]` as deps. Handle with extreme care — PlanningGrid is sensitive.
-- **Dependencies:** None.
-- **Definition of done:** `filteredDrivers` wrapped in `useMemo`. ESLint warning resolved. No behavioral regression. Passes `npm run verify`.
-- **Implementation note:** PlanningGrid.tsx is ~650 lines and the most complex component. Test carefully after change.
-- **Source:** DE-REC-022.
-
-### PB-046: Remove dead code batch (patchBody, isDriverActiveByEmployment, misleading userId params, redundant cascade deletes)
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** Several small dead code / misleading code items identified:
-  1. `patchBody()` in `api.ts` — no PATCH endpoints exist, zero callers.
-  2. `isDriverActiveByEmployment` in `api-helpers.ts` — exported but zero callers, logic duplicated in `transformDriver`.
-  3. `userId` parameter in `preferences.get()` and `preferences.set()` — server ignores it (hardcoded to "default"), creates false impression of multi-user support.
-  4. Redundant `deleteMany` before cascade-covered deletes in driver and skill deletion routes.
-- **Why this matters now:** Quick batch cleanup. Each item is small, together they meaningfully reduce dead/misleading code.
-- **Scope notes:** Delete `patchBody`. Delete `isDriverActiveByEmployment`. Remove `userId` param from preferences methods (verify callers). Remove redundant `deleteMany` calls (verify cascade is correctly defined in schema first).
-- **Dependencies:** None.
-- **Definition of done:** All four items removed. No callers broken. Passes `npm run verify`.
-- **Source:** DE-REC-018, DE-REC-019, DE-REC-020, DE-REC-021.
 
 ---
 
@@ -155,6 +101,26 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-043: Fix TOCTOU race condition in POST /api/planning upsert
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Added `@@unique([driverId, date, scenarioId])` constraint to PlanningEntry with a migration that deduplicates existing rows first. Replaced findFirst+create/update with transactional upsert pattern in both `POST /api/planning` and `POST /api/planning/bulk`. Added partial unique index for NULL scenarioId (base scenario).
+
+### PB-044: Add date range guard to GET /api/planning
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** GET /api/planning now returns 400 if neither `dates` nor `driverId` parameter is provided. Dutch error message. All existing callers unaffected.
+
+### PB-045: Memoize filteredDrivers in PlanningGrid
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Wrapped `filteredDrivers` in `useMemo` with `[localData, filter]` deps. Eliminates unnecessary re-computation of `sortedDrivers` on every render. Reduced ESLint warnings from 2 to 1 (the remaining one is `handleDragEnd` in useEffect).
+
+### PB-046: Remove dead code batch
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Removed `patchBody()` from `api.ts`, `isDriverActiveByEmployment` from `api-helpers.ts`, misleading `userId` param from `preferences.get/set`, and redundant `deleteMany` calls before cascade-covered deletes in driver and skill deletion routes.
 
 ### PB-042: Remove dead preferences API methods from api.ts
 - **Completed:** 2026-03-29
