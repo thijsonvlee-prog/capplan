@@ -1,93 +1,450 @@
-# Design System Strategy: The Orchestrator
+# DESIGN.md
 
-## 1. Overview & Creative North Star
-The visual identity of this design system is rooted in the **"The Orchestrator"**—a Creative North Star that balances the rigid precision of logistics with the fluid elegance of high-end editorial design. 
+# CapPlan Design System Strategy
+## Creative North Star: The Orchestrator
 
-In a world of cluttered enterprise tools, this system moves beyond the "grid of boxes" by utilizing **intentional asymmetry and tonal depth**. We treat the planning interface not as a spreadsheet, but as a living canvas. By layering surfaces and utilizing sophisticated typography scales, we transform high-density data into a readable, premium experience that feels authoritative yet effortless. This is "Enterprise-Grade" reimagined: where clarity is achieved through breathability and subtle contrast rather than heavy lines.
+## 1. Purpose
 
----
+This document defines the intended design standard for the entire CapPlan application.
 
-## 2. Colors & Surface Philosophy
-The palette is a curated selection of professional blues and functional status hues, anchored by a sophisticated neutral scale.
+It is not optional inspiration.  
+It is the leading design direction for all user-facing work.
 
-### The "No-Line" Rule
-To achieve a bespoke feel, **1px solid borders are prohibited for sectioning components.** Instead of using lines to separate the sidebar from the main content or the header from the grid, boundaries must be defined through:
-- **Background Color Shifts:** A `surface-container-low` (#f2f4f6) section sitting on a `surface` (#f7f9fb) background.
-- **Tonal Transitions:** Using the `surface-container` tiers to distinguish global navigation from local action bars.
+The goal is to move CapPlan away from the feel of a generic internal admin tool and toward a modern, high-quality planning product with strong visual hierarchy, deliberate composition, premium restraint, and operational clarity.
 
-### Surface Hierarchy & Nesting
-Think of the UI as physical layers. Use the following hierarchy for nesting:
-1.  **Level 0 (Base):** `surface` (#f7f9fb) for the primary application background.
-2.  **Level 1 (Sections):** `surface-container-low` (#f2f4f6) for large content areas or side panels.
-3.  **Level 2 (Cards/Modules):** `surface-container-lowest` (#ffffff) to make interactive planning cards "pop" against the gray base.
-4.  **Level 3 (Overlays):** `surface-bright` for floating menus or tooltips.
+CapPlan should feel:
+- designed, not assembled
+- calm, not cluttered
+- authoritative, not heavy
+- efficient, not spreadsheet-like
+- modern product software, not default enterprise CRUD
 
-### The "Glass & Gradient" Rule
-Standard buttons are flat; our primary actions have "soul." 
-- **Main CTAs:** Apply a subtle linear gradient from `primary` (#005bbf) to `primary_container` (#1a73e8).
-- **Floating Elements:** For the dark sidebar (`inverse_surface`), use a 10% opacity white overlay with a `backdrop-blur` of 20px to create a frosted glass effect, making the blue active states feel luminous.
-
-### Status System
-- **Basisrooster (Primary Stability):** Use `tertiary` (#006c49) for text on `tertiary_fixed` (#6ffbbe) backgrounds.
-- **Aanvullend (Growth):** Use `tertiary_container` (#00885d) with `on_tertiary` (#ffffff).
-- **Verlof (Caution):** Use a custom yellow tint mapped to a refined amber.
-- **Ziek (Urgent):** Use `error` (#ba1a1a) with `on_error` (#ffffff).
+When current UI patterns conflict with this direction, they should not be preserved simply because they already exist.
 
 ---
 
-## 3. Typography: The Editorial Edge
-We use a dual-typeface system to create an authoritative hierarchy.
+## 2. Core Design Principles
 
-*   **Display & Headlines (Manrope):** Use Manrope for all `display-` and `headline-` tokens. Its geometric yet warm character provides a "Modern Executive" feel. Set `headline-lg` with a tighter letter-spacing (-0.02em) to mimic high-end magazine layouts.
-*   **Data & Body (Inter):** Use Inter for all `title-`, `body-`, and `label-` tokens. Inter’s tall x-height ensures that high-density driver schedules remain legible even at `label-sm` (0.6875rem).
+### 2.1 Product-grade over template-grade
+The application must not look like a default admin dashboard, bootstrap panel set, or lightly styled CRUD interface.
 
-**Hierarchy Note:** Always pair a `headline-sm` title with a `label-md` uppercase subtitle (using `on_surface_variant`) to provide immediate context without visual weight.
+A screen is not “good enough” just because it is clear and functional.  
+If it still feels generic, flat, overly technical, or visually unintentional, it does not meet the expected design standard.
+
+### 2.2 Planning is the product
+The planning experience is the heart of the application.  
+It must feel like the core product surface, not like a data table with controls around it.
+
+Planning screens should prioritize:
+- scanability
+- hierarchy
+- speed of understanding
+- clear status signaling
+- strong grouping of actions and context
+- confidence in daily operational use
+
+### 2.3 Clarity through space, hierarchy, and surfaces
+We do not rely on heavy borders, dense grids, or visual noise to create structure.
+
+We create structure through:
+- spacing
+- tonal layering
+- typography
+- grouped surfaces
+- contrast in emphasis
+- intentional placement of actions and context
+
+### 2.4 Premium restraint
+CapPlan should feel refined and modern, not flashy.
+
+This means:
+- calm neutral backgrounds
+- selective use of color
+- confident typography
+- restrained elevation
+- deliberate accents only where they improve comprehension or action clarity
+
+### 2.5 Screens should feel composed
+A screen should feel designed as a whole.
+
+Do not treat pages as collections of disconnected controls.  
+Each important screen should have:
+- a clear header zone
+- a clear action zone
+- clear content grouping
+- obvious primary and secondary actions
+- visual rhythm from top to bottom
 
 ---
 
-## 4. Elevation & Depth
-Depth in this system is achieved through **Tonal Layering** rather than traditional structural lines.
+## 3. Experience Standards
 
-- **The Layering Principle:** To lift a card, do not use a stroke. Place a `surface-container-lowest` card on a `surface-container-low` background. The subtle shift from #f2f4f6 to #ffffff is enough to signal depth to the eye.
-- **Ambient Shadows:** For floating modals, use an extra-diffused shadow: `box-shadow: 0 20px 40px rgba(25, 28, 30, 0.06)`. The shadow color is a tinted version of `on_surface`, creating a natural ambient light effect.
-- **The "Ghost Border" Fallback:** If a border is required for accessibility (e.g., input fields), use `outline_variant` at 20% opacity. **Never use 100% opaque borders.**
-- **Glassmorphism:** Navigation active states (like the sidebar "Planning" tab) should use a semi-transparent `primary` color with a `backdrop-blur` (12px) to feel integrated into the dark sidebar.
+## 3.1 What good looks like
+Good CapPlan screens have:
+- a strong page title with immediate context
+- clear separation between navigation, controls, content, and summary information
+- one obvious primary action
+- grouped filters and view controls
+- content presented in distinct sections or cards where useful
+- readable density without feeling cramped
+- visual emphasis aligned with operational importance
+- data surfaces that feel intentional, not mechanically rendered
 
----
+## 3.2 What must be avoided
+The following are anti-patterns and should be treated as design problems:
 
-## 5. Components
-
-### Planning Cells (The Grid)
-- **Style:** Forbid the use of grid lines. Use `spacing-0.5` (1px) gaps between cells to reveal the background color (`surface_dim`), creating a "natural" grid.
-- **Corners:** Use `rounded-sm` (0.25rem) for individual schedule blocks to maintain a high-density, professional look.
-
-### Buttons
-- **Primary:** Gradient fill (`primary` to `primary_container`), `rounded-DEFAULT` (8px). 
-- **Tertiary (Ghost):** No background or border. Use `primary` text. On hover, apply a `surface-container-high` background with 40% opacity.
-
-### Chips (Planning States)
-- Use `rounded-full` for status indicators.
-- **High-Density Rule:** In the main grid, use "Icon-Only" or "Initial-Only" chips to save space, using a tooltip for full descriptions.
-
-### Input Fields
-- Use `surface-container-lowest` for the field background. 
-- Use a "Ghost Border" (`outline_variant` at 20%). On focus, transition the border to `primary` (#005bbf) at 100% opacity with a subtle 2px outer glow.
-
-### Sidebar (Dark Mode Focus)
-- Background: `inverse_surface` (#2d3133).
-- Active State: A glassmorphic pill using `primary` with 80% opacity and white text.
+- generic admin-dashboard layouts
+- flat screens with weak hierarchy
+- table-first UI where the table dominates everything else
+- control bars that feel like loose rows of form elements
+- every action having equal visual weight
+- excessive reliance on 1px borders for structure
+- dense grey grids that resemble spreadsheets
+- default-looking cards, buttons, inputs, or shadows
+- “just add spacing and rounded corners” redesigns
+- preserving mediocre legacy layout purely for consistency
 
 ---
 
-## 6. Do's and Don'ts
+## 4. Visual System
 
-### Do:
-- **Use White Space as a Divider:** Use `spacing-4` or `spacing-6` to separate logical groups rather than lines.
-- **Embrace Asymmetry:** Align the "Planning" title to the far left and the "Filters" to the far right to create a wide, editorial horizon.
-- **Color-Code Intelligently:** Use the status colors sparingly. If every cell is colored, nothing is important. Use `surface-variant` for "empty" or "neutral" states.
+## 4.1 Color and surface philosophy
 
-### Don't:
-- **Don't use Pure Black:** Always use `on_surface` (#191c1e) for text to maintain a premium, softened contrast.
-- **Don't use Standard Shadows:** Avoid the "fuzzy grey" shadow. If it looks like a default CSS shadow, it's wrong.
-- **Don't Crowd the Header:** The top navigation should feel like a luxury dashboard. Give the "CapPlan" logo and user profile significant padding (`spacing-8`).
-- **No 1px Borders:** Never use `#CCCCCC` or `#000000` 1px lines to separate data columns. Let the alignment and background shifts do the work.
+The palette should support calm operational clarity with a premium tone.
+
+### Surface hierarchy
+Use surfaces as layers, not as decoration.
+
+- `surface` (`#f7f9fb`)  
+  Primary application background
+
+- `surface-container-low` (`#f2f4f6`)  
+  Large sections, grouped screen zones, side panels, page framing
+
+- `surface-container-lowest` (`#ffffff`)  
+  Cards, modules, planning surfaces, inputs, elevated content blocks
+
+- `surface-bright`  
+  Menus, overlays, floating surfaces
+
+### No-Line Rule
+Do not use 1px borders as the default way to separate major sections.
+
+Instead, create separation through:
+- surface contrast
+- spacing
+- nesting
+- tonal transitions
+
+This applies especially to:
+- sidebar vs main content
+- header vs content
+- cards within sections
+- grouped controls
+
+### Border fallback
+If a border is needed for usability or accessibility:
+- use `outline_variant` at low opacity
+- prefer subtle outlines over visible hard lines
+- never use harsh default grey borders as layout structure
+
+## 4.2 Accent color usage
+Color must be functional and intentional.
+
+Use strong color for:
+- primary actions
+- key active states
+- planning statuses
+- focused interactive elements
+- urgent exceptions
+
+Do not use strong color everywhere.  
+If everything is emphasized, nothing is emphasized.
+
+## 4.3 Status system
+Status colors should remain semantically stable across the app.
+
+- Basisrooster  
+  Stable, planned baseline  
+  Use green family with high readability
+
+- Aanvullend beschikbaar  
+  Secondary positive / extra capacity  
+  Use deeper or more saturated green than the baseline state
+
+- Verlof  
+  Caution / unavailable by leave  
+  Use refined amber or muted yellow
+
+- Ziek  
+  Critical unavailable  
+  Use error red
+
+- Neutral / empty / not assigned  
+  Use surface variants, subdued greys, or low-emphasis states
+
+Status colors should be easy to scan at a glance and should remain readable in dense planning contexts.
+
+---
+
+## 5. Typography
+
+Typography should create authority, rhythm, and clarity.
+
+## 5.1 Typeface system
+- Use **Manrope** for display and headline levels
+- Use **Inter** for titles, body text, labels, UI metadata, and dense data presentation
+
+## 5.2 Hierarchy expectations
+Typography must do real structural work.
+
+Use:
+- large, confident page titles
+- restrained supporting context
+- clear distinction between page title, section title, label, and metadata
+- compact but legible labels in high-density planning views
+
+Avoid:
+- weak title hierarchy
+- oversized body text in dense interfaces
+- indistinguishable section and label styles
+- visually noisy all-caps overuse
+
+## 5.3 Editorial edge
+CapPlan should feel more editorial and composed than a standard enterprise app.
+
+This means:
+- intentional scale differences
+- confident whitespace around headings
+- occasional uppercase metadata where it improves rhythm
+- stronger page openings and section starts
+- not everything rendered with the same visual weight
+
+---
+
+## 6. Depth, elevation, and visual rhythm
+
+Depth should come from layering, contrast, and containment, not from default card styling.
+
+## 6.1 Layering principle
+To create depth:
+- place white or bright cards on soft grey surfaces
+- use subtle nesting
+- use restrained ambient shadows only where elevation is genuinely helpful
+
+## 6.2 Shadows
+Shadows must be soft, diffused, and minimal.
+
+Avoid:
+- harsh drop shadows
+- generic CSS-looking shadows
+- using shadow everywhere
+
+Use stronger shadow only for:
+- modal surfaces
+- overlays
+- floating menus
+- elements that must visibly sit above the page
+
+## 6.3 Rhythm
+Use spacing to build rhythm and hierarchy.
+
+Pages should breathe.  
+Logical groups should be visibly grouped.  
+Important content should not be crowded by utility controls.
+
+---
+
+## 7. Component directives
+
+## 7.1 Page headers
+Every major screen should have a clearly composed header zone.
+
+A good page header includes:
+- page title
+- contextual subtitle, status, or timeframe where useful
+- grouped utilities such as search, filters, or view switching
+- one visually dominant primary action when relevant
+
+Do not let the top of the page degrade into a thin strip of controls.
+
+## 7.2 Toolbars and controls
+Controls should be grouped by meaning.
+
+Preferred structure:
+- search grouped with filtering
+- view mode controls grouped together
+- actions grouped separately from filters
+- primary CTA visually distinct from utility controls
+
+Avoid long unstructured rows of dropdowns, toggles, pills, and buttons.
+
+## 7.3 Cards and modules
+Use cards or contained modules when they improve:
+- readability
+- grouping
+- scanability
+- perceived structure
+
+Cards should not feel like default dashboard widgets.  
+They should feel intentionally framed and proportioned.
+
+## 7.4 Planning grid
+The planning grid is a product surface, not a spreadsheet.
+
+Rules:
+- avoid harsh grid-line visuals
+- use spacing, tonal contrast, and containment to define cells
+- maintain fast scanability across rows and dates
+- make important states legible without over-coloring everything
+- ensure row identity, day structure, and totals are immediately parseable
+- support density without becoming visually mechanical
+
+Where possible:
+- combine row identity, contract metadata, and planning state into clearer row composition
+- ensure totals and summary information are visibly distinct from the main scheduling matrix
+
+## 7.5 Chips and status markers
+Status indicators should be compact, consistent, and quickly recognizable.
+
+In dense planning contexts:
+- prefer icon-only or minimal chips when space is limited
+- provide tooltip or expanded meaning where needed
+- do not let chips become decorative clutter
+
+## 7.6 Buttons
+Buttons must communicate priority clearly.
+
+- Primary buttons should be visually dominant
+- Secondary buttons should support without competing
+- Ghost/tertiary buttons should be low-friction utility actions
+- button styling should feel deliberate and product-grade, not default framework output
+
+A subtle gradient may be used for primary CTAs where it improves polish without becoming flashy.
+
+## 7.7 Inputs
+Inputs should feel integrated into the system, not pasted in from a component library.
+
+- use clean surfaces
+- use subtle outlines
+- make focus states crisp and premium
+- preserve accessibility and clarity
+- avoid heavy field chrome
+
+## 7.8 Sidebar
+The sidebar should feel calm, solid, and premium.
+
+It is not just navigation; it anchors the application.
+
+Use:
+- dark, restrained surfaces
+- clear active-state treatment
+- ample spacing
+- calm iconography
+- a composed relationship between logo, nav items, and user identity
+
+---
+
+## 8. Layout strategy
+
+## 8.1 Composition over symmetry
+Do not default to rigid symmetrical layouts.
+
+CapPlan may use asymmetry where it improves:
+- visual interest
+- hierarchy
+- action clarity
+- content flow
+
+This should feel intentional and composed, never random.
+
+## 8.2 Action placement
+Primary actions should be easy to find and should not be buried in generic control rows.
+
+Important actions should typically live:
+- in the page header
+- in the upper-right action zone
+- in a clearly distinguished action group
+
+## 8.3 Summary information
+KPIs, totals, warnings, capacity metrics, and operational summaries should be treated as first-class information.
+
+Do not hide them in footnotes or weak text treatment.  
+When useful, present them as dedicated summary modules.
+
+---
+
+## 9. Planning-specific directives
+
+Because planning is the core workflow, the following standards are especially important:
+
+- the planning screen should feel premium and product-led
+- the timeframe selector should feel purposeful and easy to scan
+- filters and grouping controls should be clearly organized
+- the schedule matrix should feel contained and intentional
+- row labels should carry both identity and context
+- capacity, totals, and open issues should be visible without competing with the grid
+- empty states should still feel designed, not like raw table fallback
+- the screen should support rapid operational decision-making
+
+A successful planning page should feel closer to a modern B2B scheduling product than to Excel or an admin table.
+
+---
+
+## 10. Implementation rules for agents
+
+When working on user-facing UI, agents must not stop at visual polish.
+
+They must evaluate:
+- whether the current layout is too generic
+- whether hierarchy is too weak
+- whether controls are poorly grouped
+- whether the page feels like a technical admin screen instead of a designed product screen
+- whether current patterns conflict with this design strategy
+
+If the screen is functional but visually below standard, treat that as a real problem.
+
+Agents should:
+- improve layout composition where needed
+- introduce stronger hierarchy where needed
+- refactor grouped controls where needed
+- use surface layering instead of default border structure
+- recommend broader redesign work when meaningful alignment requires more than the current task scope
+
+Do not preserve a weak screen structure merely because it is already implemented.
+
+---
+
+## 11. Redesign policy
+
+A broader redesign should be recommended when:
+- multiple screens materially conflict with this design system
+- existing UI patterns are too generic to elevate through small improvements
+- the current screen architecture limits clarity or product quality
+- meaningful alignment would require component or layout system changes
+
+In such cases, recommend explicit redesign work to the Product Owner.
+
+This recommendation should be concrete:
+- what is below standard
+- why it matters
+- which area should be redesigned
+- expected user value
+- likely effort and dependencies
+
+---
+
+## 12. Quality bar
+
+The target is not “acceptable internal tooling UI.”  
+The target is a polished, modern B2B planning product.
+
+Every important screen should feel:
+- intentional
+- composed
+- high-trust
+- operationally clear
+- visually calm
+- distinctly above default admin UI quality
+
+If the result still looks like a standard enterprise dashboard, the design standard has not been met.
