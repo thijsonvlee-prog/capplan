@@ -6,7 +6,9 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_No unreleased changes._
+- **Typografie:** Manrope lettertype toegevoegd voor paginatitels. Titels hebben nu een sterker visueel gewicht en duidelijkere hiërarchie.
+- **Koptekstbalk:** Rand onder de koptekst verwijderd; scheiding gebeurt nu via kleurverschil tussen oppervlakken. Overtollig "CapPlan" label verwijderd.
+- **Capaciteitspagina:** Actieve scenariotoggle gebruikt nu merkkleuren in plaats van waarschuwingskleuren.
 
 ## Release History
 

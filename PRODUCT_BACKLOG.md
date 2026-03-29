@@ -27,45 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-062: Fix capacity page scenario toggle color semantics
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The active scenario toggle on the capacity page uses `bg-warning-50 text-warning-700`, which semantically implies caution/warning. The correct semantic for active selection is brand colors.
-- **Why this matters now:** Single-line fix. The current color is semantically wrong and creates inconsistency with brand color usage elsewhere.
-- **Scope notes:** Change selected scenario toggle from `warning-50`/`warning-700` to `brand-50`/`brand-700`.
-- **Dependencies:** None.
-- **Definition of done:** Active scenario toggle uses brand colors instead of warning colors. Passes `npm run verify`.
-- **Implementation note:** Trivial CSS class change.
-- **Source:** EX-REC-034.
-
-### PB-063: Add Manrope typeface for display and headline levels
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** DESIGN.md section 5.1 specifies Manrope for display and headline levels. Currently, only Inter is loaded. Page titles and section headers lack the typographic contrast intended by the design system.
-- **Why this matters now:** Low-risk, high-impact change affecting every page. Directly addresses a gap between implementation and DESIGN.md.
-- **Scope notes:** Add Manrope via `next/font/google`. Apply to `.text-page-title` and optionally to other display-level elements. Keep Inter for body, labels, and dense data. Use `display: swap` and limit to weights 600/700.
-- **Dependencies:** None.
-- **Definition of done:** Manrope is loaded and applied to page titles. Typographic hierarchy is visibly stronger. Passes `npm run verify`.
-- **Implementation note:** Font addition is isolated. Be mindful of slightly increased initial page load.
-- **Source:** EX-REC-033.
-
-### PB-064: Strengthen header component composition
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The header bar (`Header.tsx`) uses `border-b` for separation, conflicting with DESIGN.md No-Line Rule (section 4.1). The right side shows a redundant "CapPlan" label already visible in the sidebar. The header appears on every page and is below design target.
-- **Why this matters now:** Quick win for design consistency. Removing the border and redundant label aligns with the No-Line Rule.
-- **Scope notes:** Remove `border-bottom`, rely on tonal surface contrast. Remove redundant "CapPlan" label. Do not add complex breadcrumbs or new interactive elements in this pass.
-- **Dependencies:** None.
-- **Definition of done:** Header uses tonal separation instead of border. No redundant label. Passes `npm run verify`.
-- **Implementation note:** Small change to `Header.tsx`.
-- **Source:** EX-REC-035.
-
 ### PB-065: Replace DayCell leaveType .find() with Map-based lookup
 
 - **Owner:** Delivery Agent
@@ -108,6 +69,21 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-062: Fix capacity page scenario toggle color semantics
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Changed active scenario toggle from `warning-50`/`warning-700` (undefined tokens, wrong semantics) to `brand-50`/`brand-700`. Active selection now uses correct brand color.
+
+### PB-063: Add Manrope typeface for display and headline levels
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added Manrope via `next/font/google` with `--font-display` CSS variable. Applied to `.text-page-title` with weight 700 and tighter letter-spacing. Typographic hierarchy is now visibly stronger on every page.
+
+### PB-064: Strengthen header component composition
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Removed `border-b` from header (No-Line Rule alignment). Removed redundant "CapPlan" label. Header now uses tonal surface contrast for separation.
 
 ### PB-060: Replace linear .find() lookups with Map-based lookups
 - **Completed:** 2026-03-29
