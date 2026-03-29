@@ -23,9 +23,23 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-Denk alvast na over wat er nodig is om de pop-up/dropdown bij het aanklikken van een daycell te verbeteren. Nu is het zo dat je klikt op een daycell, dan vervolgens komt de pop-up in het midden van je scherm (ver weg van je muis), je wil dus eigenlijk dat dit makkelijker werkt. Ook het ontwerp hiervan mag mooier. 
+### SMI-005: DayCell popup positioning and redesign
 
-Implementeer een mooiere datumselectie scherm, in alle datumvelden komt nu een lelijk (soort standaard) datum selectiescherm, maar dit mag een custom design zijn dat aansluit bij de rest van de applicatie.
+- **Type:** UX improvement request
+- **Status:** Planned
+- **Input:** Denk alvast na over wat er nodig is om de pop-up/dropdown bij het aanklikken van een daycell te verbeteren. Nu is het zo dat je klikt op een daycell, dan vervolgens komt de pop-up in het midden van je scherm (ver weg van je muis), je wil dus eigenlijk dat dit makkelijker werkt. Ook het ontwerp hiervan mag mooier.
+- **Why this matters:** The DayCell popup is part of the core planning workflow. Appearing in screen center forces the user to move their attention away from the cell they just clicked. Positioning near the click target and improving the visual design directly improves planning efficiency.
+- **Product Owner action:** Created PB-037 (reposition popup near click target) and PB-038 (redesign popup appearance). PB-037 is ready for next cycle. PB-038 depends on PB-037 positioning work.
+- **Backlog linkage:** PB-037, PB-038.
+
+### SMI-006: Custom date picker design
+
+- **Type:** UX improvement request
+- **Status:** Escalated
+- **Input:** Implementeer een mooiere datumselectie scherm, in alle datumvelden komt nu een lelijk (soort standaard) datum selectiescherm, maar dit mag een custom design zijn dat aansluit bij de rest van de applicatie.
+- **Why this matters:** All date fields use the browser's native date picker, which looks inconsistent with the application's design system. A custom date picker aligned with the design tokens would significantly improve perceived quality.
+- **Product Owner action:** Escalated to ESC-004. Building a fully custom date picker from scratch (no external libraries per CLAUDE.md) is significant effort. Needs scope decision before planning.
+- **Backlog linkage:** Pending ESC-004 decision.
 
 ### SMI-004: Bigger design steps toward DESIGN.md compliance
 
@@ -33,8 +47,8 @@ Implementeer een mooiere datumselectie scherm, in alle datumvelden komt nu een l
 - **Status:** Planned
 - **Input:** Er moeten grotere stappen gemaakt worden in het redesign om te voldoen aan design.md. Stuur aan op grotere verbeteringen, minder schaven aan bestaand ontwerp, maar echt componenten en schermen opnieuw ontwerpen obv design.md. Luister dus ook goed naar de aanbevelingen van de experience agent.
 - **Why this matters:** The Scrum Master is signaling that incremental polish is no longer sufficient. The product needs visible, meaningful redesign steps.
-- **Product Owner action:** Design items elevated to P2 High. PB-020 (ConfirmDialog) upgraded to P2 Ready. PB-033 (focus trap) elevated to P2 as foundation for PB-020. PB-031 (page headers) ready at P2. Planning grid phased redesign approved (ESC-003 → Option B) and translated into PB-032/PB-034/PB-035.
-- **Backlog linkage:** PB-020, PB-031, PB-033, PB-032, PB-034, PB-035.
+- **Product Owner action:** Design items elevated to P2 High. Planning grid phased redesign approved (ESC-003 → Option B). Phase 1 complete. Phase 2 (PB-034) promoted to ready. DayCell popup redesign (SMI-005) aligns with this direction.
+- **Backlog linkage:** PB-020, PB-031, PB-033, PB-032, PB-034, PB-035, PB-037, PB-038.
 
 ### SMI-002: Keep improvements incremental during stabilization
 

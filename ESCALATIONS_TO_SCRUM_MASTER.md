@@ -22,7 +22,26 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-_None._
+### ESC-004: Custom date picker — scope and approach
+
+- **Status:** Open
+- **Date / run context:** 2026-03-29 — triggered by SMI-006
+- **Decision needed:** How should the custom date picker be scoped? Building a fully custom date picker from scratch (no external libraries per CLAUDE.md) is significant effort: calendar grid, month/year navigation, keyboard accessibility, locale handling. The scope must be chosen before planning.
+- **Why it matters:** Every date field in the application uses the browser's native date picker, which looks inconsistent with the design system. This affects perceived quality across driver management, employment dates, planning period selection, and roster assignments. However, building a production-quality custom date picker is a multi-cycle effort.
+- **Recommendation from Product Owner Agent:** Option B — a styled wrapper that enhances the native input is the best balance of effort vs. impact. It delivers visible improvement without the risk of a full custom calendar component.
+
+**Choose one option:**
+
+- ( ) **Option A — Full custom date picker component.** Build a complete calendar dropdown from scratch: month grid, year/month navigation, keyboard support, locale-aware formatting. Replaces all native date inputs. Estimated 2-3 cycles of Experience Agent work. Highest design quality but highest effort and risk.
+- ( ) **Option B — Styled date input wrapper.** Create a custom wrapper component that uses the native `<input type="date">` underneath but adds styled container, custom trigger button, and consistent typography/spacing aligned with the design system. The calendar popup itself remains native. Estimated 1 cycle. Good visual improvement with low risk.
+- ( ) **Option C — Defer until after planning grid redesign.** The planning grid phases (PB-034, PB-035) and DayCell popup (PB-037, PB-038) are higher-impact UX improvements. Defer the date picker to a future cycle after core workflow improvements are complete.
+
+**Trade-offs:**
+- Option A delivers the best design consistency but is expensive and risky (custom calendar components are notoriously tricky to get right for accessibility and edge cases).
+- Option B delivers visible improvement quickly with minimal risk, but the calendar popup itself will still look native/browser-specific.
+- Option C avoids distraction from higher-priority design work but leaves the date picker looking inconsistent longer.
+
+**What the Scrum Master must do:** Place `(X)` next to exactly one option above.
 
 ---
 
@@ -34,10 +53,10 @@ _None._
 - **Date / run context:** 2026-03-29 — triggered by SMI-004 and EX-REC-016
 - **Decision needed:** How should the planning grid visual redesign be scoped and phased?
 - **Chosen option:** Option B — Phased redesign across 2-3 cycles
-  - Phase 1: Surface layering and row tonal hierarchy (PB-032)
+  - Phase 1: Surface layering and row tonal hierarchy (PB-032) — completed
   - Phase 2: Row composition and identity (PB-034)
   - Phase 3: Cell rendering and status refinement (PB-035)
-- **Product Owner action:** All three phases translated into backlog items. PB-032 is ready for next cycle. Prerequisite work (PB-028, PB-033, PB-020, PB-031) all completed.
+- **Product Owner action:** All three phases translated into backlog items. Phase 1 completed 2026-03-29. Phase 2 promoted to ready.
 
 ### ESC-001: Define MVP scope for connectivity hub
 

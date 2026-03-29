@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (SMI-004):** The Scrum Master directs bigger design steps toward DESIGN.md compliance. The planning grid visual redesign has been approved as a phased approach (ESC-003 → Option B). All prerequisite work (page headers, confirm dialogs, focus traps) is complete. Phase 1 (PB-032) is the next major deliverable.
+**Current direction:** SMI-004 drives bigger design steps toward DESIGN.md. Phase 1 of the planning grid redesign (PB-032) is complete. The DayCell popup (SMI-005) and Phase 2 row composition (PB-034) are the next major UX deliverables. The custom date picker (SMI-006) is escalated to ESC-004 awaiting scope decision.
 
 ## Status Definitions
 
@@ -27,14 +27,51 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-024: Consolidate /drivers/[id]/computed into main driver transform
+### PB-037: DayCell popup — reposition near click target
+
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** When a user clicks a DayCell in the planning grid, the status selector popup appears in the center of the screen, far from the mouse cursor. This forces unnecessary mouse movement and breaks the user's spatial context within the grid.
+- **Why this matters now:** Direct Scrum Master request (SMI-005). Core planning workflow friction. Aligns with SMI-004 bigger design steps.
+- **Scope notes:** Reposition the DayCell selector dropdown/popup to appear adjacent to the clicked cell (e.g., below or beside it, with viewport boundary detection to avoid overflow). The popup should feel like a contextual menu, not a modal. Keep the existing status options and behavior — this is a positioning and container change only.
+- **Dependencies:** None.
+- **Definition of done:** Clicking a DayCell opens the status selector near the clicked cell. The popup stays within viewport bounds. Existing status selection behavior is preserved. Passes `npm run verify`.
+- **Implementation note:** The current selector is likely rendered as an absolutely/fixed positioned overlay. Change to position relative to the click target or cell element. Consider using a portal with calculated coordinates based on the cell's bounding rect.
+- **Source:** SMI-005.
+
+### PB-038: DayCell popup — visual redesign
+
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** The DayCell status selector popup has a basic/functional appearance that doesn't match the design quality of the recently improved planning grid surface, confirm dialogs, and page headers.
+- **Why this matters now:** Direct Scrum Master request (SMI-005). With PB-037 repositioning the popup near the cell, the visual design should also be elevated to match the rest of the application.
+- **Scope notes:** Redesign the popup appearance: use design tokens for surface, border, shadow. Apply card-style container (`shadow-card`, `border-border-subtle`). Status options should be clearly styled items (not plain text). Consider hover states and active state indication. Must remain compact since it now appears inline near the cell.
+- **Dependencies:** PB-037 (positioning must be done first so the redesign works with the new contextual positioning).
+- **Definition of done:** DayCell popup has refined visual design using design tokens. Status options are clear and interactive. Compact enough for contextual positioning. Passes `npm run verify`.
+- **Source:** SMI-005.
+
+### PB-034: Planning grid Phase 2 — row composition and identity
+
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** Row composition combines name, metadata, and planning cells in a flat table structure without clear visual hierarchy. Driver identity (name, employee number) doesn't stand out from the row content.
+- **Why this matters now:** Phase 1 surface layering (PB-032) is complete. Row composition is the next structural improvement per ESC-003 Option B phased approach. SMI-004 calls for bigger design steps.
+- **Scope notes:** Strengthen driver identity zone: driver name with more confident typography, metadata as subdued supporting text, clearer visual separation between identity columns and planning columns. Do NOT change cell rendering in this phase.
+- **Dependencies:** PB-032 (completed).
+- **Definition of done:** Row composition shows clear visual hierarchy between identity, metadata, and planning content. Faster driver identification when scanning. Passes `npm run verify`.
+- **Source:** EX-REC-016, ESC-003 (Option B Phase 2).
+
+### PB-024: Remove dead getComputedFields wrapper from api.ts
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Ready
-- **Problem / opportunity:** The `/api/drivers/[id]/computed` route file has already been deleted, but the `drivers.getComputedFields()` wrapper in `api.ts` (line 99) still exists and calls a non-existent endpoint. Dead code creates confusion.
+- **Problem / opportunity:** The `drivers.getComputedFields()` wrapper in `api.ts` calls a non-existent endpoint (route file already deleted). Dead code creates confusion.
 - **Why this matters now:** Low effort cleanup. Remove dead API surface.
-- **Scope notes:** Remove the `getComputedFields` method from `src/lib/api.ts`. Verify no frontend code calls it (confirmed: only `api-helpers.ts` `getComputedFields` is used, which is a different client-side function).
+- **Scope notes:** Remove the `getComputedFields` method from `src/lib/api.ts`. Verify no frontend code calls it.
 - **Dependencies:** None.
 - **Definition of done:** `drivers.getComputedFields()` removed from `api.ts`. No regressions. Passes `npm run verify`.
 - **Source:** DE-REC-012.
@@ -44,28 +81,32 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Ready
-- **Problem / opportunity:** `src/app/api/preferences/route.ts` (PUT) and `src/app/api/scenarios/active/route.ts` (PUT) accept request bodies without `validateRequired()` checks. Missing fields cause unclear errors downstream.
+- **Problem / opportunity:** `src/app/api/preferences/route.ts` (PUT) and `src/app/api/scenarios/active/route.ts` (PUT) accept request bodies without `validateRequired()` checks.
 - **Why this matters now:** Small gap in otherwise complete validation coverage. Quick fix.
-- **Scope notes:** Add `validateRequired()` calls to both handlers (~5 lines per file). Use the existing pattern from `api-route-utils.ts`. Preferences PUT needs `key` and `value`. Active-scenario PUT needs `activeId`.
+- **Scope notes:** Add `validateRequired()` calls to both handlers. Preferences PUT needs `key` and `value`. Active-scenario PUT needs `activeId`.
 - **Dependencies:** None.
 - **Definition of done:** Both PUT handlers validate required fields. Invalid requests return clear 400 responses. Passes `npm run verify`.
 - **Source:** DE-REC-013.
 
 ---
 
-## Planned (Next Cycles)
+## Blocked / Needs Decision
 
-### PB-034: Planning grid Phase 2 — row composition and identity
+### PB-039: Custom date picker component
 
 - **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Planned (future cycle)
-- **Problem / opportunity:** Row composition combines name, metadata, and planning cells in a flat table structure without clear visual hierarchy.
-- **Why this matters now:** Phase 2 of ESC-003 Option B. Builds on Phase 1 surface layering.
-- **Scope notes:** Improve how driver name, metadata, and planning cells relate within each row. Better row identity composition. Do NOT change cell rendering in this phase.
-- **Dependencies:** PB-032 (completed).
-- **Definition of done:** Row composition shows clear visual hierarchy between identity, metadata, and planning content. Passes `npm run verify`.
-- **Source:** EX-REC-016, ESC-003 (Option B Phase 2).
+- **Priority:** P2 High
+- **Status:** Blocked (awaiting ESC-004 decision)
+- **Problem / opportunity:** All date fields use the browser's native date picker, which looks inconsistent with the application's design system. Affects perceived quality across driver management, employment dates, planning period selection, and roster assignments.
+- **Why this matters now:** Direct Scrum Master request (SMI-006). Aligns with SMI-004 design direction.
+- **Scope notes:** Depends on ESC-004 scope decision (full custom / styled wrapper / defer).
+- **Dependencies:** ESC-004 decision required.
+- **Definition of done:** Defined after ESC-004 decision.
+- **Source:** SMI-006.
+
+---
+
+## Planned (Future Cycles)
 
 ### PB-035: Planning grid Phase 3 — cell rendering and status refinement
 
@@ -78,6 +119,18 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Dependencies:** PB-034 (Phase 2 must be complete first).
 - **Definition of done:** Cell rendering aligns with DESIGN.md product-grade standard. Status is immediately comprehensible. Passes `npm run verify`.
 - **Source:** EX-REC-016, ESC-003 (Option B Phase 3).
+
+### PB-040: RosterAssigner modal table styling
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Planned (future cycle)
+- **Problem / opportunity:** The RosterAssigner modal table uses dense `border border-border-default` on every cell, conflicting with DESIGN.md section 4.1 and visually inconsistent with the updated planning grid.
+- **Why this matters now:** Low effort consistency fix. The planning grid now uses tonal separators, making the modal table the most visible inconsistency.
+- **Scope notes:** Apply the same tonal separator approach used in the planning grid: remove cell borders, use subtle row separators, keep header bottom edge.
+- **Dependencies:** None.
+- **Definition of done:** RosterAssigner table uses tonal separators instead of cell borders. Passes `npm run verify`.
+- **Source:** EX-REC-018.
 
 ### PB-015: Connectivity hub — data model and import source API
 
@@ -114,27 +167,22 @@ _No items currently in progress._
 ### PB-032: Planning grid Phase 1 — surface layering and row tonal hierarchy
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Replaced border-heavy grid structure with tonal surface system. Added planning grid CSS classes. Header/data/group/totals rows differentiated through surface layering, subtle separators, and alternating row tones. Sticky columns use right-edge shadow.
+- **Summary:** Replaced border-heavy grid structure with tonal surface system. Header/data/group/totals rows differentiated through surface layering, subtle separators, and alternating row tones.
 
 ### PB-036: Add Escape key handling to remaining modal overlays
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Added Escape key dismiss handler to ScenarioSelector, RosterAssigner, bulk selector, and DayCell selector. All modals now consistently support Escape to close.
+- **Summary:** Added Escape key dismiss handler to ScenarioSelector, RosterAssigner, bulk selector, and DayCell selector.
 
 ### PB-033: Add focus trap to modal overlays
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Created reusable `useFocusTrap` callback-ref hook. Applied to ScenarioSelector, RosterAssigner, PlanningGrid bulk selector, and DayCell selector.
+- **Summary:** Created reusable `useFocusTrap` hook. Applied to all modal overlays.
 
-### PB-020: Replace window.confirm with custom ConfirmDialog component
+### PB-020: Replace window.confirm with custom ConfirmDialog
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Created `ConfirmDialog` component with design tokens, danger styling, focus trap, Escape key support. Replaced all 6 `window.confirm()` calls.
-
-### PB-031: Apply page header pattern to settings and capacity screens
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Added composed page headers. Fixed hardcoded orange color classes on capacity page to use design tokens.
+- **Summary:** Created styled `ConfirmDialog` component. Replaced all 6 `window.confirm()` calls.
 
 ### PB-025: Fix planning grid not showing drivers
 - **Completed:** 2026-03-29
@@ -162,7 +210,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Dependencies resolved (PB-022 done). Can be scheduled when capacity allows. Medium effort — touches several routes.
+- **Reason:** Dependencies resolved (PB-022 done). Medium effort — touches several routes. Schedule when capacity allows after higher-priority items.
 - **Source:** DE-REC-008.
 
 ### PB-010: Standardize input field styling across settings forms
@@ -170,7 +218,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Minor visual inconsistency. Low impact relative to current design priorities (PB-032 takes precedence).
+- **Reason:** Minor visual inconsistency. Low impact relative to current design priorities.
 - **Source:** EX-REC-003.
 
 ### PB-009: Add covering index for capacity aggregation query

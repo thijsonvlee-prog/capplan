@@ -6,14 +6,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-### UX / design verbeteringen
-
-- Het planningsrooster gebruikt nu tonale lagen in plaats van rasterlijnen. Koprij, datarijen, groepsrijen en totaalrijen zijn visueel onderscheiden door achtergrondkleur en subtiele scheidingslijnen. Vastgezette kolommen (chauffeursnaam, extra kolommen) tonen een zijschaduw bij scrollen.
-- Datarijen in het planningsrooster hebben licht afwisselende achtergrondtinten voor betere leesbaarheid.
-
-### Toegankelijkheid
-
-- Alle modale vensters (scenario aanmaken, roosterprofiel toewijzen, statuskeuzescherm, bulkselectie) sluiten nu bij het indrukken van de Escape-toets.
+_No unreleased changes._
 
 ## Release History
 
@@ -21,11 +14,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### UX / design verbeteringen
 
+- Het planningsrooster gebruikt nu tonale lagen in plaats van rasterlijnen. Koprij, datarijen, groepsrijen en totaalrijen zijn visueel onderscheiden door achtergrondkleur en subtiele scheidingslijnen. Vastgezette kolommen tonen een zijschaduw bij scrollen.
+- Datarijen in het planningsrooster hebben licht afwisselende achtergrondtinten voor betere leesbaarheid.
 - Alle verwijderbevestigingen gebruiken nu een gestylede dialoog in plaats van de standaard browserdialoog. Elke bevestiging toont specifiek wat er verwijderd wordt (naam, datum).
-- De werkbalk van het planningsscherm is gegroepeerd in logische secties: Periode, Weergave, Zoeken & Filteren, en Weergaveopties. Elke groep is visueel onderscheiden met subtiele containers.
-- Het chauffeursoverzicht heeft een volledige paginakop met de titel "Chauffeurs", een teller-badge, zoekbalk met icoon, en een prominente knop "Chauffeur toevoegen".
-- De instellingenpagina heeft een paginakop met titel en beschrijving, en is gegroepeerd in drie secties: Stamgegevens, Competenties en Roosters.
-- De capaciteitspagina heeft een paginakop met titel en scenariobadge. Vergelijkingsknoppen gebruiken nu de juiste designtokens.
+- De werkbalk van het planningsscherm is gegroepeerd in logische secties: Periode, Weergave, Zoeken & Filteren, en Weergaveopties.
+- Het chauffeursoverzicht, de instellingenpagina en de capaciteitspagina hebben volledige paginakoppen met titels, badges en acties.
+- Vergelijkingsknoppen op de capaciteitspagina gebruiken nu de juiste designtokens.
 - Verplichte formuliervelden zijn gemarkeerd met rode sterretjes.
 - Toastmeldingen verschijnen bij alle aanmaak-, wijzig- en verwijderacties.
 - Lege stamtabellen tonen instructietekst.
@@ -33,12 +27,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### Toegankelijkheid
 
-- Focus wordt vastgehouden binnen open modale vensters. Tab/Shift+Tab bladert alleen door elementen in het venster. Bij sluiten keert de focus terug naar het oorspronkelijke element.
-- Bevestigingsdialogen ondersteunen de Escape-toets voor annuleren en klikken op de achtergrond.
+- Alle modale vensters (scenario aanmaken, roosterprofiel toewijzen, statuskeuzescherm, bulkselectie) sluiten bij de Escape-toets.
+- Focus wordt vastgehouden binnen open modale vensters. Tab/Shift+Tab bladert alleen door elementen in het venster.
+- Bevestigingsdialogen ondersteunen de Escape-toets en klikken op de achtergrond voor annuleren.
 - Alle modale vensters hebben `role="dialog"`, `aria-modal="true"`, en beschrijvende labels voor screenreaders.
 - Alle icoon-knoppen hebben beschrijvende labels voor screenreaders.
 - Toastmeldingen worden aangekondigd door screenreaders.
-- SkillManager, RosterProfileEditor en instellingenpagina tonen laadspinners tijdens het ophalen van data.
+- Laadspinners tonen bij het ophalen van data in SkillManager, RosterProfileEditor en instellingenpagina.
 
 #### Bugfix
 
@@ -46,19 +41,18 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### Betrouwbaarheid
 
-- Alle meervoudige databasebewerkingen zijn verpakt in transacties (chauffeur bijwerken/verwijderen, roosterprofiel bijwerken, scenario dupliceren/verwijderen, competentie verwijderen, dienstverband/functie/roostertoewijzing aanmaken).
+- Alle meervoudige databasebewerkingen zijn verpakt in transacties.
 - Chauffeur actief/inactief status wordt bepaald op basis van dienstverbandgegevens.
 - Alle POST en PUT API-endpoints valideren verplichte velden.
 - Samengestelde database-index op roostertoewijzingen voor snellere opzoekingen.
 
 #### Interne kwaliteit
 
-- Foutlogging in alle API-routes opgeschoond — alleen foutmeldingen worden gelogd, geen volledige foutobjecten of verbindingsgegevens.
+- Foutlogging in alle API-routes opgeschoond — alleen foutmeldingen worden gelogd, geen volledige foutobjecten.
 
 ### 2026-03-29 — Workflow setup
 
 - Multi-agent coördinatieworkflow opgezet met Product Backlog, aanbevelingsbestanden, release notes en escalatietracking.
-- Geen applicatiecodewijzigingen in deze release.
 
 ## Release Note Rules
 
