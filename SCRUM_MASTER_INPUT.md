@@ -23,6 +23,10 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+Denk alvast na over wat er nodig is om de pop-up/dropdown bij het aanklikken van een daycell te verbeteren. Nu is het zo dat je klikt op een daycell, dan vervolgens komt de pop-up in het midden van je scherm (ver weg van je muis), je wil dus eigenlijk dat dit makkelijker werkt. Ook het ontwerp hiervan mag mooier. 
+
+Implementeer een mooiere datumselectie scherm, in alle datumvelden komt nu een lelijk (soort standaard) datum selectiescherm, maar dit mag een custom design zijn dat aansluit bij de rest van de applicatie.
+
 ### SMI-004: Bigger design steps toward DESIGN.md compliance
 
 - **Type:** Priority signal / direction change
