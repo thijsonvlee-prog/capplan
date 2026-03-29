@@ -10,51 +10,37 @@ _No unreleased changes._
 
 ## Release History
 
-### 2026-03-29 — API-opschoning en validatie
-
-#### Interne kwaliteit
-
-- Ongebruikt API-endpoint `/api/drivers/[id]/computed` verwijderd, inclusief de bijbehorende `getComputedFields` methode in de frontend API-wrapper. Chauffeursvelden worden al client-side berekend.
-- Invoervalidatie toegevoegd aan de PUT-endpoints voor voorkeuren en actief scenario. Ontbrekende velden geven nu een duidelijke 400-foutmelding.
-
-### 2026-03-29 — DayCell popup en planningsrooster rijcompositie
+### 2026-03-29 — DayCell popup, planningsrooster redesign en kwaliteitsverbeteringen
 
 #### UX / design verbeteringen
 
 - Het statusselectiemenu opent nu direct naast de aangeklikte cel in het planningsrooster, in plaats van in het midden van het scherm. Het menu blijft binnen het scherm bij randen.
 - Het statusselectiemenu heeft een nieuw ontwerp: kleurindicatoren per status, vinkje bij de huidige status, verfijnde typografie en subtielere opmaak. Het donkere achtergrondoverlay is verwijderd — het menu gedraagt zich als een contextueel menu.
-- Chauffeursnamen in het planningsrooster worden nu weergegeven als "Achternaam, Voornaam" met dikkere typografie voor snellere herkenning bij het scannen van rijen.
-- Personeelsnummers en metadata onder de naam gebruiken nu een subtielere tekststijl voor duidelijkere visuele hiërarchie.
-- Vastgezette identiteitskolommen erven nu de afwisselende rijtinten, zodat er geen visueel verschil ontstaat bij horizontaal scrollen.
-
-### 2026-03-29 — Design, toegankelijkheid, planning grid fix en betrouwbaarheid
-
-#### UX / design verbeteringen
-
-- Het planningsrooster gebruikt nu tonale lagen in plaats van rasterlijnen. Koprij, datarijen, groepsrijen en totaalrijen zijn visueel onderscheiden door achtergrondkleur en subtiele scheidingslijnen. Vastgezette kolommen tonen een zijschaduw bij scrollen.
-- Datarijen in het planningsrooster hebben licht afwisselende achtergrondtinten voor betere leesbaarheid.
-- Alle verwijderbevestigingen gebruiken nu een gestylede dialoog in plaats van de standaard browserdialoog. Elke bevestiging toont specifiek wat er verwijderd wordt (naam, datum).
-- De werkbalk van het planningsscherm is gegroepeerd in logische secties: Periode, Weergave, Zoeken & Filteren, en Weergaveopties.
-- Het chauffeursoverzicht, de instellingenpagina en de capaciteitspagina hebben volledige paginakoppen met titels, badges en acties.
-- Vergelijkingsknoppen op de capaciteitspagina gebruiken nu de juiste designtokens.
+- Het planningsrooster gebruikt nu tonale lagen in plaats van rasterlijnen. Koprij, datarijen, groepsrijen en totaalrijen zijn visueel onderscheiden door achtergrondkleur en subtiele scheidingslijnen.
+- Chauffeursnamen in het planningsrooster worden weergegeven als "Achternaam, Voornaam" met dikkere typografie voor snellere herkenning.
+- Personeelsnummers en metadata gebruiken een subtielere tekststijl voor duidelijkere visuele hiërarchie.
+- Vastgezette identiteitskolommen erven de afwisselende rijtinten bij horizontaal scrollen.
+- Datarijen hebben licht afwisselende achtergrondtinten voor betere leesbaarheid.
+- Alle verwijderbevestigingen gebruiken een gestylede dialoog in plaats van de standaard browserdialoog.
+- De werkbalk van het planningsscherm is gegroepeerd in logische secties.
+- Volledige paginakoppen met titels, badges en acties op alle hoofdpagina's.
 - Verplichte formuliervelden zijn gemarkeerd met rode sterretjes.
-- Toastmeldingen verschijnen bij alle aanmaak-, wijzig- en verwijderacties.
+- Toastmeldingen bij alle aanmaak-, wijzig- en verwijderacties.
 - Lege stamtabellen tonen instructietekst.
-- Formulier voor chauffeur aanmaken toont foutmeldingen bij lege verplichte velden.
 
 #### Toegankelijkheid
 
-- Alle modale vensters (scenario aanmaken, roosterprofiel toewijzen, statuskeuzescherm, bulkselectie) sluiten bij de Escape-toets.
-- Focus wordt vastgehouden binnen open modale vensters. Tab/Shift+Tab bladert alleen door elementen in het venster.
-- Bevestigingsdialogen ondersteunen de Escape-toets en klikken op de achtergrond voor annuleren.
-- Alle modale vensters hebben `role="dialog"`, `aria-modal="true"`, en beschrijvende labels voor screenreaders.
+- Alle modale vensters sluiten bij de Escape-toets.
+- Focus wordt vastgehouden binnen open modale vensters (Tab/Shift+Tab).
+- Bevestigingsdialogen ondersteunen Escape en klikken op achtergrond voor annuleren.
+- Alle modale vensters hebben `role="dialog"`, `aria-modal="true"`, en beschrijvende labels.
 - Alle icoon-knoppen hebben beschrijvende labels voor screenreaders.
 - Toastmeldingen worden aangekondigd door screenreaders.
-- Laadspinners tonen bij het ophalen van data in SkillManager, RosterProfileEditor en instellingenpagina.
+- Laadspinners bij het ophalen van data in SkillManager, RosterProfileEditor en instellingenpagina.
 
 #### Bugfix
 
-- Probleem opgelost waarbij chauffeurs zonder actief dienstverband niet zichtbaar waren in het planningsscherm. Alle chauffeurs zijn nu altijd zichtbaar.
+- Probleem opgelost waarbij chauffeurs zonder actief dienstverband niet zichtbaar waren in het planningsscherm.
 
 #### Betrouwbaarheid
 
@@ -65,7 +51,9 @@ _No unreleased changes._
 
 #### Interne kwaliteit
 
-- Foutlogging in alle API-routes opgeschoond — alleen foutmeldingen worden gelogd, geen volledige foutobjecten.
+- Ongebruikt API-endpoint `/api/drivers/[id]/computed` en bijbehorende frontend-methode verwijderd.
+- Invoervalidatie toegevoegd aan PUT-endpoints voor voorkeuren en actief scenario.
+- Foutlogging in alle API-routes opgeschoond.
 
 ### 2026-03-29 — Workflow setup
 

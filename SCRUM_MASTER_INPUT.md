@@ -35,11 +35,11 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 ### SMI-006: Custom date picker design
 
 - **Type:** UX improvement request
-- **Status:** Escalated
+- **Status:** Planned
 - **Input:** Implementeer een mooiere datumselectie scherm, in alle datumvelden komt nu een lelijk (soort standaard) datum selectiescherm, maar dit mag een custom design zijn dat aansluit bij de rest van de applicatie.
 - **Why this matters:** All date fields use the browser's native date picker, which looks inconsistent with the application's design system. A custom date picker aligned with the design tokens would significantly improve perceived quality.
-- **Product Owner action:** Escalated to ESC-004. Building a fully custom date picker from scratch (no external libraries per CLAUDE.md) is significant effort. Needs scope decision before planning.
-- **Backlog linkage:** Pending ESC-004 decision.
+- **Product Owner action:** ESC-004 decided: Option B (styled date input wrapper). PB-039 updated and moved to Ready for next cycle.
+- **Backlog linkage:** PB-039.
 
 ### SMI-004: Bigger design steps toward DESIGN.md compliance
 
