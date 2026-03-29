@@ -16,7 +16,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ### Performance / reliability improvements
 
-- _No unreleased performance changes._
+- Added composite database index on DriverRosterAssignment (driverId, startDate, endDate) to improve roster assignment query performance for date-range lookups. Deployed via migration `20260329000000_add_roster_assignment_composite_index`.
 
 ### Internal quality improvements
 

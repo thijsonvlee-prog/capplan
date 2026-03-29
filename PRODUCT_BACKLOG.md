@@ -23,17 +23,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-002: Add composite database indexes for planning grid queries
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** Planning grid loads slow down as driver count grows because key queries lack composite indexes.
-- **Why this matters now:** Users with 50+ drivers report noticeable delays when switching periods.
-- **Scope notes:** Add indexes on PlanningEntry (driverId, date) and RosterAssignment (driverId, startDate, endDate). Create a Prisma migration.
-- **Dependencies:** None.
-- **Definition of done:** Migration created and tested. Query performance improved (verified with EXPLAIN ANALYZE). Passes `npm run verify`.
-- **Implementation note:** Use `npx prisma migrate dev --name add-planning-indexes`. Batch index creation in a single migration.
+_No items currently ready._
 
 ## Blocked / Needs Decision
 
@@ -54,6 +44,18 @@ Items are ordered by priority within each section. Ties are broken by expected u
 _No items currently in progress._
 
 ## Completed Recently
+
+### PB-002: Add composite database indexes for planning grid queries
+
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Completed
+- **Problem / opportunity:** Planning grid loads slow down as driver count grows because key queries lack composite indexes.
+- **Why this matters now:** Completed — DriverRosterAssignment now has a composite index on (driverId, startDate, endDate). PlanningEntry already had composite indexes from a prior migration.
+- **Scope notes:** Added composite index on DriverRosterAssignment (driverId, startDate, endDate). PlanningEntry (driverId, date) was already covered by the existing (driverId, date, scenarioId) composite index.
+- **Dependencies:** None.
+- **Definition of done:** Migration created (`20260329000000_add_roster_assignment_composite_index`). Passes `npm run verify`.
+- **Implementation note:** PlanningEntry already had composite indexes `[driverId, date, scenarioId]` and `[scenarioId, date]` from migration `20260328120000`. Only the DriverRosterAssignment index was missing.
 
 ### PB-001: Improve empty state guidance across stamtabel managers
 

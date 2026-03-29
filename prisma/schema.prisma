@@ -176,6 +176,7 @@ model DriverRosterAssignment {
   rosterProfile RosterProfile @relation(fields: [rosterProfileId], references: [id])
 
   @@index([driverId])
+  @@index([driverId, startDate, endDate])
 }
 
 // === Planning Domain ===
