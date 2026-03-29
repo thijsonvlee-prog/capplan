@@ -26,11 +26,11 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 ### SMI-004: Bigger design steps toward DESIGN.md compliance
 
 - **Type:** Priority signal / direction change
-- **Status:** Planned (partially escalated)
+- **Status:** Planned
 - **Input:** Er moeten grotere stappen gemaakt worden in het redesign om te voldoen aan design.md. Stuur aan op grotere verbeteringen, minder schaven aan bestaand ontwerp, maar echt componenten en schermen opnieuw ontwerpen obv design.md. Luister dus ook goed naar de aanbevelingen van de experience agent.
-- **Why this matters:** The Scrum Master is signaling that incremental polish is no longer sufficient. The product needs visible, meaningful redesign steps that bring screens closer to the DESIGN.md standard. Experience Agent recommendations should be given higher weight in prioritization.
-- **Product Owner action:** Elevated design-focused backlog items to P2 High priority. Created PB-031 (page headers for remaining screens), upgraded PB-020 (custom confirmation dialogs) from P4 Deferred to P2 Ready. Planning grid redesign (EX-REC-016) escalated as ESC-003 due to component complexity. SMI-002 constraint updated to exempt design work from incremental-only restriction.
-- **Backlog linkage:** PB-031, PB-020 (upgraded), PB-032 (blocked on ESC-003).
+- **Why this matters:** The Scrum Master is signaling that incremental polish is no longer sufficient. The product needs visible, meaningful redesign steps.
+- **Product Owner action:** Design items elevated to P2 High. PB-020 (ConfirmDialog) upgraded to P2 Ready. PB-033 (focus trap) elevated to P2 as foundation for PB-020. PB-031 (page headers) ready at P2. Planning grid phased redesign approved (ESC-003 → Option B) and translated into PB-032/PB-034/PB-035.
+- **Backlog linkage:** PB-020, PB-031, PB-033, PB-032, PB-034, PB-035.
 
 ### SMI-002: Keep improvements incremental during stabilization
 
@@ -39,7 +39,6 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Input:** While core workflows (planning grid, roster assignment, driver management) are still stabilizing, all improvements must be incremental. Avoid broad redesigns, large refactors, or architectural changes that touch multiple domains at once.
 - **Update (2026-03-29):** SMI-004 relaxes this constraint for design work. Meaningful redesign toward DESIGN.md compliance is now expected, but must still be phased and independently verifiable. Technical/architectural refactors remain subject to the incremental constraint.
 - **Expected outcome:** Design improvements may be larger in scope. Technical changes remain small, focused, and independently verifiable. No single change should break the deploy.
-- **Constraints / preferences:** If a valuable improvement requires broad changes, break it into smaller phases. Each phase must be independently deployable and pass `npm run verify`.
 - **Product Owner instruction:** Applied as a standing constraint to technical backlog items. Design items follow the updated directive from SMI-004.
 - **Backlog linkage:** Applied as a standing constraint to all backlog items.
 
