@@ -35,7 +35,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 - ( ) **Option A — Full redesign in one cycle**
   Redesign the entire planning grid visual structure (cells, rows, headers, summaries, group rows) in a single cycle. Maximum alignment with DESIGN.md in one step. High risk: touches the most complex component extensively, difficult to verify, high regression potential.
 
-- ( ) **Option B — Phased redesign across 2-3 cycles** *(recommended)*
+- ( ) **Option B — Phased redesign across 2-3 cycles** *(recommended)* (X)
   Phase 1: Surface layering and row tonal hierarchy (replace border-heavy structure with tonal contrast, differentiate header/data/group/totals rows). Phase 2: Row composition and identity (improve how driver name, metadata, and planning cells relate). Phase 3: Cell rendering and status refinement (DayCell visual output, spacing, chip treatment). Each phase is independently deployable and verifiable.
 
 - ( ) **Option C — Surface-only quick pass**
