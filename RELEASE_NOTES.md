@@ -10,6 +10,16 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 (nacht 6) — API-taalafstemming en transactieveiligheid
+
+#### Taalafstemming
+
+- Alle foutmeldingen in alle API-routes zijn nu volledig in het Nederlands. Dit omvat validatiemeldingen, 404-fouten, en interne serverfouten over alle 24 routebestanden. Patronen: "niet gevonden" voor 404, "is verplicht" voor verplichte velden, "Kan X niet Y" voor serverfouten, "Maximaal X per verzoek" voor limieten.
+
+#### Betrouwbaarheid
+
+- De PUT-routes voor dienstverband, functie en roostertoewijzing gebruiken nu databasetransacties voor de verificatie- en bijwerkstappen. Dit voorkomt race conditions bij gelijktijdige bewerkingen.
+
 ### 2026-03-29 (nacht 5) — Visuele consistentie afronden
 
 #### UX / design verbeteringen

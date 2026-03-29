@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major redesign work is complete. API validation is hardened. ESLint is clean (0 warnings). Focus now shifts to: (1) CLAUDE.md compliance — translating remaining English API error messages (PB-055), (2) data consistency — transaction wrapping on PUT routes (PB-056), (3) remaining visual consistency gaps (PB-047, PB-040), and (4) connectivity hub (PB-015/016) when capacity allows.
+**Current direction:** All major redesign work is complete. API validation is hardened. ESLint is clean (0 warnings). All API error messages are now in Dutch. All sub-record PUT routes use transactions. Focus now shifts to: (1) connectivity hub (PB-015/016) when capacity allows, and (2) deferred items (PB-018, PB-009, PB-030).
 
 ## Status Definitions
 
@@ -27,29 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-055: Translate remaining English error messages across all API routes
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** ~24 English error messages remain across API routes after PB-054 fixed the settings routes. Messages like "Record not found", "Driver not found", "code is required", "firstName is required", "Maximum 90 dates allowed per request" violate CLAUDE.md's requirement that all user-facing text is Dutch.
-- **Scope notes:** Audit all API routes in `src/app/api/`. Translate every English error message to Dutch. Standardize patterns: "niet gevonden" for 404s, "is verplicht" for required fields, "Maximaal X per verzoek" for limits.
-- **Dependencies:** None.
-- **Definition of done:** Zero English error messages in API routes. Consistent Dutch error patterns. Passes `npm run verify`.
-- **Implementation note:** String-only changes, no logic modification. ~12 files affected.
-- **Source:** DE-REC-028.
-
-### PB-056: Wrap find-then-update PUT routes in transactions
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The PUT routes for employment, functions, and roster assignments each do a `findFirst` followed by a separate `update` without a transaction. Race conditions on concurrent edits are possible. POST routes already use transactions.
-- **Scope notes:** Wrap the find + update in `prisma.$transaction` in all 3 sub-record PUT routes.
-- **Dependencies:** None.
-- **Definition of done:** All 3 PUT routes use `prisma.$transaction`. Passes `npm run verify`.
-- **Implementation note:** Small change — wrap existing code blocks. Same pattern as POST routes.
-- **Source:** DE-REC-029.
+_No items ready for next cycle._
 
 ---
 
@@ -94,6 +72,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-055: Translate remaining English error messages across all API routes
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Translated ~70 English API response error messages to Dutch across 24 route files. Consistent patterns: "niet gevonden" for 404s, "is verplicht" for required fields, "Kan X niet Y" for 500s, "Maximaal X per verzoek" for limits.
+
+### PB-056: Wrap find-then-update PUT routes in transactions
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Wrapped findFirst + update in `prisma.$transaction` in employment, functions, and roster assignment PUT routes. Eliminates race conditions on concurrent edits. Consistent with POST routes.
 
 ### PB-047: Capacity page status badge consistency
 - **Completed:** 2026-03-29
