@@ -55,6 +55,35 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 - **What the Scrum Master must do:** Place `(X)` next to one option above.
 - **Product Owner action after choice:** Translate the chosen scope into backlog items in `PRODUCT_BACKLOG.md`, link back to SMI-001, and update this escalation status to `Chosen`.
 
+### ESC-002: Conflicting driver status computation between views
+
+- **Status:** Open
+- **Date / run context:** 2026-03-29 — blocking PB-003
+- **Decision needed:** Which computation of driver active/inactive status is authoritative?
+- **Why it matters:** Planners see different driver counts depending on which screen they use (planning grid vs. driver list). This undermines trust in the data and creates confusion during shift planning.
+- **Recommendation from Product Owner Agent:** Option A — employment-based status is more accurate and automatically reflects contract changes without manual toggling.
+
+#### Choose one option
+
+> Place `(X)` next to exactly one option.
+
+- [ ] **Option A — Employment-based status (planning grid logic)**
+  - Use active employment records with date overlap as the single source of truth.
+  - Impact: More accurate, automatic. The `isActive` field on Driver may become redundant. Driver list page needs updating.
+
+- [ ] **Option B — Manual isActive field (driver list logic)**
+  - Use the `isActive` field on the Driver model as the single source of truth.
+  - Impact: Simpler, but requires manual toggling. Risk of stale status when contracts change.
+
+- [ ] **Option C — Combine both**
+  - Require both an active employment record AND `isActive = true`.
+  - Impact: Most restrictive. Two things must be true. Most complex to maintain.
+
+- **Recommended option:** Option A
+- **Trade-offs:** Option A requires updating the driver list page but is the most reliable long-term. Option B is simpler but error-prone. Option C adds complexity without proportional value.
+- **What the Scrum Master must do:** Place `(X)` next to one option above.
+- **Product Owner action after choice:** Unblock PB-003, update scope based on chosen option, assign to Delivery Agent.
+
 ## Chosen / Awaiting Planning
 
 _None yet._

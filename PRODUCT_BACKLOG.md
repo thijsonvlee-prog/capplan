@@ -23,7 +23,65 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-004: Wrap roster assignment creation in a database transaction
+
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** The POST `/api/drivers/[id]/roster-assignments` endpoint performs 4-5 sequential database operations without a `$transaction` wrapper. If any step fails mid-way, the database is left in an inconsistent state with partial roster data.
+- **Why this matters now:** This is the highest-impact multi-step mutation in the app (generates up to 364 planning entries). The fix is straightforward and the risk of data corruption grows with usage.
+- **Scope notes:** Wrap all database operations in the POST handler in `prisma.$transaction()`. No behavior change on success path.
+- **Dependencies:** None.
+- **Definition of done:** All database operations in the roster assignment POST handler are wrapped in an interactive transaction. Partial failures roll back cleanly. Passes `npm run verify`.
+- **Implementation note:** All existing operations are compatible with interactive transactions. Single file change. Source: DE-REC-003.
+
+### PB-005: Add inline validation feedback to driver creation form
+
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** When a user submits the driver creation form with missing required fields, no inline error messages appear. The form silently fails or shows a generic error.
+- **Why this matters now:** Driver creation is a core daily workflow. Missing validation creates frustration for new planners. The `showValidation` pattern already exists in StamtabelManager and SkillManager.
+- **Scope notes:** Add field-level validation messages (in Dutch) that appear when the user leaves a required field empty. Use the existing `showValidation` pattern.
+- **Dependencies:** None.
+- **Definition of done:** All required fields on the driver creation form show inline Dutch-language error messages on validation failure. Passes `npm run verify`.
+- **Implementation note:** Follow the existing `showValidation` pattern in StamtabelManager and SkillManager. Source: EX-REC-001.
+
+### PB-006: Show loading spinners while settings page data loads
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** When the settings page loads, each stamtabel section briefly shows "Nog geen [type] toegevoegd" before data arrives, causing a misleading flash of empty state.
+- **Why this matters now:** The improved empty states from PB-001 make this flash more noticeable. Worth addressing to prevent user confusion.
+- **Scope notes:** Add a loading state using the `.spinner` CSS class that displays while `useApiData` is fetching. Show the empty state only after loading completes and records are genuinely empty.
+- **Dependencies:** May need changes to the `useApiData` hook to expose loading state — must be backward-compatible.
+- **Definition of done:** Settings page shows loading spinners during data fetch. Empty state text only appears when data has loaded and is genuinely empty. Passes `npm run verify`.
+- **Implementation note:** Check whether `useApiData` already exposes a loading state before adding one. Source: EX-REC-004.
+
+### PB-007: Add input validation to API route POST/PUT handlers
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** Several API routes accept POST/PUT bodies without validating required fields. Missing fields result in cryptic Prisma constraint errors rather than clear user-facing messages.
+- **Why this matters now:** Security hygiene and UX quality item. Low risk, broad defensive value. Aligns with CLAUDE.md input sanitization guidelines.
+- **Scope notes:** Add validation checks at the top of each POST/PUT handler for required fields. Return `{ error: "..." }` with status 400 and a Dutch-language message. Use a shared helper in `api-route-utils.ts`.
+- **Dependencies:** None.
+- **Definition of done:** All POST/PUT API routes validate required fields and return clear Dutch-language error messages for missing/invalid input. No Prisma constraint errors leak to the frontend. Passes `npm run verify`.
+- **Implementation note:** Touches ~10 route files. Add a shared validation helper in `api-route-utils.ts`. Source: DE-REC-004.
+
+### PB-008: Improve delete confirmation dialogs with specific context
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** Some delete confirmation dialogs use generic text like "Weet u het zeker?" without specifying what will be deleted.
+- **Why this matters now:** Low-effort, high-trust improvement. StamtabelManager and SkillManager already do this correctly — other screens need to be audited and updated.
+- **Scope notes:** Audit all delete dialogs outside StamtabelManager/SkillManager. Update them to include the name/description of the item being deleted (e.g., "Chauffeur Jan de Vries verwijderen?").
+- **Dependencies:** None.
+- **Definition of done:** All delete confirmation dialogs across the app show the specific item name/description. All text in Dutch. Passes `npm run verify`.
+- **Implementation note:** Source: EX-REC-002.
 
 ## Blocked / Needs Decision
 
@@ -35,7 +93,7 @@ _No items currently ready._
 - **Problem / opportunity:** Driver active/inactive status is computed differently in the planning grid vs. the driver list page, leading to inconsistent counts.
 - **Why this matters now:** Planners have reported confusion when driver counts differ between views.
 - **Scope notes:** Unify status computation into a shared utility in `src/lib/`. Update both consumers.
-- **Dependencies:** Needs Scrum Master decision on which computation is the correct one (see ESC-001).
+- **Dependencies:** Needs Scrum Master decision on ESC-002 (which computation is authoritative).
 - **Definition of done:** Single source of truth for driver status. Both views show identical counts. Passes `npm run verify`.
 - **Implementation note:** Check `api-route-utils.ts` for existing status logic before creating new utilities.
 
@@ -49,41 +107,42 @@ _No items currently in progress._
 
 - **Owner:** Delivery Agent
 - **Priority:** P2 High
-- **Status:** Completed
-- **Problem / opportunity:** Planning grid loads slow down as driver count grows because key queries lack composite indexes.
-- **Why this matters now:** Completed — DriverRosterAssignment now has a composite index on (driverId, startDate, endDate). PlanningEntry already had composite indexes from a prior migration.
-- **Scope notes:** Added composite index on DriverRosterAssignment (driverId, startDate, endDate). PlanningEntry (driverId, date) was already covered by the existing (driverId, date, scenarioId) composite index.
-- **Dependencies:** None.
-- **Definition of done:** Migration created (`20260329000000_add_roster_assignment_composite_index`). Passes `npm run verify`.
-- **Implementation note:** PlanningEntry already had composite indexes `[driverId, date, scenarioId]` and `[scenarioId, date]` from migration `20260328120000`. Only the DriverRosterAssignment index was missing.
+- **Status:** Completed (2026-03-29)
+- **Summary:** Added composite index on DriverRosterAssignment (driverId, startDate, endDate). PlanningEntry already had adequate composite indexes.
 
 ### PB-001: Improve empty state guidance across stamtabel managers
 
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Completed
-- **Problem / opportunity:** Stamtabel screens showed minimal empty states without guidance on what the user should do next.
-- **Why this matters now:** Completed — all four stamtabel managers now show actionable empty states.
-- **Scope notes:** Updated the shared StamtabelManager component.
-- **Dependencies:** None.
-- **Definition of done:** All four stamtabel managers show actionable Dutch-language empty states with a prompt to add the first item. Passes `npm run verify`.
-- **Implementation note:** Modified the shared StamtabelManager component — single change propagates to all four stamtabel types.
+- **Status:** Completed (2026-03-29)
+- **Summary:** All four stamtabel managers now show actionable Dutch-language empty states via the shared StamtabelManager component.
 
 ### PB-000: Implement toast notifications for all CRUD operations
 
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Completed
-- **Problem / opportunity:** Users received no feedback after saving, updating, or deleting records in several screens.
-- **Why this matters now:** Completed — users now see confirmation toasts for all mutations.
-- **Scope notes:** Added `showToast()` calls to all create/update/delete flows.
-- **Dependencies:** None.
-- **Definition of done:** Every mutation shows a Dutch-language toast notification. Verified across all screens.
-- **Implementation note:** Used the existing Toast component from `src/components/ui/Toast.tsx`.
+- **Status:** Completed (2026-03-29)
+- **Summary:** All create/update/delete flows now show Dutch-language toast notifications via the existing Toast component.
 
 ## Deferred
 
-_No deferred items._
+### PB-009: Add covering index for capacity aggregation query
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Current query performance is acceptable. Revisit when capacity endpoint shows measurable slowness under real data volumes.
+- **Scope notes:** Add composite index `@@index([scenarioId, date, status])` on PlanningEntry.
+- **Source:** DE-REC-005.
+
+### PB-010: Standardize input field styling across settings forms
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Minor visual inconsistency. Can be done opportunistically alongside other settings page work.
+- **Scope notes:** Migrate StamtabelManager form inputs to use the `input-field` CSS class for consistency with SkillManager.
+- **Source:** EX-REC-003.
 
 ## Backlog Hygiene Rules
 

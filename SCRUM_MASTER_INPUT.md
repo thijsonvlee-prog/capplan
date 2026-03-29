@@ -26,26 +26,26 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 ### SMI-001: Connectivity hub for external data sources
 
 - **Type:** Initiative
-- **Status:** New
+- **Status:** Escalated
 - **Input:** Develop a connectivity hub where external sources such as file imports and APIs can be configured. Planners should be able to connect workforce data from external systems (HR, payroll, fleet management) without requiring developer intervention.
 - **Why this matters:** CapPlan currently operates as a standalone tool. Connecting it to existing data sources would eliminate manual data entry, reduce errors, and make the tool viable for organizations with established IT landscapes.
 - **Expected outcome:** A configuration screen where administrators can set up import sources (CSV, API endpoints) and map external fields to CapPlan entities (drivers, employments, skills).
 - **Constraints / preferences:** Start small. An MVP that handles CSV import with field mapping is preferred over a full integration platform. Do not introduce external dependencies without approval.
 - **Questions / uncertainties:** What file formats are most common among target users? Should imports run on a schedule or only on-demand?
 - **Product Owner instruction:** Break this down into an MVP scope. If the scope requires a decision, escalate to `ESCALATIONS_TO_SCRUM_MASTER.md` with clear options.
-- **Backlog linkage:** _Not yet planned._
+- **Backlog linkage:** Escalated to ESC-001 for MVP scope decision. Backlog items will be created after scope is chosen.
 
 ### SMI-002: Keep improvements incremental during stabilization
 
 - **Type:** Constraint
-- **Status:** New
+- **Status:** Planned
 - **Input:** While core workflows (planning grid, roster assignment, driver management) are still stabilizing, all improvements must be incremental. Avoid broad redesigns, large refactors, or architectural changes that touch multiple domains at once.
 - **Why this matters:** Multiple agents operate on this codebase. Large cross-cutting changes increase the risk of conflicts, regressions, and broken deploys. Stability and predictability are more valuable than speed right now.
 - **Expected outcome:** Each cycle delivers small, focused, independently verifiable improvements. No single change should touch more than 2-3 files outside its primary domain.
 - **Constraints / preferences:** If a valuable improvement requires broad changes, break it into smaller phases. Each phase must be independently deployable and pass `npm run verify`.
 - **Questions / uncertainties:** None.
 - **Product Owner instruction:** Apply this constraint when prioritizing and scoping all backlog items. Flag any proposed work that violates this constraint.
-- **Backlog linkage:** _Applies as a standing constraint to all backlog items._
+- **Backlog linkage:** Applied as a standing constraint to all backlog items. All items in PRODUCT_BACKLOG.md are scoped to be small, focused, and independently verifiable.
 
 ## Closed Inputs
 

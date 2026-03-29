@@ -6,23 +6,20 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-### UX / usability improvements
-
-- Stamtabel empty states (werkgevers, afdelingen, standplaatsen, verloftypes) now show instructional text guiding users to fill in the form and click "Toevoegen" to add their first item.
-
-### Functional improvements
-
-- _No unreleased functional changes._
-
-### Performance / reliability improvements
-
-- Added composite database index on DriverRosterAssignment (driverId, startDate, endDate) to improve roster assignment query performance for date-range lookups. Deployed via migration `20260329000000_add_roster_assignment_composite_index`.
-
-### Internal quality improvements
-
-- _No unreleased internal changes._
+_No unreleased changes._
 
 ## Release History
+
+### 2026-03-29 — Empty states, toast notifications, and performance indexes
+
+#### UX / usability improvements
+
+- Toast notifications now appear for all create, update, and delete operations across the application, giving users clear feedback when data is saved or removed.
+- Stamtabel empty states (werkgevers, afdelingen, standplaatsen, verloftypes) now show instructional guidance text prompting users to add their first item.
+
+#### Performance / reliability improvements
+
+- Added composite database index on DriverRosterAssignment (driverId, startDate, endDate) to improve roster assignment query performance for date-range lookups.
 
 ### 2026-03-29 — Workflow setup
 
