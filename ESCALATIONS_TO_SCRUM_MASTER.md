@@ -48,7 +48,7 @@ _None._
 - **Chosen option:** Option A — Employment-based status (planning grid logic)
   - Use active employment records with date overlap as the single source of truth.
   - Impact: More accurate, automatic. The `isActive` field on Driver may become redundant. Driver list page needs updating.
-- **Product Owner action:** PB-003 unblocked and updated with employment-based scope. Moved to Ready for Next Cycle.
+- **Product Owner action:** PB-003 completed. However, the employment-based filter in the planning grid introduced a regression (PB-025) where drivers without employment records are hidden. PB-025 created as P1 Critical fix — removes the hard filter while keeping the employment-based computation available for display purposes.
 
 ## Escalation Rules
 

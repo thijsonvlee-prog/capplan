@@ -6,35 +6,43 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-### Accessibility & UX consistency
+_No unreleased changes._
+
+## Release History
+
+### 2026-03-29 — Accessibility, transactions, and employment-based driver status
+
+#### UX / usability improvements
 
 - Toast notifications are now announced by screen readers via `aria-live` region. All CRUD success/error feedback is accessible to users with assistive technology.
-- SkillManager and RosterProfileEditor now show loading spinners during initial data fetch, matching the StamtabelManager pattern. Empty state messages only appear once data has genuinely loaded.
+- SkillManager and RosterProfileEditor now show loading spinners during initial data fetch. Empty state messages only appear once data has genuinely loaded.
 
-### Reliability improvements
+#### Reliability improvements
 
 - All remaining multi-step database operations are now wrapped in transactions. This covers: driver updates (skill reassignment), driver deletion, roster profile updates (day replacement), scenario duplication, scenario deletion, and skill deletion. Partial failures roll back cleanly.
 
-### Data consistency
+#### Data consistency
 
 - Driver active/inactive status is now determined by employment records instead of a manually set flag. A driver is considered active when they have an employment record covering the current date. Both the planning grid and driver list now use this same logic, eliminating count discrepancies between views.
 
-## Release History
+#### Known issue
+
+- The employment-based driver filter in the planning grid hides drivers without active employment records. This is tracked as PB-025 (P1 Critical) and will be fixed in the next cycle.
 
 ### 2026-03-29 — Reliability, validation, and UX polish
 
 #### Performance / reliability improvements
 
-- Roster assignment creation now wraps all database operations in a single transaction. Partial failures roll back cleanly — no more incomplete roster data on error.
-- All POST and PUT API endpoints now validate required fields before processing. Missing or empty fields return a clear Dutch-language error message (e.g., "Startdatum is verplicht") instead of a database error.
+- Roster assignment creation now wraps all database operations in a single transaction. Partial failures roll back cleanly.
+- All POST and PUT API endpoints now validate required fields before processing. Missing or empty fields return a clear Dutch-language error message.
 - Added composite database index on roster assignments for faster date-range lookups.
 
 #### UX / usability improvements
 
 - Driver creation form shows inline error messages when required fields are left empty. Fields highlight in red on validation failure and errors clear as the user types.
 - Settings page shows loading spinners while data is being fetched. Empty state messages only appear when data has genuinely loaded and is empty.
-- Delete confirmation dialogs in driver editing now specify what type of record is being deleted (e.g., "het dienstverband vanaf 2026-01-01") instead of generic text.
-- Toast notifications appear for all create, update, and delete operations, giving users clear feedback when data is saved or removed.
+- Delete confirmation dialogs in driver editing now specify what type of record is being deleted.
+- Toast notifications appear for all create, update, and delete operations.
 - Stamtabel empty states show instructional guidance text prompting users to add their first item.
 
 ### 2026-03-29 — Workflow setup

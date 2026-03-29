@@ -25,7 +25,78 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-025: Fix planning grid not showing drivers
+
+- **Owner:** Delivery Agent
+- **Priority:** P1 Critical
+- **Status:** Ready
+- **Problem / opportunity:** After PB-003 introduced employment-based driver status, the planning grid API (`/api/planning/for-range`) uses `activeDriverWhereClause()` to filter drivers. This hides all drivers who have no employment records, or whose employment records don't cover today's date. The driver list shows all drivers without this filter, so users see drivers in the chauffeursoverzicht that are missing from the planningsoverzicht.
+- **Why this matters now:** This is a user-reported regression. The planning grid is the core workflow. Drivers that exist in the system must be visible for planning.
+- **Scope notes:** Remove the `activeDriverWhereClause()` filter from the planning grid API at `src/app/api/planning/for-range/route.ts` line 41. Replace `where: activeDriverWhereClause()` with `where: {}` (or remove the where clause entirely). The planning grid should show all drivers, regardless of employment status. The employment-based status remains available for display/grouping purposes via `transformDriver()` — this fix only removes the hard filter.
+- **Dependencies:** None.
+- **Definition of done:** All drivers visible in the driver list also appear in the planning grid. Passes `npm run verify`.
+- **Implementation note:** This is a one-line change. Do not add new filtering logic — just remove the existing filter. The `isActive` computed field from `transformDriver()` can still be used by the frontend for visual grouping if desired, but must not prevent drivers from appearing.
+- **Source:** Scrum Master input (SMI-003).
+
+### PB-022: Wrap employment and function POST handlers in transactions
+
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** Employment POST and function POST both call `autoCloseOpenRecords()` followed by a create — two separate operations without `$transaction`. A failure between auto-close and create leaves the driver with a closed record and no replacement.
+- **Why this matters now:** These are the last two unprotected multi-step creation handlers. Completes the transaction coverage started in PB-004 and PB-011.
+- **Scope notes:** Wrap both handlers in `prisma.$transaction()`, passing `tx` to `autoCloseOpenRecords()` and the create call. Files: `src/app/api/drivers/[id]/employment/route.ts` and `src/app/api/drivers/[id]/functions/route.ts`.
+- **Dependencies:** None.
+- **Definition of done:** Both handlers wrapped in transactions. Passes `npm run verify`.
+- **Implementation note:** The roster-assignments route already follows this pattern — use it as reference.
+- **Source:** DE-REC-009.
+
+### PB-021: Add aria-label to icon-only action buttons
+
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** Edit and delete icon-only buttons in SkillManager and RosterProfileEditor lack `aria-label` attributes. CLAUDE.md requires all icon-only buttons to have `aria-label`. Screen reader users cannot identify button actions.
+- **Why this matters now:** Compliance gap with codebase rules. Quick fix with broad accessibility impact.
+- **Scope notes:** Add `aria-label="Bewerken"` to edit buttons and `aria-label="Verwijderen"` to delete buttons in SkillManager and RosterProfileEditor. Also check SubTable and StamtabelManager for the same gap.
+- **Dependencies:** None.
+- **Definition of done:** All icon-only buttons in settings components have `aria-label`. Passes `npm run verify`.
+- **Source:** EX-REC-010.
+
+### PB-014: Add visible required field indicators to forms
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** No form visually marks required fields before submission. Users must submit and encounter errors to learn which fields are mandatory.
+- **Scope notes:** Add red asterisk (`*`) after required field labels using `text-danger-600`. Apply across DriverForm, StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector, and sub-table forms.
+- **Dependencies:** None.
+- **Definition of done:** All required fields have visual indicators. Passes `npm run verify`.
+- **Source:** EX-REC-006.
+
+### PB-023: Remove isActive from driver PUT handler
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The driver PUT handler still allows setting `isActive` directly via the API. After PB-003, `transformDriver` computes `isActive` from employment records, so the stored boolean is ignored on read. Writing it is misleading.
+- **Why this matters now:** Cleanup after PB-003. The field is dead on write.
+- **Scope notes:** Remove the `isActive` field from the PUT handler's `updateData` object in `src/app/api/drivers/[id]/route.ts`. No migration — the schema field remains but becomes read-only/derived.
+- **Dependencies:** None.
+- **Definition of done:** `isActive` no longer writable via PUT. Passes `npm run verify`.
+- **Implementation note:** Remove ~2 lines. No frontend currently sets isActive via PUT.
+- **Source:** DE-REC-010.
+
+### PB-017: Sanitize error logging in API catch blocks
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** All API route catch blocks log the full error object. Prisma errors can contain connection strings and SQL details in server logs.
+- **Scope notes:** Log only `error.message` (or "Unknown error") in catch blocks. Optionally log `error.code` for Prisma errors. Mechanical change across ~20 route files.
+- **Dependencies:** None.
+- **Definition of done:** No full error objects logged. Only message + code. Passes `npm run verify`.
+- **Source:** DE-REC-007.
 
 ---
 
@@ -43,16 +114,16 @@ _No items currently in progress._
 
 ## Planned (Future Cycles)
 
-### PB-014: Add visible required field indicators to forms
+### PB-024: Consolidate /drivers/[id]/computed into main driver transform
 
-- **Owner:** Experience Agent
+- **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Planned (future cycle)
-- **Problem / opportunity:** No form visually marks required fields before submission. Users must submit and encounter errors to learn which fields are mandatory.
-- **Scope notes:** Add red asterisk (`*`) after required field labels using `text-danger-600`. Apply across DriverForm, StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector, and sub-table forms.
+- **Problem / opportunity:** The computed endpoint makes 3 separate `findFirst()` queries that are redundant with the main driver endpoint. The client-side `getComputedFields()` helper already computes derived fields from the main response.
+- **Scope notes:** Remove the separate computed endpoint. Verify no frontend code calls it. Update any callers to use the main driver endpoint.
 - **Dependencies:** None.
-- **Definition of done:** All required fields have visual indicators. Passes `npm run verify`.
-- **Source:** EX-REC-006.
+- **Definition of done:** Computed endpoint removed. No regressions. Passes `npm run verify`.
+- **Source:** DE-REC-011.
 
 ### PB-015: Connectivity hub — data model and import source API
 
@@ -78,17 +149,6 @@ _No items currently in progress._
 - **Definition of done:** Working admin screen for managing CSV import sources with field mapping. Passes `npm run verify`.
 - **Source:** ESC-001 decision (Option A), SMI-001.
 
-### PB-017: Sanitize error logging in API catch blocks
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Planned (future cycle)
-- **Problem / opportunity:** All API route catch blocks log the full error object. Prisma errors can contain connection strings and SQL details in server logs.
-- **Scope notes:** Log only `error.message` (or "Unknown error") in catch blocks. Optionally log `error.code` for Prisma errors. Mechanical change across ~20 route files.
-- **Dependencies:** None.
-- **Definition of done:** No full error objects logged. Only message + code. Passes `npm run verify`.
-- **Source:** DE-REC-007.
-
 ---
 
 ## Completed Recently
@@ -96,62 +156,22 @@ _No items currently in progress._
 ### PB-011: Wrap remaining multi-step mutations in transactions
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Wrapped all multi-step mutations in `prisma.$transaction()`: driver PUT (skill delete+create+update), driver DELETE (entries+driver), roster profile PUT (name+days replace), scenario duplicate POST (create+copy entries), scenario DELETE (delete+preference cleanup), skill DELETE (associations+skill). Also covered driver DELETE which was not in original scope but had the same pattern.
+- **Summary:** Wrapped all multi-step mutations in `prisma.$transaction()`: driver PUT, driver DELETE, roster profile PUT, scenario duplicate POST, scenario DELETE, skill DELETE.
 
 ### PB-003: Consolidate driver status logic between planning grid and driver list
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Created `isDriverActiveByEmployment()` in `api-helpers.ts` (client-side) and `activeDriverWhereClause()` in `api-route-utils.ts` (server-side Prisma filter). Updated planning grid API to use employment-based filtering instead of `isActive: true`. Updated driver list API `isActive` filter to use employment-based logic. Updated `transformDriver()` to compute `isActive` from employment records. Both views now use the same employment-based status as single source of truth (ESC-002).
+- **Summary:** Created employment-based active status computation. Both views now use the same logic. **Note:** This change introduced a regression (PB-025) where drivers without active employment records are hidden from the planning grid.
 
 ### PB-012: Make toast notifications accessible to screen readers
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Added `role="status"` and `aria-live="polite"` to the toast container in `Toast.tsx`. Screen readers now announce toast messages.
+- **Summary:** Added `role="status"` and `aria-live="polite"` to the toast container.
 
 ### PB-013: Extend loading state pattern to SkillManager and RosterProfileEditor
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Replaced `useApiData` with `useApiDataWithLoading` in both components. Added spinner during initial load, guarded list and empty state rendering behind `!loading`. Matches StamtabelManager pattern.
-
-### PB-004: Wrap roster assignment creation in a database transaction
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Wrapped all 7 database operations in the roster assignment POST handler in `prisma.$transaction()`.
-
-### PB-007: Add input validation to API route POST/PUT handlers
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Added `validateRequired()` helper and applied validation to 12 POST/PUT handlers across 10 route files.
-
-### PB-008: Improve delete confirmation dialogs with specific context
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Added `entityName` prop to SubTable for contextual delete confirmation text.
-
-### PB-006: Show loading spinners while settings page data loads
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Added `useApiDataWithLoading` hook and loading spinners to StamtabelManager.
-
-### PB-005: Add inline validation feedback to driver creation form
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Added `showValidation` pattern to DriverForm with inline Dutch error messages.
-
-### PB-002: Add composite database indexes for planning grid queries
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Added composite index on DriverRosterAssignment (driverId, startDate, endDate).
-
-### PB-001: Improve empty state guidance across stamtabel managers
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** All four stamtabel managers show actionable Dutch-language empty states.
-
-### PB-000: Implement toast notifications for all CRUD operations
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** All create/update/delete flows show Dutch-language toast notifications.
+- **Summary:** Added loading spinners during initial data fetch, matching StamtabelManager pattern.
 
 ---
 
@@ -162,16 +182,16 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Depends on PB-011 (transaction wrapping) being completed first so validation + creation are atomic. Schedule after PB-011.
+- **Reason:** Should be done after PB-022 (transaction wrapping on employment/function) so validation + creation are atomic. Schedule after PB-022.
 - **Source:** DE-REC-008.
 
-### PB-009: Add covering index for capacity aggregation query
+### PB-019: Add semantic dialog attributes to modal overlays
 
-- **Owner:** Delivery Agent
+- **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Current query performance is acceptable. Revisit when capacity endpoint shows measurable slowness under real data volumes.
-- **Source:** DE-REC-005.
+- **Reason:** Lower priority than PB-021 (aria-labels, CLAUDE.md compliance gap). Schedule after PB-021.
+- **Source:** EX-REC-008.
 
 ### PB-010: Standardize input field styling across settings forms
 
@@ -181,21 +201,21 @@ _No items currently in progress._
 - **Reason:** Minor visual inconsistency. Can be done opportunistically alongside other settings page work.
 - **Source:** EX-REC-003.
 
-### PB-019: Add semantic dialog attributes to modal overlays
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Deferred
-- **Reason:** Low effort but lower priority than toast accessibility (PB-012). Schedule after PB-012.
-- **Source:** EX-REC-008.
-
 ### PB-020: Replace window.confirm with custom confirmation component
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** `window.confirm` works. This is the most visible UX inconsistency but requires a new component + 6 migration points. Schedule when higher-priority work is done.
+- **Reason:** `window.confirm` works. Largest remaining UX inconsistency but requires a new component + migration points. Schedule after PB-019 (dialog accessibility).
 - **Source:** EX-REC-009.
+
+### PB-009: Add covering index for capacity aggregation query
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Current query performance is acceptable. Revisit when capacity endpoint shows measurable slowness.
+- **Source:** DE-REC-005.
 
 ---
 

@@ -23,7 +23,15 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-Er is een probleem met het planningsoverzicht, daar staan nu geen chaufeurs meer zichtbaar terwijl deze chauffeurs wel bestaan in het chauffeursoverzicht. los dat op!
+### SMI-003: Drivers not visible in planning grid
+
+- **Type:** Bug report
+- **Status:** Planned
+- **Input:** "Er is een probleem met het planningsoverzicht, daar staan nu geen chauffeurs meer zichtbaar terwijl deze chauffeurs wel bestaan in het chauffeursoverzicht. Los dat op!"
+- **Why this matters:** The planning grid is the core workflow. Drivers that exist in the system must be visible for planning.
+- **Root cause analysis:** PB-003 changed driver filtering in the planning grid API to use `activeDriverWhereClause()`, which requires an active employment record covering today's date. Drivers without employment records (or with expired/future-dated employment) are now hidden from the planning grid but still visible in the driver list, which shows all drivers without this filter.
+- **Product Owner action:** Created PB-025 (P1 Critical) to remove the employment-based filter from the planning grid API. Assigned to Delivery Agent for immediate fix.
+- **Backlog linkage:** PB-025.
 
 ### SMI-001: Connectivity hub for external data sources
 
