@@ -5,7 +5,7 @@ import { Plus, Pencil, Trash2, Save } from "lucide-react";
 import type { RosterProfileEntry, RosterProfile } from "@/domain/types";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
-import { ROSTER_PROFILE_STATUSES, STATUS_CODES, STATUS_COLORS, DAY_LABELS, type RosterProfileStatus } from "@/domain/constants";
+import { ROSTER_PROFILE_STATUSES, STATUS_CODES, STATUS_COLORS, STATUS_DOT_COLORS, DAY_LABELS, type RosterProfileStatus } from "@/domain/constants";
 import { cn } from "@/lib/utils";
 import { showToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -142,10 +142,11 @@ export function RosterProfileEditor() {
                             type="button"
                             onClick={() => cycleStatus(offset)}
                             className={cn(
-                              "w-8 h-8 rounded text-xs font-bold flex items-center justify-center transition-colors",
+                              "w-8 h-8 rounded text-xs font-bold flex items-center justify-center gap-0.5 transition-colors",
                               STATUS_COLORS[entry.status]
                             )}
                           >
+                            <span className={cn("status-dot", STATUS_DOT_COLORS[entry.status])} aria-hidden="true" />
                             {STATUS_CODES[entry.status]}
                           </button>
                         </td>

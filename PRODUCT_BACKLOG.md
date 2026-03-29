@@ -55,38 +55,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Planned (Future Cycles)
 
-### PB-047: Capacity page status badge consistency
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Planned (future cycle)
-- **Problem / opportunity:** The capacity page uses basic status badges without dot indicators. The planning grid uses the refined `status-chip-compact` pattern, making the capacity page feel visually dated.
-- **Scope notes:** Apply `status-chip-compact` + `status-dot` pattern from the planning grid to capacity table status badges.
-- **Dependencies:** None.
-- **Definition of done:** Capacity page uses the same status chip pattern as the planning grid. Passes `npm run verify`.
-- **Source:** EX-REC-021.
-
-### PB-040: RosterAssigner modal table styling
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Planned (future cycle)
-- **Problem / opportunity:** The RosterAssigner modal table uses dense cell borders, conflicting with DESIGN.md and visually inconsistent with the planning grid, drivers table, and SubTable.
-- **Scope notes:** Apply tonal separator approach: remove cell borders, use subtle row separators, keep header bottom edge.
-- **Dependencies:** None.
-- **Definition of done:** RosterAssigner table uses tonal separators. Passes `npm run verify`.
-- **Source:** EX-REC-018.
-
-### PB-057: RosterProfileEditor status dot indicators
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Planned (future cycle)
-- **Problem / opportunity:** The RosterProfileEditor grid uses bare `STATUS_COLORS` for cell backgrounds without the compact dot indicators used in the planning grid. Minor visual inconsistency in the settings flow.
-- **Scope notes:** Add small status dots to RosterProfileEditor grid cells, matching the planning grid pattern.
-- **Dependencies:** None.
-- **Definition of done:** RosterProfileEditor grid cells show status dots consistent with the planning grid. Passes `npm run verify`.
-- **Source:** EX-REC-024.
+_No items planned for future cycles._
 
 ### PB-015: Connectivity hub — data model and import source API
 
@@ -125,6 +94,21 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-047: Capacity page status badge consistency
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Replaced basic inline status badges with `status-chip-compact` + `status-dot` pattern. Removed dense cell borders in favor of tonal separators, alternating rows, and `text-label` header styling.
+
+### PB-040: RosterAssigner modal table styling
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Replaced dense cell borders with tonal row separators, alternating backgrounds, card surface wrapping, and consistent `text-label` header styling. Active records use `bg-success-50`.
+
+### PB-057: RosterProfileEditor status dot indicators
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added `status-dot` indicators to roster profile editor grid cells, matching the planning grid pattern.
 
 ### PB-053: Add date validation to POST sub-record routes
 - **Completed:** 2026-03-29

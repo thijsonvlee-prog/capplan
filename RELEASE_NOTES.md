@@ -10,6 +10,14 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 (nacht 5) — Visuele consistentie afronden
+
+#### UX / design verbeteringen
+
+- De capaciteitstabel gebruikt nu statuschips met kleurindicatorstippen, consistent met het planningsrooster. Dichte celranden zijn vervangen door tonale rijscheidingen en afwisselende achtergrondtinten.
+- De roosterhistorietabel in het toewijzingsvenster gebruikt nu tonale rijscheidingen in plaats van dichte celranden, met een kaartoppervlak en consistente kopstijl. Actieve toewijzingen worden gemarkeerd met een groene achtergrond.
+- Het roosterprofielrooster in de instellingen toont nu kleurindicatorstippen bij elke statuscel, consistent met het planningsrooster.
+
 ### 2026-03-29 (nacht 4) — API-validatie completering en taalafstemming
 
 #### Betrouwbaarheid

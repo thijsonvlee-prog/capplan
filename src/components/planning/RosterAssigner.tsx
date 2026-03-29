@@ -61,30 +61,30 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
         <h3 className="text-section-title">Roosterprofiel — {driverName}</h3>
 
         {records.length > 0 && (
-          <div>
-            <div className="text-caption font-medium mb-1">Roosterhistorie</div>
+          <div className="bg-surface-primary rounded-lg border border-border-subtle overflow-hidden">
+            <div className="text-caption font-medium px-3 py-2">Roosterhistorie</div>
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="bg-surface-tertiary text-xs text-text-secondary">
-                  <th className="text-left p-2 border border-border-default">#</th>
-                  <th className="text-left p-2 border border-border-default">Profiel</th>
-                  <th className="text-left p-2 border border-border-default">Ingangsdatum</th>
-                  <th className="text-left p-2 border border-border-default">Einddatum</th>
-                  <th className="text-left p-2 border border-border-default">Uren/week</th>
-                  <th className="w-8 border border-border-default"></th>
+                <tr className="bg-surface-tertiary text-label border-b border-border-subtle">
+                  <th className="text-left p-2">#</th>
+                  <th className="text-left p-2">Profiel</th>
+                  <th className="text-left p-2">Ingangsdatum</th>
+                  <th className="text-left p-2">Einddatum</th>
+                  <th className="text-left p-2">Uren/week</th>
+                  <th className="w-8"></th>
                 </tr>
               </thead>
               <tbody>
-                {records.map((r) => (
-                  <tr key={r.id} className={!r.endDate ? "bg-brand-50" : ""}>
-                    <td className="p-2 border border-border-default text-sm">{r.sequenceNumber}</td>
-                    <td className="p-2 border border-border-default text-sm">{r.profileName}</td>
-                    <td className="p-2 border border-border-default text-sm">{r.startDate}</td>
-                    <td className="p-2 border border-border-default text-sm">
+                {records.map((r, idx) => (
+                  <tr key={r.id} className={`${!r.endDate ? "bg-success-50" : idx % 2 === 1 ? "bg-surface-secondary/50" : ""} ${idx < records.length - 1 ? "border-b border-border-subtle" : ""}`}>
+                    <td className="p-2 text-sm">{r.sequenceNumber}</td>
+                    <td className="p-2 text-sm font-medium">{r.profileName}</td>
+                    <td className="p-2 text-sm">{r.startDate}</td>
+                    <td className="p-2 text-sm">
                       {r.endDate || <span className="text-success-600 text-xs font-medium">Actief</span>}
                     </td>
-                    <td className="p-2 border border-border-default text-sm">{r.weeklyHours ?? "-"}</td>
-                    <td className="p-1 border border-border-default text-center">
+                    <td className="p-2 text-sm">{r.weeklyHours ?? "-"}</td>
+                    <td className="p-1 text-center">
                       <button
                         onClick={() => handleDelete(r.id)}
                         className="btn-icon-danger"
