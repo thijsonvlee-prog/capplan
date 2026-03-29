@@ -30,22 +30,22 @@ _No open escalations._
 
 ### ESC-004: Custom date picker — scope and approach
 
-- **Status:** Planned
+- **Status:** Closed
 - **Date / run context:** 2026-03-29 — triggered by SMI-006
 - **Decision needed:** How should the custom date picker be scoped?
-- **Chosen option:** Option B — Styled date input wrapper. Create a custom wrapper component that uses the native `<input type="date">` underneath but adds styled container, custom trigger button, and consistent typography/spacing aligned with the design system. The calendar popup itself remains native. Estimated 1 cycle.
-- **Product Owner action:** PB-039 updated with Option B scope, unblocked, and moved to Ready. SMI-006 status updated to Planned.
+- **Chosen option:** Option B — Styled date input wrapper. Create a custom wrapper component that uses the native `<input type="date">` underneath but adds styled container, custom trigger button, and consistent typography/spacing aligned with the design system.
+- **Product Owner action:** PB-039 completed. SMI-006 closed.
 
 ### ESC-003: Planning grid visual redesign — scope and phasing
 
 - **Status:** Closed
 - **Date / run context:** 2026-03-29 — triggered by SMI-004 and EX-REC-016
 - **Decision needed:** How should the planning grid visual redesign be scoped and phased?
-- **Chosen option:** Option B — Phased redesign across 2-3 cycles
+- **Chosen option:** Option B — Phased redesign across 3 cycles
   - Phase 1: Surface layering and row tonal hierarchy (PB-032) — completed
   - Phase 2: Row composition and identity (PB-034) — completed
-  - Phase 3: Cell rendering and status refinement (PB-035) — ready
-- **Product Owner action:** All three phases translated into backlog items. Phase 1 and 2 completed. Phase 3 ready for next cycle.
+  - Phase 3: Cell rendering and status refinement (PB-035) — completed
+- **Product Owner action:** All three phases completed.
 
 ### ESC-001: Define MVP scope for connectivity hub
 

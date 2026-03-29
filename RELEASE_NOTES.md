@@ -6,7 +6,11 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-### Datuminvoer, planningsrooster verfijning en codekwaliteit
+_No unreleased changes._
+
+## Release History
+
+### 2026-03-29 (avond) — Datuminvoer, planningsrooster verfijning en codekwaliteit
 
 #### UX / design verbeteringen
 
@@ -18,9 +22,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### Interne kwaliteit
 
-- Ongebruikte `preferences.getAll()` en `preferences.remove()` methoden verwijderd uit de frontend API-laag. De `getAll()` methode verwees naar een niet-bestaand endpoint.
-
-## Release History
+- Ongebruikte `preferences.getAll()` en `preferences.remove()` methoden verwijderd uit de frontend API-laag.
 
 ### 2026-03-29 — DayCell popup, planningsrooster redesign en kwaliteitsverbeteringen
 

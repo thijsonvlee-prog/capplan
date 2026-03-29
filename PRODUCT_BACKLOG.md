@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** SMI-004 drives bigger design steps toward DESIGN.md. All three planning grid redesign phases (surface, rows, cells) are complete. DayCell popup redesign is complete. Styled date input wrapper (PB-039) is deployed across all forms. Settings page layout (PB-041) is the next major UX deliverable, representing the most visible screen still at generic admin quality.
+**Current direction:** All three planning grid redesign phases and DayCell popup redesign are complete. Styled date input wrapper is deployed. Focus now shifts to: (1) fixing the planning upsert race condition (DE-REC-016), (2) settings page layout redesign (PB-041) as the next major UX deliverable, and (3) small quality/safety improvements to API routes. The connectivity hub (PB-015/016) remains planned for a future cycle.
 
 ## Status Definitions
 
@@ -27,23 +27,98 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-043: Fix TOCTOU race condition in POST /api/planning upsert
 
----
-
-## Planned (Future Cycles)
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** `POST /api/planning` does a `findFirst` then either `update` or `create` without a transaction. Concurrent requests for the same `(driverId, date, scenarioId)` can both find no existing record and both attempt `create`, causing a unique-constraint violation (500 error). The schema also lacks a `@@unique([driverId, date, scenarioId])` constraint.
+- **Why this matters now:** This is a real data integrity risk. Multi-user scenarios or fast double-clicks can trigger it. Highest-priority technical issue.
+- **Scope notes:** Add `@@unique([driverId, date, scenarioId])` to `PlanningEntry` in the Prisma schema. Replace the `findFirst`+`create`/`update` pattern with Prisma `upsert` using the composite key. Requires a migration. Verify no duplicate rows exist before adding the constraint.
+- **Dependencies:** None.
+- **Definition of done:** Migration applied. `POST /api/planning` uses `upsert`. No duplicate rows possible. Passes `npm run verify`.
+- **Implementation note:** Check for existing duplicate `(driverId, date, scenarioId)` rows before migration. If duplicates exist, deduplicate first.
+- **Source:** DE-REC-016.
 
 ### PB-041: Settings page layout composition
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Planned (future cycle)
+- **Status:** Ready
 - **Problem / opportunity:** The settings page (stamtabellen) is functional but uses a generic list-of-cards layout without strong grouping, hierarchy, or visual rhythm. It reads as a standard admin panel rather than a designed product screen.
-- **Why this matters now:** With the planning grid approaching DESIGN.md alignment, the settings page becomes the most visible screen still at generic admin quality. Aligns with SMI-004 direction.
+- **Why this matters now:** With the planning grid fully at DESIGN.md standard, the settings page is the most visible screen still at generic admin quality. Aligns with SMI-004 direction.
 - **Scope notes:** Group related settings categories visually. Strengthen section headers. Add subtle surface differentiation. Consider sidebar-navigation or tabbed approach for category navigation. Keep changes within existing component patterns.
 - **Dependencies:** None.
 - **Definition of done:** Settings page has clear category grouping, improved visual hierarchy, and feels designed rather than generic. Passes `npm run verify`.
 - **Source:** EX-REC-020.
+
+### PB-044: Add date range guard to GET /api/planning
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** `GET /api/planning` returns all planning entries for a scenario when no `dates` parameter is provided. With growing data, this can return the entire table with no LIMIT, causing potential OOM or timeouts on serverless.
+- **Why this matters now:** Cheap safety guard against a latent scalability issue. All current callers pass dates, but the API itself is unguarded.
+- **Scope notes:** Require `dates` or `driverId` parameter. Return 400 with Dutch error message if neither is provided. Verify all frontend callers pass the required parameters.
+- **Dependencies:** None.
+- **Definition of done:** GET /api/planning returns 400 when called without `dates` or `driverId`. Existing callers unaffected. Passes `npm run verify`.
+- **Source:** DE-REC-017.
+
+### PB-045: Memoize filteredDrivers in PlanningGrid
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** `filteredDrivers` in `PlanningGrid.tsx` is an inline `.filter()` that creates a new array reference on every render. The downstream `sortedDrivers` useMemo depends on it, causing unnecessary re-computation. This is also the root cause of one of the two pre-existing ESLint warnings.
+- **Why this matters now:** Addresses a real performance gap in the most complex component and fixes an ESLint warning.
+- **Scope notes:** Wrap `filteredDrivers` in `useMemo` with `[localData, filter]` as deps. Handle with extreme care — PlanningGrid is sensitive.
+- **Dependencies:** None.
+- **Definition of done:** `filteredDrivers` wrapped in `useMemo`. ESLint warning resolved. No behavioral regression. Passes `npm run verify`.
+- **Implementation note:** PlanningGrid.tsx is ~650 lines and the most complex component. Test carefully after change.
+- **Source:** DE-REC-022.
+
+### PB-046: Remove dead code batch (patchBody, isDriverActiveByEmployment, misleading userId params, redundant cascade deletes)
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** Several small dead code / misleading code items identified:
+  1. `patchBody()` in `api.ts` — no PATCH endpoints exist, zero callers.
+  2. `isDriverActiveByEmployment` in `api-helpers.ts` — exported but zero callers, logic duplicated in `transformDriver`.
+  3. `userId` parameter in `preferences.get()` and `preferences.set()` — server ignores it (hardcoded to "default"), creates false impression of multi-user support.
+  4. Redundant `deleteMany` before cascade-covered deletes in driver and skill deletion routes.
+- **Why this matters now:** Quick batch cleanup. Each item is small, together they meaningfully reduce dead/misleading code.
+- **Scope notes:** Delete `patchBody`. Delete `isDriverActiveByEmployment`. Remove `userId` param from preferences methods (verify callers). Remove redundant `deleteMany` calls (verify cascade is correctly defined in schema first).
+- **Dependencies:** None.
+- **Definition of done:** All four items removed. No callers broken. Passes `npm run verify`.
+- **Source:** DE-REC-018, DE-REC-019, DE-REC-020, DE-REC-021.
+
+---
+
+## Planned (Future Cycles)
+
+### PB-047: Capacity page status badge consistency
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Planned (future cycle)
+- **Problem / opportunity:** The capacity page (`CapacityTable.tsx`) uses basic `px-2 py-0.5 rounded` status badges without dot indicators. Now that the planning grid uses the refined `status-chip-compact` pattern, the capacity page feels visually dated.
+- **Why this matters now:** Small effort, high consistency impact. Users who switch between planning and capacity views will see inconsistent status styling.
+- **Scope notes:** Apply the same `status-chip-compact` + `status-dot` pattern from the planning grid to capacity table status badges.
+- **Dependencies:** None.
+- **Definition of done:** Capacity page uses the same status chip pattern as the planning grid. Passes `npm run verify`.
+- **Source:** EX-REC-021.
+
+### PB-040: RosterAssigner modal table styling
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Planned (future cycle)
+- **Problem / opportunity:** The RosterAssigner modal table uses dense `border border-border-default` on every cell, conflicting with DESIGN.md section 4.1 and visually inconsistent with the updated planning grid.
+- **Scope notes:** Apply tonal separator approach: remove cell borders, use subtle row separators, keep header bottom edge.
+- **Dependencies:** None.
+- **Definition of done:** RosterAssigner table uses tonal separators. Passes `npm run verify`.
+- **Source:** EX-REC-018.
 
 ### PB-015: Connectivity hub — data model and import source API
 
@@ -54,7 +129,7 @@ _No items currently ready._
 - **Scope notes:** Design and implement Prisma schema additions for import source configuration. Create API routes for CRUD. No UI, no import execution logic.
 - **Dependencies:** None.
 - **Definition of done:** Prisma migration for import source tables. API routes for CRUD. Passes `npm run verify`.
-- **Implementation note:** Keep schema minimal: ImportSource (id, name, type=CSV, fieldMappings as JSON, createdAt, updatedAt). Migration required.
+- **Implementation note:** Keep schema minimal: ImportSource (id, name, type=CSV, fieldMappings as JSON, createdAt, updatedAt).
 - **Source:** ESC-001 decision (Option A), SMI-001.
 
 ### PB-016: Connectivity hub — admin screen for import source configuration
@@ -63,21 +138,9 @@ _No items currently ready._
 - **Priority:** P3 Medium
 - **Status:** Planned (future cycle)
 - **Problem / opportunity:** Second phase of connectivity hub MVP. Admin screen for CSV import source configuration with field mapping.
-- **Dependencies:** PB-015 (data model and API must exist first).
+- **Dependencies:** PB-015.
 - **Definition of done:** Working admin screen for managing CSV import sources with field mapping. Passes `npm run verify`.
 - **Source:** ESC-001 decision (Option A), SMI-001.
-
-### PB-040: RosterAssigner modal table styling
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Planned (future cycle)
-- **Problem / opportunity:** The RosterAssigner modal table uses dense `border border-border-default` on every cell, conflicting with DESIGN.md section 4.1 and visually inconsistent with the updated planning grid.
-- **Why this matters now:** Low effort consistency fix. The planning grid now uses tonal separators, making the modal table the most visible inconsistency.
-- **Scope notes:** Apply the same tonal separator approach used in the planning grid: remove cell borders, use subtle row separators, keep header bottom edge.
-- **Dependencies:** None.
-- **Definition of done:** RosterAssigner table uses tonal separators instead of cell borders. Passes `npm run verify`.
-- **Source:** EX-REC-018.
 
 ---
 
@@ -98,75 +161,17 @@ _No items currently in progress._
 ### PB-042: Remove dead preferences API methods from api.ts
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Removed unused `getAll()` and `remove()` methods from `preferences` namespace in `api.ts`. `getAll()` referenced non-existent `/api/preferences/all` route (would 404). Neither method had any callers. `UserPreference` type import also removed (type definition retained in `types.ts`).
+- **Summary:** Removed unused `getAll()` and `remove()` methods from `preferences` namespace in `api.ts`.
 
 ### PB-039: Styled date input wrapper component
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Created `DateInput` component (`src/components/ui/DateInput.tsx`) with styled container, calendar icon trigger, and design-token CSS. Replaced all 4 date inputs across RosterAssigner and DriverForm. Native calendar popup retained. CSS classes added to `globals.css`.
+- **Summary:** Created `DateInput` component with styled container, calendar icon trigger, and design-token CSS. Replaced all 4 date inputs across RosterAssigner and DriverForm.
 
 ### PB-035: Planning grid Phase 3 — cell rendering and status refinement
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Compact cells now use dot-indicator + letter chip pattern (`status-chip-compact` CSS class) for faster status scanning. Empty cells show a subtle midpoint dot instead of a dash. Aggregated view uses the same chip pattern. Softer border radius on cell buttons. `STATUS_DOT_COLORS` constant added. All three phases of the planning grid redesign (ESC-003) are now complete.
-
-### PB-024: Remove dead getComputedFields wrapper from api.ts
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Deleted the unused `/api/drivers/[id]/computed` route file and removed the `drivers.getComputedFields()` method from `api.ts`.
-
-### PB-027: Add input validation to preferences and active-scenario PUT handlers
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Added `validateRequired()` checks to PUT endpoints. Missing fields return 400 with Dutch error messages.
-
-### PB-037: DayCell popup — reposition near click target
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Popup appears adjacent to clicked cell with viewport boundary detection. Dark backdrop removed.
-
-### PB-038: DayCell popup — visual redesign
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** StatusSelector redesigned with color indicators, check marks, chevrons, refined spacing, and design-token styling.
-
-### PB-034: Planning grid Phase 2 — row composition and identity
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Driver names use semibold last-name-first format. Metadata uses `text-caption`. Sticky columns inherit row tones.
-
-### PB-032: Planning grid Phase 1 — surface layering and row tonal hierarchy
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Replaced border-heavy grid with tonal surface system. Header/data/group/totals rows differentiated through layering.
-
-### PB-036: Add Escape key handling to remaining modal overlays
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-
-### PB-033: Add focus trap to modal overlays
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-
-### PB-020: Replace window.confirm with custom ConfirmDialog
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-
-### PB-025: Fix planning grid not showing drivers
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-
-### PB-022: Wrap employment and function POST handlers in transactions
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-
-### PB-023: Remove isActive from driver PUT handler
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-
-### PB-017: Sanitize error logging in API catch blocks
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
+- **Summary:** Compact cells use dot-indicator + letter chip pattern. Empty cells show subtle midpoint dot. Aggregated view uses same chip pattern. All three phases of the planning grid redesign (ESC-003) are now complete.
 
 ---
 
@@ -177,7 +182,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Dependencies resolved (PB-022 done). Medium effort — touches several routes. Schedule when capacity allows after higher-priority items.
+- **Reason:** Medium effort — touches several routes. Schedule when capacity allows after higher-priority items.
 - **Source:** DE-REC-008.
 
 ### PB-010: Standardize input field styling across settings forms
@@ -185,7 +190,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Minor visual inconsistency. Low impact relative to current design priorities. May be addressed naturally as part of PB-041 (settings page layout).
+- **Reason:** May be addressed naturally as part of PB-041 (settings page layout).
 - **Source:** EX-REC-003.
 
 ### PB-009: Add covering index for capacity aggregation query

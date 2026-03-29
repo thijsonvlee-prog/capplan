@@ -23,32 +23,14 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-### SMI-005: DayCell popup positioning and redesign
-
-- **Type:** UX improvement request
-- **Status:** Planned
-- **Input:** Denk alvast na over wat er nodig is om de pop-up/dropdown bij het aanklikken van een daycell te verbeteren. Nu is het zo dat je klikt op een daycell, dan vervolgens komt de pop-up in het midden van je scherm (ver weg van je muis), je wil dus eigenlijk dat dit makkelijker werkt. Ook het ontwerp hiervan mag mooier.
-- **Why this matters:** The DayCell popup is part of the core planning workflow. Appearing in screen center forces the user to move their attention away from the cell they just clicked. Positioning near the click target and improving the visual design directly improves planning efficiency.
-- **Product Owner action:** Created PB-037 (reposition popup near click target) and PB-038 (redesign popup appearance). PB-037 is ready for next cycle. PB-038 depends on PB-037 positioning work.
-- **Backlog linkage:** PB-037, PB-038.
-
-### SMI-006: Custom date picker design
-
-- **Type:** UX improvement request
-- **Status:** Planned
-- **Input:** Implementeer een mooiere datumselectie scherm, in alle datumvelden komt nu een lelijk (soort standaard) datum selectiescherm, maar dit mag een custom design zijn dat aansluit bij de rest van de applicatie.
-- **Why this matters:** All date fields use the browser's native date picker, which looks inconsistent with the application's design system. A custom date picker aligned with the design tokens would significantly improve perceived quality.
-- **Product Owner action:** ESC-004 decided: Option B (styled date input wrapper). PB-039 updated and moved to Ready for next cycle.
-- **Backlog linkage:** PB-039.
-
 ### SMI-004: Bigger design steps toward DESIGN.md compliance
 
 - **Type:** Priority signal / direction change
 - **Status:** Planned
 - **Input:** Er moeten grotere stappen gemaakt worden in het redesign om te voldoen aan design.md. Stuur aan op grotere verbeteringen, minder schaven aan bestaand ontwerp, maar echt componenten en schermen opnieuw ontwerpen obv design.md. Luister dus ook goed naar de aanbevelingen van de experience agent.
 - **Why this matters:** The Scrum Master is signaling that incremental polish is no longer sufficient. The product needs visible, meaningful redesign steps.
-- **Product Owner action:** Design items elevated to P2 High. Planning grid phased redesign approved (ESC-003 → Option B). Phase 1 complete. Phase 2 (PB-034) promoted to ready. DayCell popup redesign (SMI-005) aligns with this direction.
-- **Backlog linkage:** PB-020, PB-031, PB-033, PB-032, PB-034, PB-035, PB-037, PB-038.
+- **Product Owner action:** Planning grid redesign (3 phases) complete. DayCell popup redesign complete. Date input wrapper complete. Next major UX deliverable: settings page layout (PB-041).
+- **Backlog linkage:** PB-032 (done), PB-034 (done), PB-035 (done), PB-037 (done), PB-038 (done), PB-039 (done), PB-041 (ready).
 
 ### SMI-002: Keep improvements incremental during stabilization
 
@@ -69,6 +51,20 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Backlog linkage:** PB-015, PB-016.
 
 ## Closed Inputs
+
+### SMI-006: Custom date picker design
+
+- **Type:** UX improvement request
+- **Status:** Closed
+- **Closed reason:** Fully delivered. ESC-004 decided Option B (styled date input wrapper). PB-039 completed 2026-03-29 — all date fields now use a styled wrapper with calendar icon trigger.
+- **Backlog linkage:** PB-039 (completed).
+
+### SMI-005: DayCell popup positioning and redesign
+
+- **Type:** UX improvement request
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-037 (reposition popup near click target) and PB-038 (visual redesign) both completed 2026-03-29.
+- **Backlog linkage:** PB-037 (completed), PB-038 (completed).
 
 ### SMI-003: Drivers not visible in planning grid
 
