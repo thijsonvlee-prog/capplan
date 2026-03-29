@@ -12,7 +12,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching scenarios:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch scenarios" },
+      { error: "Kan scenario's niet ophalen" },
       { status: 500 }
     );
   }
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating scenario:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to create scenario" },
+      { error: "Kan scenario niet aanmaken" },
       { status: 500 }
     );
   }

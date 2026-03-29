@@ -12,14 +12,14 @@ export const POST = withPerfLogging(
 
       if (!driverId || !Array.isArray(dates) || dates.length === 0 || !status) {
         return NextResponse.json(
-          { error: "driverId, dates (non-empty array), and status are required" },
+          { error: "driverId, datums (niet-lege lijst) en status zijn verplicht" },
           { status: 400 }
         );
       }
 
       if (dates.length > 366) {
         return NextResponse.json(
-          { error: "Maximum 366 dates allowed per bulk operation" },
+          { error: "Maximaal 366 datums per bulkbewerking" },
           { status: 400 }
         );
       }
@@ -78,7 +78,7 @@ export const POST = withPerfLogging(
     } catch (error) {
       console.error("Error bulk creating planning entries:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
-        { error: "Failed to bulk create planning entries" },
+        { error: "Kan planningsgegevens niet in bulk aanmaken" },
         { status: 500 }
       );
     }

@@ -22,29 +22,35 @@ export async function PUT(
       return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
     }
 
-    // Verify the record belongs to the specified driver
-    const existing = await prisma.driverEmploymentRecord.findFirst({
-      where: { id: recordId, driverId: id },
-    });
-    if (!existing) {
-      return NextResponse.json({ error: "Record not found" }, { status: 404 });
-    }
+    const record = await prisma.$transaction(async (tx) => {
+      // Verify the record belongs to the specified driver
+      const existing = await tx.driverEmploymentRecord.findFirst({
+        where: { id: recordId, driverId: id },
+      });
+      if (!existing) {
+        return null;
+      }
 
-    const record = await prisma.driverEmploymentRecord.update({
-      where: { id: recordId },
-      data: {
-        startDate: body.startDate,
-        endDate: body.endDate ?? undefined,
-        employmentType: body.employmentType,
-        employerId: body.employerId ?? undefined,
-      },
+      return tx.driverEmploymentRecord.update({
+        where: { id: recordId },
+        data: {
+          startDate: body.startDate,
+          endDate: body.endDate ?? undefined,
+          employmentType: body.employmentType,
+          employerId: body.employerId ?? undefined,
+        },
+      });
     });
+
+    if (!record) {
+      return NextResponse.json({ error: "Record niet gevonden" }, { status: 404 });
+    }
 
     return NextResponse.json(record);
   } catch (error) {
     console.error("Error updating employment record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to update employment record" },
+      { error: "Kan dienstverbandrecord niet bijwerken" },
       { status: 500 }
     );
   }
@@ -62,7 +68,7 @@ export async function DELETE(
       where: { id: recordId, driverId: id },
     });
     if (!existing) {
-      return NextResponse.json({ error: "Record not found" }, { status: 404 });
+      return NextResponse.json({ error: "Record niet gevonden" }, { status: 404 });
     }
 
     await prisma.driverEmploymentRecord.delete({
@@ -73,7 +79,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting employment record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to delete employment record" },
+      { error: "Kan dienstverbandrecord niet verwijderen" },
       { status: 500 }
     );
   }

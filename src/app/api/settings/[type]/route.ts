@@ -24,7 +24,7 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching settings:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch settings" },
+      { error: "Kan instellingen niet ophalen" },
       { status: 500 }
     );
   }
@@ -50,14 +50,14 @@ export async function POST(
 
     if (!code || typeof code !== "string" || code.trim().length === 0) {
       return NextResponse.json(
-        { error: "code is required" },
+        { error: "Code is verplicht" },
         { status: 400 }
       );
     }
 
     if (code.length > 100) {
       return NextResponse.json(
-        { error: "code must be 100 characters or less" },
+        { error: "Code mag maximaal 100 tekens bevatten" },
         { status: 400 }
       );
     }
@@ -71,7 +71,7 @@ export async function POST(
   } catch (error) {
     console.error("Error creating settings record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to create settings record" },
+      { error: "Kan instellingenrecord niet aanmaken" },
       { status: 500 }
     );
   }

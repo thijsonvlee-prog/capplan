@@ -12,7 +12,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching roster profiles:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch roster profiles" },
+      { error: "Kan roosterprofielen niet ophalen" },
       { status: 500 }
     );
   }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating roster profile:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to create roster profile" },
+      { error: "Kan roosterprofiel niet aanmaken" },
       { status: 500 }
     );
   }

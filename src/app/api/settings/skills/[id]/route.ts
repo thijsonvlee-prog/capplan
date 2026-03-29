@@ -28,7 +28,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating skill:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to update skill" },
+      { error: "Kan competentie niet bijwerken" },
       { status: 500 }
     );
   }
@@ -47,7 +47,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting skill:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to delete skill" },
+      { error: "Kan competentie niet verwijderen" },
       { status: 500 }
     );
   }

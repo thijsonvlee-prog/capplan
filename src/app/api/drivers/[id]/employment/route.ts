@@ -17,7 +17,7 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching employment records:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch employment records" },
+      { error: "Kan dienstverbandrecords niet ophalen" },
       { status: 500 }
     );
   }
@@ -67,7 +67,7 @@ export async function POST(
   } catch (error) {
     console.error("Error creating employment record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to create employment record" },
+      { error: "Kan dienstverbandrecord niet aanmaken" },
       { status: 500 }
     );
   }

@@ -18,7 +18,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching active scenario:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch active scenario" },
+      { error: "Kan actief scenario niet ophalen" },
       { status: 500 }
     );
   }
@@ -65,7 +65,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error("Error setting active scenario:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to set active scenario" },
+      { error: "Kan actief scenario niet instellen" },
       { status: 500 }
     );
   }

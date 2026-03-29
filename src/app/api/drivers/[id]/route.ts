@@ -14,14 +14,14 @@ export async function GET(
     });
 
     if (!driver) {
-      return NextResponse.json({ error: "Driver not found" }, { status: 404 });
+      return NextResponse.json({ error: "Chauffeur niet gevonden" }, { status: 404 });
     }
 
     return NextResponse.json(transformDriver(driver));
   } catch (error) {
     console.error("Error fetching driver:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch driver" },
+      { error: "Kan chauffeur niet ophalen" },
       { status: 500 }
     );
   }
@@ -67,7 +67,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating driver:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to update driver" },
+      { error: "Kan chauffeur niet bijwerken" },
       { status: 500 }
     );
   }
@@ -86,7 +86,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting driver:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to delete driver" },
+      { error: "Kan chauffeur niet verwijderen" },
       { status: 500 }
     );
   }

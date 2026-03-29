@@ -17,7 +17,7 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching function records:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch function records" },
+      { error: "Kan functierecords niet ophalen" },
       { status: 500 }
     );
   }
@@ -70,7 +70,7 @@ export async function POST(
   } catch (error) {
     console.error("Error creating function record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to create function record" },
+      { error: "Kan functierecord niet aanmaken" },
       { status: 500 }
     );
   }

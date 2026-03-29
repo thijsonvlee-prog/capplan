@@ -39,7 +39,7 @@ export const GET = withPerfLogging(
   } catch (error) {
     console.error("Error fetching drivers:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch drivers" },
+      { error: "Kan chauffeurs niet ophalen" },
       { status: 500 }
     );
   }
@@ -63,10 +63,10 @@ export const POST = withPerfLogging(
     } = body;
 
     if (!firstName || typeof firstName !== "string" || firstName.trim().length === 0) {
-      return NextResponse.json({ error: "firstName is required" }, { status: 400 });
+      return NextResponse.json({ error: "Voornaam is verplicht" }, { status: 400 });
     }
     if (!lastName || typeof lastName !== "string" || lastName.trim().length === 0) {
-      return NextResponse.json({ error: "lastName is required" }, { status: 400 });
+      return NextResponse.json({ error: "Achternaam is verplicht" }, { status: 400 });
     }
 
     const driver = await prisma.driver.create({
@@ -123,7 +123,7 @@ export const POST = withPerfLogging(
   } catch (error) {
     console.error("Error creating driver:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to create driver" },
+      { error: "Kan chauffeur niet aanmaken" },
       { status: 500 }
     );
   }

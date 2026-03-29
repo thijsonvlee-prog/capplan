@@ -16,7 +16,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting planning entry:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to delete planning entry" },
+      { error: "Kan planningsitem niet verwijderen" },
       { status: 500 }
     );
   }

@@ -15,7 +15,7 @@ export const POST = withPerfLogging(
 
       if (!name || typeof name !== "string" || name.trim().length === 0) {
         return NextResponse.json(
-          { error: "name is required" },
+          { error: "Naam is verplicht" },
           { status: 400 }
         );
       }
@@ -44,7 +44,7 @@ export const POST = withPerfLogging(
 
       if (sourceCount > 50000) {
         return NextResponse.json(
-          { error: "Source scenario has too many entries to duplicate" },
+          { error: "Bronscenario heeft te veel items om te dupliceren" },
           { status: 400 }
         );
       }
@@ -85,7 +85,7 @@ export const POST = withPerfLogging(
     } catch (error) {
       console.error("Error duplicating scenario:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
-        { error: "Failed to duplicate scenario" },
+        { error: "Kan scenario niet dupliceren" },
         { status: 500 }
       );
     }

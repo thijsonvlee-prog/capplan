@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching preferences:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch preferences" },
+      { error: "Kan voorkeuren niet ophalen" },
       { status: 500 }
     );
   }
@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error("Error setting preference:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to set preference" },
+      { error: "Kan voorkeur niet instellen" },
       { status: 500 }
     );
   }
@@ -75,7 +75,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!key) {
       return NextResponse.json(
-        { error: "key parameter is required" },
+        { error: "Parameter 'key' is verplicht" },
         { status: 400 }
       );
     }
@@ -88,7 +88,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error("Error deleting preference:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to delete preference" },
+      { error: "Kan voorkeur niet verwijderen" },
       { status: 500 }
     );
   }

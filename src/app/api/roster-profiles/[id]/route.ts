@@ -16,7 +16,7 @@ export async function GET(
 
     if (!profile) {
       return NextResponse.json(
-        { error: "Roster profile not found" },
+        { error: "Roosterprofiel niet gevonden" },
         { status: 404 }
       );
     }
@@ -25,7 +25,7 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching roster profile:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch roster profile" },
+      { error: "Kan roosterprofiel niet ophalen" },
       { status: 500 }
     );
   }
@@ -81,7 +81,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating roster profile:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to update roster profile" },
+      { error: "Kan roosterprofiel niet bijwerken" },
       { status: 500 }
     );
   }
@@ -102,7 +102,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting roster profile:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to delete roster profile" },
+      { error: "Kan roosterprofiel niet verwijderen" },
       { status: 500 }
     );
   }

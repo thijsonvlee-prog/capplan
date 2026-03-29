@@ -13,7 +13,7 @@ export const GET = withPerfLogging(
 
       if (!dates) {
         return NextResponse.json(
-          { error: "dates parameter is required" },
+          { error: "Parameter 'dates' is verplicht" },
           { status: 400 }
         );
       }
@@ -22,14 +22,14 @@ export const GET = withPerfLogging(
 
       if (dateList.length === 0) {
         return NextResponse.json(
-          { error: "At least one valid date is required" },
+          { error: "Minimaal één geldige datum is verplicht" },
           { status: 400 }
         );
       }
 
       if (dateList.length > 90) {
         return NextResponse.json(
-          { error: "Maximum 90 dates allowed per request" },
+          { error: "Maximaal 90 datums per verzoek" },
           { status: 400 }
         );
       }
@@ -77,7 +77,7 @@ export const GET = withPerfLogging(
     } catch (error) {
       console.error("Error fetching planning for range:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
-        { error: "Failed to fetch planning for range" },
+        { error: "Kan planningsgegevens niet ophalen" },
         { status: 500 }
       );
     }

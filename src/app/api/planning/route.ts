@@ -43,7 +43,7 @@ export const GET = withPerfLogging(
   } catch (error) {
     console.error("Error fetching planning entries:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch planning entries" },
+      { error: "Kan planningsgegevens niet ophalen" },
       { status: 500 }
     );
   }
@@ -59,7 +59,7 @@ export const POST = withPerfLogging(
 
     if (!driverId || !date || !status) {
       return NextResponse.json(
-        { error: "driverId, date, and status are required" },
+        { error: "driverId, datum en status zijn verplicht" },
         { status: 400 }
       );
     }
@@ -96,7 +96,7 @@ export const POST = withPerfLogging(
   } catch (error) {
     console.error("Error creating planning entry:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to create planning entry" },
+      { error: "Kan planningsitem niet aanmaken" },
       { status: 500 }
     );
   }

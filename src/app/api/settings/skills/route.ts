@@ -12,7 +12,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching skills:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to fetch skills" },
+      { error: "Kan competenties niet ophalen" },
       { status: 500 }
     );
   }
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating skill:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to create skill" },
+      { error: "Kan competentie niet aanmaken" },
       { status: 500 }
     );
   }

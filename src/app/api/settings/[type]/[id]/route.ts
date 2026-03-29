@@ -36,7 +36,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating settings record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to update settings record" },
+      { error: "Kan instellingenrecord niet bijwerken" },
       { status: 500 }
     );
   }
@@ -65,7 +65,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting settings record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to delete settings record" },
+      { error: "Kan instellingenrecord niet verwijderen" },
       { status: 500 }
     );
   }

@@ -27,7 +27,7 @@ export const GET = withPerfLogging(
     } catch (error) {
       console.error("Error fetching roster assignments:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
-        { error: "Failed to fetch roster assignments" },
+        { error: "Kan roostertoewijzingen niet ophalen" },
         { status: 500 }
       );
     }
@@ -167,7 +167,7 @@ export const POST = withPerfLogging(
     } catch (error) {
       console.error("Error creating roster assignment:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
-        { error: "Failed to create roster assignment" },
+        { error: "Kan roostertoewijzing niet aanmaken" },
         { status: 500 }
       );
     }

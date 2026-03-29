@@ -22,29 +22,35 @@ export async function PUT(
       return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
     }
 
-    // Verify the record belongs to the specified driver
-    const existing = await prisma.driverRosterAssignment.findFirst({
-      where: { id: recordId, driverId: id },
-    });
-    if (!existing) {
-      return NextResponse.json({ error: "Record not found" }, { status: 404 });
-    }
+    const record = await prisma.$transaction(async (tx) => {
+      // Verify the record belongs to the specified driver
+      const existing = await tx.driverRosterAssignment.findFirst({
+        where: { id: recordId, driverId: id },
+      });
+      if (!existing) {
+        return null;
+      }
 
-    const record = await prisma.driverRosterAssignment.update({
-      where: { id: recordId },
-      data: {
-        startDate: body.startDate,
-        endDate: body.endDate ?? undefined,
-        rosterProfileId: body.rosterProfileId,
-        weeklyHours: body.weeklyHours ?? undefined,
-      },
+      return tx.driverRosterAssignment.update({
+        where: { id: recordId },
+        data: {
+          startDate: body.startDate,
+          endDate: body.endDate ?? undefined,
+          rosterProfileId: body.rosterProfileId,
+          weeklyHours: body.weeklyHours ?? undefined,
+        },
+      });
     });
+
+    if (!record) {
+      return NextResponse.json({ error: "Record niet gevonden" }, { status: 404 });
+    }
 
     return NextResponse.json(record);
   } catch (error) {
     console.error("Error updating roster assignment:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to update roster assignment" },
+      { error: "Kan roostertoewijzing niet bijwerken" },
       { status: 500 }
     );
   }
@@ -62,7 +68,7 @@ export async function DELETE(
       where: { id: recordId, driverId: id },
     });
     if (!existing) {
-      return NextResponse.json({ error: "Record not found" }, { status: 404 });
+      return NextResponse.json({ error: "Record niet gevonden" }, { status: 404 });
     }
 
     await prisma.driverRosterAssignment.delete({
@@ -73,7 +79,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting roster assignment:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
-      { error: "Failed to delete roster assignment" },
+      { error: "Kan roostertoewijzing niet verwijderen" },
       { status: 500 }
     );
   }

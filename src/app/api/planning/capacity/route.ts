@@ -13,7 +13,7 @@ export const GET = withPerfLogging(
 
       if (!dates) {
         return NextResponse.json(
-          { error: "dates parameter is required" },
+          { error: "Parameter 'dates' is verplicht" },
           { status: 400 }
         );
       }
@@ -53,7 +53,7 @@ export const GET = withPerfLogging(
     } catch (error) {
       console.error("Error fetching capacity:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
-        { error: "Failed to fetch capacity" },
+        { error: "Kan capaciteitsgegevens niet ophalen" },
         { status: 500 }
       );
     }
