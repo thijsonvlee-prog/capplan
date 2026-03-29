@@ -8,20 +8,9 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 _No unreleased changes._
 
-### 2026-03-29 — Prestatieoptimalisatie en connectiviteitshub datamodel
-
-#### Prestaties
-
-- **Map-gebaseerde lookups:** Werkgever-, afdeling- en standplaatslookups in het planningsrooster, chauffeurslijst en groeperingsfuncties zijn geoptimaliseerd van O(N×M) naar O(1) per lookup via vooraf opgebouwde Maps.
-
-#### Connectiviteitshub
-
-- **Importbronnen datamodel:** Nieuw `ImportSource` model toegevoegd aan de database voor het configureren van CSV-importbronnen met veldkoppelingen.
-- **Importbronnen API:** Volledige CRUD API (`/api/import-sources`) met validatie van verplichte velden, doelentiteiten en veldkoppelingsformaat. Foutmeldingen in het Nederlands.
-
 ## Release History
 
-### 2026-03-29 — Visueel herontwerp, API-hardening en kwaliteitsslag
+### 2026-03-29 — Prestatieoptimalisatie, connectiviteitshub en API-hardening
 
 Dit is een samenvatting van alle wijzigingen die op 2026-03-29 zijn doorgevoerd over meerdere nachtelijke cycli.
 
@@ -42,6 +31,16 @@ Dit is een samenvatting van alle wijzigingen die op 2026-03-29 zijn doorgevoerd 
 
 - Modale vensters sluiten bij Escape, focus wordt vastgehouden, beschrijvende labels voor screenreaders.
 
+#### Prestaties
+
+- **Map-gebaseerde lookups:** Werkgever-, afdeling- en standplaatslookups in het planningsrooster, chauffeurslijst en groeperingsfuncties zijn geoptimaliseerd van O(N×M) naar O(1) per lookup via vooraf opgebouwde Maps.
+- Planningsrooster herberekent gefilterde chauffeurlijst alleen wanneer data of filter wijzigen.
+
+#### Connectiviteitshub
+
+- **Importbronnen datamodel:** Nieuw `ImportSource` model toegevoegd aan de database voor het configureren van CSV-importbronnen met veldkoppelingen.
+- **Importbronnen API:** Volledige CRUD API (`/api/import-sources`) met validatie van verplichte velden, doelentiteiten en veldkoppelingsformaat. Foutmeldingen in het Nederlands.
+
 #### Betrouwbaarheid
 
 - **Referentievalidatie:** Alle API-routes die relaties aanmaken valideren dat referenties (werkgever, locatie, afdeling, competenties, verloftype) bestaan. Ongeldige referenties geven een duidelijke 400-fout in het Nederlands.
@@ -54,10 +53,6 @@ Dit is een samenvatting van alle wijzigingen die op 2026-03-29 zijn doorgevoerd 
 #### Taalafstemming
 
 - Alle foutmeldingen in alle 24 API-routebestanden zijn volledig in het Nederlands.
-
-#### Prestaties
-
-- Planningsrooster herberekent gefilterde chauffeurlijst alleen wanneer data of filter wijzigen.
 
 #### Interne kwaliteit
 
