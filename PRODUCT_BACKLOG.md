@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Planning grid redesign (3 phases), DayCell popup, styled date input, settings page tab navigation, and drivers page composition are all complete. Input styling standardized. Race condition, API guard, performance memoization, dead code cleanup, ESLint fix, date validation, and scenario guard all done. Focus shifts to: (1) smaller UX consistency items (capacity badges PB-047, RosterAssigner table PB-040), and (2) connectivity hub (PB-015/016) when capacity allows. See `RECOMMENDATIONS_DELIVERY.md` for new technical improvement proposals.
+**Current direction:** All major redesign work is complete (planning grid 3 phases, DayCell popup, date input, settings tabs, drivers page). Input styling standardized. API validation hardened. ESLint clean (0 warnings). Focus now shifts to: (1) remaining visual consistency gaps within driver edit flow (SubTable PB-052) and other surfaces (PB-047, PB-040), (2) completing API validation coverage (PB-053, PB-054), and (3) connectivity hub (PB-015/016) when capacity allows.
 
 ## Status Definitions
 
@@ -27,7 +27,42 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-052: SubTable tonal separator consistency
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The SubTable component (used for employment, function, and roster history in the driver edit form) uses dense `border border-border-default` on every cell. This conflicts with the tonal separator approach now used in the main drivers table and planning grid. Users editing a driver see a sharp visual downgrade when switching to the Dienstverband/Functie/Rooster tabs.
+- **Scope notes:** Remove per-cell borders from SubTable. Use subtle row separators (`border-b border-border-subtle`), keep header bottom edge, apply tonal background for active-row highlighting instead of border-highlighted `bg-brand-50`.
+- **Dependencies:** None.
+- **Definition of done:** SubTable uses tonal separators consistent with the drivers table and planning grid. Active row uses tonal highlight. Passes `npm run verify`.
+- **Why this matters now:** The drivers page has been elevated (PB-048). The SubTable inconsistency within the same page is now the most visible remaining design gap. Small effort, direct user-visible improvement. Aligns with SMI-004 direction.
+- **Source:** EX-REC-023.
+
+### PB-053: Add date validation to POST sub-record routes
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** PB-050 added `endDate >= startDate` validation to PUT routes for sub-records, but the corresponding POST routes (`/api/drivers/[id]/employment`, `/api/drivers/[id]/functions`, `/api/drivers/[id]/roster-assignments`) also accept date fields without this validation.
+- **Scope notes:** Add the same validation guard to the 3 POST routes. Same pattern as PB-050.
+- **Dependencies:** None.
+- **Definition of done:** All 3 POST routes reject `endDate < startDate` with a Dutch error message. Passes `npm run verify`.
+- **Why this matters now:** Complements just-completed PB-050. Same pattern, minimal effort. Closes the validation gap at API boundaries.
+- **Implementation note:** Use the same guard and Dutch error message as PB-050: `"Einddatum mag niet voor de startdatum liggen"`.
+- **Source:** DE-REC-027.
+
+### PB-054: Fix English error messages in settings API routes
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** `GET /api/settings/[type]` and `PUT /api/settings/[type]/[id]` return `"Unknown settings type"` in English. All other API error messages are in Dutch. This violates CLAUDE.md's requirement that all user-facing text is Dutch.
+- **Scope notes:** Change to `"Onbekend instellingentype"` in both routes. Two string changes.
+- **Dependencies:** None.
+- **Definition of done:** Both settings routes return Dutch error messages. Passes `npm run verify`.
+- **Why this matters now:** Quick CLAUDE.md compliance fix. Two lines of code.
+- **Source:** DE-REC-026.
 
 ---
 
@@ -96,47 +131,22 @@ _No items currently in progress._
 ### PB-049: Fix handleDragEnd stale closure in PlanningGrid useEffect
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Wrapped `handleDragEnd` in `useCallback` with `[dragState]` dependency and added it to the useEffect dependency array. Eliminates the last ESLint `react-hooks/exhaustive-deps` warning. Codebase now has 0 ESLint warnings. Passes `npm run verify`.
+- **Summary:** Wrapped `handleDragEnd` in `useCallback` with `[dragState]` dependency and added it to the useEffect dependency array. Eliminates the last ESLint `react-hooks/exhaustive-deps` warning. Codebase now has 0 ESLint warnings.
 
 ### PB-050: Add date logic validation to sub-record PUT routes
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Added `endDate >= startDate` validation to PUT routes for employment, functions, and roster assignments. Returns 400 with Dutch error message ("Einddatum mag niet voor de startdatum liggen") if `endDate` is before `startDate`. Passes `npm run verify`.
+- **Summary:** Added `endDate >= startDate` validation to PUT routes for employment, functions, and roster assignments. Returns 400 with Dutch error message.
 
 ### PB-051: Validate source scenario exists before duplication
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Added `findUnique` check before duplicating a scenario. Returns 404 with Dutch error message ("Bronscenario niet gevonden") if the source scenario ID is invalid. Skips check for default scenario (which has no DB record). Passes `npm run verify`.
+- **Summary:** Added `findUnique` check before duplicating a scenario. Returns 404 with Dutch error message if the source scenario ID is invalid.
 
 ### PB-048: Drivers page header and layout composition
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Redesigned drivers page composition: added contextual subtitle, improved header hierarchy, introduced view-mode state management (list/create/edit) so table hides during editing, applied tonal row alternation and tonal separators to the drivers table, improved name display to "Achternaam, Voornaam" format matching the planning grid, added form section headers with descriptions for create/edit states, improved empty state spacing, better aria-labels. Added `.drivers-form-header` CSS class. No functional changes to data flow.
-
-### PB-041: Settings page layout composition
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Replaced flat vertical scroll layout with tab-based navigation (Stamgegevens / Competenties / Roosters). Each tab has section header with title and contextual description. Count badge on Stamgegevens tab. Layout widened. Also fixed PB-010 (input styling).
-
-### PB-043: Fix TOCTOU race condition in POST /api/planning upsert
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Added `@@unique([driverId, date, scenarioId])` constraint with deduplication migration. Replaced findFirst+create/update with transactional upsert in both single and bulk endpoints.
-
-### PB-044: Add date range guard to GET /api/planning
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Returns 400 if neither `dates` nor `driverId` parameter is provided.
-
-### PB-045: Memoize filteredDrivers in PlanningGrid
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Wrapped `filteredDrivers` in `useMemo`. Reduced ESLint warnings from 2 to 1.
-
-### PB-046: Remove dead code batch
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Removed unused `patchBody`, `isDriverActiveByEmployment`, misleading `userId` param, and redundant cascade-covered deletes.
+- **Summary:** Redesigned drivers page: composed header, view-mode state management, tonal row alternation, "Achternaam, Voornaam" format, form section headers, improved empty states.
 
 ---
 
