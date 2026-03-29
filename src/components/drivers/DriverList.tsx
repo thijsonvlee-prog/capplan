@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Search } from "lucide-react";
 import { DriverForm } from "./DriverForm";
 import type { Driver } from "@/domain/types";
 import { useApiData, mutate } from "@/hooks/useApi";
@@ -47,21 +47,35 @@ export function DriverList() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <input
-          type="text"
-          placeholder="Zoek op naam of personeelsnummer..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-64 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
-        />
-        <button
-          onClick={() => { setShowForm(true); setEditingDriver(null); }}
-          className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium shadow-xs transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Chauffeur toevoegen
-        </button>
+      {/* Page header */}
+      <div className="page-header">
+        <div className="page-header-row">
+          <div className="page-header-context">
+            <h1 className="text-page-title">Chauffeurs</h1>
+            {drivers.length > 0 && (
+              <span className="count-badge">{drivers.length}</span>
+            )}
+          </div>
+          <button
+            onClick={() => { setShowForm(true); setEditingDriver(null); }}
+            className="btn-primary"
+          >
+            <Plus className="w-4 h-4" />
+            Chauffeur toevoegen
+          </button>
+        </div>
+        <div className="mt-3">
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Zoek op naam of personeelsnummer..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="input-field w-full pl-9"
+            />
+          </div>
+        </div>
       </div>
 
       {showForm && (

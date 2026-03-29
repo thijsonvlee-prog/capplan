@@ -14,6 +14,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 - De instellingenpagina is gegroepeerd in drie secties: Stamgegevens, Competenties en Roosters. Elke sectie heeft een koptekst. De pagina opent met een korte introductietekst.
 
+### UX / planningsscherm
+
+- De werkbalk van het planningsscherm is gegroepeerd in logische secties: Periode (navigatie + zoom), Weergave (dichtheid + scenario), Zoeken & Filteren (zoekveld + groeperen), en Weergaveopties (kolommen + totalen). Elke groep is visueel onderscheiden door een subtiele achtergrondcontainer.
+
+### UX / chauffeursoverzicht
+
+- Het chauffeursoverzicht heeft een volledige paginakop met de titel "Chauffeurs", een teller-badge met het aantal chauffeurs, en een zoekbalk met zoekicoon. De knop "Chauffeur toevoegen" is nu visueel prominent als primaire actie.
+
 ## Release History
 
 ### 2026-03-29 — Planning grid fix, accessibility, transactions, and error hardening

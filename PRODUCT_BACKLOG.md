@@ -65,19 +65,6 @@ _No items currently in progress._
 
 ## Planned (Future Cycles)
 
-### PB-028: Group planning screen controls into logical sections
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Planned (future cycle)
-- **Problem / opportunity:** The PlanningGrid toolbar contains 9+ controls in flat horizontal rows without clear grouping. The planning screen is the core product surface and the toolbar layout is the most visible UX gap.
-- **Why this matters now:** High user value, but touches PlanningGrid.tsx (~650 lines, most complex component). Must be done carefully. Scheduling for a future cycle when no other PlanningGrid work is in progress.
-- **Scope notes:** Restructure control rows into visually distinct groups using subtle background containers or spacing. Purely structural (HTML/CSS), no logic changes. Must verify against typecheck, lint, and visual behavior.
-- **Dependencies:** No other PlanningGrid changes should be in progress simultaneously.
-- **Definition of done:** Planning toolbar has visible control grouping. Passes `npm run verify`. No regressions in planning grid behavior.
-- **Source:** EX-REC-011.
-- **Implementation note:** Follow SMI-002 constraint — this is a layout-only change but must be scoped tightly given PlanningGrid complexity.
-
 ### PB-015: Connectivity hub — data model and import source API
 
 - **Owner:** Delivery Agent
@@ -100,20 +87,19 @@ _No items currently in progress._
 - **Definition of done:** Working admin screen for managing CSV import sources with field mapping. Passes `npm run verify`.
 - **Source:** ESC-001 decision (Option A), SMI-001.
 
-### PB-029: Improve driver list page header and action structure
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Planned (future cycle)
-- **Problem / opportunity:** The driver list page has a minimal header (search field + add button). No page title in content area, no driver count. Edit form appears inline without clear visual framing.
-- **Scope notes:** Add page header zone with title, driver count badge, and grouped action area. Small layout additions, no logic changes.
-- **Dependencies:** None.
-- **Definition of done:** Driver list has proper page header with title and count. Passes `npm run verify`.
-- **Source:** EX-REC-013.
-
 ---
 
 ## Completed Recently
+
+### PB-028: Group planning screen controls into logical sections
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Restructured PlanningGrid toolbar into visually grouped control sections using new `.control-group` CSS class. Row 1: Period group (PeriodSelector + ZoomSelector) and View group (density + scenario). Row 2: Search & Filter group (search + grouper) and Display group (columns + totals). Status legend stays right-aligned. Added `.control-group` and `.control-group-label` to globals.css as reusable patterns.
+
+### PB-029: Improve driver list page header and action structure
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added composed page header with title, driver count badge, and search with icon. Uses new reusable `.page-header`, `.page-header-row`, `.page-header-context`, and `.count-badge` CSS classes. Primary action uses `.btn-primary` class. Search input uses `.input-field` class with search icon.
 
 ### PB-026: Improve settings page visual hierarchy with section grouping
 - **Completed:** 2026-03-29

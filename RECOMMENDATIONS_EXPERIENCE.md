@@ -2,59 +2,29 @@
 
 ## Summary
 
-PB-019 (semantic dialog attributes) and PB-026 (settings page section grouping) are now completed. All 5 modal overlays have `role="dialog"`, `aria-modal="true"`, and descriptive `aria-label` attributes. The settings page now has three logical sections (Stamgegevens, Competenties, Roosters) with section headings and a page introduction.
+PB-028 (planning toolbar grouping) and PB-029 (driver list page header) are now completed. The planning screen toolbar is grouped into logical sections (Period, View, Search & Filter, Display Options) using subtle surface containers. The driver list page now has a composed page header with title, count badge, search icon, and prominent primary action.
 
-**Design alignment with DESIGN.md:** The settings page improvement moves the screen from a flat list toward structured grouping, which aligns with DESIGN.md sections 2.5 (composed screens) and 7.1 (page headers). However, the settings page still uses the same card styling throughout — it does not yet use surface layering (section 4.1) or strong hierarchy to feel truly product-grade. The planning screen toolbar and driver list page remain materially below the design standard.
+New reusable CSS patterns were added to `globals.css`: `.control-group`, `.control-group-label`, `.page-header`, `.page-header-row`, `.page-header-context`, `.count-badge`. These can be applied to other screens to move them toward the DESIGN.md standard.
+
+**Design alignment with DESIGN.md:**
+- The planning toolbar now aligns with DESIGN.md sections 7.2 (toolbars grouped by meaning) and 2.5 (composed screens). Controls are no longer flat rows of loose elements.
+- The driver list page now aligns with DESIGN.md sections 7.1 (page headers) and 8.2 (action placement). The page has clear identity, context, and a dominant primary action.
+- The planning grid itself still uses 1px borders extensively (conflicts with section 4.1 No-Line Rule). The grid structure, row composition, and summary placement need deeper redesign work to reach the product-grade standard described in section 7.4.
+- Other screens (settings, scenario comparison) have not yet received page header treatment.
 
 ## Recommended Next Improvements
 
-### EX-REC-011: Redesign planning screen control bar grouping
+### EX-REC-015: Apply page header pattern to settings and capacity screens
 
-- **Title:** Group planning screen controls into logical sections
-- **Problem:** The PlanningGrid toolbar contains period navigation, zoom, density, scenario, search, grouping, column picker, totals toggle, and status legend — all in flat horizontal rows without clear grouping. This conflicts with DESIGN.md sections 7.2 (toolbars grouped by meaning) and 2.5 (screens should feel composed). The planning screen is the core product surface and currently reads as a toolbar salad.
-- **Proposed improvement:** Restructure the two control rows into visually distinct groups: `[Navigation + Zoom]` `[View Options: density, columns, totals]` `[Scenario]` on row 1; `[Search + Grouping]` `[Status Legend]` on row 2. Use subtle background containers or spacing to delineate groups.
-- **Expected user value:** Faster orientation, reduced cognitive load, planning screen feels more intentional and product-grade.
-- **Priority:** P2 High
-- **Effort:** Medium (layout restructuring of PlanningGrid toolbar, no logic changes)
-- **Dependencies:** None. Should be coordinated carefully given PlanningGrid complexity.
-- **Suggested owner:** Experience Agent
-- **Why now:** The planning screen is the primary product surface. DESIGN.md explicitly calls out that it should feel premium and product-led (section 9). Current toolbar layout is the most visible gap between current state and design standard. Already backlogged as PB-028.
-
-### EX-REC-013: Improve driver list page header and action structure
-
-- **Title:** Add proper page header to driver overview
-- **Problem:** The driver list page has a minimal header: just a search field and an add button in a flat row. No page title visible in the content area, no driver count or summary context. This conflicts with DESIGN.md sections 7.1 (page headers) and 8.2 (action placement).
-- **Proposed improvement:** Add a page header zone with title, driver count badge, and grouped action area.
-- **Expected user value:** Clearer page identity, immediate context (how many drivers), better edit experience.
+- **Title:** Extend page header pattern to remaining screens
+- **Problem:** The settings page and capacity comparison page lack composed page headers. They open with content directly, without title context or primary action structure. This is inconsistent with the now-improved driver list and planning screen.
+- **Proposed improvement:** Apply the `.page-header` pattern to settings page and capacity/comparison screens. Add titles, contextual subtitles where useful, and clear action zones.
+- **Expected user value:** Consistent screen identity across the app. Every major screen immediately communicates its purpose.
 - **Priority:** P3 Medium
-- **Effort:** Small (layout additions, no logic changes)
+- **Effort:** Small (pattern already exists, apply to 2-3 screens)
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** The driver list is a frequently used screen. Current layout is functional but below the composed standard in DESIGN.md. Already backlogged as PB-029.
-
-### EX-REC-003: Standardize input field styling in StamtabelManager
-
-- **Title:** Use CSS component classes consistently in StamtabelManager inputs
-- **Problem:** The StamtabelManager form inputs use inline Tailwind classes for styling (border, focus ring, padding, etc.), while all other components use the `input-field` CSS class from `globals.css`. This creates a minor inconsistency in border radius, focus style, and sizing within the settings page.
-- **Proposed improvement:** Migrate StamtabelManager form inputs to use the `input-field` class, matching all other components.
-- **Expected user value:** Visually consistent input fields across the entire settings page and application.
-- **Priority:** P4 Low
-- **Effort:** Small (two class replacements in one file)
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Simple cleanup. Can be done opportunistically alongside other settings page work. Already backlogged as PB-010.
-
-### EX-REC-009: Replace window.confirm with custom confirmation component
-
-- **Title:** Replace native browser confirmation dialogs
-- **Problem:** All delete confirmation dialogs use `window.confirm()` (found in SubTable, ScenarioSelector, SkillManager, RosterProfileEditor, StamtabelManager). This renders a browser-native dialog that cannot be styled, does not match the application's design, and varies across browsers/platforms.
-- **Proposed improvement:** Create a reusable `ConfirmDialog` component using the existing modal pattern (backdrop + card). Use design tokens for styling. Replace all `window.confirm()` calls. Include `role="dialog"` and `aria-modal="true"` from the start.
-- **Expected user value:** Consistent, branded confirmation experience. Better visual hierarchy. Foundation for richer confirm dialogs.
-- **Priority:** P4 Low
-- **Effort:** Medium (new component + 5 migration points)
-- **Dependencies:** PB-019 is now completed, so the new component can use dialog attributes immediately.
-- **Suggested owner:** Experience Agent
-- **Why now:** PB-019 dependency is resolved. `window.confirm` is the most visible UX inconsistency remaining. Already backlogged as PB-020.
+- **Why now:** The page header pattern is established and reusable. Applying it broadly is low-effort and high-consistency value.
 
 ### EX-REC-014: Add focus trap to modal overlays
 
@@ -68,11 +38,47 @@ PB-019 (semantic dialog attributes) and PB-026 (settings page section grouping) 
 - **Suggested owner:** Experience Agent
 - **Why now:** Natural next step after PB-019. Without focus trap, dialog semantics are incomplete.
 
+### EX-REC-009: Replace window.confirm with custom confirmation component
+
+- **Title:** Replace native browser confirmation dialogs
+- **Problem:** All delete confirmation dialogs use `window.confirm()` (found in SubTable, ScenarioSelector, SkillManager, RosterProfileEditor, StamtabelManager). This renders a browser-native dialog that cannot be styled, does not match the application's design, and varies across browsers/platforms.
+- **Proposed improvement:** Create a reusable `ConfirmDialog` component using the existing modal pattern (backdrop + card). Use design tokens for styling. Replace all `window.confirm()` calls. Include `role="dialog"` and `aria-modal="true"` from the start.
+- **Expected user value:** Consistent, branded confirmation experience. Better visual hierarchy. Foundation for richer confirm dialogs.
+- **Priority:** P3 Medium
+- **Effort:** Medium (new component + 5 migration points)
+- **Dependencies:** PB-019 (completed).
+- **Suggested owner:** Experience Agent
+- **Why now:** PB-019 dependency is resolved. `window.confirm` is the most visible UX inconsistency remaining. Already backlogged as PB-020.
+
+### EX-REC-016: Planning grid deeper redesign — surface layering and row composition
+
+- **Title:** Redesign planning grid visual structure toward DESIGN.md standard
+- **Problem:** The planning grid still uses dense 1px borders for all structure (cells, headers, columns). This conflicts with DESIGN.md section 4.1 (No-Line Rule) and section 7.4 (planning grid is a product surface, not a spreadsheet). Row composition combines name, metadata, and planning cells in a flat table structure without clear tonal hierarchy. Summary/totals row is not visually distinct enough from the main scheduling matrix.
+- **Proposed improvement:** Replace border-heavy cell structure with tonal contrast and spacing. Differentiate header, data rows, group rows, and totals through surface layering. Improve row identity composition. This is a significant visual redesign that should be planned and scoped carefully.
+- **Expected user value:** The planning screen moves from a spreadsheet-like tool to a modern planning product surface. Faster scanning, clearer status comprehension, reduced visual fatigue in daily use.
+- **Priority:** P2 High
+- **Effort:** Large (touches core PlanningGrid rendering, GroupRows, CapacitySummaryRow, DayCell visual output)
+- **Dependencies:** PB-028 (completed). Should be done in isolation without concurrent PlanningGrid changes.
+- **Suggested owner:** Experience Agent
+- **Why now:** The toolbar is now grouped. The grid visual structure is the next and largest gap between the planning screen and the DESIGN.md standard. This is the core product surface and the most impactful design improvement remaining.
+
+### EX-REC-003: Standardize input field styling in StamtabelManager
+
+- **Title:** Use CSS component classes consistently in StamtabelManager inputs
+- **Problem:** The StamtabelManager form inputs use inline Tailwind classes for styling, while all other components use the `input-field` CSS class. Minor inconsistency in border radius, focus style, and sizing.
+- **Proposed improvement:** Migrate StamtabelManager form inputs to use the `input-field` class.
+- **Expected user value:** Visually consistent input fields across the entire settings page and application.
+- **Priority:** P4 Low
+- **Effort:** Small (two class replacements in one file)
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Simple cleanup. Can be done opportunistically. Already backlogged as PB-010.
+
 ## Risks / Watch-outs
 
-- **Planning screen toolbar complexity:** EX-REC-011/PB-028 touches PlanningGrid.tsx, the most complex component (~650 lines, 2 pre-existing lint warnings). Layout restructuring must be done carefully to avoid regressions. However, the change is purely structural (HTML/CSS), not logic.
-- **Design standard gap is structural, not cosmetic:** The gap between current state and DESIGN.md cannot be closed through small styling tweaks alone. The planning screen, driver list, and scenario comparison views all need layout-level work. Recommend staged redesign rather than attempting everything at once.
-- **Placeholder-only forms lack proper labels:** StamtabelManager, SkillManager, RosterProfileEditor, and ScenarioSelector use placeholders instead of explicit `<label>` elements. This limits accessibility. A future pass should add proper labels, but this is a larger change that affects layout.
+- **Planning grid visual redesign is the largest remaining gap:** The toolbar grouping (PB-028) is a meaningful step, but the grid itself (cells, rows, headers, summaries) still uses spreadsheet-style borders and flat rendering. Closing this gap (EX-REC-016) is high-value but requires careful scoping — it touches the most complex component.
+- **Page header inconsistency:** With the driver list now having a composed header, screens without one (settings, capacity) will feel inconsistent. EX-REC-015 addresses this quickly.
+- **Placeholder-only forms lack proper labels:** StamtabelManager, SkillManager, RosterProfileEditor, and ScenarioSelector use placeholders instead of explicit `<label>` elements. This limits accessibility. A future pass should add proper labels, but this is a larger change.
 
 ## Items Intentionally Not Recommended
 
@@ -82,6 +88,7 @@ PB-019 (semantic dialog attributes) and PB-026 (settings page section grouping) 
 - **Search loading indicators:** Marginal gain at current data volumes.
 - **Placeholder-to-label migration in settings forms:** Would improve accessibility but requires significant layout adjustments. Monitor for user feedback.
 - **Badge/pill component system:** DriverList uses inline badge styling. Consolidating into reusable classes would be cleaner but is premature until more badge variants emerge.
+- **Full sidebar redesign:** The sidebar works. DESIGN.md section 7.8 describes an ideal, but the current sidebar is calm and functional. Not a priority over core screen improvements.
 
 ## Recommendation Rules
 

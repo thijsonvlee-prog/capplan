@@ -271,16 +271,18 @@ export function PlanningGrid() {
 
   return (
     <div className="select-none flex flex-col h-full min-h-0">
-      {/* Top bar: navigation + aggregation + scenario */}
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2 flex-shrink-0">
-        <div className="flex items-center gap-3">
+      {/* Toolbar row 1: navigation + view settings */}
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-2 flex-shrink-0">
+        <div className="control-group">
+          <span className="control-group-label">Periode</span>
           <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
           <ZoomSelector value={aggregation} onChange={setAggregation} />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="control-group">
+          <span className="control-group-label">Weergave</span>
           <button
             onClick={cycleDensity}
-            className="flex items-center gap-1.5 px-2 py-1.5 border border-border-default rounded-lg text-sm text-text-secondary hover:bg-surface-secondary transition-colors"
+            className="flex items-center gap-1.5 px-2 py-1.5 border border-border-default rounded-lg text-sm text-text-secondary hover:bg-surface-secondary bg-surface-primary transition-colors"
             title={`Dichtheid: ${dc.label}`}
           >
             <DensityIcon className="w-4 h-4" />
@@ -290,17 +292,17 @@ export function PlanningGrid() {
         </div>
       </div>
 
-      {/* Filters bar */}
+      {/* Toolbar row 2: search/filter + display options + status legend */}
       <div className="flex items-center gap-3 mb-3 flex-wrap flex-shrink-0">
-        <input
-          type="text"
-          placeholder="Zoek op naam..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-64 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
-        />
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-text-tertiary">Groepeer op:</label>
+        <div className="control-group">
+          <input
+            type="text"
+            placeholder="Zoek op naam..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-56 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
+          />
+          <label className="text-caption whitespace-nowrap">Groepeer op:</label>
           <select
             value={groupBy}
             onChange={(e) => setGroupBy(e.target.value as GroupByField)}
@@ -312,50 +314,52 @@ export function PlanningGrid() {
           </select>
         </div>
 
-        {/* Column picker */}
-        <div className="relative">
+        <div className="control-group">
+          {/* Column picker */}
+          <div className="relative">
+            <button
+              onClick={() => setShowColumnPicker(!showColumnPicker)}
+              className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
+                extraColumns.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-secondary bg-surface-primary"
+              }`}
+              title="Kolommen toevoegen"
+            >
+              <Columns3 className="w-4 h-4" />
+              Kolommen{extraColumns.length > 0 && ` (${extraColumns.length})`}
+            </button>
+            {showColumnPicker && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setShowColumnPicker(false)} />
+                <div className="absolute top-full left-0 mt-1 bg-surface-primary border border-border-default rounded-lg shadow-dropdown z-30 py-1 min-w-[200px]" role="dialog" aria-modal="true" aria-label="Kolommen selecteren">
+                  {DRIVER_COLUMNS.map((col) => (
+                    <label key={col.key} className="flex items-center gap-2 px-3 py-1.5 hover:bg-surface-secondary cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={extraColumns.includes(col.key)}
+                        onChange={() => toggleColumn(col.key)}
+                        className="w-3.5 h-3.5 rounded border-border-default accent-brand-600"
+                      />
+                      {col.label}
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Capacity summary toggle */}
           <button
-            onClick={() => setShowColumnPicker(!showColumnPicker)}
+            onClick={() => setShowCapacitySummary((v) => !v)}
             className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
-              extraColumns.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-secondary"
+              showCapacitySummary ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-secondary bg-surface-primary"
             }`}
-            title="Kolommen toevoegen"
+            title="Capaciteitssamenvatting tonen/verbergen"
           >
-            <Columns3 className="w-4 h-4" />
-            Kolommen{extraColumns.length > 0 && ` (${extraColumns.length})`}
+            Totalen
           </button>
-          {showColumnPicker && (
-            <>
-              <div className="fixed inset-0 z-20" onClick={() => setShowColumnPicker(false)} />
-              <div className="absolute top-full left-0 mt-1 bg-surface-primary border border-border-default rounded-lg shadow-dropdown z-30 py-1 min-w-[200px]" role="dialog" aria-modal="true" aria-label="Kolommen selecteren">
-                {DRIVER_COLUMNS.map((col) => (
-                  <label key={col.key} className="flex items-center gap-2 px-3 py-1.5 hover:bg-surface-secondary cursor-pointer text-sm">
-                    <input
-                      type="checkbox"
-                      checked={extraColumns.includes(col.key)}
-                      onChange={() => toggleColumn(col.key)}
-                      className="w-3.5 h-3.5 rounded border-border-default accent-brand-600"
-                    />
-                    {col.label}
-                  </label>
-                ))}
-              </div>
-            </>
-          )}
         </div>
 
-        {/* POC: toggle capacity summary row */}
-        <button
-          onClick={() => setShowCapacitySummary((v) => !v)}
-          className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
-            showCapacitySummary ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-secondary"
-          }`}
-          title="Capaciteitssamenvatting tonen/verbergen"
-        >
-          Totalen
-        </button>
-
-        <div className="flex gap-1.5 flex-wrap ml-auto">
+        <div className="flex gap-1.5 flex-wrap ml-auto items-center">
           {ALL_PLANNING_STATUSES.map((s) => (
             <StatusBadge key={s} status={s} />
           ))}
