@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField } from "@/domain/enums";
-import type { DriverWithEntries, StamtabelRecord } from "@/domain/types";
+import type { DriverWithEntries, PlanningEntry, StamtabelRecord } from "@/domain/types";
 import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, STATUS_DOT_COLORS, GROUP_BY_LABELS, EMPLOYMENT_TYPE_LABELS, DEFAULT_PERIOD_DAYS } from "@/domain/constants";
 import { useApiData } from "@/hooks/useApi";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -506,6 +506,20 @@ export function PlanningGrid() {
 
 // === Helper: group rows ===
 
+function useEntryMaps(drivers: DriverWithEntries[]) {
+  return useMemo(() => {
+    const map = new Map<string, Map<string, PlanningEntry>>();
+    for (const driver of drivers) {
+      const dateMap = new Map<string, PlanningEntry>();
+      for (const entry of driver.planningEntries) {
+        dateMap.set(entry.date, entry);
+      }
+      map.set(driver.id, dateMap);
+    }
+    return map;
+  }, [drivers]);
+}
+
 function GroupRows({
   group,
   columnHeaders,
@@ -542,6 +556,7 @@ function GroupRows({
   const dc = DENSITY_CONFIG[density];
   const isDayLevel = aggregation === "day";
   const isCompact = density === "compact";
+  const entryMaps = useEntryMaps(group.drivers);
 
   return (
     <>
@@ -611,7 +626,7 @@ function GroupRows({
           {isDayLevel
             ? columnHeaders.map((col) => {
                 const date = col.dates[0];
-                const entry = driver.planningEntries.find((e) => e.date === date);
+                const entry = entryMaps.get(driver.id)?.get(date);
                 const isDragging = dragState?.active && dragState.driverId === driver.id;
                 const isSelected = dragState?.driverId === driver.id && dragState.dates.includes(date);
                 return (
@@ -649,7 +664,10 @@ function GroupRows({
               })
             : columnHeaders.map((col) => {
                 // Aggregated view: show dominant status count
-                const colEntries = driver.planningEntries.filter((e) => col.dates.includes(e.date));
+                const driverEntryMap = entryMaps.get(driver.id);
+                const colEntries = driverEntryMap
+                  ? col.dates.reduce<PlanningEntry[]>((acc, d) => { const e = driverEntryMap.get(d); if (e) acc.push(e); return acc; }, [])
+                  : [];
                 const statusCounts: Record<string, number> = {};
                 for (const e of colEntries) {
                   statusCounts[e.status] = (statusCounts[e.status] || 0) + 1;
