@@ -33,22 +33,18 @@ _None._
 ### ESC-001: Define MVP scope for connectivity hub
 
 - **Status:** Planned
-- **Date / run context:** 2026-03-29 — triggered by SMI-001 in `SCRUM_MASTER_INPUT.md`
+- **Date / run context:** 2026-03-29 — triggered by SMI-001
 - **Decision needed:** What should the MVP scope be for the connectivity hub initiative?
-- **Chosen option:** Option A — Configuration-first MVP
-  - Scope: Admin screen to configure import sources (CSV only). Field mapping UI. No scheduled execution.
-  - Impact: Planners can import driver/employment data from CSV files. Fast to build, low risk. Foundation for future API support.
-- **Product Owner action:** Created PB-015 (data model + API) and PB-016 (admin screen UI) as phased backlog items. Both are in Planned (Future Cycles) status. SMI-001 updated to Planned.
+- **Chosen option:** Option A — Configuration-first MVP (CSV only, field mapping UI, no scheduled execution)
+- **Product Owner action:** Created PB-015 and PB-016 as phased backlog items.
 
 ### ESC-002: Conflicting driver status computation between views
 
-- **Status:** Planned
+- **Status:** Closed
 - **Date / run context:** 2026-03-29 — blocking PB-003
 - **Decision needed:** Which computation of driver active/inactive status is authoritative?
-- **Chosen option:** Option A — Employment-based status (planning grid logic)
-  - Use active employment records with date overlap as the single source of truth.
-  - Impact: More accurate, automatic. The `isActive` field on Driver may become redundant. Driver list page needs updating.
-- **Product Owner action:** PB-003 completed. However, the employment-based filter in the planning grid introduced a regression (PB-025) where drivers without employment records are hidden. PB-025 created as P1 Critical fix — removes the hard filter while keeping the employment-based computation available for display purposes.
+- **Chosen option:** Option A — Employment-based status
+- **Product Owner action:** PB-003 completed. Regression fixed via PB-025 (completed). Both are done.
 
 ## Escalation Rules
 
@@ -58,7 +54,7 @@ _None._
 - The Scrum Master should only need to place `(X)` next to one option to make a decision.
 - After a choice is made, the Product Owner Agent must translate it into execution planning in `PRODUCT_BACKLOG.md`.
 - Escalations move through the status flow: Open → Chosen → Planned → Closed. Do not leave items open indefinitely.
-- Any agent (Experience Agent, Delivery Agent, Product Owner Agent) can create an escalation, but the Product Owner Agent is responsible for formatting it correctly.
+- Any agent can create an escalation, but the Product Owner Agent is responsible for formatting it correctly.
 - IDs are sequential (ESC-001, ESC-002, ...) and never reused.
 - Blocked backlog items must reference the relevant escalation ID.
 - Do not use this file for minor questions or preferences. Escalate only when work is genuinely blocked or a cross-cutting decision is required.

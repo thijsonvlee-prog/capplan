@@ -25,33 +25,53 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-021: Add aria-label to icon-only action buttons
-
-### PB-021: Add aria-label to icon-only action buttons
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Completed
-- **Problem / opportunity:** Edit and delete icon-only buttons in SkillManager and RosterProfileEditor lack `aria-label` attributes. CLAUDE.md requires all icon-only buttons to have `aria-label`. Screen reader users cannot identify button actions.
-- **Why this matters now:** Compliance gap with codebase rules. Quick fix with broad accessibility impact.
-- **Scope notes:** Add `aria-label="Bewerken"` to edit buttons and `aria-label="Verwijderen"` to delete buttons in SkillManager and RosterProfileEditor. Also check SubTable and StamtabelManager for the same gap.
-- **Dependencies:** None.
-- **Definition of done:** All icon-only buttons in settings components have `aria-label`. Passes `npm run verify`.
-- **Source:** EX-REC-010.
-- **Implementation note:** Added `aria-label` to all 16 icon-only buttons across SkillManager, RosterProfileEditor, StamtabelManager, SubTable, DriverList, RosterAssigner, PlanningGrid, and WeekSelector. Labels: Bewerken, Verwijderen, Opslaan, Annuleren, Eerder, Later, Vandaag, Roosterprofiel toewijzen.
-
-### PB-014: Add visible required field indicators to forms
+### PB-019: Add semantic dialog attributes to modal overlays
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Completed
-- **Problem / opportunity:** No form visually marks required fields before submission. Users must submit and encounter errors to learn which fields are mandatory.
-- **Scope notes:** Add red asterisk (`*`) after required field labels using `text-danger-600`. Apply across DriverForm, StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector, and sub-table forms.
-- **Dependencies:** None.
-- **Definition of done:** All required fields have visual indicators. Passes `npm run verify`.
-- **Source:** EX-REC-006.
-- **Implementation note:** Added red asterisk indicators to all required fields: DriverForm (Voornaam, Achternaam), EmploymentForm (Begindatum), PositionForm (Begindatum), RosterForm (Begindatum, Roosterprofiel), RosterAssigner (Roosterprofiel, Ingangsdatum). For placeholder-only forms (StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector), updated placeholder text to include `*` suffix since these lack explicit labels.
+- **Status:** Ready
+- **Problem / opportunity:** Multiple modal components (ScenarioSelector create dialog, RosterAssigner, PlanningGrid column picker, PlanningGrid bulk selector, DayCell status selector) use `fixed inset-0` backdrop overlays without `role="dialog"` or `aria-modal="true"`. Keyboard and screen reader users cannot navigate these modals properly.
+- **Why this matters now:** PB-021 (aria-labels) and PB-012 (toast accessibility) are done. This is the natural next accessibility improvement. Dependency on PB-021 is resolved.
+- **Scope notes:** Add `role="dialog"`, `aria-modal="true"`, and `aria-label` to each modal container (~5 components). No focus trap in this item.
+- **Dependencies:** None (PB-021 completed).
+- **Definition of done:** All modal overlays have semantic dialog attributes. Passes `npm run verify`.
+- **Source:** EX-REC-008.
 
+### PB-026: Improve settings page visual hierarchy with section grouping
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The settings page renders 8 identical card components in a flat vertical list with no category grouping, section headers, or visual differentiation. The page reads like a generic CMS admin panel.
+- **Why this matters now:** Quick win that improves one of the most generic-feeling screens. Small effort, no logic changes, follows SMI-002 constraint (incremental, focused).
+- **Scope notes:** Group settings into logical categories (e.g., "Stamgegevens" for werkgevers/afdelingen/locaties/verloftypes, "Competenties" for vaardigheden, "Roosters" for roosterprofielen). Add category headings using `.text-section-title`. Add a brief page introduction. Use existing design tokens. No new components needed.
+- **Dependencies:** None.
+- **Definition of done:** Settings page has visible section grouping with Dutch-language headings. Passes `npm run verify`.
+- **Source:** EX-REC-012.
+
+### PB-024: Consolidate /drivers/[id]/computed into main driver transform
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The `/api/drivers/[id]/computed` endpoint makes 3 separate `findFirst()` queries that are redundant with the main driver endpoint. The frontend never calls this endpoint — `getComputedFields()` in `api-helpers.ts` computes the same fields from the main response. The `api.ts` wrapper method has zero callers.
+- **Why this matters now:** Low effort cleanup. Dead code creates confusion for agents and developers.
+- **Scope notes:** Delete `src/app/api/drivers/[id]/computed/route.ts`. Remove `drivers.getComputedFields()` from `api.ts`. Verify no frontend code references the endpoint.
+- **Dependencies:** None.
+- **Definition of done:** Computed endpoint removed. No regressions. Passes `npm run verify`.
+- **Source:** DE-REC-012.
+
+### PB-027: Add input validation to preferences and active-scenario PUT handlers
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** `src/app/api/preferences/route.ts` (PUT) and `src/app/api/scenarios/active/route.ts` (PUT) accept request bodies without `validateRequired()` checks. Missing fields cause unclear errors downstream.
+- **Why this matters now:** Small gap in otherwise complete validation coverage. Quick fix, consistent with all other POST/PUT routes.
+- **Scope notes:** Add `validateRequired()` calls to both handlers (~5 lines per file). Use the existing pattern from `api-route-utils.ts`.
+- **Dependencies:** None.
+- **Definition of done:** Both PUT handlers validate required fields. Invalid requests return clear 400 responses. Passes `npm run verify`.
+- **Source:** DE-REC-013.
 
 ---
 
@@ -69,25 +89,26 @@ _No items currently in progress._
 
 ## Planned (Future Cycles)
 
-### PB-024: Consolidate /drivers/[id]/computed into main driver transform
+### PB-028: Group planning screen controls into logical sections
 
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
+- **Owner:** Experience Agent
+- **Priority:** P2 High
 - **Status:** Planned (future cycle)
-- **Problem / opportunity:** The computed endpoint makes 3 separate `findFirst()` queries that are redundant with the main driver endpoint. The client-side `getComputedFields()` helper already computes derived fields from the main response.
-- **Scope notes:** Remove the separate computed endpoint. Verify no frontend code calls it. Update any callers to use the main driver endpoint.
-- **Dependencies:** None.
-- **Definition of done:** Computed endpoint removed. No regressions. Passes `npm run verify`.
-- **Source:** DE-REC-011.
+- **Problem / opportunity:** The PlanningGrid toolbar contains 9+ controls in flat horizontal rows without clear grouping. The planning screen is the core product surface and the toolbar layout is the most visible UX gap.
+- **Why this matters now:** High user value, but touches PlanningGrid.tsx (~650 lines, most complex component). Must be done carefully. Scheduling for a future cycle when no other PlanningGrid work is in progress.
+- **Scope notes:** Restructure control rows into visually distinct groups using subtle background containers or spacing. Purely structural (HTML/CSS), no logic changes. Must verify against typecheck, lint, and visual behavior.
+- **Dependencies:** No other PlanningGrid changes should be in progress simultaneously.
+- **Definition of done:** Planning toolbar has visible control grouping. Passes `npm run verify`. No regressions in planning grid behavior.
+- **Source:** EX-REC-011.
+- **Implementation note:** Follow SMI-002 constraint — this is a layout-only change but must be scoped tightly given PlanningGrid complexity.
 
 ### PB-015: Connectivity hub — data model and import source API
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Planned (future cycle)
-- **Problem / opportunity:** CapPlan operates standalone. The Scrum Master wants a connectivity hub for external data sources (SMI-001). ESC-001 decided: Option A — Configuration-first MVP (CSV only, field mapping UI, no scheduled execution).
-- **Why this matters now:** First phase of the connectivity hub. Must establish the data model before the UI can be built.
-- **Scope notes:** Design and implement Prisma schema additions for import source configuration (source name, file type, field mappings). Create API routes for CRUD operations on import sources. No UI in this item. No import execution logic.
+- **Problem / opportunity:** First phase of the connectivity hub MVP (ESC-001 decision: CSV-only, field mapping UI, no scheduled execution).
+- **Scope notes:** Design and implement Prisma schema additions for import source configuration. Create API routes for CRUD. No UI, no import execution logic.
 - **Dependencies:** None.
 - **Definition of done:** Prisma migration for import source tables. API routes for CRUD. Passes `npm run verify`.
 - **Implementation note:** Keep schema minimal: ImportSource (id, name, type=CSV, fieldMappings as JSON, createdAt, updatedAt). Migration required.
@@ -98,11 +119,21 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Planned (future cycle)
-- **Problem / opportunity:** Second phase of connectivity hub MVP. Admin screen to create, edit, and delete CSV import sources with field mapping.
-- **Scope notes:** New page in the application for configuring import sources. Follow existing patterns (StamtabelManager-style CRUD). Field mapping UI to map CSV columns to CapPlan entity fields. Dutch-language UI throughout.
+- **Problem / opportunity:** Second phase of connectivity hub MVP. Admin screen for CSV import source configuration with field mapping.
 - **Dependencies:** PB-015 (data model and API must exist first).
 - **Definition of done:** Working admin screen for managing CSV import sources with field mapping. Passes `npm run verify`.
 - **Source:** ESC-001 decision (Option A), SMI-001.
+
+### PB-029: Improve driver list page header and action structure
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Planned (future cycle)
+- **Problem / opportunity:** The driver list page has a minimal header (search field + add button). No page title in content area, no driver count. Edit form appears inline without clear visual framing.
+- **Scope notes:** Add page header zone with title, driver count badge, and grouped action area. Small layout additions, no logic changes.
+- **Dependencies:** None.
+- **Definition of done:** Driver list has proper page header with title and count. Passes `npm run verify`.
+- **Source:** EX-REC-013.
 
 ---
 
@@ -111,42 +142,52 @@ _No items currently in progress._
 ### PB-025: Fix planning grid not showing drivers
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Removed `activeDriverWhereClause()` filter from the planning grid API (`/api/planning/for-range`). All drivers now appear in the planning grid regardless of employment status. The `isActive` computed field from `transformDriver()` remains available for display/grouping.
+- **Summary:** Removed `activeDriverWhereClause()` filter from the planning grid API. All drivers now appear regardless of employment status.
 
 ### PB-022: Wrap employment and function POST handlers in transactions
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Wrapped both employment POST and function POST handlers in `prisma.$transaction()`, passing `tx` to `autoCloseOpenRecords()` and `getNextSequenceNumber()`. Follows the same pattern as the roster-assignments route. All sub-record creation handlers are now transaction-protected.
+- **Summary:** Wrapped both handlers in `prisma.$transaction()`. All sub-record creation handlers are now transaction-protected.
 
 ### PB-023: Remove isActive from driver PUT handler
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Removed `isActive` from the PUT handler's `updateData` object. The field is now read-only/derived from employment records via `transformDriver()`.
+- **Summary:** Removed stale `isActive` write path. Field is now read-only/derived from employment records.
 
 ### PB-017: Sanitize error logging in API catch blocks
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Replaced all ~45 `console.error(..., error)` calls across all 25 API route files with `console.error(..., error instanceof Error ? error.message : "Unknown error")`. No full error objects are logged in production.
+- **Summary:** Replaced all ~45 `console.error` calls to log only error messages, not full error objects.
+
+### PB-021: Add aria-label to icon-only action buttons
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added `aria-label` to all 16 icon-only buttons across 8 components.
+
+### PB-014: Add visible required field indicators to forms
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added red asterisk indicators to all required fields across all forms.
 
 ### PB-011: Wrap remaining multi-step mutations in transactions
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Wrapped all multi-step mutations in `prisma.$transaction()`: driver PUT, driver DELETE, roster profile PUT, scenario duplicate POST, scenario DELETE, skill DELETE.
+- **Summary:** All multi-step mutations wrapped in `prisma.$transaction()`.
 
-### PB-003: Consolidate driver status logic between planning grid and driver list
+### PB-003: Consolidate driver status logic
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Created employment-based active status computation. Both views now use the same logic. **Note:** This change introduced a regression (PB-025) where drivers without active employment records are hidden from the planning grid.
+- **Summary:** Employment-based active status computation. Regression fixed via PB-025.
 
-### PB-012: Make toast notifications accessible to screen readers
+### PB-012: Make toast notifications accessible
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Added `role="status"` and `aria-live="polite"` to the toast container.
+- **Summary:** Added `role="status"` and `aria-live="polite"` to toast container.
 
-### PB-013: Extend loading state pattern to SkillManager and RosterProfileEditor
+### PB-013: Loading states for SkillManager and RosterProfileEditor
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Added loading spinners during initial data fetch, matching StamtabelManager pattern.
+- **Summary:** Added loading spinners during initial data fetch.
 
 ---
 
@@ -157,23 +198,15 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Dependency PB-022 (transaction wrapping) is now completed. Can be scheduled when capacity allows.
+- **Reason:** Dependencies resolved (PB-022 done). Can be scheduled when capacity allows. Medium effort — touches several routes.
 - **Source:** DE-REC-008.
-
-### PB-019: Add semantic dialog attributes to modal overlays
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Deferred
-- **Reason:** Lower priority than PB-021 (aria-labels, CLAUDE.md compliance gap). Schedule after PB-021.
-- **Source:** EX-REC-008.
 
 ### PB-010: Standardize input field styling across settings forms
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Minor visual inconsistency. Can be done opportunistically alongside other settings page work.
+- **Reason:** Minor visual inconsistency. Can be done opportunistically alongside PB-026 (settings grouping) if convenient.
 - **Source:** EX-REC-003.
 
 ### PB-020: Replace window.confirm with custom confirmation component
@@ -181,7 +214,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** `window.confirm` works. Largest remaining UX inconsistency but requires a new component + migration points. Schedule after PB-019 (dialog accessibility).
+- **Reason:** `window.confirm` works. Should be done after PB-019 (dialog accessibility) so the new component starts accessible.
 - **Source:** EX-REC-009.
 
 ### PB-009: Add covering index for capacity aggregation query
@@ -191,6 +224,14 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Current query performance is acceptable. Revisit when capacity endpoint shows measurable slowness.
 - **Source:** DE-REC-005.
+
+### PB-030: Move hardcoded comparison chart colors to constants
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** CLAUDE.md compliance fix but low user impact. Schedule when capacity allows.
+- **Source:** DE-REC-014.
 
 ---
 

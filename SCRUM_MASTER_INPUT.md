@@ -23,27 +23,6 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-### SMI-003: Drivers not visible in planning grid
-
-- **Type:** Bug report
-- **Status:** Planned
-- **Input:** "Er is een probleem met het planningsoverzicht, daar staan nu geen chauffeurs meer zichtbaar terwijl deze chauffeurs wel bestaan in het chauffeursoverzicht. Los dat op!"
-- **Why this matters:** The planning grid is the core workflow. Drivers that exist in the system must be visible for planning.
-- **Root cause analysis:** PB-003 changed driver filtering in the planning grid API to use `activeDriverWhereClause()`, which requires an active employment record covering today's date. Drivers without employment records (or with expired/future-dated employment) are now hidden from the planning grid but still visible in the driver list, which shows all drivers without this filter.
-- **Product Owner action:** Created PB-025 (P1 Critical) to remove the employment-based filter from the planning grid API. Assigned to Delivery Agent for immediate fix.
-- **Backlog linkage:** PB-025.
-
-### SMI-001: Connectivity hub for external data sources
-
-- **Type:** Initiative
-- **Status:** Planned
-- **Input:** Develop a connectivity hub where external sources such as file imports and APIs can be configured. Planners should be able to connect workforce data from external systems (HR, payroll, fleet management) without requiring developer intervention.
-- **Why this matters:** CapPlan currently operates as a standalone tool. Connecting it to existing data sources would eliminate manual data entry, reduce errors, and make the tool viable for organizations with established IT landscapes.
-- **Expected outcome:** A configuration screen where administrators can set up import sources (CSV, API endpoints) and map external fields to CapPlan entities (drivers, employments, skills).
-- **Constraints / preferences:** Start small. An MVP that handles CSV import with field mapping is preferred over a full integration platform. Do not introduce external dependencies without approval.
-- **Product Owner action:** Escalated to ESC-001. Scrum Master chose Option A (Configuration-first MVP: CSV only, field mapping UI, no scheduled execution). Created PB-015 (data model + API) and PB-016 (admin screen UI) as phased backlog items for future cycles.
-- **Backlog linkage:** PB-015, PB-016.
-
 ### SMI-002: Keep improvements incremental during stabilization
 
 - **Type:** Constraint
@@ -52,12 +31,25 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Why this matters:** Multiple agents operate on this codebase. Large cross-cutting changes increase the risk of conflicts, regressions, and broken deploys. Stability and predictability are more valuable than speed right now.
 - **Expected outcome:** Each cycle delivers small, focused, independently verifiable improvements. No single change should touch more than 2-3 files outside its primary domain.
 - **Constraints / preferences:** If a valuable improvement requires broad changes, break it into smaller phases. Each phase must be independently deployable and pass `npm run verify`.
-- **Product Owner instruction:** Apply this constraint when prioritizing and scoping all backlog items. Flag any proposed work that violates this constraint.
+- **Product Owner instruction:** Applied as a standing constraint to all backlog items.
 - **Backlog linkage:** Applied as a standing constraint to all backlog items.
+
+### SMI-001: Connectivity hub for external data sources
+
+- **Type:** Initiative
+- **Status:** Planned
+- **Input:** Develop a connectivity hub where external sources such as file imports and APIs can be configured.
+- **Product Owner action:** Escalated to ESC-001. Scrum Master chose Option A (Configuration-first MVP). Created PB-015 (data model + API) and PB-016 (admin screen UI) as phased backlog items for future cycles.
+- **Backlog linkage:** PB-015, PB-016.
 
 ## Closed Inputs
 
-_None yet._
+### SMI-003: Drivers not visible in planning grid
+
+- **Type:** Bug report
+- **Status:** Closed
+- **Closed reason:** Fixed. PB-025 completed 2026-03-29 — removed the employment-based filter from the planning grid API. All drivers now appear in the planning grid.
+- **Backlog linkage:** PB-025 (completed).
 
 ## Input Handling Rules
 
