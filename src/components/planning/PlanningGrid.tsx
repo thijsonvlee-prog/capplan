@@ -549,23 +549,25 @@ function GroupRows({
         <tr key={driver.id} className={cn("hover:bg-surface-secondary/50", driverIdx % 2 === 1 && "bg-surface-secondary/30")}>
           <td className={cn(
               dc.cellPad,
-              "sticky left-0 bg-surface-primary z-10",
+              "sticky left-0 z-10",
+              driverIdx % 2 === 1 ? "bg-surface-secondary/30" : "bg-surface-primary",
               extraColumns.length === 0 && "grid-sticky-edge"
             )} style={{ minWidth: driverColWidth }}>
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex items-center justify-between gap-1">
+              <div className="min-w-0">
                 {(() => {
                   const pos = getActiveRecord(driver.functionRecords);
                   const emp = getActiveRecord(driver.employmentRecords);
+                  const meta = driver.employeeNumber || (emp?.employmentType === "CHARTER" ? "Charter" : "");
                   return (
                     <>
-                      <div className={`font-medium ${dc.fontSize} whitespace-nowrap`}>
-                        {driver.firstName} {driver.lastName}
-                        {pos?.manager && <span className="ml-1 text-xs text-text-tertiary" title={`Leidinggevende: ${pos.manager}`}>(LG)</span>}
+                      <div className={cn("font-semibold text-text-primary whitespace-nowrap truncate", density === "spacious" ? "text-sm" : "text-xs")}>
+                        {driver.lastName}{driver.firstName ? `, ${driver.firstName}` : ""}
+                        {pos?.manager && <span className="ml-1 font-normal text-text-tertiary" title={`Leidinggevende: ${pos.manager}`}>(LG)</span>}
                       </div>
-                      {density !== "compact" && (
-                        <div className="text-xs text-text-tertiary">
-                          {driver.employeeNumber || (emp?.employmentType === "CHARTER" ? "Charter" : "")}
+                      {density !== "compact" && meta && (
+                        <div className="text-caption truncate">
+                          {meta}
                         </div>
                       )}
                     </>
@@ -574,7 +576,7 @@ function GroupRows({
               </div>
               <button
                 onClick={() => onAssignRoster(driver.id, `${driver.firstName} ${driver.lastName}`)}
-                className="p-1 text-text-tertiary hover:text-brand-600 hover:bg-brand-50 rounded"
+                className="btn-icon shrink-0"
                 title="Roosterprofiel toewijzen"
                 aria-label="Roosterprofiel toewijzen"
               >
@@ -589,7 +591,8 @@ function GroupRows({
                 key={colKey}
                 className={cn(
                   dc.cellPad, dc.fontSize,
-                  "text-text-secondary sticky bg-surface-primary z-10 whitespace-nowrap",
+                  "text-text-secondary sticky z-10 whitespace-nowrap",
+                  driverIdx % 2 === 1 ? "bg-surface-secondary/30" : "bg-surface-primary",
                   isLast && "grid-sticky-edge"
                 )}
                 style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth, maxWidth: extraColWidth }}

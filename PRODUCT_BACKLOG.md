@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** SMI-004 drives bigger design steps toward DESIGN.md. Phase 1 of the planning grid redesign (PB-032) is complete. The DayCell popup (SMI-005) and Phase 2 row composition (PB-034) are the next major UX deliverables. The custom date picker (SMI-006) is escalated to ESC-004 awaiting scope decision.
+**Current direction:** SMI-004 drives bigger design steps toward DESIGN.md. Planning grid Phases 1 (PB-032) and 2 (PB-034) are complete. DayCell popup repositioning (PB-037) and visual redesign (PB-038) are complete. Phase 3 cell rendering (PB-035) is the next major UX deliverable. The custom date picker (SMI-006) is escalated to ESC-004 awaiting scope decision.
 
 ## Status Definitions
 
@@ -26,43 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-037: DayCell popup — reposition near click target
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** When a user clicks a DayCell in the planning grid, the status selector popup appears in the center of the screen, far from the mouse cursor. This forces unnecessary mouse movement and breaks the user's spatial context within the grid.
-- **Why this matters now:** Direct Scrum Master request (SMI-005). Core planning workflow friction. Aligns with SMI-004 bigger design steps.
-- **Scope notes:** Reposition the DayCell selector dropdown/popup to appear adjacent to the clicked cell (e.g., below or beside it, with viewport boundary detection to avoid overflow). The popup should feel like a contextual menu, not a modal. Keep the existing status options and behavior — this is a positioning and container change only.
-- **Dependencies:** None.
-- **Definition of done:** Clicking a DayCell opens the status selector near the clicked cell. The popup stays within viewport bounds. Existing status selection behavior is preserved. Passes `npm run verify`.
-- **Implementation note:** The current selector is likely rendered as an absolutely/fixed positioned overlay. Change to position relative to the click target or cell element. Consider using a portal with calculated coordinates based on the cell's bounding rect.
-- **Source:** SMI-005.
-
-### PB-038: DayCell popup — visual redesign
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The DayCell status selector popup has a basic/functional appearance that doesn't match the design quality of the recently improved planning grid surface, confirm dialogs, and page headers.
-- **Why this matters now:** Direct Scrum Master request (SMI-005). With PB-037 repositioning the popup near the cell, the visual design should also be elevated to match the rest of the application.
-- **Scope notes:** Redesign the popup appearance: use design tokens for surface, border, shadow. Apply card-style container (`shadow-card`, `border-border-subtle`). Status options should be clearly styled items (not plain text). Consider hover states and active state indication. Must remain compact since it now appears inline near the cell.
-- **Dependencies:** PB-037 (positioning must be done first so the redesign works with the new contextual positioning).
-- **Definition of done:** DayCell popup has refined visual design using design tokens. Status options are clear and interactive. Compact enough for contextual positioning. Passes `npm run verify`.
-- **Source:** SMI-005.
-
-### PB-034: Planning grid Phase 2 — row composition and identity
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** Row composition combines name, metadata, and planning cells in a flat table structure without clear visual hierarchy. Driver identity (name, employee number) doesn't stand out from the row content.
-- **Why this matters now:** Phase 1 surface layering (PB-032) is complete. Row composition is the next structural improvement per ESC-003 Option B phased approach. SMI-004 calls for bigger design steps.
-- **Scope notes:** Strengthen driver identity zone: driver name with more confident typography, metadata as subdued supporting text, clearer visual separation between identity columns and planning columns. Do NOT change cell rendering in this phase.
-- **Dependencies:** PB-032 (completed).
-- **Definition of done:** Row composition shows clear visual hierarchy between identity, metadata, and planning content. Faster driver identification when scanning. Passes `npm run verify`.
-- **Source:** EX-REC-016, ESC-003 (Option B Phase 2).
 
 ### PB-024: Remove dead getComputedFields wrapper from api.ts
 
@@ -163,6 +126,21 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-037: DayCell popup — reposition near click target
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Popup now appears adjacent to the clicked cell using bounding rect calculation with viewport boundary detection. Removed dark backdrop overlay — behaves as a contextual menu instead of a modal.
+
+### PB-038: DayCell popup — visual redesign
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Redesigned StatusSelector with color indicator dots per status, check mark for active state, chevron icons for sub-menus, refined spacing, and design-token-consistent styling. Compact header uses `text-caption` uppercase date.
+
+### PB-034: Planning grid Phase 2 — row composition and identity
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Driver names now use `font-semibold` with last-name-first format for faster scanning. Metadata uses `text-caption` class. Sticky identity columns inherit alternating row backgrounds. Roster assign button uses `btn-icon` class for consistency.
 
 ### PB-032: Planning grid Phase 1 — surface layering and row tonal hierarchy
 - **Completed:** 2026-03-29

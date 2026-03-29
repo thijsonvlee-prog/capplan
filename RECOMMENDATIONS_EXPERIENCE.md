@@ -2,34 +2,34 @@
 
 ## Summary
 
-PB-032 (planning grid Phase 1) and PB-036 (Escape key handling) are now completed. The planning grid no longer uses dense 1px borders on every cell. Structure is created through tonal surface layering, subtle row separators, and sticky column edge shadows. All modal overlays now support Escape key dismissal.
+PB-037 (DayCell popup repositioning), PB-038 (DayCell popup visual redesign), and PB-034 (planning grid Phase 2 row composition) are now completed. The planning grid has progressed significantly toward DESIGN.md alignment through two phases of structural improvement plus the DayCell popup redesign.
 
 **Design alignment with DESIGN.md:**
-- Planning grid now aligns with section 4.1 (No-Line Rule): borders replaced by tonal contrast and minimal separators.
-- Header, data, group, and totals rows are visually differentiated through surface hierarchy (section 2.3).
-- The grid reads more as a product surface than a spreadsheet (section 7.4), though row composition and cell rendering still need work (Phase 2 and Phase 3).
-- All modal interactions now support Escape key, completing the accessible interaction pattern.
-- Page headers, toolbar grouping, confirm dialogs, and focus trapping are all complete from prior cycles.
+- Planning grid surface uses tonal layering instead of borders (section 4.1 No-Line Rule) — Phase 1 complete.
+- Row composition now has clear typographic hierarchy: semibold last-name-first driver names, subdued `text-caption` metadata, and `btn-icon` action buttons (section 5.2, 7.4).
+- DayCell popup is now a contextual menu positioned near the click target, not a centered modal. This aligns with DESIGN.md section 2.2 (planning is the product — minimize workflow friction).
+- StatusSelector has color indicator dots, active-state check marks, and chevron navigation icons — feels more product-grade than the previous plain text buttons (section 7.5, 7.6).
+- Sticky identity columns now inherit alternating row tones, preventing visual break when scrolling.
 
 **Where design quality is still below target:**
-- Row composition (driver name + metadata + cells) is still flat — Phase 2 (PB-034) addresses this.
 - DayCell rendering uses basic colored fills without chip/badge refinement — Phase 3 (PB-035) addresses this.
-- RosterAssigner internal table still uses dense `border border-border-default` on every cell (not in scope for PB-032 since it's a modal, not the planning grid surface).
+- RosterAssigner modal table still uses dense cell borders (PB-040).
 - StamtabelManager inputs still use inline Tailwind classes instead of `input-field` class (PB-010, deferred).
+- Date picker fields across the app use browser native styling (ESC-004, blocked).
 
 ## Recommended Next Improvements
 
-### EX-REC-016: Planning grid Phase 2 — row composition and identity
+### EX-REC-019: Planning grid Phase 3 — cell rendering and status refinement
 
-- **Title:** Improve planning grid row composition
-- **Problem:** Row composition combines name, metadata, and planning cells in a flat table structure. Driver identity (name, employee number, metadata) doesn't have clear visual hierarchy within each row.
-- **Proposed improvement:** Stronger row identity zone — driver name with more confident typography, metadata as subdued supporting text, clearer visual separation between identity columns and planning columns.
-- **Expected user value:** Faster driver identification when scanning. Better visual rhythm across rows.
+- **Title:** Refine DayCell visual output and status representation
+- **Problem:** DayCells use basic colored fills (StatusBadge with background color classes). In a dense planning grid, the cells could benefit from more refined spacing, chip treatment, and clearer status comprehension at a glance.
+- **Proposed improvement:** Refine DayCell visual output with better spacing within cells, subtle border radius treatment, and improved color contrast. Consider whether compact cells benefit from a dot/icon approach vs. the current code letter.
+- **Expected user value:** Faster status comprehension in dense planning views. More polished grid appearance.
 - **Priority:** P3 Medium
 - **Effort:** Medium
-- **Dependencies:** PB-032 (completed).
+- **Dependencies:** PB-034 (completed).
 - **Suggested owner:** Experience Agent
-- **Why now:** Phase 1 surface layering is complete. Row composition is the next structural improvement before cell rendering refinement.
+- **Why now:** Phase 1 (surface) and Phase 2 (rows) are complete. Cell rendering is the final piece of the planning grid visual redesign.
 
 ### EX-REC-018: Improve RosterAssigner modal table styling
 
@@ -42,6 +42,18 @@ PB-032 (planning grid Phase 1) and PB-036 (Escape key handling) are now complete
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Low effort consistency fix. Can be done opportunistically. Not urgent since the table is inside a modal.
+
+### EX-REC-020: Settings page layout composition
+
+- **Title:** Elevate settings page beyond generic admin layout
+- **Problem:** The settings page (stamtabellen) is functional but uses a generic list-of-cards layout without strong grouping, hierarchy, or visual rhythm. It reads as a standard admin panel rather than a designed product screen.
+- **Proposed improvement:** Group related settings categories visually. Strengthen section headers. Add subtle surface differentiation between categories. Consider whether a sidebar-navigation or tabbed approach would improve the settings experience for users managing many stamtabellen.
+- **Expected user value:** Settings feel more organized and less like a technical admin interface. Easier navigation between categories.
+- **Priority:** P3 Medium
+- **Effort:** Medium
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** With the planning grid approaching DESIGN.md alignment, the settings page becomes the most visible screen still at generic admin quality. The gap will become more noticeable as other screens improve.
 
 ### EX-REC-003: Standardize input field styling in StamtabelManager
 
@@ -57,9 +69,10 @@ PB-032 (planning grid Phase 1) and PB-036 (Escape key handling) are now complete
 
 ## Risks / Watch-outs
 
-- **Phase 2 (PB-034) is the next critical gap:** With Phase 1 complete, the grid surface no longer looks like a spreadsheet, but row composition still feels flat. Phase 2 should be scheduled soon to build on this momentum.
-- **RosterAssigner modal table is now the most visible inconsistency:** It uses dense cell borders while the planning grid does not. Users who interact with both surfaces will notice the difference.
-- **Sticky column shadow on wide screens:** The `grid-sticky-edge` shadow is subtle by design. On very wide screens with many extra columns, the rightmost sticky column edge might not be immediately obvious. Monitor for user feedback.
+- **Phase 3 (PB-035) is the remaining grid gap:** The grid surface and row composition are now strong, but the cells themselves are the final piece. Without Phase 3, the grid will have good macro-level design but basic micro-level rendering.
+- **RosterAssigner modal table inconsistency:** It uses dense cell borders while the planning grid does not. Users who interact with both surfaces in the same workflow will notice.
+- **DayCell popup max height estimate:** The popup positioning uses a `POPUP_MAX_HEIGHT` constant of 280px. If leave types grow significantly or the sick input layout changes, the actual popup may exceed this estimate and get clipped at viewport edges. Monitor after leave type additions.
+- **Last-name-first format change:** Driver names now display as "Achternaam, Voornaam" in the grid. This is a deliberate change for scanning efficiency (common in Dutch professional contexts) but differs from the "Voornaam Achternaam" format used elsewhere in the app (e.g. roster assigner title). Consider standardizing across all views.
 
 ## Items Intentionally Not Recommended
 

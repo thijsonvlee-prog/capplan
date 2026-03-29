@@ -10,6 +10,16 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 — DayCell popup en planningsrooster rijcompositie
+
+#### UX / design verbeteringen
+
+- Het statusselectiemenu opent nu direct naast de aangeklikte cel in het planningsrooster, in plaats van in het midden van het scherm. Het menu blijft binnen het scherm bij randen.
+- Het statusselectiemenu heeft een nieuw ontwerp: kleurindicatoren per status, vinkje bij de huidige status, verfijnde typografie en subtielere opmaak. Het donkere achtergrondoverlay is verwijderd — het menu gedraagt zich als een contextueel menu.
+- Chauffeursnamen in het planningsrooster worden nu weergegeven als "Achternaam, Voornaam" met dikkere typografie voor snellere herkenning bij het scannen van rijen.
+- Personeelsnummers en metadata onder de naam gebruiken nu een subtielere tekststijl voor duidelijkere visuele hiërarchie.
+- Vastgezette identiteitskolommen erven nu de afwisselende rijtinten, zodat er geen visueel verschil ontstaat bij horizontaal scrollen.
+
 ### 2026-03-29 — Design, toegankelijkheid, planning grid fix en betrouwbaarheid
 
 #### UX / design verbeteringen

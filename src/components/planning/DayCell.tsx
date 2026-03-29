@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useRef } from "react";
 import type { PlanningStatus, DensityLevel } from "@/domain/enums";
 import type { PlanningEntry, StamtabelRecord } from "@/domain/types";
 import { StatusBadge } from "./StatusBadge";
@@ -25,9 +25,39 @@ type Props = {
   onUpdate: (driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) => void;
 };
 
+const POPUP_WIDTH = 224; // w-56 = 14rem
+const POPUP_MAX_HEIGHT = 280;
+const VIEWPORT_PAD = 8;
+
 export const DayCell = memo(function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypes, density = "comfortable", onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
+  const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const focusTrapRef = useFocusTrap();
+
+  function openSelector() {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      let top = rect.bottom + 4;
+      let left = rect.left;
+
+      if (top + POPUP_MAX_HEIGHT > window.innerHeight - VIEWPORT_PAD) {
+        top = rect.top - POPUP_MAX_HEIGHT - 4;
+      }
+      if (left + POPUP_WIDTH > window.innerWidth - VIEWPORT_PAD) {
+        left = window.innerWidth - POPUP_WIDTH - VIEWPORT_PAD;
+      }
+      if (left < VIEWPORT_PAD) {
+        left = VIEWPORT_PAD;
+      }
+      if (top < VIEWPORT_PAD) {
+        top = VIEWPORT_PAD;
+      }
+
+      setPopupPos({ top, left });
+    }
+    setShowSelector(true);
+  }
 
   // Build hover title
   let title = "";
@@ -50,8 +80,9 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
   return (
     <>
       <button
+        ref={buttonRef}
         onMouseDown={(e) => { e.stopPropagation(); }}
-        onClick={() => setShowSelector(true)}
+        onClick={openSelector}
         className={cn(
           "w-full rounded-sm flex items-center justify-center transition-colors cursor-pointer",
           h,
@@ -80,20 +111,13 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
           }}
         >
           <div
-            className="fixed inset-0 bg-black/10"
-          />
-          <div
             ref={focusTrapRef}
-            className="fixed z-50 bg-surface-primary rounded-lg shadow-dropdown border border-border-default p-2 w-56"
-            style={{
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
+            className="fixed z-50 bg-surface-primary rounded-lg shadow-dropdown border border-border-subtle p-3 w-56"
+            style={popupPos ? { top: popupPos.top, left: popupPos.left } : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="text-xs font-medium text-text-secondary mb-2 px-1">
-              Status instellen — {date}
+            <div className="text-caption uppercase tracking-wide mb-2 px-1">
+              {date}
             </div>
             <StatusSelector
               currentStatus={entry?.status}
