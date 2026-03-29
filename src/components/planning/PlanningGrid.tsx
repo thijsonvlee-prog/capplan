@@ -5,6 +5,7 @@ import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField } fro
 import type { DriverWithEntries, StamtabelRecord } from "@/domain/types";
 import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, GROUP_BY_LABELS, EMPLOYMENT_TYPE_LABELS, DEFAULT_PERIOD_DAYS } from "@/domain/constants";
 import { useApiData } from "@/hooks/useApi";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { api } from "@/lib/api";
 import { groupDrivers, getActiveRecord } from "@/lib/api-helpers";
 import { PeriodSelector } from "./WeekSelector";
@@ -75,6 +76,7 @@ export function PlanningGrid() {
     active: boolean;
   } | null>(null);
   const [showBulkSelector, setShowBulkSelector] = useState(false);
+  const bulkSelectorFocusTrapRef = useFocusTrap();
 
   const activeScenarioId = useApiData(() => api.scenarios.getActiveId(), [], "default");
   const leaveTypes = useApiData(() => api.settings.getLeaveTypes(), [], []);
@@ -463,7 +465,7 @@ export function PlanningGrid() {
       {/* Bulk status selector after drag */}
       {showBulkSelector && dragState && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Status instellen voor ${dragState.dates.length} dagen`}>
-          <div className="bg-surface-primary rounded-lg shadow-modal p-4 min-w-[280px]">
+          <div ref={bulkSelectorFocusTrapRef} className="bg-surface-primary rounded-lg shadow-modal p-4 min-w-[280px]">
             <div className="text-section-title mb-2">
               Status instellen voor {dragState.dates.length} dagen
             </div>

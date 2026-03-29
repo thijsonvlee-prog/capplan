@@ -27,44 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-033: Add focus trap to modal overlays
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** Modal overlays now have semantic dialog attributes (PB-019 done) but do not trap focus. Users can tab out of the modal and interact with background content, breaking the expected modal interaction pattern.
-- **Why this matters now:** Foundation for PB-020 (ConfirmDialog). Without focus trap, dialog semantics are incomplete. Doing this first means PB-020 can reuse the focus trap utility.
-- **Scope notes:** Create a lightweight focus trap utility or hook. Apply to the 4 true modals (ScenarioSelector, RosterAssigner, bulk selector, DayCell selector). The column picker is a dropdown, not a true modal — focus trap is not appropriate there.
-- **Dependencies:** PB-019 (completed).
-- **Definition of done:** Focus is trapped within open modals. Tab/Shift+Tab cycle within the modal. Focus returns to trigger element on close. Passes `npm run verify`.
-- **Implementation note:** Build this as a reusable utility/hook so PB-020 and PB-032 can use it.
-- **Source:** EX-REC-014.
-
-### PB-020: Replace window.confirm with custom ConfirmDialog component
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** All delete confirmation dialogs use `window.confirm()` (found in SubTable, ScenarioSelector, SkillManager, RosterProfileEditor, StamtabelManager). This renders browser-native dialogs that cannot be styled, do not match the application's design, and vary across browsers. This is one of the most visible UX inconsistencies.
-- **Why this matters now:** SMI-004 directs bigger design improvements. This is the most visible UX inconsistency remaining and directly improves the perceived quality of the product.
-- **Scope notes:** Create a reusable `ConfirmDialog` component using the existing modal pattern (backdrop + card). Use design tokens. Include `role="dialog"`, `aria-modal="true"`, focus trap (reuse PB-033 utility). Replace all 5 `window.confirm()` call sites. Each confirmation must show what will be deleted (name, not "dit record").
-- **Dependencies:** PB-033 (focus trap utility — do PB-033 first so ConfirmDialog can reuse it).
-- **Definition of done:** All `window.confirm()` calls replaced. Custom dialog uses design tokens, is accessible, shows specific context. Passes `npm run verify`.
-- **Source:** EX-REC-009, SMI-004.
-
-### PB-031: Apply page header pattern to settings and capacity screens
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The settings page and capacity comparison page lack composed page headers. Inconsistent with the now-improved driver list and planning screen.
-- **Why this matters now:** The page header pattern is already established from PB-029. Applying it broadly is low-effort, high-consistency value. Directly responds to SMI-004.
-- **Scope notes:** Apply `.page-header` pattern to: (1) settings page — add title, contextual subtitle, section context; (2) capacity/comparison screen — add title, scenario context, action zones. Use existing CSS classes. Do not redesign page content structure, only add proper headers.
-- **Dependencies:** None. Pattern already exists.
-- **Definition of done:** Settings and capacity screens have composed page headers with title, context, and action zones. Consistent with driver list page. Passes `npm run verify`.
-- **Implementation note:** Settings page already has section grouping (PB-026). The page header should complement, not duplicate it.
-- **Source:** EX-REC-015, SMI-004.
-
 ### PB-024: Consolidate /drivers/[id]/computed into main driver transform
 
 - **Owner:** Delivery Agent
@@ -161,6 +123,21 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-033: Add focus trap to modal overlays
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Created reusable `useFocusTrap` callback-ref hook. Applied to ScenarioSelector, RosterAssigner, PlanningGrid bulk selector, and DayCell selector. Focus is trapped within open modals, Tab/Shift+Tab cycles within the modal, and focus returns to trigger element on close.
+
+### PB-020: Replace window.confirm with custom ConfirmDialog component
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Created `ConfirmDialog` component with design tokens, danger styling, focus trap, Escape key support, and backdrop click dismiss. Replaced all 6 `window.confirm()` calls (StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector, RosterAssigner, SubTable). Each dialog shows specific context about what will be deleted.
+
+### PB-031: Apply page header pattern to settings and capacity screens
+- **Completed:** 2026-03-29
+- **Owner:** Experience Agent
+- **Summary:** Added composed page headers to settings page (title + description subtitle) and capacity page (title + scenario badge). Also fixed hardcoded orange color classes on capacity page comparison buttons to use design tokens (warning-*).
 
 ### PB-028: Group planning screen controls into logical sections
 - **Completed:** 2026-03-29

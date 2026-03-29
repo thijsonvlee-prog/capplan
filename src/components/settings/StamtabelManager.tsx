@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import type { StamtabelRecord } from "@/domain/types";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type Props = {
   title: string;
@@ -21,6 +22,7 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
   const [editCode, setEditCode] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [showValidation, setShowValidation] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<StamtabelRecord | null>(null);
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -118,7 +120,7 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
                   <button onClick={() => startEdit(r)} className="btn-icon" aria-label="Bewerken">
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => { if (window.confirm(`Weet je zeker dat je "${r.description}" wilt verwijderen?`)) onDelete(r.id); }} className="btn-icon-danger" aria-label="Verwijderen">
+                  <button onClick={() => setPendingDelete(r)} className="btn-icon-danger" aria-label="Verwijderen">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -133,6 +135,15 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
           </div>
         )}
       </div>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Verwijderen bevestigen"
+          message={`Weet je zeker dat je "${pendingDelete.description}" wilt verwijderen?`}
+          onConfirm={() => { onDelete(pendingDelete.id); setPendingDelete(null); }}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </div>
   );
 }

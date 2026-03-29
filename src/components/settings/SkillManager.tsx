@@ -5,12 +5,14 @@ import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export function SkillManager() {
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [showValidation, setShowValidation] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
 
   const [skills, loading] = useApiDataWithLoading(() => api.settings.getSkills(), [], []);
 
@@ -43,10 +45,15 @@ export function SkillManager() {
   }
 
   function handleDelete(id: string, name: string) {
-    if (!window.confirm(`Weet je zeker dat je "${name}" wilt verwijderen?`)) return;
-    mutate(() => api.settings.deleteSkill(id))
+    setPendingDelete({ id, name });
+  }
+
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    mutate(() => api.settings.deleteSkill(pendingDelete.id))
       .then(() => showToast("Vaardigheid verwijderd"))
       .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
+    setPendingDelete(null);
   }
 
   return (
@@ -119,6 +126,15 @@ export function SkillManager() {
           </div>
         )}
       </div>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Verwijderen bevestigen"
+          message={`Weet je zeker dat je "${pendingDelete.name}" wilt verwijderen?`}
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </div>
   );
 }

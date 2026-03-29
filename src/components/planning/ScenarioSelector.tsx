@@ -5,11 +5,15 @@ import { Plus, Copy, Trash2 } from "lucide-react";
 import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export function ScenarioSelector() {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const focusTrapRef = useFocusTrap();
 
   const scenarios = useApiData(() => api.scenarios.list(), [], []);
   const activeId = useApiData(() => api.scenarios.getActiveId(), [], "default");
@@ -40,11 +44,14 @@ export function ScenarioSelector() {
 
   function handleDelete() {
     if (activeId === "default") return;
-    const scenarioName = scenarios.find((s) => s.id === activeId)?.name || "dit scenario";
-    if (!window.confirm(`Weet je zeker dat je "${scenarioName}" wilt verwijderen? Alle bijbehorende planningsdata gaat verloren.`)) return;
+    setShowDeleteConfirm(true);
+  }
+
+  function confirmDelete() {
     mutate(() => api.scenarios.remove(activeId))
       .then(() => showToast("Scenario verwijderd"))
       .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
+    setShowDeleteConfirm(false);
   }
 
   return (
@@ -97,7 +104,7 @@ export function ScenarioSelector() {
 
       {showCreate && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Nieuw scenario aanmaken">
-          <form onSubmit={handleCreate} className="bg-surface-primary rounded-lg shadow-modal p-6 w-96 space-y-3">
+          <form ref={focusTrapRef} onSubmit={handleCreate} className="bg-surface-primary rounded-lg shadow-modal p-6 w-96 space-y-3">
             <h3 className="text-section-title">Nieuw scenario</h3>
             <input
               type="text"
@@ -125,6 +132,15 @@ export function ScenarioSelector() {
             </div>
           </form>
         </div>
+      )}
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title="Scenario verwijderen"
+          message={`Weet je zeker dat je "${scenarios.find((s) => s.id === activeId)?.name || "dit scenario"}" wilt verwijderen? Alle bijbehorende planningsdata gaat verloren.`}
+          onConfirm={confirmDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
       )}
     </div>
   );

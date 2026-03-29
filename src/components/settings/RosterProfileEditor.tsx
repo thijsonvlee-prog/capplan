@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { ROSTER_PROFILE_STATUSES, STATUS_CODES, STATUS_COLORS, DAY_LABELS, type RosterProfileStatus } from "@/domain/constants";
 import { cn } from "@/lib/utils";
 import { showToast } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 function emptyGrid(): RosterProfileEntry[] {
   return Array.from({ length: 28 }, (_, i) => ({ dayOffset: i, status: "ROSTER_FREE" as const }));
@@ -20,6 +21,7 @@ export function RosterProfileEditor() {
   const [name, setName] = useState("");
   const [grid, setGrid] = useState<RosterProfileEntry[]>(emptyGrid());
   const [showValidation, setShowValidation] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
 
   function startNew() {
     setIsNew(true);
@@ -74,10 +76,15 @@ export function RosterProfileEditor() {
   }
 
   function handleDelete(id: string, name: string) {
-    if (!window.confirm(`Weet je zeker dat je roosterprofiel "${name}" wilt verwijderen?`)) return;
-    mutate(() => api.rosterProfiles.remove(id))
+    setPendingDelete({ id, name });
+  }
+
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    mutate(() => api.rosterProfiles.remove(pendingDelete.id))
       .then(() => showToast("Roosterprofiel verwijderd"))
       .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
+    setPendingDelete(null);
   }
 
   const showEditor = isNew || editingProfile;
@@ -189,6 +196,15 @@ export function RosterProfileEditor() {
           <div className="p-4 text-center text-text-tertiary text-sm">Nog geen roosterprofielen. Maak een profiel aan om het aan chauffeurs toe te wijzen.</div>
         )}
       </div>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Verwijderen bevestigen"
+          message={`Weet je zeker dat je roosterprofiel "${pendingDelete.name}" wilt verwijderen?`}
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </div>
   );
 }

@@ -92,9 +92,20 @@ export default function CapacityPage() {
     );
   }
 
+  const activeScenarioName = scenarios.find((s) => s.id === activeId)?.name;
+
   return (
     <div>
-      {/* Page title is shown in the header */}
+      <div className="page-header">
+        <div className="page-header-row">
+          <div className="page-header-context">
+            <h1 className="text-page-title">Capaciteit</h1>
+            {activeId !== "default" && activeScenarioName && (
+              <span className="count-badge">{activeScenarioName}</span>
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-3">
@@ -111,7 +122,7 @@ export default function CapacityPage() {
                 onClick={() => toggleCompare(s.id)}
                 className={`px-2 py-1 text-xs rounded border transition-colors ${
                   compareIds.includes(s.id)
-                    ? "bg-orange-100 text-orange-700 border-orange-300"
+                    ? "bg-warning-50 text-warning-700 border-warning-200"
                     : "bg-surface-primary text-text-secondary border-border-default hover:bg-surface-secondary"
                 }`}
               >

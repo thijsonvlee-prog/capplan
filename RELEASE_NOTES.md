@@ -6,7 +6,17 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_No unreleased changes._
+### UX / design verbeteringen
+
+- Alle verwijderbevestigingen gebruiken nu een gestylede dialoog in plaats van de standaard browserdialoog. Elke bevestiging toont specifiek wat er verwijderd wordt (naam, datum).
+- De instellingenpagina heeft een paginakop met titel en beschrijving.
+- De capaciteitspagina heeft een paginakop met titel en scenariobadge.
+- Vergelijkingsknoppen op de capaciteitspagina gebruiken nu de juiste designtokens.
+
+### Toegankelijkheid
+
+- Focus wordt vastgehouden binnen open modale vensters. Tab/Shift+Tab bladert alleen door elementen in het venster. Bij sluiten keert de focus terug naar het oorspronkelijke element.
+- Bevestigingsdialogen ondersteunen de Escape-toets voor annuleren en klikken op de achtergrond.
 
 ## Release History
 

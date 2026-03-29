@@ -5,6 +5,8 @@ import { Trash2 } from "lucide-react";
 import { useApiData, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type Props = {
   driverId: string;
@@ -13,12 +15,14 @@ type Props = {
 };
 
 export function RosterAssigner({ driverId, driverName, onClose }: Props) {
+  const focusTrapRef = useFocusTrap();
   const profiles = useApiData(() => api.rosterProfiles.list(), [], []);
   const activeScenarioId = useApiData(() => api.scenarios.getActiveId(), [], "default");
   const records = useApiData(() => api.drivers.getRosterAssignments(driverId), [driverId], []);
   const [profileId, setProfileId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [weeklyHours, setWeeklyHours] = useState<number | "">("");
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   function handleAssign() {
     if (!profileId || !startDate) return;
@@ -36,17 +40,23 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
   }
 
   function handleDelete(recordId: string) {
-    const record = records.find((r) => r.id === recordId);
-    const recordLabel = record ? `${record.profileName} vanaf ${record.startDate}` : "dit roosterrecord";
-    if (!window.confirm(`Weet je zeker dat je "${recordLabel}" wilt verwijderen?`)) return;
-    mutate(() => api.drivers.deleteRosterAssignment(driverId, recordId))
+    setPendingDeleteId(recordId);
+  }
+
+  function confirmDelete() {
+    if (!pendingDeleteId) return;
+    mutate(() => api.drivers.deleteRosterAssignment(driverId, pendingDeleteId))
       .then(() => showToast("Roostertoewijzing verwijderd"))
       .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
+    setPendingDeleteId(null);
   }
+
+  const pendingRecord = pendingDeleteId ? records.find((r) => r.id === pendingDeleteId) : null;
+  const pendingLabel = pendingRecord ? `${pendingRecord.profileName} vanaf ${pendingRecord.startDate}` : "dit roosterrecord";
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Roosterprofiel toewijzen aan ${driverName}`}>
-      <div className="bg-surface-primary rounded-lg shadow-modal p-6 w-[520px] space-y-4 max-h-[80vh] overflow-y-auto">
+      <div ref={focusTrapRef} className="bg-surface-primary rounded-lg shadow-modal p-6 w-[520px] space-y-4 max-h-[80vh] overflow-y-auto">
         <h3 className="text-section-title">Roosterprofiel — {driverName}</h3>
 
         {records.length > 0 && (
@@ -148,6 +158,15 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
           <p className="text-caption">Het roosterprofiel wordt voor 1 jaar (364 dagen) cyclisch toegepast. Bestaande verlof- en ziekmeldingen blijven behouden.</p>
         </div>
       </div>
+
+      {pendingDeleteId && (
+        <ConfirmDialog
+          title="Verwijderen bevestigen"
+          message={`Weet je zeker dat je "${pendingLabel}" wilt verwijderen?`}
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

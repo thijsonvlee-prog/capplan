@@ -21,9 +21,16 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl">
-      <p className="text-text-secondary text-sm mb-8">
-        Beheer de stamgegevens, competenties en roosterprofielen die in de rest van de applicatie beschikbaar zijn.
-      </p>
+      <div className="page-header">
+        <div className="page-header-row">
+          <div>
+            <h1 className="text-page-title">Instellingen</h1>
+            <p className="text-text-secondary text-sm mt-1">
+              Beheer de stamgegevens, competenties en roosterprofielen die in de rest van de applicatie beschikbaar zijn.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Stamgegevens */}
       <section className="mb-10">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Trash2, Pencil } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type SubTableColumn<T> = {
   key: keyof T;
@@ -29,6 +30,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
   entityName = "het record",
 }: SubTableProps<T>) {
   const [showForm, setShowForm] = useState(false);
+  const [pendingDeleteRow, setPendingDeleteRow] = useState<T | null>(null);
 
   function handleSubmit(data: any) {
     onAdd(data);
@@ -87,7 +89,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
                 ))}
                 <td className="p-1 border border-border-default text-center">
                   <button
-                    onClick={() => { if (window.confirm(`Weet je zeker dat je ${entityName} vanaf ${row.startDate} wilt verwijderen?`)) onDelete(row.id); }}
+                    onClick={() => setPendingDeleteRow(row)}
                     className="btn-icon-danger"
                     title="Verwijderen"
                     aria-label="Verwijderen"
@@ -99,6 +101,15 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
             ))}
           </tbody>
         </table>
+      )}
+
+      {pendingDeleteRow && (
+        <ConfirmDialog
+          title="Verwijderen bevestigen"
+          message={`Weet je zeker dat je ${entityName} vanaf ${pendingDeleteRow.startDate} wilt verwijderen?`}
+          onConfirm={() => { onDelete(pendingDeleteRow.id); setPendingDeleteRow(null); }}
+          onCancel={() => setPendingDeleteRow(null)}
+        />
       )}
     </div>
   );

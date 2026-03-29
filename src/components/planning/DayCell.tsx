@@ -5,6 +5,7 @@ import type { PlanningStatus, DensityLevel } from "@/domain/enums";
 import type { PlanningEntry, StamtabelRecord } from "@/domain/types";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { cn } from "@/lib/utils";
 
 const DENSITY_HEIGHT: Record<DensityLevel, string> = {
@@ -26,6 +27,7 @@ type Props = {
 
 export const DayCell = memo(function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypes, density = "comfortable", onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
+  const focusTrapRef = useFocusTrap();
 
   // Build hover title
   let title = "";
@@ -80,6 +82,7 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
             className="fixed inset-0 bg-black/10"
           />
           <div
+            ref={focusTrapRef}
             className="fixed z-50 bg-surface-primary rounded-lg shadow-dropdown border border-border-default p-2 w-56"
             style={{
               top: "50%",
