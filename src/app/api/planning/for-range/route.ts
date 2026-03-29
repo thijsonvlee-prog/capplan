@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformDriver, transformPlanningEntry, activeDriverWhereClause } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformDriver, transformPlanningEntry } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning/for-range",
@@ -36,9 +36,8 @@ export const GET = withPerfLogging(
 
       const resolvedScenarioId = resolveScenarioId(scenarioId);
 
-      // Get all active drivers (employment-based, ESC-002) with only the fields needed for planning grid
+      // Get all drivers with only the fields needed for planning grid
       const drivers = await prisma.driver.findMany({
-        where: activeDriverWhereClause(),
         include: {
           skills: { select: { skillId: true } },
           employmentRecords: { select: { id: true, sequenceNumber: true, startDate: true, endDate: true, employmentType: true, employerId: true } },
@@ -76,7 +75,7 @@ export const GET = withPerfLogging(
         dates: dateList,
       });
     } catch (error) {
-      console.error("Error fetching planning for range:", error);
+      console.error("Error fetching planning for range:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
         { error: "Failed to fetch planning for range" },
         { status: 500 }

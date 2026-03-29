@@ -26,7 +26,7 @@ export async function PUT(
 
     return NextResponse.json(skill);
   } catch (error) {
-    console.error("Error updating skill:", error);
+    console.error("Error updating skill:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to update skill" },
       { status: 500 }
@@ -54,7 +54,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting skill:", error);
+    console.error("Error deleting skill:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to delete skill" },
       { status: 500 }

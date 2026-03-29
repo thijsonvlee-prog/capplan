@@ -37,7 +37,7 @@ export const GET = withPerfLogging(
 
     return NextResponse.json(drivers.map(transformDriver));
   } catch (error) {
-    console.error("Error fetching drivers:", error);
+    console.error("Error fetching drivers:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch drivers" },
       { status: 500 }
@@ -121,7 +121,7 @@ export const POST = withPerfLogging(
 
     return NextResponse.json(transformDriver(driver), { status: 201 });
   } catch (error) {
-    console.error("Error creating driver:", error);
+    console.error("Error creating driver:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to create driver" },
       { status: 500 }

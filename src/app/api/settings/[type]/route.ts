@@ -22,7 +22,7 @@ export async function GET(
 
     return NextResponse.json(records);
   } catch (error) {
-    console.error("Error fetching settings:", error);
+    console.error("Error fetching settings:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch settings" },
       { status: 500 }
@@ -69,7 +69,7 @@ export async function POST(
 
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
-    console.error("Error creating settings record:", error);
+    console.error("Error creating settings record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to create settings record" },
       { status: 500 }

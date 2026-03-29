@@ -15,7 +15,7 @@ export async function GET(
 
     return NextResponse.json(records);
   } catch (error) {
-    console.error("Error fetching employment records:", error);
+    console.error("Error fetching employment records:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch employment records" },
       { status: 500 }
@@ -40,26 +40,28 @@ export async function POST(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    // Auto-close open-ended records
-    await autoCloseOpenRecords(prisma.driverEmploymentRecord, id, startDate);
+    const record = await prisma.$transaction(async (tx) => {
+      // Auto-close open-ended records
+      await autoCloseOpenRecords(tx.driverEmploymentRecord, id, startDate);
 
-    // Get next sequence number
-    const nextSeq = await getNextSequenceNumber(prisma.driverEmploymentRecord, id);
+      // Get next sequence number
+      const nextSeq = await getNextSequenceNumber(tx.driverEmploymentRecord, id);
 
-    const record = await prisma.driverEmploymentRecord.create({
-      data: {
-        driverId: id,
-        sequenceNumber: nextSeq,
-        startDate,
-        endDate: endDate || null,
-        employmentType,
-        employerId: employerId || null,
-      },
+      return tx.driverEmploymentRecord.create({
+        data: {
+          driverId: id,
+          sequenceNumber: nextSeq,
+          startDate,
+          endDate: endDate || null,
+          employmentType,
+          employerId: employerId || null,
+        },
+      });
     });
 
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
-    console.error("Error creating employment record:", error);
+    console.error("Error creating employment record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to create employment record" },
       { status: 500 }

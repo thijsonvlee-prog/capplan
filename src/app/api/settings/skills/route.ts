@@ -10,7 +10,7 @@ export async function GET() {
 
     return NextResponse.json(skills);
   } catch (error) {
-    console.error("Error fetching skills:", error);
+    console.error("Error fetching skills:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch skills" },
       { status: 500 }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(skill, { status: 201 });
   } catch (error) {
-    console.error("Error creating skill:", error);
+    console.error("Error creating skill:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to create skill" },
       { status: 500 }

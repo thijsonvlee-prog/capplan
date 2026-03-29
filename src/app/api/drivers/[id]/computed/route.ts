@@ -48,7 +48,7 @@ export async function GET(
       currentWeeklyHours: activeRoster?.weeklyHours ?? null,
     });
   } catch (error) {
-    console.error("Error fetching computed driver data:", error);
+    console.error("Error fetching computed driver data:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch computed driver data" },
       { status: 500 }

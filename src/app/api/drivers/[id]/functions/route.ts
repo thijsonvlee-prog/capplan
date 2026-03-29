@@ -15,7 +15,7 @@ export async function GET(
 
     return NextResponse.json(records);
   } catch (error) {
-    console.error("Error fetching function records:", error);
+    console.error("Error fetching function records:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch function records" },
       { status: 500 }
@@ -41,28 +41,30 @@ export async function POST(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    // Auto-close open-ended records
-    await autoCloseOpenRecords(prisma.driverFunctionRecord, id, startDate);
+    const record = await prisma.$transaction(async (tx) => {
+      // Auto-close open-ended records
+      await autoCloseOpenRecords(tx.driverFunctionRecord, id, startDate);
 
-    // Get next sequence number
-    const nextSeq = await getNextSequenceNumber(prisma.driverFunctionRecord, id);
+      // Get next sequence number
+      const nextSeq = await getNextSequenceNumber(tx.driverFunctionRecord, id);
 
-    const record = await prisma.driverFunctionRecord.create({
-      data: {
-        driverId: id,
-        sequenceNumber: nextSeq,
-        startDate,
-        endDate: endDate || null,
-        position,
-        locationId: locationId || null,
-        departmentId: departmentId || null,
-        manager: manager || null,
-      },
+      return tx.driverFunctionRecord.create({
+        data: {
+          driverId: id,
+          sequenceNumber: nextSeq,
+          startDate,
+          endDate: endDate || null,
+          position,
+          locationId: locationId || null,
+          departmentId: departmentId || null,
+          manager: manager || null,
+        },
+      });
     });
 
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
-    console.error("Error creating function record:", error);
+    console.error("Error creating function record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to create function record" },
       { status: 500 }

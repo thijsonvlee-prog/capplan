@@ -25,31 +25,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-025: Fix planning grid not showing drivers
-
-- **Owner:** Delivery Agent
-- **Priority:** P1 Critical
-- **Status:** Ready
-- **Problem / opportunity:** After PB-003 introduced employment-based driver status, the planning grid API (`/api/planning/for-range`) uses `activeDriverWhereClause()` to filter drivers. This hides all drivers who have no employment records, or whose employment records don't cover today's date. The driver list shows all drivers without this filter, so users see drivers in the chauffeursoverzicht that are missing from the planningsoverzicht.
-- **Why this matters now:** This is a user-reported regression. The planning grid is the core workflow. Drivers that exist in the system must be visible for planning.
-- **Scope notes:** Remove the `activeDriverWhereClause()` filter from the planning grid API at `src/app/api/planning/for-range/route.ts` line 41. Replace `where: activeDriverWhereClause()` with `where: {}` (or remove the where clause entirely). The planning grid should show all drivers, regardless of employment status. The employment-based status remains available for display/grouping purposes via `transformDriver()` — this fix only removes the hard filter.
-- **Dependencies:** None.
-- **Definition of done:** All drivers visible in the driver list also appear in the planning grid. Passes `npm run verify`.
-- **Implementation note:** This is a one-line change. Do not add new filtering logic — just remove the existing filter. The `isActive` computed field from `transformDriver()` can still be used by the frontend for visual grouping if desired, but must not prevent drivers from appearing.
-- **Source:** Scrum Master input (SMI-003).
-
-### PB-022: Wrap employment and function POST handlers in transactions
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** Employment POST and function POST both call `autoCloseOpenRecords()` followed by a create — two separate operations without `$transaction`. A failure between auto-close and create leaves the driver with a closed record and no replacement.
-- **Why this matters now:** These are the last two unprotected multi-step creation handlers. Completes the transaction coverage started in PB-004 and PB-011.
-- **Scope notes:** Wrap both handlers in `prisma.$transaction()`, passing `tx` to `autoCloseOpenRecords()` and the create call. Files: `src/app/api/drivers/[id]/employment/route.ts` and `src/app/api/drivers/[id]/functions/route.ts`.
-- **Dependencies:** None.
-- **Definition of done:** Both handlers wrapped in transactions. Passes `npm run verify`.
-- **Implementation note:** The roster-assignments route already follows this pattern — use it as reference.
-- **Source:** DE-REC-009.
+### PB-021: Add aria-label to icon-only action buttons
 
 ### PB-021: Add aria-label to icon-only action buttons
 
@@ -76,29 +52,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Source:** EX-REC-006.
 - **Implementation note:** Added red asterisk indicators to all required fields: DriverForm (Voornaam, Achternaam), EmploymentForm (Begindatum), PositionForm (Begindatum), RosterForm (Begindatum, Roosterprofiel), RosterAssigner (Roosterprofiel, Ingangsdatum). For placeholder-only forms (StamtabelManager, SkillManager, RosterProfileEditor, ScenarioSelector), updated placeholder text to include `*` suffix since these lack explicit labels.
 
-### PB-023: Remove isActive from driver PUT handler
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The driver PUT handler still allows setting `isActive` directly via the API. After PB-003, `transformDriver` computes `isActive` from employment records, so the stored boolean is ignored on read. Writing it is misleading.
-- **Why this matters now:** Cleanup after PB-003. The field is dead on write.
-- **Scope notes:** Remove the `isActive` field from the PUT handler's `updateData` object in `src/app/api/drivers/[id]/route.ts`. No migration — the schema field remains but becomes read-only/derived.
-- **Dependencies:** None.
-- **Definition of done:** `isActive` no longer writable via PUT. Passes `npm run verify`.
-- **Implementation note:** Remove ~2 lines. No frontend currently sets isActive via PUT.
-- **Source:** DE-REC-010.
-
-### PB-017: Sanitize error logging in API catch blocks
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** All API route catch blocks log the full error object. Prisma errors can contain connection strings and SQL details in server logs.
-- **Scope notes:** Log only `error.message` (or "Unknown error") in catch blocks. Optionally log `error.code` for Prisma errors. Mechanical change across ~20 route files.
-- **Dependencies:** None.
-- **Definition of done:** No full error objects logged. Only message + code. Passes `npm run verify`.
-- **Source:** DE-REC-007.
 
 ---
 
@@ -155,6 +108,26 @@ _No items currently in progress._
 
 ## Completed Recently
 
+### PB-025: Fix planning grid not showing drivers
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Removed `activeDriverWhereClause()` filter from the planning grid API (`/api/planning/for-range`). All drivers now appear in the planning grid regardless of employment status. The `isActive` computed field from `transformDriver()` remains available for display/grouping.
+
+### PB-022: Wrap employment and function POST handlers in transactions
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Wrapped both employment POST and function POST handlers in `prisma.$transaction()`, passing `tx` to `autoCloseOpenRecords()` and `getNextSequenceNumber()`. Follows the same pattern as the roster-assignments route. All sub-record creation handlers are now transaction-protected.
+
+### PB-023: Remove isActive from driver PUT handler
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Removed `isActive` from the PUT handler's `updateData` object. The field is now read-only/derived from employment records via `transformDriver()`.
+
+### PB-017: Sanitize error logging in API catch blocks
+- **Completed:** 2026-03-29
+- **Owner:** Delivery Agent
+- **Summary:** Replaced all ~45 `console.error(..., error)` calls across all 25 API route files with `console.error(..., error instanceof Error ? error.message : "Unknown error")`. No full error objects are logged in production.
+
 ### PB-011: Wrap remaining multi-step mutations in transactions
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
@@ -184,7 +157,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Should be done after PB-022 (transaction wrapping on employment/function) so validation + creation are atomic. Schedule after PB-022.
+- **Reason:** Dependency PB-022 (transaction wrapping) is now completed. Can be scheduled when capacity allows.
 - **Source:** DE-REC-008.
 
 ### PB-019: Add semantic dialog attributes to modal overlays

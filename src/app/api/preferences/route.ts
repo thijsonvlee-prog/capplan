@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(prefs);
   } catch (error) {
-    console.error("Error fetching preferences:", error);
+    console.error("Error fetching preferences:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch preferences" },
       { status: 500 }
@@ -48,7 +48,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(pref);
   } catch (error) {
-    console.error("Error setting preference:", error);
+    console.error("Error setting preference:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to set preference" },
       { status: 500 }
@@ -76,7 +76,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting preference:", error);
+    console.error("Error deleting preference:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to delete preference" },
       { status: 500 }

@@ -70,7 +70,7 @@ export const POST = withPerfLogging(
 
       return NextResponse.json(newScenario, { status: 201 });
     } catch (error) {
-      console.error("Error duplicating scenario:", error);
+      console.error("Error duplicating scenario:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
         { error: "Failed to duplicate scenario" },
         { status: 500 }

@@ -38,7 +38,7 @@ export async function PUT(
 
     return NextResponse.json(record);
   } catch (error) {
-    console.error("Error updating roster assignment:", error);
+    console.error("Error updating roster assignment:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to update roster assignment" },
       { status: 500 }
@@ -67,7 +67,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting roster assignment:", error);
+    console.error("Error deleting roster assignment:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to delete roster assignment" },
       { status: 500 }

@@ -19,7 +19,7 @@ export async function GET(
 
     return NextResponse.json(transformDriver(driver));
   } catch (error) {
-    console.error("Error fetching driver:", error);
+    console.error("Error fetching driver:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch driver" },
       { status: 500 }
@@ -45,8 +45,6 @@ export async function PUT(
       updateData.employeeNumber = driverData.employeeNumber || null;
     if (driverData.licenseTypes !== undefined)
       updateData.licenseTypes = driverData.licenseTypes;
-    if (driverData.isActive !== undefined)
-      updateData.isActive = driverData.isActive;
 
     const driver = await prisma.$transaction(async (tx) => {
       if (skillIds !== undefined) {
@@ -67,7 +65,7 @@ export async function PUT(
 
     return NextResponse.json(transformDriver(driver));
   } catch (error) {
-    console.error("Error updating driver:", error);
+    console.error("Error updating driver:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to update driver" },
       { status: 500 }
@@ -89,7 +87,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting driver:", error);
+    console.error("Error deleting driver:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to delete driver" },
       { status: 500 }

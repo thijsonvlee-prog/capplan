@@ -40,7 +40,7 @@ export async function PUT(
 
     return NextResponse.json(record);
   } catch (error) {
-    console.error("Error updating function record:", error);
+    console.error("Error updating function record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to update function record" },
       { status: 500 }
@@ -69,7 +69,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting function record:", error);
+    console.error("Error deleting function record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to delete function record" },
       { status: 500 }

@@ -34,7 +34,7 @@ export const GET = withPerfLogging(
 
     return NextResponse.json(entries.map(transformPlanningEntry));
   } catch (error) {
-    console.error("Error fetching planning entries:", error);
+    console.error("Error fetching planning entries:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch planning entries" },
       { status: 500 }
@@ -95,7 +95,7 @@ export const POST = withPerfLogging(
 
     return NextResponse.json(transformPlanningEntry(entry));
   } catch (error) {
-    console.error("Error creating planning entry:", error);
+    console.error("Error creating planning entry:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to create planning entry" },
       { status: 500 }

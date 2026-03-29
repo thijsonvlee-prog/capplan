@@ -15,7 +15,7 @@ export async function GET() {
 
     return NextResponse.json({ activeId: pref?.value || "default" });
   } catch (error) {
-    console.error("Error fetching active scenario:", error);
+    console.error("Error fetching active scenario:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch active scenario" },
       { status: 500 }
@@ -54,7 +54,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ activeId });
   } catch (error) {
-    console.error("Error setting active scenario:", error);
+    console.error("Error setting active scenario:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to set active scenario" },
       { status: 500 }

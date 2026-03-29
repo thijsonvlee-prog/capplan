@@ -80,7 +80,7 @@ export const POST = withPerfLogging(
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      console.error("Error bulk creating planning entries:", error);
+      console.error("Error bulk creating planning entries:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
         { error: "Failed to bulk create planning entries" },
         { status: 500 }

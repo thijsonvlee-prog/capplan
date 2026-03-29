@@ -23,7 +23,7 @@ export async function GET(
 
     return NextResponse.json(transformProfile(profile));
   } catch (error) {
-    console.error("Error fetching roster profile:", error);
+    console.error("Error fetching roster profile:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch roster profile" },
       { status: 500 }
@@ -79,7 +79,7 @@ export async function PUT(
 
     return NextResponse.json(transformProfile(profile));
   } catch (error) {
-    console.error("Error updating roster profile:", error);
+    console.error("Error updating roster profile:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to update roster profile" },
       { status: 500 }
@@ -100,7 +100,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting roster profile:", error);
+    console.error("Error deleting roster profile:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to delete roster profile" },
       { status: 500 }

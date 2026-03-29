@@ -10,6 +10,25 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-29 — Planning grid fix, transaction coverage, and error logging
+
+#### Bug fix
+
+- Fixed a regression where drivers without active employment records were hidden from the planning grid. All drivers now appear in the planning grid regardless of employment status. The employment-based active/inactive indicator remains available for display purposes.
+
+#### Reliability improvements
+
+- Employment and function record creation are now wrapped in database transactions. A failure during auto-close of previous records or record creation rolls back cleanly, preventing data corruption.
+- All sub-record creation handlers (employment, function, roster assignment) now have full transaction protection.
+
+#### Data consistency
+
+- The `isActive` field can no longer be set directly via the driver update API. Driver active status is exclusively determined by employment records, eliminating a confusing write path that had no effect.
+
+#### Security / internal
+
+- All API route error logging now logs only the error message instead of the full error object. This prevents connection strings, SQL details, and schema internals from appearing in production server logs.
+
 ### 2026-03-29 — Accessibility labels and required field indicators
 
 #### UX / usability improvements

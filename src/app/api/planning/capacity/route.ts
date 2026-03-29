@@ -51,7 +51,7 @@ export const GET = withPerfLogging(
 
       return NextResponse.json(capacity);
     } catch (error) {
-      console.error("Error fetching capacity:", error);
+      console.error("Error fetching capacity:", error instanceof Error ? error.message : "Unknown error");
       return NextResponse.json(
         { error: "Failed to fetch capacity" },
         { status: 500 }

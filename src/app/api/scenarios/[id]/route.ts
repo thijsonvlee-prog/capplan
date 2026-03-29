@@ -31,7 +31,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting scenario:", error);
+    console.error("Error deleting scenario:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to delete scenario" },
       { status: 500 }

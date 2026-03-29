@@ -10,7 +10,7 @@ export async function GET() {
 
     return NextResponse.json(profiles.map(transformProfile));
   } catch (error) {
-    console.error("Error fetching roster profiles:", error);
+    console.error("Error fetching roster profiles:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch roster profiles" },
       { status: 500 }
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(transformProfile(profile), { status: 201 });
   } catch (error) {
-    console.error("Error creating roster profile:", error);
+    console.error("Error creating roster profile:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to create roster profile" },
       { status: 500 }
