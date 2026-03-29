@@ -23,6 +23,10 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+Er moeten grotere stappen gemaakt worden in het redesign om te voldoen aan design.md 
+
+Stuur aan op grotere verbeteringen, minder schaven aan bestaand ontwerp, maar echt componenten en schermen opnieuw ontwerpen obv design.md. Luister dus ook goed naar de aanbevelingen van de experience agent.
+
 ### SMI-002: Keep improvements incremental during stabilization
 
 - **Type:** Constraint
