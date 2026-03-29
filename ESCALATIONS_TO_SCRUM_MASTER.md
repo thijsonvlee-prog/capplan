@@ -34,7 +34,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 > Place `(X)` next to exactly one option.
 
-- [ ] **Option A — Configuration-first MVP**
+- [ ] **Option A — Configuration-first MVP** (X)
   - Scope: Admin screen to configure import sources (CSV only). Field mapping UI. No scheduled execution.
   - Impact: Planners can import driver/employment data from CSV files. Fast to build, low risk. Foundation for future API support.
 
@@ -67,7 +67,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 > Place `(X)` next to exactly one option.
 
-- [ ] **Option A — Employment-based status (planning grid logic)**
+- [ ] **Option A — Employment-based status (planning grid logic)** (X)
   - Use active employment records with date overlap as the single source of truth.
   - Impact: More accurate, automatic. The `isActive` field on Driver may become redundant. Driver list page needs updating.
 
