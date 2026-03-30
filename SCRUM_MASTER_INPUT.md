@@ -23,6 +23,13 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+Ik krijg een 'server error' als ik naar de capplan tool ga: 
+
+Server error
+There is a problem with the server configuration.
+
+Check the server logs for more information.
+
 ### SMI-002: Keep improvements incremental during stabilization
 
 - **Type:** Constraint
