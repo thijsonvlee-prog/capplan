@@ -23,6 +23,9 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+- herschrijf het claude.md bestand op basis van de huidige staat van de applicatie, neem ook de design.md hierin mee
+- focus op het uitbouwen van functionaliteit: connectiviteit, admin panel met user management
+
 ### SMI-002: Keep improvements incremental during stabilization
 
 - **Type:** Constraint
