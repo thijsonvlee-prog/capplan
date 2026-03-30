@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The codebase is in excellent shape — 0 ESLint warnings, Map-based lookups fully consistent across all hot paths, all API routes hardened with validation and Dutch error messages, design alignment with DESIGN.md is high across all major surfaces. The major design overhaul (SMI-004) is complete. Remaining work is refinement: small UX consistency items, dead code cleanup, and the connectivity hub admin screen (PB-016) as the next feature milestone.
+**Current direction:** The codebase is in excellent shape — 0 ESLint warnings, 0 typecheck errors, Map-based lookups consistent across all hot paths, all API routes hardened with validation and Dutch error messages, design alignment with DESIGN.md is high across all major surfaces. The major design overhaul (SMI-004) is complete. The active backlog is light: the next feature milestone is PB-016 (connectivity hub admin screen). Remaining work is low-priority refinement in the deferred section.
 
 ## Status Definitions
 
@@ -27,20 +27,15 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
-
----
-
-## Planned (Future Cycles)
-
 ### PB-016: Connectivity hub — admin screen for import source configuration
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Planned (future cycle)
-- **Problem / opportunity:** Second phase of connectivity hub MVP. Admin screen for CSV import source configuration with field mapping.
+- **Status:** Ready
+- **Problem / opportunity:** Second phase of connectivity hub MVP. Admin screen for CSV import source configuration with field mapping. The data model and API (PB-015) are complete — this is the UI layer.
 - **Dependencies:** PB-015 (completed).
 - **Definition of done:** Working admin screen for managing CSV import sources with field mapping. Follows existing design token system and component patterns. Passes `npm run verify`.
+- **Implementation note:** Use existing StamtabelManager patterns as reference. All labels and error messages in Dutch. Use design tokens only. Follow the import source API at `/api/import-sources`.
 - **Source:** ESC-001 decision (Option A), SMI-001.
 
 ---
@@ -62,42 +57,12 @@ _No items currently in progress._
 ### PB-071: Remove unused utility exports from utils.ts
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** Removed four unused functions (`getStartDateForRange`, `getQuarterDates`, `getQuarterLabel`, `get4WeekPeriodStarts`) from `src/lib/utils.ts`. Confirmed unused via grep. `npm run verify` passes with 0 errors.
+- **Summary:** Removed four unused functions from `src/lib/utils.ts`. `npm run verify` passes with 0 errors.
 
 ### PB-072: Planning page header subtitle
 - **Completed:** 2026-03-30
 - **Owner:** Experience Agent
-- **Summary:** Planning page header now shows active scenario name ("Basisplanning" or scenario name) as subtitle, consistent with capacity and drivers pages. Added scenarios list fetch and `useHeaderSubtitle` call in PlanningGrid.
-
-### PB-070: Header contextual enhancements
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Header shows contextual subtitles: capacity page displays active scenario name, drivers page shows driver count.
-
-### PB-069: Expand warning design token scale
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Added `warning-50`, `warning-500`, `warning-700`. ScenarioSelector "Concept" badge uses softer styling.
-
-### PB-066: PlanningGrid per-cell entry lookup optimization
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Replaced `.find()` and `.filter()` in PlanningGrid with O(1) Map-based lookups via `useEntryMaps` hook.
-
-### PB-067: Planning grid toolbar second row — tighter grouping
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Status legend wrapped in `.control-group` with "Status" label.
-
-### PB-068: ScenarioSelector hardcoded Tailwind color fix
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Replaced hardcoded Tailwind colors with design tokens on "Concept" badge.
-
-### PB-065: Replace DayCell leaveType .find() with Map-based lookup
-- **Completed:** 2026-03-29
-- **Owner:** Delivery Agent
-- **Summary:** Replaced `leaveTypes.find()` with `leaveTypeMap.get()` in DayCell render path.
+- **Summary:** Planning page header now shows active scenario name as subtitle. All three major pages (planning, capacity, drivers) now show contextual subtitles consistently.
 
 ---
 
@@ -148,7 +113,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low-risk follow-up to PB-063 but needs visual evaluation before broad application.
+- **Reason:** Low-risk follow-up but needs visual evaluation before broad application.
 - **Source:** EX-REC-038.
 
 ---
