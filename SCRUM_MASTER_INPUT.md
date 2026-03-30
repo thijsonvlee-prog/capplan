@@ -34,10 +34,10 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 ### SMI-008: Focus on building out functionality — connectivity and user management
 
 - **Type:** Initiative / priority signal
-- **Status:** Planned (partially escalated)
+- **Status:** Planned
 - **Input:** Focus op het uitbouwen van functionaliteit: connectiviteit, admin panel met user management.
-- **Product Owner action:** Connectivity expansion broken into phased backlog items (PB-077: CSV upload & parsing, PB-078: import execution). User management requires an authentication approach decision — escalated to ESC-005. Admin panel UI work (PB-079) is blocked on ESC-005.
-- **Backlog linkage:** PB-077, PB-078, PB-079, ESC-005.
+- **Product Owner action:** Connectivity expansion broken into phased backlog items (PB-077: CSV upload & parsing, PB-078: import execution). Auth approach decided via ESC-005 (Option B: NextAuth.js with Google/Microsoft). Auth work broken into phased items: PB-080 (auth infrastructure), PB-081 (login page), PB-079 (admin user management), PB-082 (role enforcement).
+- **Backlog linkage:** PB-077, PB-078, PB-079, PB-080, PB-081, PB-082.
 
 ### SMI-002: Keep improvements incremental during stabilization
 
@@ -54,8 +54,8 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Type:** Initiative
 - **Status:** Planned
 - **Input:** Develop a connectivity hub where external sources such as file imports and APIs can be configured.
-- **Product Owner action:** Escalated to ESC-001. Scrum Master chose Option A (Configuration-first MVP). Created PB-015 (data model + API) and PB-016 (admin screen UI) as phased backlog items for future cycles.
-- **Backlog linkage:** PB-015, PB-016.
+- **Product Owner action:** Escalated to ESC-001. Scrum Master chose Option A (Configuration-first MVP). PB-015 and PB-016 completed. Now expanding with PB-077 (CSV upload) and PB-078 (import execution).
+- **Backlog linkage:** PB-015, PB-016, PB-077, PB-078.
 
 ## Closed Inputs
 

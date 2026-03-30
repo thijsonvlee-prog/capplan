@@ -22,25 +22,20 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-### ESC-005: Authentication approach for user management
-
-- **Status:** Open
-- **Date / run context:** 2026-03-30 — triggered by SMI-008 (focus on functionality: admin panel with user management)
-- **Decision needed:** Which authentication approach should CapPlan use to enable user management and role enforcement?
-- **Why it matters:** The Scrum Master wants an admin panel with user management. The database already has a User model with roles (ADMIN, PLANNER, VIEWER), but no authentication or authorization is implemented. Building user CRUD and role enforcement requires choosing an auth strategy first. This is an architectural decision that affects the entire application.
-- **Choose one option:**
-  - ( ) **Option A — NextAuth.js (Auth.js) with credentials provider.** Self-hosted, no external dependency. Login with email/password stored in the CapPlan database. Simple to implement, full control. Requires building password hashing, session management. No SSO.
-  - ( ) **Option B — NextAuth.js with external provider (Google/Microsoft).** (X) Same library but delegates identity to an external provider. No password management needed. Requires users to have Google/Microsoft accounts. Good for organizations already on Microsoft 365.
-  - ( ) **Option C — Clerk or similar managed auth service.** Hosted authentication with pre-built UI components. Fastest to implement. Adds an external dependency and potential cost. Pre-built user management dashboard.
-  - ( ) **Option D — Simple session-based auth (custom).** Minimal custom implementation: login form, bcrypt passwords, HTTP-only session cookie. No library dependency. Full control but more manual work. No SSO or social login.
-- **Recommended option:** Option A (NextAuth.js with credentials). It balances simplicity, control, and extensibility. Can add external providers later if needed. Well-documented for Next.js App Router. No external service dependency.
-- **Trade-offs:** Option A/D require password management (hashing, reset flow). Option B/C reduce implementation effort but add external dependencies. Option C adds recurring cost.
-- **What the Scrum Master must do:** Place `(X)` next to exactly one option.
-- **Product Owner action after choice:** Create phased backlog items: auth infrastructure → login page → user CRUD admin screen → role enforcement middleware.
+_No open escalations._
 
 ---
 
 ## Closed Escalations
+
+### ESC-005: Authentication approach for user management
+
+- **Status:** Planned
+- **Date / run context:** 2026-03-30 — triggered by SMI-008
+- **Decision needed:** Which authentication approach should CapPlan use to enable user management and role enforcement?
+- **Chosen option:** Option B — NextAuth.js with external provider (Google/Microsoft). Delegates identity to an external provider. No password management needed. Good for organizations already on Microsoft 365.
+- **Product Owner action:** Created phased backlog items: PB-080 (auth infrastructure with NextAuth.js + Google/Microsoft provider), PB-081 (login page and session UI), PB-079 (admin user management screen — updated and unblocked), PB-082 (role enforcement middleware). Items are sequenced with dependencies.
+- **Backlog linkage:** PB-080, PB-081, PB-079, PB-082.
 
 ### ESC-004: Custom date picker — scope and approach
 
