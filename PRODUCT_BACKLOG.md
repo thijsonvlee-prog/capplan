@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** User groups Phase 1 (PB-109) is complete. Phase 2 (PB-110, admin UI) is unblocked and ready for the Experience Agent. In parallel, the Delivery Agent should complete the stamtabel batch optimization (PB-117) and preferences user-scoping (PB-118), then pick up the two planning validation fixes (PB-119, PB-120). Phase 3 enforcement (PB-111) remains blocked on PB-110.
+**Current direction:** User groups Phase 1 (PB-109) and Phase 2 (PB-110, admin UI) are complete. Phase 3 enforcement (PB-111) is now unblocked and ready for the Delivery Agent. In parallel, the Delivery Agent should complete the stamtabel batch optimization (PB-117) and preferences user-scoping (PB-118), then pick up the two planning validation fixes (PB-119, PB-120).
 
 ## Status Definitions
 
@@ -34,7 +34,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Problem / opportunity:** Phase 2 of user groups. Admin needs a UI to create groups, assign departments, and assign users to groups.
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Ready
+- **Status:** Completed
 - **Why this matters now:** Unblocked by PB-109 (completed 2026-03-30). Required for user groups feature. Scrum Master request (SMI-015).
 - **Scope notes:**
   - New "Gebruikersgroepen" tab in settings (admin only).
@@ -112,10 +112,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** Out-of-range sickPercentage values are rejected with a 400. `npm run verify` passes.
 - **Source:** DE-REC-055.
 
----
-
-## Blocked / Needs Decision
-
 ### PB-111: User groups — enforcement on data routes
 
 - **ID:** PB-111
@@ -123,16 +119,21 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Problem / opportunity:** Phase 3 of user groups. Data routes must filter results based on the logged-in user's group departments.
 - **Owner:** Delivery Agent
 - **Priority:** P2 High
-- **Status:** Blocked
-- **Blocked by:** PB-110 (admin UI needed so groups can be configured and tested).
-- **Why this matters now:** The enforcement phase delivers the actual authorization filtering value.
+- **Status:** Ready
+- **Why this matters now:** PB-109 and PB-110 are complete. The enforcement phase delivers the actual authorization filtering value.
 - **Scope notes:**
   - Read the current user's group and allowed department IDs from the session/database.
   - Apply department filter to drivers, planning entries, and capacity queries.
   - Users with no group see all data (backward compatible).
   - Settings/stamtabellen remain unfiltered.
-- **Dependencies:** PB-109 (completed), PB-110.
+- **Dependencies:** PB-109 (completed), PB-110 (completed).
 - **Definition of done:** Users in a group only see drivers/planning/capacity for their group's departments. Ungrouped users see everything. `npm run verify` passes.
+
+---
+
+## Blocked / Needs Decision
+
+_No blocked items._
 
 ---
 
@@ -143,6 +144,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-110: User groups — admin UI in settings
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** New "Gebruikersgroepen" tab in settings (admin only). Card-based group list with expandable detail panels showing departments and members. Modal editor for create/edit with department multi-select and user assignment. Users API extended to support `userGroupId` updates. All interactions have toast notifications and confirm dialogs.
 
 ### PB-109: User groups — data model + API routes
 

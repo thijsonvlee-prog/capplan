@@ -16,13 +16,27 @@ export async function PUT(
     const parsed = await parseJsonBody(request);
     if (parsed.error) return parsed.error;
     const body = parsed.data;
-    const { role } = body;
+    const { role, userGroupId } = body;
 
-    if (!role || !VALID_ROLES.includes(role)) {
+    if (role !== undefined && (!role || !VALID_ROLES.includes(role))) {
       return NextResponse.json(
         { error: "Ongeldige rol. Kies een van: Admin, Planner, Kijker." },
         { status: 400 }
       );
+    }
+
+    // Validate userGroupId if provided (null means unassign)
+    if (userGroupId !== undefined && userGroupId !== null) {
+      const group = await prisma.userGroup.findUnique({
+        where: { id: userGroupId },
+        select: { id: true },
+      });
+      if (!group) {
+        return NextResponse.json(
+          { error: "Gebruikersgroep niet gevonden" },
+          { status: 404 }
+        );
+      }
     }
 
     const existing = await prisma.user.findUnique({ where: { id } });
@@ -33,15 +47,20 @@ export async function PUT(
       );
     }
 
+    const updateData: Record<string, unknown> = {};
+    if (role !== undefined) updateData.role = role;
+    if (userGroupId !== undefined) updateData.userGroupId = userGroupId;
+
     const updated = await prisma.user.update({
       where: { id },
-      data: { role },
+      data: updateData,
       select: {
         id: true,
         name: true,
         email: true,
         image: true,
         role: true,
+        userGroupId: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -54,6 +73,7 @@ export async function PUT(
         email: updated.email,
         image: updated.image,
         role: updated.role,
+        userGroupId: updated.userGroupId,
         createdAt: updated.createdAt.toISOString(),
         updatedAt: updated.updatedAt.toISOString(),
       },

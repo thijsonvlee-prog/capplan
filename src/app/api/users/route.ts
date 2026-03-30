@@ -14,6 +14,7 @@ export async function GET() {
         email: true,
         image: true,
         role: true,
+        userGroupId: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -26,6 +27,7 @@ export async function GET() {
       email: u.email,
       image: u.image,
       role: u.role,
+      userGroupId: u.userGroupId,
       createdAt: u.createdAt.toISOString(),
       updatedAt: u.updatedAt.toISOString(),
     }));

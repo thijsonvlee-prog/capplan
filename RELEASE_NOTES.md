@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-30 — Gebruikersgroepen admin-UI
+
+#### Functionele verbeteringen
+
+- **Gebruikersgroepen beheren:** Nieuw tabblad "Gebruikersgroepen" op de instellingenpagina (alleen voor beheerders). Groepen aanmaken, bewerken en verwijderen met afdelingskoppeling en ledenbeheer. Elke groep toont gekoppelde afdelingen en leden in een uitklapbaar detailpaneel. Gebruikers kunnen vanuit de groepseditor worden toegewezen of verwijderd.
+
 ### 2026-03-30 — Gebruikersgroepen, importprestaties en validatie
 
 #### Functionele verbeteringen

@@ -6,12 +6,13 @@ import { StamtabelManager } from "@/components/settings/StamtabelManager";
 import { RosterProfileEditor } from "@/components/settings/RosterProfileEditor";
 import { ImportSourceManager } from "@/components/settings/ImportSourceManager";
 import { UserManager } from "@/components/settings/UserManager";
+import { UserGroupManager } from "@/components/settings/UserGroupManager";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
 import { useUserRole } from "@/hooks/useUserRole";
 
-type TabKey = "stamgegevens" | "competenties" | "roosters" | "connectiviteit" | "gebruikers";
+type TabKey = "stamgegevens" | "competenties" | "roosters" | "connectiviteit" | "gebruikers" | "gebruikersgroepen";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "stamgegevens", label: "Stamgegevens" },
@@ -19,6 +20,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "roosters", label: "Roosters" },
   { key: "connectiviteit", label: "Connectiviteit" },
   { key: "gebruikers", label: "Gebruikers" },
+  { key: "gebruikersgroepen", label: "Gebruikersgroepen" },
 ];
 
 const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
@@ -42,6 +44,10 @@ const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
     title: "Gebruikersbeheer",
     desc: "Bekijk alle gebruikers en beheer hun rollen. Gebruikers worden automatisch aangemaakt bij de eerste aanmelding.",
   },
+  gebruikersgroepen: {
+    title: "Gebruikersgroepen beheren",
+    desc: "Maak groepen aan en koppel afdelingen. Leden van een groep zien alleen chauffeurs en planning van hun afdelingen.",
+  },
 };
 
 export default function SettingsPage() {
@@ -53,12 +59,13 @@ export default function SettingsPage() {
   const [locations, locationsLoading] = useApiDataWithLoading(() => api.settings.getLocations(), [], []);
   const [leaveTypes, leaveTypesLoading] = useApiDataWithLoading(() => api.settings.getLeaveTypes(), [], []);
 
-  const tabCounts = useMemo(() => ({
+  const tabCounts = useMemo((): Record<TabKey, number | null> => ({
     stamgegevens: employers.length + departments.length + locations.length + leaveTypes.length,
     competenties: null,
     roosters: null,
     connectiviteit: null,
     gebruikers: null,
+    gebruikersgroepen: null,
   }), [employers.length, departments.length, locations.length, leaveTypes.length]);
 
   function toastMutate(fn: () => Promise<unknown>, successMsg: string) {
@@ -83,7 +90,7 @@ export default function SettingsPage() {
       </div>
 
       <nav className="settings-tabs" role="tablist" aria-label="Instellingencategorieën">
-        {TABS.filter((tab) => tab.key !== "gebruikers" || canWriteSettings).map((tab) => (
+        {TABS.filter((tab) => (tab.key !== "gebruikers" && tab.key !== "gebruikersgroepen") || canWriteSettings).map((tab) => (
           <button
             key={tab.key}
             role="tab"
@@ -157,6 +164,8 @@ export default function SettingsPage() {
       {activeTab === "connectiviteit" && <ImportSourceManager readOnly={!canWriteSettings} />}
 
       {activeTab === "gebruikers" && canWriteSettings && <UserManager />}
+
+      {activeTab === "gebruikersgroepen" && canWriteSettings && <UserGroupManager />}
     </div>
   );
 }

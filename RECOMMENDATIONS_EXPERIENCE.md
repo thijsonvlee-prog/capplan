@@ -3,25 +3,27 @@
 ## Summary
 
 **What was improved this cycle:**
-- PB-106: Server-side search for the planning grid. Search now queries the database across all drivers (name + employee number), replacing the client-side filter that only searched the current page. Debounced at 300ms, page resets on search change.
-- PB-108: Full-dataset capacity totals. The capacity summary row now fetches aggregated totals from the `/api/planning/capacity` endpoint independently of pagination and search, showing accurate numbers across all drivers.
+- PB-110: User groups admin UI. New "Gebruikersgroepen" tab in settings with card-based group management, department multi-select, and user assignment. Modal editor for create/edit. Expandable detail panels for viewing departments and members. Consistent with existing settings patterns and DESIGN.md direction (card-based layout, tonal layering, premium restraint).
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8).
-- Settings page: well-aligned (sections 2.5, 7.1, 7.2).
+- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Now has 6 tabs with horizontal scroll.
 - Login page: well-aligned. Clean, premium, brand-surface split.
 - Header session indicator: well-aligned.
 - Capacity page: well-aligned.
 - Planning grid toolbar: well-aligned. Search and filter controls are grouped meaningfully.
 - Import source manager: well-aligned.
 - Button system: fully aligned.
-- Planning grid matrix: partially aligned. Virtual scrolling and pagination handle performance well. Search now works cross-page. Capacity totals are now full-dataset. Visual structure (1px row borders, alternating backgrounds) still uses border-based separation rather than pure tonal layering per DESIGN.md.
+- User group manager: well-aligned. Card-based layout, expandable details, modal editor, department tags.
+- User manager: well-aligned. Avatar display, role badges, inline role editing.
+- Planning grid matrix: partially aligned. Virtual scrolling and pagination handle performance well. Visual structure still uses border-based separation rather than pure tonal layering per DESIGN.md.
 - Drivers page: partially aligned. Pagination is clean. The table itself still reads as standard admin CRUD.
 - Pagination controls (both pages): consistent pattern, well-integrated with design tokens.
 
 **Where design quality is still below target:**
 - The drivers table still reads as standard admin CRUD with alternating backgrounds, row borders, and table-first layout.
 - The planning grid matrix uses 1px row borders for structure. Pure tonal separation would be more aligned with DESIGN.md but risks reducing scanability in dense data.
+- Settings tab count is now 6 — the horizontal scroll affordance should be monitored for usability.
 
 ## Recommended Next Improvements
 
@@ -34,7 +36,7 @@
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent, but the drivers page is a high-frequency screen. Now that both search and capacity are resolved, visual refinement is the next logical step.
+- **Why now:** Not urgent, but the drivers page is a high-frequency screen. Now that user groups are complete, visual refinement is the next logical step.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
@@ -46,6 +48,17 @@
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-risk follow-up. Should be evaluated visually before applying broadly.
+
+### EX-REC-044: User group member assignment — batch API for efficiency
+
+- **Problem:** When saving a group with member changes, the current implementation updates each user individually via sequential API calls. For groups with many member changes, this could be slow.
+- **Proposed improvement:** Add a batch member assignment endpoint to `/api/user-groups/[id]/members` that accepts `{ addUserIds, removeUserIds }` and performs all updates in a single transaction.
+- **Expected user value:** Faster save experience when adding/removing multiple members from a group.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Not blocking. Current sequential approach works for typical group sizes (< 20 users). Only relevant if user counts grow significantly.
 
 ### EX-REC-043: Import source manager — visual mapping builder enhancement
 
@@ -71,9 +84,10 @@
 
 ## Risks / Watch-outs
 
+- **Settings tab count growth.** The settings page now has 6 tabs with horizontal scroll. More tabs may need a different navigation pattern (vertical tabs or sub-navigation).
 - **Planning grid row height accuracy.** Virtual scrolling uses fixed row heights (48/38/26px per density). Long driver names could cause minor scroll position drift.
 - **PlanningGrid.tsx complexity.** The file is ~780 lines. Future changes should be tested with both virtual scrolling and pagination enabled.
-- **Settings tab count growth.** The settings page has 5 tabs with horizontal scroll. More tabs may need visual affordance.
+- **User group member assignment is sequential.** For large member changes, the sequential API calls work but could be slow. Monitor if this becomes an issue.
 - **Capacity API call on every scenario/date change.** The capacity fetch is lightweight (uses `groupBy` aggregation) but adds one additional API call per navigation. Monitor if this becomes noticeable.
 
 ## Items Intentionally Not Recommended

@@ -117,7 +117,7 @@ export type RosterProfile = {
   updatedAt: string;
 };
 
-// === User Domain (preparation for multi-user) ===
+// === User Domain ===
 
 export type User = {
   id: string;
@@ -125,6 +125,24 @@ export type User = {
   email: string;
   image?: string | null;
   role: UserRole;
+  userGroupId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type UserGroupMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+};
+
+export type UserGroup = {
+  id: string;
+  name: string;
+  departmentIds: string[];
+  memberCount: number;
+  members?: UserGroupMember[];
   createdAt: string;
   updatedAt: string;
 };

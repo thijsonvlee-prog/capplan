@@ -15,6 +15,7 @@ import type {
   Skill,
   StamtabelRecord,
   User,
+  UserGroup,
 } from "@/domain/types";
 
 // === Helpers ===
@@ -490,6 +491,32 @@ const users = {
   updateRole(id: string, role: string): Promise<User> {
     return fetchJson<{ data: User }>(`/api/users/${id}`, putBody({ role })).then(r => r.data);
   },
+
+  updateGroup(id: string, userGroupId: string | null): Promise<User> {
+    return fetchJson<{ data: User }>(`/api/users/${id}`, putBody({ userGroupId })).then(r => r.data);
+  },
+};
+
+const userGroups = {
+  list(): Promise<UserGroup[]> {
+    return fetchJson<{ data: UserGroup[] }>("/api/user-groups").then(r => r.data);
+  },
+
+  get(id: string): Promise<UserGroup> {
+    return fetchJson<{ data: UserGroup }>(`/api/user-groups/${id}`).then(r => r.data);
+  },
+
+  create(name: string, departmentIds: string[]): Promise<UserGroup> {
+    return fetchJson<{ data: UserGroup }>("/api/user-groups", jsonBody({ name, departmentIds })).then(r => r.data);
+  },
+
+  update(id: string, name: string, departmentIds: string[]): Promise<UserGroup> {
+    return fetchJson<{ data: UserGroup }>(`/api/user-groups/${id}`, putBody({ name, departmentIds })).then(r => r.data);
+  },
+
+  delete(id: string): Promise<void> {
+    return fetchJson(`/api/user-groups/${id}`, deleteMethod());
+  },
 };
 
 const preferences = {
@@ -517,6 +544,7 @@ export const api = {
   rosterProfiles,
   importSources,
   users,
+  userGroups,
   preferences,
 };
 
