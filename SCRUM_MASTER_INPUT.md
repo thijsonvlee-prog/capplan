@@ -23,6 +23,8 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+Maak voorbereidingen voor grotere schaal en meer data input. Er moet straks voor uiteindelijk 1000 chauffeurs de planning kunenn worden gemaakt. Zorg ervoor dat de performane goed blijft. Het systeem mag nooit traag aanvoelen.
+
 _Geen actieve inputs._
 
 ## Closed Inputs
