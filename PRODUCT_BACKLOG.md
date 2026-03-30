@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The codebase is in excellent shape — 0 ESLint warnings, Map-based lookups fully consistent across all hot paths, all API routes hardened with validation and Dutch error messages, design alignment with DESIGN.md is high across all major surfaces. The major design overhaul (SMI-004) is complete. Remaining work is refinement: design system completeness, contextual information density, and minor code quality items.
+**Current direction:** The codebase is in excellent shape — 0 ESLint warnings, Map-based lookups fully consistent across all hot paths, all API routes hardened with validation and Dutch error messages, design alignment with DESIGN.md is high across all major surfaces. The major design overhaul (SMI-004) is complete. Remaining work is refinement: small UX consistency items, dead code cleanup, and the connectivity hub admin screen (PB-016) as the next feature milestone.
 
 ## Status Definitions
 
@@ -27,7 +27,31 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-071: Remove unused utility exports from utils.ts
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** Four exported functions in `src/lib/utils.ts` are never imported anywhere: `getStartDateForRange()`, `getQuarterDates()`, `getQuarterLabel()`, `get4WeekPeriodStarts()`. Dead exports create confusion about what is actually used.
+- **Why this matters now:** Quick cleanup that reduces maintenance noise. Confirmed unused via grep.
+- **Scope notes:** Remove the four unused functions only. Do not refactor adjacent code.
+- **Dependencies:** None.
+- **Definition of done:** Four unused functions removed from `src/lib/utils.ts`. `npm run verify` passes with 0 errors.
+- **Implementation note:** If any function turns out to have an import that grep missed, keep it.
+- **Source:** DE-REC-037.
+
+### PB-072: Planning page header subtitle
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** The capacity and drivers pages now show contextual subtitles in the header (scenario name, driver count) via PB-070. The planning page does not yet show a subtitle, breaking consistency across the three major pages.
+- **Why this matters now:** Small follow-up to PB-070. Consistent contextual headers across all major pages.
+- **Scope notes:** Have the planning page call `useHeaderSubtitle` with the active scenario name. May require reading the scenario name from the scenarios list already fetched by ScenarioSelector. Do not refactor PlanningGrid broadly — find the least invasive way to surface the scenario name.
+- **Dependencies:** PB-070 (completed).
+- **Definition of done:** Planning page header shows active scenario name as subtitle. `npm run verify` passes with 0 errors.
+- **Implementation note:** PlanningGrid currently fetches `activeScenarioId` but not the name. ScenarioSelector fetches the scenarios list. The simplest path may be to read from ScenarioSelector's data or lift a small fetch.
+- **Source:** EX-REC-041.
 
 ---
 
@@ -62,47 +86,32 @@ _No items currently in progress._
 ### PB-070: Header contextual enhancements
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Created `HeaderSubtitleProvider` context and `useHeaderSubtitle` hook. Header now shows contextual subtitles: capacity page displays active scenario name ("Basisplanning" or scenario name), drivers page shows driver count ("42 chauffeurs"). Subtitles render in `.text-caption` style, visually subordinate to the page title. No new API calls — uses data already fetched by each page.
+- **Summary:** Header shows contextual subtitles: capacity page displays active scenario name, drivers page shows driver count.
 
 ### PB-069: Expand warning design token scale
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Added `warning-50` (#fefce8), `warning-500` (#eab308), and `warning-700` (#a16207) to the design token set. Updated ScenarioSelector "Concept" badge to use softer `warning-50`/`warning-700` instead of `warning-200`/`warning-900`.
+- **Summary:** Added `warning-50`, `warning-500`, `warning-700`. ScenarioSelector "Concept" badge uses softer styling.
 
 ### PB-066: PlanningGrid per-cell entry lookup optimization
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Replaced `planningEntries.find()` and `.filter()` in PlanningGrid's per-cell and aggregated-view render paths with O(1) Map-based lookups via a `useEntryMaps` hook in GroupRows. Also optimizes the aggregated column entry collection. Passes `npm run verify` with 0 errors.
+- **Summary:** Replaced `.find()` and `.filter()` in PlanningGrid with O(1) Map-based lookups via `useEntryMaps` hook.
 
 ### PB-067: Planning grid toolbar second row — tighter grouping
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Status legend in toolbar row 2 wrapped in `.control-group` with "Status" label, matching the visual grouping pattern of the first toolbar row.
+- **Summary:** Status legend wrapped in `.control-group` with "Status" label.
 
 ### PB-068: ScenarioSelector hardcoded Tailwind color fix
 - **Completed:** 2026-03-29
 - **Owner:** Experience Agent
-- **Summary:** Replaced `bg-amber-100 text-amber-700` with `bg-warning-200 text-warning-900` design tokens on the "Concept" scenario badge.
+- **Summary:** Replaced hardcoded Tailwind colors with design tokens on "Concept" badge.
 
 ### PB-065: Replace DayCell leaveType .find() with Map-based lookup
 - **Completed:** 2026-03-29
 - **Owner:** Delivery Agent
-- **Summary:** Replaced `leaveTypes.find()` in DayCell render path with `leaveTypeMap.get()` using a pre-built Map.
-
-### PB-062: Fix capacity page scenario toggle color semantics
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Changed active scenario toggle from warning tokens to `brand-50`/`brand-700`.
-
-### PB-063: Add Manrope typeface for display and headline levels
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Added Manrope via `next/font/google`. Applied to `.text-page-title`.
-
-### PB-064: Strengthen header component composition
-- **Completed:** 2026-03-29
-- **Owner:** Experience Agent
-- **Summary:** Removed `border-b` from header. Removed redundant "CapPlan" label. Tonal surface contrast for separation.
+- **Summary:** Replaced `leaveTypes.find()` with `leaveTypeMap.get()` in DayCell render path.
 
 ---
 
@@ -137,7 +146,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Same `.find()` pattern as PB-066 but in the POC capacity summary component. Depends on whether the POC is promoted to production quality or removed. Not worth optimizing dead-end code.
+- **Reason:** Same `.find()` pattern as PB-066 but in the POC capacity summary component. Depends on whether the POC is promoted or removed. Not worth optimizing dead-end code.
 - **Source:** DE-REC-036.
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
@@ -145,7 +154,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Functional and usable. The alternating backgrounds are a minor visual issue. Defer until higher-priority UX work is complete.
+- **Reason:** Functional and usable. Minor visual issue. Defer until higher-priority UX work is complete.
 - **Source:** EX-REC-036.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers

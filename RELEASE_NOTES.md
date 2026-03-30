@@ -6,8 +6,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-- **Koptekst met context:** De koptekstbalk toont nu contextuele informatie per pagina. De capaciteitspagina toont het actieve scenario ("Basisplanning" of scenarionaam). De chauffeurspagina toont het aantal chauffeurs.
-- **Waarschuwingstokens uitgebreid:** Drie nieuwe waarschuwingskleuren toegevoegd (warning-50, warning-500, warning-700) voor meer genuanceerde badge-styling. "Concept" scenario-badge gebruikt nu een subtielere kleurcombinatie.
+_Geen onuitgebrachte wijzigingen._
 
 ## Release History
 
@@ -15,6 +14,8 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### UX / design verbeteringen
 
+- **Koptekst met context:** De koptekstbalk toont nu contextuele informatie per pagina. De capaciteitspagina toont het actieve scenario ("Basisplanning" of scenarionaam). De chauffeurspagina toont het aantal chauffeurs.
+- **Waarschuwingstokens uitgebreid:** Drie nieuwe waarschuwingskleuren toegevoegd (warning-50, warning-500, warning-700) voor meer genuanceerde badge-styling. "Concept" scenario-badge gebruikt nu een subtielere kleurcombinatie.
 - **Planningsrooster herontwerp:** Tonale lagen in plaats van rasterlijnen. Chauffeursnamen als "Achternaam, Voornaam" met dikkere typografie. Statuscellen met kleurindicatorstippen. Statusselectiemenu opent naast de aangeklikte cel.
 - **Planningsrooster werkbalk:** Beide werkbalkrijen gebruiken consistent `.control-group`-patroon met labels. Statuslegende in eigen visuele groep met "Status" label.
 - **Scenario-badge:** "Concept" badge bij scenarioselectie gebruikt ontwerptokens in plaats van directe Tailwind-kleuren.
