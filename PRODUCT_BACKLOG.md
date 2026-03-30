@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation). Import pipeline operational. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: polish auth experience (sidebar user identity), optimize auth performance (session role caching), and extend import capabilities (upsert mode).
+**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation). Import pipeline operational. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: polish auth experience (sidebar user identity), optimize auth performance (session role caching), and extend import capabilities (upsert mode). No new code items this cycle — latest Scrum Master input (SMI-010: Google OAuth redirect_uri_mismatch) was a configuration issue resolved via existing documentation.
 
 ## Status Definitions
 

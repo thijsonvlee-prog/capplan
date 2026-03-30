@@ -23,9 +23,19 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-Bij inloggen met Google krijg ik de foutmelding: Fout 400: redirect_uri_mismatch Details van verzoek: flowName=GeneralOAuthFlow
+_Geen actieve inputs._
 
+## Closed Inputs
 
+### SMI-010: Google OAuth redirect_uri_mismatch fout
+
+- **Type:** Bug report (configuratie)
+- **Status:** Closed
+- **Input:** "Bij inloggen met Google krijg ik de foutmelding: Fout 400: redirect_uri_mismatch Details van verzoek: flowName=GeneralOAuthFlow"
+- **Root cause:** De "Authorized redirect URI" in Google Cloud Console komt niet overeen met de daadwerkelijke callback-URL van NextAuth.js. De exacte URI die geconfigureerd moet worden is: `https://<jouw-vercel-url>/api/auth/callback/google` (let op het pad `/api/auth/callback/google`).
+- **Resolution:** Dit is een configuratie-issue in Google Cloud Console, geen code-issue. De stappen staan beschreven in `AUTH_SETUP.md` (Stap 3a, punt 6). Controleer dat de redirect URI exact overeenkomt, inclusief protocol (`https://`) en het volledige pad. De probleemoplossingstabel in `AUTH_SETUP.md` behandelt dit scenario al ("Callback-fout na inloggen → Redirect URI komt niet overeen").
+- **Closed reason:** Geen code-wijziging nodig. Configuratie-aanpassing in Google Cloud Console vereist. Documentatie is reeds beschikbaar in AUTH_SETUP.md.
+- **Backlog linkage:** Geen — geen backlog item nodig.
 
 ### SMI-009: Server error bij openen CapPlan
 
@@ -41,14 +51,11 @@ Bij inloggen met Google krijg ik de foutmelding: Fout 400: redirect_uri_mismatch
 ### SMI-002: Keep improvements incremental during stabilization
 
 - **Type:** Constraint
-- **Status:** Planned (updated by SMI-004)
+- **Status:** Closed (standing constraint, actively applied)
 - **Input:** While core workflows (planning grid, roster assignment, driver management) are still stabilizing, all improvements must be incremental. Avoid broad redesigns, large refactors, or architectural changes that touch multiple domains at once.
 - **Update (2026-03-29):** SMI-004 relaxes this constraint for design work. Meaningful redesign toward DESIGN.md compliance is now expected, but must still be phased and independently verifiable. Technical/architectural refactors remain subject to the incremental constraint.
-- **Expected outcome:** Design improvements may be larger in scope. Technical changes remain small, focused, and independently verifiable. No single change should break the deploy.
-- **Product Owner instruction:** Applied as a standing constraint to technical backlog items. Design items follow the updated directive from SMI-004.
+- **Closed reason:** Standing constraint. Actively applied to all backlog items as a prioritization rule. No further processing needed.
 - **Backlog linkage:** Applied as a standing constraint to all backlog items.
-
-## Closed Inputs
 
 ### SMI-008: Focus on building out functionality — connectivity and user management
 

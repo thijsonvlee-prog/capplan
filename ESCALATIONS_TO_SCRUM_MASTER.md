@@ -30,7 +30,7 @@ _No open escalations._
 
 ### ESC-006: Server error — Vercel environment verification
 
-- **Status:** Planned
+- **Status:** Closed
 - **Date / run context:** 2026-03-30 — triggered by SMI-009
 - **Decision needed:** Whether auth is needed and whether Vercel environment should be verified.
 - **Chosen option:** Option B — Auth is needed. Verify Vercel environment. Ensure `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and at least one provider credential pair are set correctly in Vercel.
