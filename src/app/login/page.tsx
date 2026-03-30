@@ -84,25 +84,17 @@ export default function LoginPage() {
                 <span className="spinner !w-4 !h-4 !border-[1.5px]" />
               )}
             </button>
+          </div>
 
-            <button
-              onClick={() => handleSignIn("azure-ad")}
-              disabled={loading !== null}
-              className="login-provider-btn group"
-            >
-              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M11.4 2H2v9.4h9.4V2z" fill="#F25022" />
-                <path d="M22 2h-9.4v9.4H22V2z" fill="#7FBA00" />
-                <path d="M11.4 12.6H2V22h9.4v-9.4z" fill="#00A4EF" />
-                <path d="M22 12.6h-9.4V22H22v-9.4z" fill="#FFB900" />
-              </svg>
-              <span className="flex-1 text-left">
-                Doorgaan met Microsoft
-              </span>
-              {loading === "azure-ad" && (
-                <span className="spinner !w-4 !h-4 !border-[1.5px]" />
-              )}
-            </button>
+          <div className="mt-6 flex items-center gap-2 px-3 py-2.5 rounded-lg bg-warning-50 border border-warning-200">
+            <svg className="w-4 h-4 text-warning-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <p className="text-[0.8125rem] text-warning-700 leading-snug">
+              Deze applicatie is in ontwikkeling.
+            </p>
           </div>
 
           <p className="mt-8 text-[0.75rem] text-text-tertiary leading-relaxed text-center">

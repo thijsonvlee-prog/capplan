@@ -46,15 +46,11 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **ID:** PB-103
 - **Title:** Simplify login page to Google-only with under construction notice
-- **Problem / opportunity:** The login page currently shows both Google and Microsoft login buttons. The Scrum Master wants only Google visible, and a visible 'under construction' text on the page.
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Direct Scrum Master request. Quick UI change that aligns the login page with current product state.
-- **Scope notes:** Hide the Microsoft/Azure AD login button from the login page UI (keep the backend provider config intact for future use). Add a visible "Under construction" text/banner on the login page. All text in Dutch. Keep the existing visual design.
-- **Dependencies:** None.
-- **Definition of done:** Login page shows only Google button. "Under construction" text is visible. Microsoft button is hidden. Verify passes.
-- **Implementation note:** Modify `src/app/login/page.tsx`. Conditionally hide Microsoft button or hardcode Google-only for now. Add a Dutch "Under construction" notice (e.g., "Deze applicatie is in ontwikkeling" or simply "Under construction" if the SM prefers English for this label).
+- **Status:** Completed
+- **Completed:** 2026-03-30
+- **Implementation note:** Removed Microsoft/Azure AD button from login page UI. Added Dutch "Deze applicatie is in ontwikkeling" notice with warning icon below the Google button. Backend provider config unchanged for future use. Verify passes.
 - **Source:** SMI-016.
 
 ### PB-101: Stamtabellen documentation in masterdata.md
@@ -76,15 +72,12 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **ID:** PB-105
 - **Title:** Connect planning grid to paginated API for large driver sets
-- **Problem / opportunity:** The planning grid loads all drivers in a single request. Virtual scrolling (PB-096) handles DOM performance, but the data transfer and memory cost remains. At 1000+ drivers, initial load time will be significant.
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Completes the 1000-driver scaling story (SMI-011). Virtual scrolling handles rendering; this handles data transfer.
-- **Scope notes:** Integrate `api.planning.getForRange()` paginated endpoint into the planning grid. Load drivers in pages (e.g., 100 per page). Add pagination controls or infinite scroll to the grid. The capacity summary row may need a separate aggregation API call rather than client-side computation. Preserve all existing functionality (drag-select, group headers, sticky columns).
-- **Dependencies:** PB-096 (completed), PB-093 (completed).
-- **Definition of done:** Planning grid fetches drivers in pages. Initial load is fast regardless of total driver count. All existing interactions preserved. Verify passes.
-- **Implementation note:** See EX-REC-044 for detailed proposal.
+- **Status:** Completed
+- **Completed:** 2026-03-30
+- **Implementation note:** Planning grid now fetches drivers in pages of 100. Pagination controls (first/prev/next/last) appear below the grid when >1 page exists. Total driver count and page position displayed. Page resets to 1 on scenario or date range change. All existing interactions preserved (virtual scrolling, drag-select, group headers, sticky columns, capacity summary). Capacity summary shows totals for current page only. Client-side name filter works within current page. Verify passes.
+- **Follow-up:** Server-side search on for-range endpoint would improve the name filter for large datasets. Capacity summary could use a separate aggregation API for full-dataset totals.
 - **Source:** EX-REC-044, SMI-011.
 
 ### PB-098: Scenario duplication batch processing
@@ -129,6 +122,18 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-105: Planning grid — integrate paginated data fetching
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-30
+
+### PB-103: Login page — show only Google + 'under construction' text
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-30
 
 ### PB-099: Batch import transactions into chunks
 

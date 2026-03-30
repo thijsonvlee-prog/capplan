@@ -6,7 +6,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_Geen onuitgebrachte wijzigingen._
+### Inlogpagina
+
+- **Alleen Google-login:** De inlogpagina toont nu alleen de Google-knop. De Microsoft-knop is verborgen (backend-configuratie blijft intact voor toekomstig gebruik).
+- **Ontwikkelingsmelding:** Een zichtbare melding "Deze applicatie is in ontwikkeling" is toegevoegd aan de inlogpagina.
+
+### Prestaties
+
+- **Paginering planningsrooster:** Het planningsrooster haalt chauffeurs nu op in pagina's van 100. Paginaknoppen (eerste/vorige/volgende/laatste) verschijnen onder het rooster bij meer dan 100 chauffeurs. De initiële laadtijd is onafhankelijk van het totaal aantal chauffeurs.
 
 ## Release History
 

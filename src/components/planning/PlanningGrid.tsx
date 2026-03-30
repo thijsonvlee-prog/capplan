@@ -17,7 +17,7 @@ import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 import { RosterAssigner } from "./RosterAssigner";
 import { CapacitySummaryRow } from "./CapacitySummaryRow";
-import { CalendarCog, Columns3, ArrowUp, ArrowDown, Maximize2, Minus, AlignJustify } from "lucide-react";
+import { CalendarCog, Columns3, ArrowUp, ArrowDown, Maximize2, Minus, AlignJustify, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import {
   getDateRange,
   getMondayStart,
@@ -86,6 +86,10 @@ export function PlanningGrid() {
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [showCapacitySummary, setShowCapacitySummary] = useState(true); // POC: capacity summary row
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(100);
+
   // Multi-select drag state
   const [dragState, setDragState] = useState<{
     driverId: string;
@@ -120,10 +124,13 @@ export function PlanningGrid() {
   );
 
   const data = useApiData(
-    () => allDates.length > 0 ? api.planning.getForRange(allDates, activeScenarioId) : Promise.resolve(null),
-    [allDates.length > 0 ? allDates[0] : "", allDates.length, activeScenarioId],
-    null as { drivers: DriverWithEntries[]; dates: string[] } | null
+    () => allDates.length > 0 ? api.planning.getForRange(allDates, activeScenarioId, { page, pageSize }) : Promise.resolve(null),
+    [allDates.length > 0 ? allDates[0] : "", allDates.length, activeScenarioId, page, pageSize],
+    null as { drivers: DriverWithEntries[]; dates: string[]; total?: number; page?: number; pageSize?: number } | null
   );
+
+  const totalDrivers = data?.total ?? data?.drivers.length ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalDrivers / pageSize));
 
   const skillMap = useMemo(() => new Map(skills.map((s) => [s.id, s.name])), [skills]);
   const employerMap = useMemo(() => new Map(employers.map((e) => [e.id, e.description])), [employers]);
@@ -132,9 +139,12 @@ export function PlanningGrid() {
   const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.description])), [locations]);
 
   // Local data layer: mirrors API data but allows instant optimistic updates.
-  // Resets when the API returns new data (date range / scenario change).
+  // Resets when the API returns new data (date range / scenario / page change).
   const [localData, setLocalData] = useState(data);
   useEffect(() => { setLocalData(data); }, [data]);
+
+  // Reset page to 1 when scenario or date range changes
+  useEffect(() => { setPage(1); }, [activeScenarioId, startDate, dayCount]);
 
   const resolveColumnValue = useCallback((driver: DriverWithEntries, col: DriverColumnKey): string => {
     const emp = getActiveRecord(driver.employmentRecords);
@@ -690,6 +700,56 @@ export function PlanningGrid() {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination controls */}
+      {localData && totalPages > 1 && (
+        <div className="flex items-center justify-between mt-2 px-1 flex-shrink-0">
+          <span className="text-caption">
+            {totalDrivers} chauffeurs &middot; pagina {page} van {totalPages}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage(1)}
+              disabled={page <= 1}
+              className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Eerste pagina"
+              aria-label="Eerste pagina"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Vorige pagina"
+              aria-label="Vorige pagina"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm text-text-secondary px-2 min-w-[4rem] text-center">
+              {page} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Volgende pagina"
+              aria-label="Volgende pagina"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setPage(totalPages)}
+              disabled={page >= totalPages}
+              className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Laatste pagina"
+              aria-label="Laatste pagina"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 
