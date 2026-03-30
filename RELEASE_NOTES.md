@@ -6,7 +6,10 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_No unreleased changes._
+### UX / design verbeteringen
+
+- **Rolbewuste interface:** De interface past zich nu aan op basis van de rol van de ingelogde gebruiker. Kijkers (VIEWER) zien geen bewerkingsknoppen meer op het planningsscherm, chauffeurscherm en scenario's. Niet-beheerders zien geen schrijfknoppen meer op de instellingenpagina en het tabblad "Gebruikers" is alleen zichtbaar voor beheerders. Wanneer authenticatie niet is geconfigureerd, blijven alle acties beschikbaar.
+- **Instellingen-tabbladen op smal scherm:** De tabbalk op de instellingenpagina scrollt nu horizontaal op smalle schermen in plaats van tekst af te kappen of te laten terugvloeien.
 
 ## Release History
 

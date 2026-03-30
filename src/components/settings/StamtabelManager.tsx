@@ -13,9 +13,10 @@ type Props = {
   onUpdate: (id: string, code: string, description: string) => void;
   onDelete: (id: string) => void;
   loading?: boolean;
+  readOnly?: boolean;
 };
 
-export function StamtabelManager({ title, description, records, onCreate, onUpdate, onDelete, loading }: Props) {
+export function StamtabelManager({ title, description, records, onCreate, onUpdate, onDelete, loading, readOnly }: Props) {
   const [newCode, setNewCode] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -56,28 +57,32 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
         <p className="text-caption mt-1">{description}</p>
       </div>
 
-      <form onSubmit={handleAdd} className="p-4 border-b border-border-subtle flex gap-2">
-        <input
-          type="text"
-          value={newCode}
-          onChange={(e) => setNewCode(e.target.value)}
-          placeholder="Code *"
-          className="input-field w-24"
-        />
-        <input
-          type="text"
-          value={newDesc}
-          onChange={(e) => setNewDesc(e.target.value)}
-          placeholder="Omschrijving *"
-          className="input-field flex-1"
-        />
-        <button type="submit" className="btn-primary">
-          <Plus className="w-4 h-4" />
-          Toevoegen
-        </button>
-      </form>
-      {showValidation && (!newCode.trim() || !newDesc.trim()) && (
-        <div className="px-4 pb-2 -mt-2 text-xs text-danger-600">Vul zowel een code als een omschrijving in.</div>
+      {!readOnly && (
+        <>
+          <form onSubmit={handleAdd} className="p-4 border-b border-border-subtle flex gap-2">
+            <input
+              type="text"
+              value={newCode}
+              onChange={(e) => setNewCode(e.target.value)}
+              placeholder="Code *"
+              className="input-field w-24"
+            />
+            <input
+              type="text"
+              value={newDesc}
+              onChange={(e) => setNewDesc(e.target.value)}
+              placeholder="Omschrijving *"
+              className="input-field flex-1"
+            />
+            <button type="submit" className="btn-primary">
+              <Plus className="w-4 h-4" />
+              Toevoegen
+            </button>
+          </form>
+          {showValidation && (!newCode.trim() || !newDesc.trim()) && (
+            <div className="px-4 pb-2 -mt-2 text-xs text-danger-600">Vul zowel een code als een omschrijving in.</div>
+          )}
+        </>
       )}
 
       <div className="divide-y divide-border-subtle">
@@ -116,14 +121,16 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
                   <span className="bg-surface-tertiary px-2 py-0.5 rounded text-xs font-mono">{r.code}</span>
                   <span className="text-sm text-text-primary">{r.description}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => startEdit(r)} className="btn-icon" aria-label="Bewerken">
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => setPendingDelete(r)} className="btn-icon-danger" aria-label="Verwijderen">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {!readOnly && (
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => startEdit(r)} className="btn-icon" aria-label="Bewerken">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => setPendingDelete(r)} className="btn-icon-danger" aria-label="Verwijderen">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>

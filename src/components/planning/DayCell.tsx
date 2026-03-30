@@ -22,6 +22,7 @@ type Props = {
   baseRosterHours?: number;
   leaveTypeMap?: Map<string, string>;
   density?: DensityLevel;
+  readOnly?: boolean;
   onUpdate: (driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) => void;
 };
 
@@ -29,13 +30,14 @@ const POPUP_WIDTH = 224; // w-56 = 14rem
 const POPUP_MAX_HEIGHT = 280;
 const VIEWPORT_PAD = 8;
 
-export const DayCell = memo(function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypeMap, density = "comfortable", onUpdate }: Props) {
+export const DayCell = memo(function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypeMap, density = "comfortable", readOnly, onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
   const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const focusTrapRef = useFocusTrap();
 
   function openSelector() {
+    if (readOnly) return;
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       let top = rect.bottom + 4;
@@ -84,9 +86,12 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
         onMouseDown={(e) => { e.stopPropagation(); }}
         onClick={openSelector}
         className={cn(
-          "w-full rounded-md flex items-center justify-center transition-all cursor-pointer",
+          "w-full rounded-md flex items-center justify-center transition-all",
           h,
-          entry ? "hover:brightness-95" : "bg-surface-secondary/50 hover:bg-surface-tertiary"
+          readOnly ? "cursor-default" : "cursor-pointer",
+          entry
+            ? (readOnly ? "" : "hover:brightness-95")
+            : (readOnly ? "bg-surface-secondary/50" : "bg-surface-secondary/50 hover:bg-surface-tertiary")
         )}
         title={title || undefined}
       >

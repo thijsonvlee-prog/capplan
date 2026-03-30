@@ -3,14 +3,15 @@
 ## Summary
 
 **What was improved this cycle:**
-- PB-079: Built a user management screen as a new "Gebruikers" tab in the settings page. Users are displayed with avatar, name, email, semantic role badges (Admin/Planner/Kijker), and member-since date. Clickable role badges trigger an inline dropdown with a confirmation dialog for role changes. Product-grade card layout with clear hierarchy.
+- PB-084: Built role-aware UI across the entire application. Created a `useUserRole()` hook that derives permission flags (`canWrite`, `canWriteSettings`) from the NextAuth session. Applied role-based hiding to all write action buttons: VIEWER users see no create/edit/delete controls on planning, drivers, or scenarios. Non-ADMIN users see no write controls on any settings tab and cannot access the "Gebruikers" tab. When auth is not configured, all actions remain visible (development mode). DayCell shows read-only styling (no hover, no cursor-pointer) for VIEWER users.
+- PB-085: Added horizontal scroll with hidden scrollbar to settings tab bar. Tabs remain usable on viewports down to ~768px without wrapping or clipping.
 
 **Current design alignment with DESIGN.md:**
-- User management screen: well-aligned. Card layout with avatar-based identity, semantic role badges with icons, clear hierarchy between user identity and metadata. Follows sections 2.1 (product-grade), 2.5 (composed screens), 7.3 (cards and modules). Role badges use functional color: brand for Admin, success for Planner, neutral for Viewer.
-- Settings page overall: well-aligned (sections 2.5, 7.1, 7.2). Tab bar now has 5 tabs — still fits on desktop but may need responsive consideration on narrow viewports.
+- Role-aware UI: well-aligned. Actions are hidden rather than disabled, reducing visual noise for VIEWER users. This follows the principle of "clarity through space, hierarchy, and surfaces" (section 2.3).
+- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Tab bar now scrolls on narrow viewports. Non-ADMIN users see a cleaner, read-only view without distracting form controls.
 - Login page: well-aligned. Split-panel composition with editorial typography.
 - Header session indicator: well-aligned.
-- Sidebar: well-aligned (section 7.8).
+- Sidebar: well-aligned (section 7.8) but missing user identity in the bottom section.
 - Capacity page: well-aligned.
 - Planning grid toolbar: well-aligned.
 - Import source manager: well-aligned.
@@ -21,20 +22,9 @@
 **Where design quality is still below target:**
 - The drivers table still reads as standard admin CRUD with alternating backgrounds, row borders, and table-first layout.
 - The planning grid matrix uses 1px row borders for structure. Pure tonal separation would be more aligned with DESIGN.md but risks reducing scanability in dense data.
-- Settings tab bar may overflow on narrow viewports now that there are 5 tabs.
+- The sidebar bottom section shows only "v2.0" — DESIGN.md section 7.8 calls for user identity there.
 
 ## Recommended Next Improvements
-
-### EX-REC-045: Settings tab bar responsive treatment
-
-- **Problem:** The settings page now has 5 tabs (Stamgegevens, Competenties, Roosters, Connectiviteit, Gebruikers). On narrow viewports, tab labels may overflow or wrap awkwardly. This was flagged as a risk when PB-079 was scoped.
-- **Proposed improvement:** Add horizontal scrolling to `.settings-tabs` with `overflow-x: auto` and scroll-snap, or shorten tab labels on small screens. Could also add a mobile-friendly dropdown or accordion pattern.
-- **Expected user value:** Settings remain usable on tablets and narrow browser windows.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** The 5th tab was just added. Better to address before a 6th tab is needed.
 
 ### EX-REC-044: Add user identity to sidebar bottom section
 
@@ -43,9 +33,9 @@
 - **Expected user value:** Stronger identity presence in the primary navigation surface. More product-grade feel.
 - **Priority:** P3 Medium
 - **Effort:** Small
-- **Dependencies:** PB-081 (completed).
+- **Dependencies:** PB-081 (completed), PB-084 (completed).
 - **Suggested owner:** Experience Agent
-- **Why now:** Auth session is now available. The sidebar bottom section is underutilized and DESIGN.md specifically calls for user identity in the sidebar.
+- **Why now:** Auth session is available, role-aware UI is complete. The sidebar bottom section is underutilized and DESIGN.md specifically calls for user identity in the sidebar.
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
 
@@ -93,11 +83,11 @@
 
 ## Risks / Watch-outs
 
-- **Settings tab count growth.** The settings page now has 5 tabs. If more configuration categories are added, the tab bar will need responsive treatment (EX-REC-045). Current tab bar is horizontal-only with no overflow handling.
-- **Role enforcement is active but UI not yet role-aware.** PB-082 (role enforcement) is complete. PB-084 (frontend role-aware UI) is next — until then, all action buttons are visible to all users.
+- **Role enforcement is complete end-to-end.** Server-side (PB-082) and UI-side (PB-084) are both active. Testing with actual VIEWER/PLANNER/ADMIN accounts will verify the full flow once auth is configured.
+- **Settings tab count growth.** The settings page has 5 tabs with horizontal scroll. If more tabs are added, the scroll treatment will handle overflow, but visual affordance (e.g., fade edges) may be needed to signal scrollability.
 - **NextAuth middleware route matching.** The middleware matches all dashboard routes. If new top-level routes are added, they must be added to the middleware matcher.
 - **External image domains.** `next.config.mjs` allows Google and Microsoft avatar domains. Additional OAuth providers need their image domains allowlisted.
-- **PlanningGrid.tsx complexity.** The file is ~685 lines. Any further changes must be verified carefully.
+- **PlanningGrid.tsx complexity.** The file is ~710 lines. Any further changes must be verified carefully.
 - **Drivers table column density.** Removing alternating backgrounds (EX-REC-036) only helps if the remaining visual treatment provides enough row distinction at high driver counts.
 
 ## Items Intentionally Not Recommended
@@ -109,13 +99,14 @@
 - **Settings tab URL persistence:** Low-frequency page. Low impact.
 - **Driver detail page / route-based navigation:** Current inline edit pattern works for the data volume.
 - **Capacity page full redesign:** The page is functional and visually consistent with grouped toolbar.
-- **Full sidebar redesign:** Already meets DESIGN.md section 7.8.
+- **Full sidebar redesign:** Already meets DESIGN.md section 7.8 (except user identity — covered in EX-REC-044).
 - **Recharts tooltip/axis custom styling:** Would improve premium feel but effort is disproportionate to impact.
 - **Planning grid No-Line Rule enforcement:** Should be explored in a dedicated planning grid visual pass.
 - **Separate sidebar entry for Connectiviteit:** Configuration belongs under Instellingen.
 - **Login page animation/transitions:** Clean and fast. Animations would add complexity without clear user value.
 - **User deletion from admin panel:** Users are created via OAuth. Deletion should be handled carefully (cascading sessions, preferences). Not needed for MVP.
 - **Last login tracking:** The User model doesn't have a lastLogin field. Would require updating the session callback or adding a new field. Low priority — member-since date is sufficient for now.
+- **Disable vs. hide for VIEWER buttons:** Hiding is cleaner — disabled buttons with no explanation create confusion. Server-side enforcement is the safety net.
 
 ## Recommendation Rules
 

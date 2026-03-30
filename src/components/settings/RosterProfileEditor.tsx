@@ -14,7 +14,7 @@ function emptyGrid(): RosterProfileEntry[] {
   return Array.from({ length: 28 }, (_, i) => ({ dayOffset: i, status: "ROSTER_FREE" as const }));
 }
 
-export function RosterProfileEditor() {
+export function RosterProfileEditor({ readOnly }: { readOnly?: boolean }) {
   const [profiles, loading] = useApiDataWithLoading(() => api.rosterProfiles.list(), [], []);
   const [editingProfile, setEditingProfile] = useState<RosterProfile | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -96,7 +96,7 @@ export function RosterProfileEditor() {
           <h3 className="text-section-title">Roosterprofielen</h3>
           <p className="text-caption mt-1">Een roosterprofiel van 4 weken kan cyclisch aan chauffeurs worden toegewezen.</p>
         </div>
-        {!showEditor && (
+        {!showEditor && !readOnly && (
           <button onClick={startNew} className="btn-primary">
             <Plus className="w-4 h-4" /> Nieuw profiel
           </button>
@@ -183,14 +183,16 @@ export function RosterProfileEditor() {
                 {p.entries.filter((e) => e.status === "AVAILABLE_EXTRA").length} aanvullend)
               </span>
             </div>
-            <div className="flex items-center gap-1">
-              <button onClick={() => startEdit(p)} className="btn-icon" aria-label="Bewerken">
-                <Pencil className="w-4 h-4" />
-              </button>
-              <button onClick={() => handleDelete(p.id, p.name)} className="btn-icon-danger" aria-label="Verwijderen">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="flex items-center gap-1">
+                <button onClick={() => startEdit(p)} className="btn-icon" aria-label="Bewerken">
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button onClick={() => handleDelete(p.id, p.name)} className="btn-icon-danger" aria-label="Verwijderen">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         ))}
         {!loading && profiles.length === 0 && !showEditor && (

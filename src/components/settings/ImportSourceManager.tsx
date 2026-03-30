@@ -80,7 +80,7 @@ function formatDateTime(iso: string): string {
   });
 }
 
-export function ImportSourceManager() {
+export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
   const [sources, loading] = useApiDataWithLoading(() => api.importSources.list(), [], []);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -289,10 +289,12 @@ export function ImportSourceManager() {
             <h3 className="text-section-title">Importbronnen</h3>
             <p className="text-caption mt-1">CSV-bronnen met veldkoppelingen voor het importeren van gegevens.</p>
           </div>
-          <button onClick={openCreateForm} className="btn-primary" disabled={showForm}>
-            <Plus className="w-4 h-4" />
-            Nieuwe bron
-          </button>
+          {!readOnly && (
+            <button onClick={openCreateForm} className="btn-primary" disabled={showForm}>
+              <Plus className="w-4 h-4" />
+              Nieuwe bron
+            </button>
+          )}
         </div>
 
         {loading && (
@@ -350,15 +352,19 @@ export function ImportSourceManager() {
                       <button onClick={() => toggleLogs(source.id)} className="btn-icon" aria-label="Importgeschiedenis">
                         <Clock className="w-4 h-4" />
                       </button>
-                      <button onClick={() => openUpload(source.id)} className="btn-icon" aria-label="CSV uploaden">
-                        <Upload className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => openEditForm(source)} className="btn-icon" aria-label="Bewerken">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => setPendingDelete(source)} className="btn-icon-danger" aria-label="Verwijderen">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {!readOnly && (
+                        <>
+                          <button onClick={() => openUpload(source.id)} className="btn-icon" aria-label="CSV uploaden">
+                            <Upload className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => openEditForm(source)} className="btn-icon" aria-label="Bewerken">
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => setPendingDelete(source)} className="btn-icon-danger" aria-label="Verwijderen">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -431,7 +437,7 @@ export function ImportSourceManager() {
       </div>
 
       {/* Create/Edit form */}
-      {showForm && (
+      {showForm && !readOnly && (
         <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle">
           <div className="p-4 border-b border-border-subtle">
             <h3 className="text-section-title">
@@ -568,7 +574,7 @@ export function ImportSourceManager() {
       )}
 
       {/* Upload panel */}
-      {uploadSourceId && (
+      {uploadSourceId && !readOnly && (
         <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle">
           <div className="p-4 border-b border-border-subtle flex items-center justify-between">
             <h3 className="text-section-title">CSV uploaden en importeren</h3>

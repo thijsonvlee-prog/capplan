@@ -7,8 +7,10 @@ import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export function ScenarioSelector() {
+  const { canWrite } = useUserRole();
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
@@ -75,31 +77,35 @@ export function ScenarioSelector() {
         </span>
       )}
 
-      <button
-        onClick={() => setShowCreate(true)}
-        className="btn-icon p-1.5"
-        title="Nieuw scenario"
-        aria-label="Nieuw scenario"
-      >
-        <Plus className="w-4 h-4" />
-      </button>
-      <button
-        onClick={handleDuplicate}
-        className="btn-icon p-1.5"
-        title="Dupliceer scenario"
-        aria-label="Dupliceer scenario"
-      >
-        <Copy className="w-4 h-4" />
-      </button>
-      {activeId !== "default" && (
-        <button
-          onClick={handleDelete}
-          className="btn-icon-danger p-1.5"
-          title="Verwijder scenario"
-          aria-label="Verwijder scenario"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+      {canWrite && (
+        <>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="btn-icon p-1.5"
+            title="Nieuw scenario"
+            aria-label="Nieuw scenario"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleDuplicate}
+            className="btn-icon p-1.5"
+            title="Dupliceer scenario"
+            aria-label="Dupliceer scenario"
+          >
+            <Copy className="w-4 h-4" />
+          </button>
+          {activeId !== "default" && (
+            <button
+              onClick={handleDelete}
+              className="btn-icon-danger p-1.5"
+              title="Verwijder scenario"
+              aria-label="Verwijder scenario"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </>
       )}
 
       {showCreate && (

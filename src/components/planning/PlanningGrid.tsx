@@ -23,6 +23,7 @@ import {
   getMondayStart,
   cn,
 } from "@/lib/utils";
+import { useUserRole } from "@/hooks/useUserRole";
 import { getAggregatedColumns } from "@/lib/aggregation";
 import type { ColumnHeader } from "@/lib/aggregation";
 
@@ -57,6 +58,7 @@ const DENSITY_ICONS: Record<DensityLevel, typeof Maximize2> = {
 };
 
 export function PlanningGrid() {
+  const { canWrite } = useUserRole();
   // Start date for the visible range (snapped to Monday)
   const [startDate, setStartDate] = useState(getMondayStart);
   const [dayCount] = useState(DEFAULT_PERIOD_DAYS);
@@ -454,6 +456,7 @@ export function PlanningGrid() {
                   extraColWidth={extraColWidth}
                   resolveColumnValue={resolveColumnValue}
                   dragState={dragState}
+                  canWrite={canWrite}
                   onUpdate={handleUpdate}
                   onAssignRoster={(id, name) => setAssigningDriver({ id, name })}
                   onDragStart={handleDragStart}
@@ -537,6 +540,7 @@ function GroupRows({
   driverColWidth,
   extraColWidth,
   resolveColumnValue,
+  canWrite,
   dragState,
   onUpdate,
   onAssignRoster,
@@ -553,6 +557,7 @@ function GroupRows({
   driverColWidth: number;
   extraColWidth: number;
   resolveColumnValue: (driver: DriverWithEntries, col: DriverColumnKey) => string;
+  canWrite: boolean;
   dragState: { driverId: string; dates: string[]; active: boolean } | null;
   onUpdate: (driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) => void;
   onAssignRoster: (driverId: string, driverName: string) => void;
@@ -602,14 +607,16 @@ function GroupRows({
                   );
                 })()}
               </div>
-              <button
-                onClick={() => onAssignRoster(driver.id, `${driver.lastName}, ${driver.firstName}`)}
-                className="btn-icon shrink-0"
-                title="Roosterprofiel toewijzen"
-                aria-label="Roosterprofiel toewijzen"
-              >
-                <CalendarCog className="w-3.5 h-3.5" />
-              </button>
+              {canWrite && (
+                <button
+                  onClick={() => onAssignRoster(driver.id, `${driver.lastName}, ${driver.firstName}`)}
+                  className="btn-icon shrink-0"
+                  title="Roosterprofiel toewijzen"
+                  aria-label="Roosterprofiel toewijzen"
+                >
+                  <CalendarCog className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </td>
           {extraColumns.map((colKey, i) => {
@@ -643,8 +650,8 @@ function GroupRows({
                       dc.cellPad,
                       isSelected && "ring-2 ring-inset ring-brand-400"
                     )}
-                    onMouseDown={(e) => { e.preventDefault(); onDragStart(driver.id, date); }}
-                    onMouseEnter={() => onDragEnter(driver.id, date)}
+                    onMouseDown={canWrite ? (e) => { e.preventDefault(); onDragStart(driver.id, date); } : undefined}
+                    onMouseEnter={canWrite ? () => onDragEnter(driver.id, date) : undefined}
                   >
                     {!isDragging ? (
                       <DayCell
@@ -653,6 +660,7 @@ function GroupRows({
                         date={date}
                         compact={isCompact}
                         leaveTypeMap={leaveTypeMap}
+                        readOnly={!canWrite}
                         onUpdate={onUpdate}
                         density={density}
                       />

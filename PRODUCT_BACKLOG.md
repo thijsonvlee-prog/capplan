@@ -27,21 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-084: Frontend role-aware UI — hide/disable actions based on user role
-
-- **ID:** PB-084
-- **Title:** Frontend role-aware UI
-- **Problem / opportunity:** Role enforcement is active server-side (PB-082), but the UI shows all action buttons to all users. VIEWER users see create/edit/delete buttons but get 403 errors when clicking. This is confusing and unprofessional.
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Completes the user experience for the auth track. Without this, the role system feels broken from the user's perspective. Auth is confirmed needed (ESC-006).
-- **Scope notes:** Create a `useUserRole()` hook (or extend session access) to expose the current user's role. Conditionally hide or disable write action buttons for VIEWER users. Hide settings/user management for non-ADMIN users. Server enforcement remains the source of truth — this is purely UX.
-- **Dependencies:** PB-082 (completed).
-- **Definition of done:** VIEWER users do not see create/edit/delete buttons on planning, drivers, and scenarios pages. Non-ADMIN users do not see settings write controls or user management. When auth is not configured, all actions remain visible (development mode).
-- **Implementation note:** Check how `useSession()` exposes the role (it was added to the session callback in PB-080). The role is available at `session.user.role`.
-- **Source:** DE-REC-045.
-
 ### PB-088: Auth environment setup documentation
 
 - **ID:** PB-088
@@ -56,21 +41,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** A clear document exists that guides the Scrum Master through setting up auth in Vercel. Covers all required env vars and at least one provider setup flow.
 - **Implementation note:** Do not create a separate documentation page in the app. This is a project-level document for the deployment administrator.
 - **Source:** ESC-006 (Option B chosen).
-
-### PB-085: Settings tab bar responsive treatment
-
-- **ID:** PB-085
-- **Title:** Settings tab bar responsive treatment
-- **Problem / opportunity:** The settings page now has 5 tabs (Stamgegevens, Competenties, Roosters, Connectiviteit, Gebruikers). On narrow viewports, tab labels may overflow or wrap awkwardly.
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** The 5th tab was just added (PB-079). Better to address now before a 6th is needed.
-- **Scope notes:** Add horizontal scroll with `overflow-x: auto` to `.settings-tabs`, or use scroll-snap. Keep it simple — no need for a dropdown or accordion unless the scroll approach is insufficient.
-- **Dependencies:** None.
-- **Definition of done:** Settings tabs remain usable on viewports down to ~768px without text wrapping or overflow clipping.
-- **Implementation note:** Small CSS-only change in `globals.css`.
-- **Source:** EX-REC-045.
 
 ### PB-086: Protect request.json() calls against malformed JSON
 
@@ -102,6 +72,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-084: Frontend role-aware UI
+- **Completed:** 2026-03-30
+- **Owner:** Experience Agent
+- **Summary:** Created `useUserRole()` hook exposing role-based permissions. VIEWER users no longer see create/edit/delete buttons on planning, drivers, or scenarios. Non-ADMIN users cannot see settings write controls or the "Gebruikers" tab. All actions remain visible when auth is not configured (development mode).
+
+### PB-085: Settings tab bar responsive treatment
+- **Completed:** 2026-03-30
+- **Owner:** Experience Agent
+- **Summary:** Added horizontal scroll with hidden scrollbar to `.settings-tabs` for narrow viewports. Tabs no longer wrap or clip on screens down to 768px.
 
 ### PB-087: Fix server error — conditional auth middleware
 - **Completed:** 2026-03-30

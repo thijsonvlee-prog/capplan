@@ -9,10 +9,12 @@ import { api } from "@/lib/api";
 import { getComputedFields, buildLookupMaps } from "@/lib/api-helpers";
 import { showToast } from "@/components/ui/Toast";
 import { useHeaderSubtitle } from "@/hooks/useHeaderSubtitle";
+import { useUserRole } from "@/hooks/useUserRole";
 
 type ViewMode = "list" | "create" | "edit";
 
 export function DriverList() {
+  const { canWrite } = useUserRole();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [search, setSearch] = useState("");
@@ -74,7 +76,7 @@ export function DriverList() {
               Beheer chauffeurgegevens, dienstverbanden, functies en roostertoewijzingen.
             </p>
           </div>
-          {!isFormOpen && (
+          {!isFormOpen && canWrite && (
             <button
               onClick={() => { setViewMode("create"); setEditingDriver(null); }}
               className="btn-primary"
@@ -202,14 +204,16 @@ export function DriverList() {
                       ) : <span className="text-text-tertiary">-</span>}
                     </td>
                     <td className="p-3">
-                      <button
-                        onClick={() => startEdit(d)}
-                        className="btn-icon"
-                        title="Bewerken"
-                        aria-label={`${d.lastName}, ${d.firstName} bewerken`}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
+                      {canWrite && (
+                        <button
+                          onClick={() => startEdit(d)}
+                          className="btn-icon"
+                          title="Bewerken"
+                          aria-label={`${d.lastName}, ${d.firstName} bewerken`}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );

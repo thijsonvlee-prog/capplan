@@ -9,6 +9,7 @@ import { UserManager } from "@/components/settings/UserManager";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
+import { useUserRole } from "@/hooks/useUserRole";
 
 type TabKey = "stamgegevens" | "competenties" | "roosters" | "connectiviteit" | "gebruikers";
 
@@ -44,6 +45,7 @@ const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
 };
 
 export default function SettingsPage() {
+  const { canWriteSettings } = useUserRole();
   const [activeTab, setActiveTab] = useState<TabKey>("stamgegevens");
 
   const [employers, employersLoading] = useApiDataWithLoading(() => api.settings.getEmployers(), [], []);
@@ -81,7 +83,7 @@ export default function SettingsPage() {
       </div>
 
       <nav className="settings-tabs" role="tablist" aria-label="Instellingencategorieën">
-        {TABS.map((tab) => (
+        {TABS.filter((tab) => tab.key !== "gebruikers" || canWriteSettings).map((tab) => (
           <button
             key={tab.key}
             role="tab"
@@ -110,6 +112,7 @@ export default function SettingsPage() {
             description="Beschikbaar in het chauffeurscherm bij het toevoegen van dienstverbanden."
             records={employers}
             loading={employersLoading}
+            readOnly={!canWriteSettings}
             onCreate={(code, desc) => toastMutate(() => api.settings.createEmployer(code, desc), "Werkgever toegevoegd")}
             onUpdate={(id, code, desc) => toastMutate(() => api.settings.updateEmployer(id, code, desc), "Werkgever bijgewerkt")}
             onDelete={(id) => toastMutate(() => api.settings.deleteEmployer(id), "Werkgever verwijderd")}
@@ -119,6 +122,7 @@ export default function SettingsPage() {
             description="Beschikbaar in het chauffeurscherm bij het toevoegen van dienstverbanden."
             records={departments}
             loading={departmentsLoading}
+            readOnly={!canWriteSettings}
             onCreate={(code, desc) => toastMutate(() => api.settings.createDepartment(code, desc), "Afdeling toegevoegd")}
             onUpdate={(id, code, desc) => toastMutate(() => api.settings.updateDepartment(id, code, desc), "Afdeling bijgewerkt")}
             onDelete={(id) => toastMutate(() => api.settings.deleteDepartment(id), "Afdeling verwijderd")}
@@ -128,6 +132,7 @@ export default function SettingsPage() {
             description="Beschikbaar in het chauffeurscherm bij het toevoegen van dienstverbanden."
             records={locations}
             loading={locationsLoading}
+            readOnly={!canWriteSettings}
             onCreate={(code, desc) => toastMutate(() => api.settings.createLocation(code, desc), "Standplaats toegevoegd")}
             onUpdate={(id, code, desc) => toastMutate(() => api.settings.updateLocation(id, code, desc), "Standplaats bijgewerkt")}
             onDelete={(id) => toastMutate(() => api.settings.deleteLocation(id), "Standplaats verwijderd")}
@@ -137,6 +142,7 @@ export default function SettingsPage() {
             description="Beschikbaar bij de categorie Verlof in het planningsscherm."
             records={leaveTypes}
             loading={leaveTypesLoading}
+            readOnly={!canWriteSettings}
             onCreate={(code, desc) => toastMutate(() => api.settings.createLeaveType(code, desc), "Verloftype toegevoegd")}
             onUpdate={(id, code, desc) => toastMutate(() => api.settings.updateLeaveType(id, code, desc), "Verloftype bijgewerkt")}
             onDelete={(id) => toastMutate(() => api.settings.deleteLeaveType(id), "Verloftype verwijderd")}
@@ -144,13 +150,13 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab === "competenties" && <SkillManager />}
+      {activeTab === "competenties" && <SkillManager readOnly={!canWriteSettings} />}
 
-      {activeTab === "roosters" && <RosterProfileEditor />}
+      {activeTab === "roosters" && <RosterProfileEditor readOnly={!canWriteSettings} />}
 
-      {activeTab === "connectiviteit" && <ImportSourceManager />}
+      {activeTab === "connectiviteit" && <ImportSourceManager readOnly={!canWriteSettings} />}
 
-      {activeTab === "gebruikers" && <UserManager />}
+      {activeTab === "gebruikers" && canWriteSettings && <UserManager />}
     </div>
   );
 }
