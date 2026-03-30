@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Pencil, Search, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Pencil, Search, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { DriverForm } from "./DriverForm";
 import type { Driver } from "@/domain/types";
-import { useApiData, mutate } from "@/hooks/useApi";
+import { useApiData, useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { getComputedFields, buildLookupMaps } from "@/lib/api-helpers";
 import { showToast } from "@/components/ui/Toast";
@@ -13,22 +13,52 @@ import { useUserRole } from "@/hooks/useUserRole";
 
 type ViewMode = "list" | "create" | "edit";
 
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+const DEFAULT_PAGINATED = { data: [] as Driver[], total: 0, page: 1, pageSize: 50 };
+
+function useDebounce(value: string, delay: number): string {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
 export function DriverList() {
   const { canWrite } = useUserRole();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(50);
 
-  const drivers = useApiData(() => api.drivers.list({ search: search || undefined }), [search], []);
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Paginated driver fetch with auto-invalidation
+  const [driversResult, driversLoading] = useApiDataWithLoading(
+    () => api.drivers.listPaginated({
+      search: debouncedSearch || undefined,
+      page,
+      pageSize,
+    }),
+    [debouncedSearch, page, pageSize],
+    DEFAULT_PAGINATED
+  );
+
+  const drivers = driversResult.data;
+  const total = driversResult.total;
+
   const skills = useApiData(() => api.settings.getSkills(), [], []);
   const employers = useApiData(() => api.settings.getEmployers(), [], []);
   const departments = useApiData(() => api.settings.getDepartments(), [], []);
   const locations = useApiData(() => api.settings.getLocations(), [], []);
   const rosterProfiles = useApiData(() => api.rosterProfiles.list(), [], []);
 
-  useHeaderSubtitle(drivers.length > 0 ? `${drivers.length} chauffeurs` : "");
+  useHeaderSubtitle(total > 0 ? `${total} chauffeurs` : "");
 
   const skillMap = new Map(skills.map((s) => [s.id, s.name]));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   function handleCreate(data: Omit<Driver, "id" | "isActive" | "createdAt" | "updatedAt">) {
     mutate(() => api.drivers.create(data))
@@ -68,8 +98,8 @@ export function DriverList() {
           <div>
             <div className="page-header-context">
               <h1 className="text-page-title">Chauffeurs</h1>
-              {drivers.length > 0 && (
-                <span className="count-badge">{drivers.length}</span>
+              {total > 0 && (
+                <span className="count-badge">{total}</span>
               )}
             </div>
             <p className="text-text-secondary text-sm mt-1">
@@ -134,9 +164,18 @@ export function DriverList() {
               type="text"
               placeholder="Zoek op naam of personeelsnummer..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="input-field w-full pl-9"
             />
+            {search && (
+              <button
+                onClick={() => { setSearch(""); setPage(1); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary"
+                aria-label="Zoekopdracht wissen"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -159,76 +198,154 @@ export function DriverList() {
               </tr>
             </thead>
             <tbody>
-              {drivers.map((d, idx) => {
-                const computed = getComputedFields(d, lookups, lookupMaps);
-                return (
-                  <tr
-                    key={d.id}
-                    className={`border-b border-border-subtle hover:bg-surface-secondary transition-colors ${
-                      idx % 2 === 1 ? "bg-surface-secondary/50" : ""
-                    }`}
-                  >
-                    <td className="p-3 text-sm">
-                      <div className="font-medium text-text-primary">{d.lastName}, {d.firstName}</div>
-                      {d.employeeNumber && <div className="text-text-tertiary text-xs mt-0.5">{d.employeeNumber}</div>}
-                    </td>
-                    <td className="p-3 text-sm text-text-secondary">{computed.currentManager || <span className="text-text-tertiary">-</span>}</td>
-                    <td className="p-3 text-sm">
-                      {computed.currentEmploymentType ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-surface-tertiary text-text-secondary">
-                          {computed.currentEmploymentType}
-                        </span>
-                      ) : <span className="text-text-tertiary">-</span>}
-                    </td>
-                    <td className="p-3 text-sm text-text-secondary">{computed.currentEmployer || <span className="text-text-tertiary">-</span>}</td>
-                    <td className="p-3 text-sm text-text-secondary">{computed.currentDepartment || <span className="text-text-tertiary">-</span>}</td>
-                    <td className="p-3 text-sm text-text-secondary">{computed.currentLocation || <span className="text-text-tertiary">-</span>}</td>
-                    <td className="p-3 text-sm">
-                      {d.licenseTypes?.length ? (
-                        <div className="flex gap-1 flex-wrap">
-                          {d.licenseTypes.map((lt) => (
-                            <span key={lt} className="bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded-md text-xs font-medium">{lt}</span>
-                          ))}
-                        </div>
-                      ) : <span className="text-text-tertiary">-</span>}
-                    </td>
-                    <td className="p-3 text-sm">
-                      {d.skillIds?.length ? (
-                        <div className="flex gap-1 flex-wrap">
-                          {d.skillIds.map((sid) => (
-                            <span key={sid} className="bg-success-50 text-success-700 px-1.5 py-0.5 rounded-md text-xs font-medium">
-                              {skillMap.get(sid) || sid}
-                            </span>
-                          ))}
-                        </div>
-                      ) : <span className="text-text-tertiary">-</span>}
-                    </td>
-                    <td className="p-3">
-                      {canWrite && (
-                        <button
-                          onClick={() => startEdit(d)}
-                          className="btn-icon"
-                          title="Bewerken"
-                          aria-label={`${d.lastName}, ${d.firstName} bewerken`}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-              {drivers.length === 0 && (
+              {driversLoading && drivers.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-12 text-text-tertiary text-sm">
-                    {search
-                      ? `Geen chauffeurs gevonden voor "${search}"`
-                      : "Nog geen chauffeurs. Klik op \"Chauffeur toevoegen\" om te beginnen."}
+                  <td colSpan={9} className="text-center py-12 text-text-tertiary">
+                    <div className="spinner mb-2 mx-auto" />
+                    <div className="text-sm">Chauffeurs laden...</div>
                   </td>
                 </tr>
+              ) : (
+                <>
+                  {drivers.map((d, idx) => {
+                    const computed = getComputedFields(d, lookups, lookupMaps);
+                    return (
+                      <tr
+                        key={d.id}
+                        className={`border-b border-border-subtle hover:bg-surface-secondary transition-colors ${
+                          idx % 2 === 1 ? "bg-surface-secondary/50" : ""
+                        }`}
+                      >
+                        <td className="p-3 text-sm">
+                          <div className="font-medium text-text-primary">{d.lastName}, {d.firstName}</div>
+                          {d.employeeNumber && <div className="text-text-tertiary text-xs mt-0.5">{d.employeeNumber}</div>}
+                        </td>
+                        <td className="p-3 text-sm text-text-secondary">{computed.currentManager || <span className="text-text-tertiary">-</span>}</td>
+                        <td className="p-3 text-sm">
+                          {computed.currentEmploymentType ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-surface-tertiary text-text-secondary">
+                              {computed.currentEmploymentType}
+                            </span>
+                          ) : <span className="text-text-tertiary">-</span>}
+                        </td>
+                        <td className="p-3 text-sm text-text-secondary">{computed.currentEmployer || <span className="text-text-tertiary">-</span>}</td>
+                        <td className="p-3 text-sm text-text-secondary">{computed.currentDepartment || <span className="text-text-tertiary">-</span>}</td>
+                        <td className="p-3 text-sm text-text-secondary">{computed.currentLocation || <span className="text-text-tertiary">-</span>}</td>
+                        <td className="p-3 text-sm">
+                          {d.licenseTypes?.length ? (
+                            <div className="flex gap-1 flex-wrap">
+                              {d.licenseTypes.map((lt) => (
+                                <span key={lt} className="bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded-md text-xs font-medium">{lt}</span>
+                              ))}
+                            </div>
+                          ) : <span className="text-text-tertiary">-</span>}
+                        </td>
+                        <td className="p-3 text-sm">
+                          {d.skillIds?.length ? (
+                            <div className="flex gap-1 flex-wrap">
+                              {d.skillIds.map((sid) => (
+                                <span key={sid} className="bg-success-50 text-success-700 px-1.5 py-0.5 rounded-md text-xs font-medium">
+                                  {skillMap.get(sid) || sid}
+                                </span>
+                              ))}
+                            </div>
+                          ) : <span className="text-text-tertiary">-</span>}
+                        </td>
+                        <td className="p-3">
+                          {canWrite && (
+                            <button
+                              onClick={() => startEdit(d)}
+                              className="btn-icon"
+                              title="Bewerken"
+                              aria-label={`${d.lastName}, ${d.firstName} bewerken`}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {drivers.length === 0 && !driversLoading && (
+                    <tr>
+                      <td colSpan={9} className="text-center py-12 text-text-tertiary text-sm">
+                        {search
+                          ? `Geen chauffeurs gevonden voor "${search}"`
+                          : "Nog geen chauffeurs. Klik op \"Chauffeur toevoegen\" om te beginnen."}
+                      </td>
+                    </tr>
+                  )}
+                </>
               )}
             </tbody>
           </table>
+
+          {/* Pagination controls */}
+          {total > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border-subtle bg-surface-secondary/50">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-text-secondary">
+                  {Math.min((page - 1) * pageSize + 1, total)}–{Math.min(page * pageSize, total)} van {total}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <label className="text-caption whitespace-nowrap">Per pagina:</label>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setPage(1);
+                    }}
+                    className="input-field text-xs py-1 px-2"
+                  >
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(1)}
+                  disabled={page <= 1}
+                  className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Eerste pagina"
+                  aria-label="Eerste pagina"
+                >
+                  <ChevronsLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Vorige pagina"
+                  aria-label="Vorige pagina"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-sm text-text-secondary px-2 min-w-[4rem] text-center">
+                  {page} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Volgende pagina"
+                  aria-label="Volgende pagina"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setPage(totalPages)}
+                  disabled={page >= totalPages}
+                  className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Laatste pagina"
+                  aria-label="Laatste pagina"
+                >
+                  <ChevronsRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField } from "@/domain/enums";
-import type { DriverWithEntries, PlanningEntry, StamtabelRecord } from "@/domain/types";
+import type { DriverWithEntries, PlanningEntry } from "@/domain/types";
 import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, STATUS_DOT_COLORS, GROUP_BY_LABELS, EMPLOYMENT_TYPE_LABELS, DEFAULT_PERIOD_DAYS } from "@/domain/constants";
 import { useApiData } from "@/hooks/useApi";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -56,6 +56,20 @@ const DENSITY_ICONS: Record<DensityLevel, typeof Maximize2> = {
   comfortable: AlignJustify,
   compact: Minus,
 };
+
+// Fixed row heights (px) for virtual scrolling per density level
+const ROW_HEIGHT: Record<DensityLevel, number> = {
+  spacious: 48,
+  comfortable: 38,
+  compact: 26,
+};
+
+const VIRTUAL_BUFFER = 10;
+
+// Flat item types for virtualized rendering
+type FlatItem =
+  | { type: "group"; label: string; count: number }
+  | { type: "driver"; driver: DriverWithEntries; driverIdx: number };
 
 export function PlanningGrid() {
   const { canWrite } = useUserRole();
@@ -136,6 +150,20 @@ export function PlanningGrid() {
       case "skills": return driver.skillIds?.map((id) => skillMap.get(id) || id).join(", ") || "";
     }
   }, [skillMap, employerMap, departmentMap, locationMap]);
+
+  // Entry maps for all drivers (used by virtualized rendering)
+  const entryMaps = useMemo(() => {
+    const map = new Map<string, Map<string, PlanningEntry>>();
+    if (!localData?.drivers) return map;
+    for (const driver of localData.drivers) {
+      const dateMap = new Map<string, PlanningEntry>();
+      for (const entry of driver.planningEntries) {
+        dateMap.set(entry.date, entry);
+      }
+      map.set(driver.id, dateMap);
+    }
+    return map;
+  }, [localData]);
 
   // Shared helper for optimistic entry updates (used by single + bulk)
   function applyOptimisticEntries(
@@ -272,6 +300,51 @@ export function PlanningGrid() {
   const groups = groupDrivers(sortedDrivers, groupBy, { employers, departments, locations });
   const dc = DENSITY_CONFIG[density];
 
+  // Flatten groups into a single item array for virtual scrolling
+  const flatItems = useMemo<FlatItem[]>(() => {
+    const items: FlatItem[] = [];
+    for (const group of groups) {
+      if (group.label) {
+        items.push({ type: "group", label: group.label, count: group.drivers.length });
+      }
+      group.drivers.forEach((driver, idx) => {
+        items.push({ type: "driver", driver, driverIdx: idx });
+      });
+    }
+    return items;
+  }, [groups]);
+
+  // Virtual scroll tracking
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(800);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const onScroll = () => setScrollTop(container.scrollTop);
+    container.addEventListener("scroll", onScroll, { passive: true });
+
+    const ro = new ResizeObserver(([entry]) => {
+      setViewportHeight(entry.contentRect.height);
+    });
+    ro.observe(container);
+
+    return () => {
+      container.removeEventListener("scroll", onScroll);
+      ro.disconnect();
+    };
+  }, []);
+
+  // Compute visible row range
+  const rowH = ROW_HEIGHT[density];
+  const visibleStart = Math.max(0, Math.floor(scrollTop / rowH) - VIRTUAL_BUFFER);
+  const visibleEnd = Math.min(flatItems.length, Math.ceil((scrollTop + viewportHeight) / rowH) + VIRTUAL_BUFFER);
+  const topSpacer = visibleStart * rowH;
+  const bottomSpacer = Math.max(0, (flatItems.length - visibleEnd) * rowH);
+  const totalColSpan = columnHeaders.length + 1 + extraColumns.length;
+
   // Calculate sticky left offset
   const driverColWidth = 180;
   const extraColWidth = 120;
@@ -396,7 +469,7 @@ export function PlanningGrid() {
           <div className="text-sm">Planning laden...</div>
         </div>
       ) : (
-        <div className="overflow-auto bg-surface-primary rounded-lg shadow-card border border-border-subtle flex-1 min-h-0">
+        <div ref={scrollContainerRef} className="overflow-auto bg-surface-primary rounded-lg shadow-card border border-border-subtle flex-1 min-h-0">
           <table className="planning-grid" style={{ minWidth: `${driverColWidth + extraColumns.length * extraColWidth + columnHeaders.length * dc.minW}px` }}>
             <thead className="sticky top-0 z-20">
               <tr className="bg-surface-tertiary">
@@ -442,35 +515,168 @@ export function PlanningGrid() {
               </tr>
             </thead>
             <tbody>
-              {groups.map((group) => (
-                <GroupRows
-                  key={group.label || "__all"}
-                  group={group}
-                  columnHeaders={columnHeaders}
-                  extraColumns={extraColumns}
-                  aggregation={aggregation}
-                  density={density}
-                  leaveTypeMap={leaveTypeMap}
-                  employers={employers}
-                  driverColWidth={driverColWidth}
-                  extraColWidth={extraColWidth}
-                  resolveColumnValue={resolveColumnValue}
-                  dragState={dragState}
-                  canWrite={canWrite}
-                  onUpdate={handleUpdate}
-                  onAssignRoster={(id, name) => setAssigningDriver({ id, name })}
-                  onDragStart={handleDragStart}
-                  onDragEnter={handleDragEnter}
-                />
-              ))}
+              {/* Virtual scroll: top spacer */}
+              {topSpacer > 0 && (
+                <tr aria-hidden="true">
+                  <td colSpan={totalColSpan} style={{ height: topSpacer, padding: 0, border: "none", lineHeight: 0 }} />
+                </tr>
+              )}
+              {/* Virtual scroll: visible rows */}
+              {flatItems.slice(visibleStart, visibleEnd).map((item) => {
+                if (item.type === "group") {
+                  return (
+                    <tr key={`g-${item.label}`} className="grid-group-row" style={{ height: rowH }}>
+                      <td colSpan={totalColSpan} className={`${dc.cellPad} ${dc.fontSize} font-semibold text-text-secondary sticky left-0 bg-surface-inset`}>
+                        {item.label} ({item.count})
+                      </td>
+                    </tr>
+                  );
+                }
+                const { driver, driverIdx } = item;
+                const isDayLevel = aggregation === "day";
+                const isCompact = density === "compact";
+                const driverEntryMap = entryMaps.get(driver.id);
+                return (
+                  <tr key={driver.id} className={cn("hover:bg-surface-secondary/50", driverIdx % 2 === 1 && "bg-surface-secondary/30")} style={{ height: rowH }}>
+                    <td className={cn(
+                        dc.cellPad,
+                        "sticky left-0 z-10",
+                        driverIdx % 2 === 1 ? "bg-surface-secondary/30" : "bg-surface-primary",
+                        extraColumns.length === 0 && "grid-sticky-edge"
+                      )} style={{ minWidth: driverColWidth }}>
+                      <div className="flex items-center justify-between gap-1">
+                        <div className="min-w-0">
+                          {(() => {
+                            const pos = getActiveRecord(driver.functionRecords);
+                            const emp = getActiveRecord(driver.employmentRecords);
+                            const meta = driver.employeeNumber || (emp?.employmentType === "CHARTER" ? "Charter" : "");
+                            return (
+                              <>
+                                <div className={cn("font-semibold text-text-primary whitespace-nowrap truncate", density === "spacious" ? "text-sm" : "text-xs")}>
+                                  {driver.lastName}{driver.firstName ? `, ${driver.firstName}` : ""}
+                                  {pos?.manager && <span className="ml-1 font-normal text-text-tertiary" title={`Leidinggevende: ${pos.manager}`}>(LG)</span>}
+                                </div>
+                                {density !== "compact" && meta && (
+                                  <div className="text-caption truncate">
+                                    {meta}
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                        {canWrite && (
+                          <button
+                            onClick={() => setAssigningDriver({ id: driver.id, name: `${driver.lastName}, ${driver.firstName}` })}
+                            className="btn-icon shrink-0"
+                            title="Roosterprofiel toewijzen"
+                            aria-label="Roosterprofiel toewijzen"
+                          >
+                            <CalendarCog className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                    {extraColumns.map((colKey, i) => {
+                      const isLast = i === extraColumns.length - 1;
+                      return (
+                        <td
+                          key={colKey}
+                          className={cn(
+                            dc.cellPad, dc.fontSize,
+                            "text-text-secondary sticky z-10 whitespace-nowrap",
+                            driverIdx % 2 === 1 ? "bg-surface-secondary/30" : "bg-surface-primary",
+                            isLast && "grid-sticky-edge"
+                          )}
+                          style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth, maxWidth: extraColWidth }}
+                        >
+                          <div className="truncate">{resolveColumnValue(driver, colKey) || "-"}</div>
+                        </td>
+                      );
+                    })}
+                    {isDayLevel
+                      ? columnHeaders.map((col) => {
+                          const date = col.dates[0];
+                          const entry = driverEntryMap?.get(date);
+                          const isDragging = dragState?.active && dragState.driverId === driver.id;
+                          const isSelected = dragState?.driverId === driver.id && dragState.dates.includes(date);
+                          return (
+                            <td
+                              key={col.key}
+                              className={cn(
+                                "relative",
+                                dc.cellPad,
+                                isSelected && "ring-2 ring-inset ring-brand-400"
+                              )}
+                              onMouseDown={canWrite ? (e) => { e.preventDefault(); handleDragStart(driver.id, date); } : undefined}
+                              onMouseEnter={canWrite ? () => handleDragEnter(driver.id, date) : undefined}
+                            >
+                              {!isDragging ? (
+                                <DayCell
+                                  entry={entry}
+                                  driverId={driver.id}
+                                  date={date}
+                                  compact={isCompact}
+                                  leaveTypeMap={leaveTypeMap}
+                                  readOnly={!canWrite}
+                                  onUpdate={handleUpdate}
+                                  density={density}
+                                />
+                              ) : (
+                                <div className={`w-full ${dc.cellH} flex items-center justify-center`}>
+                                  {entry ? (
+                                    <StatusBadge status={entry.status} compact sickPercentage={entry.sickPercentage} />
+                                  ) : (
+                                    <span className="text-text-tertiary/50 text-[0.625rem]">&middot;</span>
+                                  )}
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })
+                      : columnHeaders.map((col) => {
+                          const colEntries = driverEntryMap
+                            ? col.dates.reduce<PlanningEntry[]>((acc, d) => { const e = driverEntryMap.get(d); if (e) acc.push(e); return acc; }, [])
+                            : [];
+                          const statusCounts: Record<string, number> = {};
+                          for (const e of colEntries) {
+                            statusCounts[e.status] = (statusCounts[e.status] || 0) + 1;
+                          }
+                          const dominant = Object.entries(statusCounts).sort((a, b) => b[1] - a[1])[0];
+                          const total = col.dates.length;
+                          return (
+                            <td key={col.key} className={`${dc.cellPad} text-center`}>
+                              {dominant ? (
+                                <div
+                                  className={`status-chip-compact justify-center ${STATUS_COLORS[dominant[0] as PlanningStatus]}`}
+                                  title={Object.entries(statusCounts).map(([s, c]) => `${STATUS_CODES[s as PlanningStatus]}: ${c}/${total}`).join(", ")}
+                                >
+                                  <span className={`status-dot ${STATUS_DOT_COLORS[dominant[0] as PlanningStatus]}`} aria-hidden="true" />
+                                  {STATUS_CODES[dominant[0] as PlanningStatus]}{dominant[1]}
+                                </div>
+                              ) : (
+                                <span className="text-text-tertiary/50 text-[0.625rem]">&middot;</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                  </tr>
+                );
+              })}
+              {/* Virtual scroll: bottom spacer */}
+              {bottomSpacer > 0 && (
+                <tr aria-hidden="true">
+                  <td colSpan={totalColSpan} style={{ height: bottomSpacer, padding: 0, border: "none", lineHeight: 0 }} />
+                </tr>
+              )}
               {filteredDrivers.length === 0 && (
                 <tr>
-                  <td colSpan={columnHeaders.length + 1 + extraColumns.length} className="text-center py-8 text-text-tertiary text-sm">
+                  <td colSpan={totalColSpan} className="text-center py-8 text-text-tertiary text-sm">
                     {filter ? `Geen chauffeurs gevonden voor "${filter}"` : "Geen chauffeurs beschikbaar. Voeg chauffeurs toe via het Chauffeurs-scherm."}
                   </td>
                 </tr>
               )}
-              {/* POC: Capacity summary row */}
+              {/* Capacity summary row */}
               {showCapacitySummary && filteredDrivers.length > 0 && (
                 <CapacitySummaryRow
                   drivers={filteredDrivers}
@@ -513,199 +719,3 @@ export function PlanningGrid() {
   );
 }
 
-// === Helper: group rows ===
-
-function useEntryMaps(drivers: DriverWithEntries[]) {
-  return useMemo(() => {
-    const map = new Map<string, Map<string, PlanningEntry>>();
-    for (const driver of drivers) {
-      const dateMap = new Map<string, PlanningEntry>();
-      for (const entry of driver.planningEntries) {
-        dateMap.set(entry.date, entry);
-      }
-      map.set(driver.id, dateMap);
-    }
-    return map;
-  }, [drivers]);
-}
-
-function GroupRows({
-  group,
-  columnHeaders,
-  extraColumns,
-  aggregation,
-  density,
-  leaveTypeMap,
-  employers,
-  driverColWidth,
-  extraColWidth,
-  resolveColumnValue,
-  canWrite,
-  dragState,
-  onUpdate,
-  onAssignRoster,
-  onDragStart,
-  onDragEnter,
-}: {
-  group: { label: string; drivers: DriverWithEntries[] };
-  columnHeaders: ColumnHeader[];
-  extraColumns: DriverColumnKey[];
-  aggregation: AggregationLevel;
-  density: DensityLevel;
-  leaveTypeMap: Map<string, string>;
-  employers: StamtabelRecord[];
-  driverColWidth: number;
-  extraColWidth: number;
-  resolveColumnValue: (driver: DriverWithEntries, col: DriverColumnKey) => string;
-  canWrite: boolean;
-  dragState: { driverId: string; dates: string[]; active: boolean } | null;
-  onUpdate: (driverId: string, date: string, status: PlanningStatus, options?: { leaveTypeId?: string; sickPercentage?: number; notes?: string }) => void;
-  onAssignRoster: (driverId: string, driverName: string) => void;
-  onDragStart: (driverId: string, date: string) => void;
-  onDragEnter: (driverId: string, date: string) => void;
-}) {
-  const dc = DENSITY_CONFIG[density];
-  const isDayLevel = aggregation === "day";
-  const isCompact = density === "compact";
-  const entryMaps = useEntryMaps(group.drivers);
-
-  return (
-    <>
-      {group.label && (
-        <tr className="grid-group-row">
-          <td colSpan={columnHeaders.length + 1 + extraColumns.length} className={`${dc.cellPad} ${dc.fontSize} font-semibold text-text-secondary sticky left-0 bg-surface-inset`}>
-            {group.label} ({group.drivers.length})
-          </td>
-        </tr>
-      )}
-      {group.drivers.map((driver, driverIdx) => (
-        <tr key={driver.id} className={cn("hover:bg-surface-secondary/50", driverIdx % 2 === 1 && "bg-surface-secondary/30")}>
-          <td className={cn(
-              dc.cellPad,
-              "sticky left-0 z-10",
-              driverIdx % 2 === 1 ? "bg-surface-secondary/30" : "bg-surface-primary",
-              extraColumns.length === 0 && "grid-sticky-edge"
-            )} style={{ minWidth: driverColWidth }}>
-            <div className="flex items-center justify-between gap-1">
-              <div className="min-w-0">
-                {(() => {
-                  const pos = getActiveRecord(driver.functionRecords);
-                  const emp = getActiveRecord(driver.employmentRecords);
-                  const meta = driver.employeeNumber || (emp?.employmentType === "CHARTER" ? "Charter" : "");
-                  return (
-                    <>
-                      <div className={cn("font-semibold text-text-primary whitespace-nowrap truncate", density === "spacious" ? "text-sm" : "text-xs")}>
-                        {driver.lastName}{driver.firstName ? `, ${driver.firstName}` : ""}
-                        {pos?.manager && <span className="ml-1 font-normal text-text-tertiary" title={`Leidinggevende: ${pos.manager}`}>(LG)</span>}
-                      </div>
-                      {density !== "compact" && meta && (
-                        <div className="text-caption truncate">
-                          {meta}
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-              {canWrite && (
-                <button
-                  onClick={() => onAssignRoster(driver.id, `${driver.lastName}, ${driver.firstName}`)}
-                  className="btn-icon shrink-0"
-                  title="Roosterprofiel toewijzen"
-                  aria-label="Roosterprofiel toewijzen"
-                >
-                  <CalendarCog className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          </td>
-          {extraColumns.map((colKey, i) => {
-            const isLast = i === extraColumns.length - 1;
-            return (
-              <td
-                key={colKey}
-                className={cn(
-                  dc.cellPad, dc.fontSize,
-                  "text-text-secondary sticky z-10 whitespace-nowrap",
-                  driverIdx % 2 === 1 ? "bg-surface-secondary/30" : "bg-surface-primary",
-                  isLast && "grid-sticky-edge"
-                )}
-                style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth, maxWidth: extraColWidth }}
-              >
-                <div className="truncate">{resolveColumnValue(driver, colKey) || "-"}</div>
-              </td>
-            );
-          })}
-          {isDayLevel
-            ? columnHeaders.map((col) => {
-                const date = col.dates[0];
-                const entry = entryMaps.get(driver.id)?.get(date);
-                const isDragging = dragState?.active && dragState.driverId === driver.id;
-                const isSelected = dragState?.driverId === driver.id && dragState.dates.includes(date);
-                return (
-                  <td
-                    key={col.key}
-                    className={cn(
-                      "relative",
-                      dc.cellPad,
-                      isSelected && "ring-2 ring-inset ring-brand-400"
-                    )}
-                    onMouseDown={canWrite ? (e) => { e.preventDefault(); onDragStart(driver.id, date); } : undefined}
-                    onMouseEnter={canWrite ? () => onDragEnter(driver.id, date) : undefined}
-                  >
-                    {!isDragging ? (
-                      <DayCell
-                        entry={entry}
-                        driverId={driver.id}
-                        date={date}
-                        compact={isCompact}
-                        leaveTypeMap={leaveTypeMap}
-                        readOnly={!canWrite}
-                        onUpdate={onUpdate}
-                        density={density}
-                      />
-                    ) : (
-                      <div className={`w-full ${dc.cellH} flex items-center justify-center`}>
-                        {entry ? (
-                          <StatusBadge status={entry.status} compact sickPercentage={entry.sickPercentage} />
-                        ) : (
-                          <span className="text-text-tertiary/50 text-[0.625rem]">&middot;</span>
-                        )}
-                      </div>
-                    )}
-                  </td>
-                );
-              })
-            : columnHeaders.map((col) => {
-                // Aggregated view: show dominant status count
-                const driverEntryMap = entryMaps.get(driver.id);
-                const colEntries = driverEntryMap
-                  ? col.dates.reduce<PlanningEntry[]>((acc, d) => { const e = driverEntryMap.get(d); if (e) acc.push(e); return acc; }, [])
-                  : [];
-                const statusCounts: Record<string, number> = {};
-                for (const e of colEntries) {
-                  statusCounts[e.status] = (statusCounts[e.status] || 0) + 1;
-                }
-                const dominant = Object.entries(statusCounts).sort((a, b) => b[1] - a[1])[0];
-                const total = col.dates.length;
-                return (
-                  <td key={col.key} className={`${dc.cellPad} text-center`}>
-                    {dominant ? (
-                      <div
-                        className={`status-chip-compact justify-center ${STATUS_COLORS[dominant[0] as PlanningStatus]}`}
-                        title={Object.entries(statusCounts).map(([s, c]) => `${STATUS_CODES[s as PlanningStatus]}: ${c}/${total}`).join(", ")}
-                      >
-                        <span className={`status-dot ${STATUS_DOT_COLORS[dominant[0] as PlanningStatus]}`} aria-hidden="true" />
-                        {STATUS_CODES[dominant[0] as PlanningStatus]}{dominant[1]}
-                      </div>
-                    ) : (
-                      <span className="text-text-tertiary/50 text-[0.625rem]">&middot;</span>
-                    )}
-                  </td>
-                );
-              })}
-        </tr>
-      ))}
-    </>
-  );
-}

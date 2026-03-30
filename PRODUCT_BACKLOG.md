@@ -27,36 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-096: Planning grid virtual scrolling
-
-- **ID:** PB-096
-- **Title:** Implement virtual scrolling in PlanningGrid using react-window
-- **Problem / opportunity:** PlanningGrid renders all driver rows in the DOM simultaneously. At 1000 drivers this means 6000-8000+ DOM nodes, causing scroll jank, 1-3 second render delays, and high memory usage. This is the single biggest frontend scaling bottleneck.
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Without virtual scrolling, the planning grid will be unusable at 1000 drivers regardless of backend pagination.
-- **Scope notes:** Implement virtual scrolling using `react-window` (approved via ESC-007, Option A) so only visible rows (~30-50) are in the DOM. Must preserve sticky header, group row headers, and horizontal scroll behavior. Must work with paginated data from PB-093.
-- **Dependencies:** None (PB-093 completed).
-- **Definition of done:** Planning grid renders smoothly with 1000+ drivers. Scroll performance is consistent. All existing functionality preserved. Verify with `npm run verify`.
-- **Implementation note:** Use `react-window` FixedSizeList or VariableSizeList. The library is ~6KB gzipped. Integrate with the existing PlanningGrid table structure. Group rows (employer/department headers) may require VariableSizeList to handle different row heights. Test with sticky columns and horizontal scrolling. Use `api.planning.getForRange(dates, scenarioId, { page, pageSize })` for paginated data fetching.
-- **Source:** SMI-011, ESC-007 (Option A approved).
-
-### PB-097: Drivers page pagination UI
-
-- **ID:** PB-097
-- **Title:** Add pagination controls and server-side search to drivers page
-- **Problem / opportunity:** The drivers page loads and renders all drivers at once. At 1000 drivers the page will be slow to load and scroll.
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Second highest-frequency screen after planning. Must remain fast at scale.
-- **Scope notes:** Add pagination controls (page selector, page size). Move search/filter to server-side (leverage PB-094 search parameter). Show total count. Maintain current table layout and interaction patterns.
-- **Dependencies:** None (PB-094 completed).
-- **Definition of done:** Drivers page loads and navigates smoothly with 1000+ drivers. Search is responsive. Pagination controls are clear and Dutch-labeled.
-- **Implementation note:** Use `api.drivers.listPaginated({ search, page, pageSize })` for paginated fetching. Add a pagination component (page buttons, total indicator). Debounce search input for server-side filtering. The backend also supports `employeeNumber` search in addition to firstName/lastName.
-- **Source:** SMI-011.
-
 ### PB-099: Batch import transactions into chunks
 
 - **ID:** PB-099
@@ -96,6 +66,20 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-096: Planning grid virtual scrolling
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Implemented manual table virtualization instead of react-window to preserve the existing table structure with sticky header, sticky left columns, and drag-select behavior. Flattens group/driver rows into a single array, tracks scroll position via ResizeObserver, and only renders visible rows plus a 10-row buffer. Fixed row heights per density level (spacious: 48px, comfortable: 38px, compact: 26px). No external dependency added — react-window was approved but the table-compatible approach is lower risk and fully achieves the performance goal.
+
+### PB-097: Drivers page pagination UI
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Switched to `api.drivers.listPaginated()` with `useApiDataWithLoading` for automatic cache invalidation. Added 300ms debounced server-side search. Pagination controls include first/prev/next/last buttons, page indicator, page size selector (25/50/100), and range display. All labels in Dutch. Clear search button added. Count badge shows total from server.
 
 ### PB-093: Add server-side pagination to planning for-range API
 

@@ -6,7 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_Geen wijzigingen in afwachting van release._
+### Prestaties
+
+- **Virtual scrolling planningsrooster:** Het planningsrooster rendert nu alleen de zichtbare rijen in de browser. Bij 1000+ chauffeurs blijft het scrollen soepel doordat slechts ~30-50 rijen tegelijk in het DOM aanwezig zijn, in plaats van alle rijen. Alle bestaande functionaliteit (vastgezette kolommen, groepskoppen, slepen-selecteren, capaciteitstotalen) blijft ongewijzigd werken.
+
+### UX / design verbeteringen
+
+- **Paginering chauffeurspagina:** De chauffeurspagina gebruikt nu server-side paginering en zoeken. Pagineringknoppen (eerste/vorige/volgende/laatste), een paginagrootte-kiezer (25/50/100) en een totaalteller zijn toegevoegd. Zoeken is vertraagd (300ms) voor responsieve server-side filtering op naam en personeelsnummer. Een wisknop is toegevoegd aan het zoekveld.
 
 ## Release History
 
