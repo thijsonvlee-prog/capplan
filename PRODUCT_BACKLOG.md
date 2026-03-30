@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track complete. Role enforcement (PB-082) and fieldMappings validation (PB-083) delivered. Codebase healthy — 0 ESLint warnings, 0 typecheck errors.
+**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement). Import pipeline operational. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: completing the role-based UX so users only see actions they can perform, plus small robustness and polish items.
 
 ## Status Definitions
 
@@ -27,7 +27,50 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-084: Frontend role-aware UI — hide/disable actions based on user role
+
+- **ID:** PB-084
+- **Title:** Frontend role-aware UI
+- **Problem / opportunity:** Role enforcement is active server-side (PB-082), but the UI shows all action buttons to all users. VIEWER users see create/edit/delete buttons but get 403 errors when clicking. This is confusing and unprofessional.
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Completes the user experience for the auth track. Without this, the role system feels broken from the user's perspective.
+- **Scope notes:** Create a `useUserRole()` hook (or extend session access) to expose the current user's role. Conditionally hide or disable write action buttons for VIEWER users. Hide settings/user management for non-ADMIN users. Server enforcement remains the source of truth — this is purely UX.
+- **Dependencies:** PB-082 (completed).
+- **Definition of done:** VIEWER users do not see create/edit/delete buttons on planning, drivers, and scenarios pages. Non-ADMIN users do not see settings write controls or user management. When auth is not configured, all actions remain visible (development mode).
+- **Implementation note:** Check how `useSession()` exposes the role (it was added to the session callback in PB-080). The role is available at `session.user.role`.
+- **Source:** DE-REC-045.
+
+### PB-085: Settings tab bar responsive treatment
+
+- **ID:** PB-085
+- **Title:** Settings tab bar responsive treatment
+- **Problem / opportunity:** The settings page now has 5 tabs (Stamgegevens, Competenties, Roosters, Connectiviteit, Gebruikers). On narrow viewports, tab labels may overflow or wrap awkwardly.
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** The 5th tab was just added (PB-079). Better to address now before a 6th is needed.
+- **Scope notes:** Add horizontal scroll with `overflow-x: auto` to `.settings-tabs`, or use scroll-snap. Keep it simple — no need for a dropdown or accordion unless the scroll approach is insufficient.
+- **Dependencies:** None.
+- **Definition of done:** Settings tabs remain usable on viewports down to ~768px without text wrapping or overflow clipping.
+- **Implementation note:** Small CSS-only change in `globals.css`.
+- **Source:** EX-REC-045.
+
+### PB-086: Protect request.json() calls against malformed JSON
+
+- **ID:** PB-086
+- **Title:** JSON body parsing protection
+- **Problem / opportunity:** All 23 POST/PUT API routes call `request.json()` inside a generic try/catch. Malformed JSON triggers a SyntaxError caught by the outer handler, returning a generic 500 error instead of a clear 400 "Ongeldige JSON" message.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Low effort, improves robustness across all write endpoints. Especially relevant now that external tools may send data via the import API.
+- **Scope notes:** Add a shared `parseJsonBody()` helper in `api-route-utils.ts`. Routes call it first and return 400 on parse failure. Apply to all POST/PUT routes.
+- **Dependencies:** None.
+- **Definition of done:** Malformed JSON sent to any POST/PUT endpoint returns 400 with `{ error: "Ongeldige JSON in verzoek" }` instead of 500.
+- **Implementation note:** Keep it simple — a helper that wraps `request.json()` and returns `{ data, error }`. No need for a centralized error handler framework.
+- **Source:** DE-REC-044.
 
 ---
 
@@ -48,37 +91,37 @@ _No items currently in progress._
 ### PB-082: Role enforcement middleware
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** `requireRole()` helper in `api-route-utils.ts` checks session role against a VIEWER < PLANNER < ADMIN hierarchy. Applied to all write API routes: ADMIN required for settings, users, import-sources, roster-profiles; PLANNER required for drivers, planning, scenarios. Returns 401 (not logged in) or 403 (insufficient role) with Dutch error messages. Enforcement skipped when `NEXTAUTH_SECRET` is not set (dev/preview). CLAUDE.md updated to reflect enforcement is live.
+- **Summary:** `requireRole()` helper enforces VIEWER < PLANNER < ADMIN hierarchy on all write API routes. Returns 401/403 with Dutch error messages. Enforcement skipped when `NEXTAUTH_SECRET` is not set.
 
 ### PB-083: Validate fieldMappings structure in import-sources API
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** New `validateFieldMappings()` helper in `api-route-utils.ts` validates that fieldMappings is a non-null, non-array object with non-empty string keys and values. Also validates target fields against a whitelist per entity (drivers: firstName/lastName/employeeNumber/licenseTypes; stamtabellen: code/description). Applied to POST and PUT routes. Clear Dutch error messages for each validation failure.
+- **Summary:** `validateFieldMappings()` validates structure and target fields per entity. Applied to import-sources POST and PUT routes.
 
 ### PB-079: Admin panel — user management screen
 - **Completed:** 2026-03-30
 - **Owner:** Experience Agent
-- **Summary:** New "Gebruikers" tab in the settings page with user list and role management. Shows user avatar, name, email, role badge (Admin/Planner/Kijker), and member-since date. Clickable role badges open a dropdown with confirmation dialog for role changes. API routes: GET /api/users (list), PUT /api/users/[id] (update role). All text in Dutch. Design uses product-grade card layout with semantic role badges.
+- **Summary:** "Gebruikers" tab in settings with user list, role badges, and role change functionality.
 
 ### PB-081: Login page and session UI
 - **Completed:** 2026-03-30
 - **Owner:** Experience Agent
-- **Summary:** Login page at `/login` with split-panel layout (brand panel + sign-in panel), Google and Microsoft provider buttons with loading states, NextAuth middleware for route protection, session indicator in header with avatar/initials + name + logout button. All text in Dutch.
+- **Summary:** Login page with split-panel layout, provider buttons, route protection middleware, session indicator in header.
 
-### PB-078: CSV import execution — apply field mappings and insert data
+### PB-078: CSV import execution
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** Full import pipeline: upload → preview → validate → execute → results summary → import history. New `ImportLog` model with migration. `prisma.$transaction` for drivers, `createMany` with `skipDuplicates` for stamtabel entities. CSV parser extracted to shared `src/lib/csv-parser.ts`. Frontend: execute button, result display with row-level errors, import history panel per source.
+- **Summary:** Full import pipeline with upload, preview, validate, execute, results summary, and import history.
 
-### PB-076: Rewrite CLAUDE.md based on current application state
+### PB-080: Auth infrastructure — NextAuth.js
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** Full rewrite of CLAUDE.md to reflect current codebase: updated file structure, design system, auth infrastructure, component inventory, API routes, hooks, and config references.
+- **Summary:** NextAuth.js v4 with Prisma adapter, Google and Azure AD providers, database sessions.
 
-### PB-080: Auth infrastructure — NextAuth.js with Google/Microsoft provider
+### PB-076: Rewrite CLAUDE.md
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** NextAuth.js v4 with Prisma adapter, Google and Azure AD providers, database sessions, session callback with user ID and role. AuthProvider in root layout.
+- **Summary:** Full rewrite reflecting current codebase state.
 
 ---
 
@@ -89,7 +132,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Good idea aligned with DESIGN.md section 7.8, but not urgent. Can be picked up as a quick win in a future cycle or bundled with other sidebar work.
+- **Reason:** Good idea aligned with DESIGN.md section 7.8. Auth is now complete so this is feasible. Can be picked up as a quick win in a future cycle when higher-priority items are cleared.
 - **Source:** EX-REC-044.
 
 ### DE-REC-042: Extend import execution with upsert mode
@@ -97,7 +140,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Valuable for ongoing data synchronization, but initial import (create-only) is sufficient for the MVP. Revisit when users report needing update capability.
+- **Reason:** Valuable for ongoing data synchronization, but initial import (create-only) is sufficient for MVP. Revisit when users report needing update capability.
 - **Source:** DE-REC-042.
 
 ### DE-REC-040: Optimize NextAuth session callback role lookup

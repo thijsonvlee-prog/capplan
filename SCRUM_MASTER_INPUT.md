@@ -23,22 +23,6 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-### SMI-007: Rewrite CLAUDE.md based on current application state, incorporate DESIGN.md
-
-- **Type:** Request
-- **Status:** Planned
-- **Input:** Herschrijf het CLAUDE.md bestand op basis van de huidige staat van de applicatie. Neem ook de DESIGN.md hierin mee.
-- **Product Owner action:** Created PB-076 (rewrite CLAUDE.md). Single focused task for the Delivery Agent, who has the best view of the current technical state. Design sections will be sourced from DESIGN.md. After merge, DESIGN.md will be kept as an appendix reference until the Scrum Master confirms it can be removed.
-- **Backlog linkage:** PB-076.
-
-### SMI-008: Focus on building out functionality — connectivity and user management
-
-- **Type:** Initiative / priority signal
-- **Status:** Planned
-- **Input:** Focus op het uitbouwen van functionaliteit: connectiviteit, admin panel met user management.
-- **Product Owner action:** Connectivity expansion broken into phased backlog items (PB-077: CSV upload & parsing, PB-078: import execution). Auth approach decided via ESC-005 (Option B: NextAuth.js with Google/Microsoft). Auth work broken into phased items: PB-080 (auth infrastructure), PB-081 (login page), PB-079 (admin user management), PB-082 (role enforcement). PB-077, PB-078, PB-080, PB-081 all completed. PB-079 and PB-082 scheduled for next cycle.
-- **Backlog linkage:** PB-077 (done), PB-078 (done), PB-079 (ready), PB-080 (done), PB-081 (done), PB-082 (ready).
-
 ### SMI-002: Keep improvements incremental during stabilization
 
 - **Type:** Constraint
@@ -49,15 +33,28 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Product Owner instruction:** Applied as a standing constraint to technical backlog items. Design items follow the updated directive from SMI-004.
 - **Backlog linkage:** Applied as a standing constraint to all backlog items.
 
+## Closed Inputs
+
+### SMI-008: Focus on building out functionality — connectivity and user management
+
+- **Type:** Initiative / priority signal
+- **Status:** Closed
+- **Closed reason:** Fully delivered. Connectivity: PB-077 (CSV upload), PB-078 (import execution), PB-083 (fieldMappings validation) all complete. Auth & user management: PB-080 (infrastructure), PB-081 (login page), PB-079 (admin panel), PB-082 (role enforcement) all complete. Follow-up PB-084 (frontend role-aware UI) scheduled.
+- **Backlog linkage:** PB-077–PB-084.
+
+### SMI-007: Rewrite CLAUDE.md based on current application state, incorporate DESIGN.md
+
+- **Type:** Request
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-076 completed 2026-03-30.
+- **Backlog linkage:** PB-076 (done).
+
 ### SMI-001: Connectivity hub for external data sources
 
 - **Type:** Initiative
-- **Status:** Planned
-- **Input:** Develop a connectivity hub where external sources such as file imports and APIs can be configured.
-- **Product Owner action:** Escalated to ESC-001. Scrum Master chose Option A (Configuration-first MVP). PB-015 and PB-016 completed. Now expanding with PB-077 (CSV upload) and PB-078 (import execution).
-- **Backlog linkage:** PB-015, PB-016, PB-077, PB-078.
-
-## Closed Inputs
+- **Status:** Closed
+- **Closed reason:** Fully delivered. Configuration MVP (PB-015, PB-016), CSV upload (PB-077), import execution (PB-078), fieldMappings validation (PB-083) all complete.
+- **Backlog linkage:** PB-015, PB-016, PB-077, PB-078, PB-083.
 
 ### SMI-004: Bigger design steps toward DESIGN.md compliance
 
