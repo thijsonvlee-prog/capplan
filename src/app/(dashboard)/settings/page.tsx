@@ -5,17 +5,19 @@ import { SkillManager } from "@/components/settings/SkillManager";
 import { StamtabelManager } from "@/components/settings/StamtabelManager";
 import { RosterProfileEditor } from "@/components/settings/RosterProfileEditor";
 import { ImportSourceManager } from "@/components/settings/ImportSourceManager";
+import { UserManager } from "@/components/settings/UserManager";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
 
-type TabKey = "stamgegevens" | "competenties" | "roosters" | "connectiviteit";
+type TabKey = "stamgegevens" | "competenties" | "roosters" | "connectiviteit" | "gebruikers";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "stamgegevens", label: "Stamgegevens" },
   { key: "competenties", label: "Competenties" },
   { key: "roosters", label: "Roosters" },
   { key: "connectiviteit", label: "Connectiviteit" },
+  { key: "gebruikers", label: "Gebruikers" },
 ];
 
 const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
@@ -35,6 +37,10 @@ const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
     title: "Importbronnen beheren",
     desc: "CSV-importconfiguraties met veldkoppelingen voor het automatisch inlezen van gegevens uit externe systemen.",
   },
+  gebruikers: {
+    title: "Gebruikersbeheer",
+    desc: "Bekijk alle gebruikers en beheer hun rollen. Gebruikers worden automatisch aangemaakt bij de eerste aanmelding.",
+  },
 };
 
 export default function SettingsPage() {
@@ -50,6 +56,7 @@ export default function SettingsPage() {
     competenties: null,
     roosters: null,
     connectiviteit: null,
+    gebruikers: null,
   }), [employers.length, departments.length, locations.length, leaveTypes.length]);
 
   function toastMutate(fn: () => Promise<unknown>, successMsg: string) {
@@ -142,6 +149,8 @@ export default function SettingsPage() {
       {activeTab === "roosters" && <RosterProfileEditor />}
 
       {activeTab === "connectiviteit" && <ImportSourceManager />}
+
+      {activeTab === "gebruikers" && <UserManager />}
     </div>
   );
 }

@@ -14,6 +14,7 @@ import type {
   Scenario,
   Skill,
   StamtabelRecord,
+  User,
 } from "@/domain/types";
 
 // === Helpers ===
@@ -455,6 +456,16 @@ const importSources = {
   },
 };
 
+const users = {
+  list(): Promise<User[]> {
+    return fetchJson<{ data: User[] }>("/api/users").then(r => r.data);
+  },
+
+  updateRole(id: string, role: string): Promise<User> {
+    return fetchJson<{ data: User }>(`/api/users/${id}`, putBody({ role })).then(r => r.data);
+  },
+};
+
 const preferences = {
   get(key: string): Promise<string | null> {
     return fetchJson<string | null>(
@@ -479,6 +490,7 @@ export const api = {
   settings,
   rosterProfiles,
   importSources,
+  users,
   preferences,
 };
 
