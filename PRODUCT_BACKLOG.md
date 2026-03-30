@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Scaling initiative (SMI-011). The system must support 1000 drivers without feeling slow. Phase 1 focuses on backend pagination for the two heaviest API endpoints and a covering database index. Phase 2 (frontend virtual scrolling) is blocked on a dependency decision (ESC-007). Import reliability guardrails continue in parallel.
+**Current direction:** Scaling initiative (SMI-011). The system must support 1000 drivers without feeling slow. Phase 1 focuses on backend pagination for the two heaviest API endpoints and a covering database index — assigned to the Delivery Agent for this cycle. Phase 2 (frontend virtual scrolling + pagination UI) is now unblocked: ESC-007 decided in favor of `react-window`. Phase 2 items will become ready once their backend dependencies ship.
 
 ## Status Definitions
 
@@ -89,22 +89,22 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ---
 
-## Blocked / Needs Decision
+## Blocked / Waiting for Dependencies
 
 ### PB-096: Planning grid virtual scrolling
 
 - **ID:** PB-096
-- **Title:** Implement virtual scrolling in PlanningGrid to render only visible rows
+- **Title:** Implement virtual scrolling in PlanningGrid using react-window
 - **Problem / opportunity:** PlanningGrid renders all driver rows in the DOM simultaneously. At 1000 drivers this means 6000-8000+ DOM nodes, causing scroll jank, 1-3 second render delays, and high memory usage. This is the single biggest frontend scaling bottleneck.
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Blocked (ESC-007 — dependency decision needed)
+- **Status:** Blocked (PB-093 — backend pagination must ship first)
 - **Why this matters now:** Without virtual scrolling, the planning grid will be unusable at 1000 drivers regardless of backend pagination.
-- **Scope notes:** Implement virtual scrolling so only visible rows (~30-50) are in the DOM. Must preserve sticky header, group row headers, and horizontal scroll behavior. Must work with paginated data from PB-093.
-- **Dependencies:** PB-093 (pagination API), ESC-007 (dependency decision).
-- **Definition of done:** Planning grid renders smoothly with 1000+ drivers. Scroll performance is consistent. All existing functionality preserved.
-- **Implementation note:** Approach depends on ESC-007 decision. If external library approved, use react-window or react-virtuoso. If not, implement CSS-based approach with IntersectionObserver.
-- **Source:** SMI-011.
+- **Scope notes:** Implement virtual scrolling using `react-window` (approved via ESC-007, Option A) so only visible rows (~30-50) are in the DOM. Must preserve sticky header, group row headers, and horizontal scroll behavior. Must work with paginated data from PB-093.
+- **Dependencies:** PB-093 (pagination API must be available first).
+- **Definition of done:** Planning grid renders smoothly with 1000+ drivers. Scroll performance is consistent. All existing functionality preserved. Verify with `npm run verify`.
+- **Implementation note:** Use `react-window` FixedSizeList or VariableSizeList. The library is ~6KB gzipped. Integrate with the existing PlanningGrid table structure. Group rows (employer/department headers) may require VariableSizeList to handle different row heights. Test with sticky columns and horizontal scrolling.
+- **Source:** SMI-011, ESC-007 (Option A approved).
 
 ### PB-097: Drivers page pagination UI
 
@@ -113,10 +113,10 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Problem / opportunity:** The drivers page loads and renders all drivers at once. At 1000 drivers the page will be slow to load and scroll.
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Blocked (PB-094)
+- **Status:** Blocked (PB-094 — backend pagination must ship first)
 - **Why this matters now:** Second highest-frequency screen after planning. Must remain fast at scale.
 - **Scope notes:** Add pagination controls (page selector, page size). Move search/filter to server-side (leverage PB-094 search parameter). Show total count. Maintain current table layout and interaction patterns.
-- **Dependencies:** PB-094 (pagination API).
+- **Dependencies:** PB-094 (pagination API must be available first).
 - **Definition of done:** Drivers page loads and navigates smoothly with 1000+ drivers. Search is responsive. Pagination controls are clear and Dutch-labeled.
 - **Implementation note:** Use `useApiData` with pagination params. Add a pagination component (page buttons, total indicator). Debounce search input for server-side filtering.
 - **Source:** SMI-011.
@@ -141,7 +141,6 @@ _Previous cycle items (PB-084 through PB-091) shipped 2026-03-30. Cleared per hy
 
 - **ID:** PB-098
 - **Title:** Batch scenario duplication to reduce memory pressure at scale
-- **Problem / opportunity:** Scenario duplication loads all source entries (up to 50,000) into memory before bulk insert. At 1000 drivers × 90 days this is ~90,000 entries.
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
@@ -177,7 +176,7 @@ _Previous cycle items (PB-084 through PB-091) shipped 2026-03-30. Cleared per hy
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Functional and usable. Minor visual issue. Lower priority than scaling work.
+- **Reason:** Functional and usable. Lower priority than scaling work.
 - **Source:** EX-REC-036.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
