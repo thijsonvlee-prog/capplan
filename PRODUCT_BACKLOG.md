@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation). Import pipeline operational. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: polish auth experience (sidebar user identity), optimize auth performance (session role caching), and extend import capabilities (upsert mode). No new code items this cycle — latest Scrum Master input (SMI-010: Google OAuth redirect_uri_mismatch) was a configuration issue resolved via existing documentation.
+**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation, session optimization). Import pipeline fully operational with upsert support. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. All scheduled items completed. Next focus: codebase quality, performance optimization, and potential new features per Delivery/Experience recommendations.
 
 ## Status Definitions
 
@@ -27,35 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-090: Cache user role in NextAuth session to avoid per-request DB query
-
-- **ID:** PB-090
-- **Title:** Optimize session callback to eliminate extra role lookup query
-- **Problem / opportunity:** The NextAuth session callback in `src/lib/auth.ts` queries the database for the user's role on every session access. With role enforcement active on all write routes (`requireRole()`), this adds one extra `findUnique` query per authenticated mutation request.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Role enforcement is now active on all write routes. Every authenticated write request triggers an extra DB query. While acceptable at current scale, this is a straightforward optimization that improves request latency.
-- **Scope notes:** Either store the role in the JWT/session token so it doesn't need to be re-fetched, or extend the Prisma adapter's user response to include role. Ensure role changes (from the admin panel) are reflected within a reasonable timeframe — a session refresh or next login is acceptable.
-- **Dependencies:** None.
-- **Definition of done:** Authenticated API requests no longer trigger a separate `findUnique` for role lookup. Role is still available in the session. Role changes take effect on next session refresh. Passes `npm run verify`.
-- **Implementation note:** The simplest approach is likely to include `role` in the JWT callback and pass it through to the session callback. This avoids a DB hit per request while still being refreshed on token rotation.
-- **Source:** DE-REC-040.
-
-### PB-091: Add upsert mode to CSV import execution
-
-- **ID:** PB-091
-- **Title:** Allow CSV imports to update existing records (upsert mode)
-- **Problem / opportunity:** The current import execution only creates new records. For stamtabel entities, `skipDuplicates` silently skips rows with existing codes. Users who maintain external data sources need to update existing records via CSV import (e.g., changing a department description).
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Natural follow-up to the import pipeline (PB-078). Users who regularly sync data from external systems will need this capability quickly.
-- **Scope notes:** Add an optional `mode` parameter to the execute endpoint: `"create"` (current default behavior) and `"upsert"` (update existing records matched by unique key — typically `code` for stamtabellen, `employeeNumber` for drivers). The UI should offer a toggle or dropdown to select the mode before executing. Import log should distinguish created vs. updated rows in the summary.
-- **Dependencies:** PB-078 (completed).
-- **Definition of done:** Users can choose between create-only and upsert mode when executing an import. Upsert correctly matches existing records by unique key and updates fields. Import log shows created/updated/skipped counts. Passes `npm run verify`.
-- **Implementation note:** Upsert logic per entity: stamtabellen match on `code`, drivers match on `employeeNumber`. Use Prisma `upsert` or a find-then-update pattern within the transaction. Be careful with the driver entity — upsert should only update mapped fields, not overwrite unmapped fields with defaults.
-- **Source:** DE-REC-042.
+_No items currently ready._
 
 ---
 
@@ -72,6 +44,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-091: Add upsert mode to CSV import execution
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Import execute endpoint now accepts a `mode` parameter: `"create"` (default, existing behavior) or `"upsert"` (update existing records matched by unique key). Stamtabellen match on `code`, drivers match on `employeeNumber`. UI shows radio toggle for mode selection before executing. Import log and results distinguish created vs. updated vs. skipped counts. Schema migration adds `updatedRows` column to `ImportLog`.
+
+### PB-090: Cache user role in NextAuth session to avoid per-request DB query
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Removed redundant `findUnique` query from the NextAuth session callback. The PrismaAdapter already provides the full user record (including `role`) via `include: { user: true }` — the session callback now reads `role` directly from the adapter-provided user object. Eliminates one DB query per authenticated request.
 
 ### PB-089: Add user identity to sidebar bottom section
 - **Completed:** 2026-03-30

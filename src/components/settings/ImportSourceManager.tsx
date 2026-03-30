@@ -94,6 +94,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [executing, setExecuting] = useState(false);
   const [executeResult, setExecuteResult] = useState<ImportExecuteResult | null>(null);
+  const [importMode, setImportMode] = useState<"create" | "upsert">("create");
   const [logsSourceId, setLogsSourceId] = useState<string | null>(null);
   const [logs, setLogs] = useState<ImportLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -192,6 +193,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
     setUploadError(null);
     setUploadFile(null);
     setExecuteResult(null);
+    setImportMode("create");
   }
 
   function closeUpload() {
@@ -230,16 +232,19 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
     if (!uploadSourceId || !uploadFile) return;
     setExecuting(true);
 
-    api.importSources.execute(uploadSourceId, uploadFile)
+    api.importSources.execute(uploadSourceId, uploadFile, importMode)
       .then((result) => {
         setExecuteResult(result);
         setExecuting(false);
-        if (result.importedRows > 0) {
-          showToast(`${result.importedRows} rij(en) geïmporteerd`);
+        if (result.importedRows > 0 || result.updatedRows > 0) {
+          const parts: string[] = [];
+          if (result.importedRows > 0) parts.push(`${result.importedRows} aangemaakt`);
+          if (result.updatedRows > 0) parts.push(`${result.updatedRows} bijgewerkt`);
+          showToast(parts.join(", "));
           // Invalidate data caches so imported records appear in other views
           mutate(() => Promise.resolve());
         }
-        if (result.importedRows === 0 && result.skippedRows > 0) {
+        if (result.importedRows === 0 && result.updatedRows === 0 && result.skippedRows > 0) {
           showToast("Geen rijen geïmporteerd — controleer de fouten.", "error");
         }
       })
@@ -394,7 +399,10 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                                 <div className="flex items-center gap-3 text-xs">
                                   <span className="text-text-secondary">{formatDateTime(log.executedAt)}</span>
                                   <span className="font-mono text-text-tertiary">{log.fileName}</span>
-                                  <span className="text-success-700 font-medium">{log.importedRows} geïmporteerd</span>
+                                  <span className="text-success-700 font-medium">{log.importedRows} aangemaakt</span>
+                                  {log.updatedRows > 0 && (
+                                    <span className="text-brand-700 font-medium">{log.updatedRows} bijgewerkt</span>
+                                  )}
                                   {log.skippedRows > 0 && (
                                     <span className="text-warning-700">{log.skippedRows} overgeslagen</span>
                                   )}
@@ -692,31 +700,60 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                   </div>
                 )}
 
-                {/* Execute button */}
-                <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
-                  <div className="text-xs text-text-tertiary">
-                    {allMappingsDetected
-                      ? `Klaar om ${uploadResult.totalRows} rij(en) te importeren.`
-                      : "Let op: niet alle koppelingen zijn gevonden. Ontbrekende velden worden overgeslagen."
-                    }
+                {/* Import mode + Execute button */}
+                <div className="pt-3 border-t border-border-subtle space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-label">Modus:</span>
+                    <label className="flex items-center gap-1.5 text-sm text-text-secondary cursor-pointer">
+                      <input
+                        type="radio"
+                        name="importMode"
+                        value="create"
+                        checked={importMode === "create"}
+                        onChange={() => setImportMode("create")}
+                        className="accent-brand-600"
+                      />
+                      Alleen aanmaken
+                    </label>
+                    <label className="flex items-center gap-1.5 text-sm text-text-secondary cursor-pointer">
+                      <input
+                        type="radio"
+                        name="importMode"
+                        value="upsert"
+                        checked={importMode === "upsert"}
+                        onChange={() => setImportMode("upsert")}
+                        className="accent-brand-600"
+                      />
+                      Aanmaken of bijwerken
+                    </label>
                   </div>
-                  <button
-                    onClick={handleExecute}
-                    disabled={executing || uploadResult.mappingValidation.length === 0}
-                    className="btn-primary"
-                  >
-                    {executing ? (
-                      <>
-                        <div className="spinner !w-4 !h-4" />
-                        Importeren…
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4" />
-                        Importeren
-                      </>
-                    )}
-                  </button>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-text-tertiary">
+                      {allMappingsDetected
+                        ? importMode === "upsert"
+                          ? `Klaar om ${uploadResult.totalRows} rij(en) te importeren. Bestaande records worden bijgewerkt.`
+                          : `Klaar om ${uploadResult.totalRows} rij(en) te importeren.`
+                        : "Let op: niet alle koppelingen zijn gevonden. Ontbrekende velden worden overgeslagen."
+                      }
+                    </div>
+                    <button
+                      onClick={handleExecute}
+                      disabled={executing || uploadResult.mappingValidation.length === 0}
+                      className="btn-primary"
+                    >
+                      {executing ? (
+                        <>
+                          <div className="spinner !w-4 !h-4" />
+                          Importeren…
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4" />
+                          Importeren
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -725,20 +762,20 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
             {executeResult && (
               <div className="space-y-3">
                 <div className={`p-4 rounded-md border ${
-                  executeResult.importedRows > 0
+                  (executeResult.importedRows > 0 || executeResult.updatedRows > 0)
                     ? "bg-success-50 border-success-200"
                     : "bg-danger-50 border-danger-200"
                 }`}>
                   <div className="flex items-center gap-2 mb-2">
-                    {executeResult.importedRows > 0 ? (
+                    {(executeResult.importedRows > 0 || executeResult.updatedRows > 0) ? (
                       <CheckCircle2 className="w-5 h-5 text-success-600" />
                     ) : (
                       <AlertCircle className="w-5 h-5 text-danger-600" />
                     )}
                     <span className={`text-sm font-medium ${
-                      executeResult.importedRows > 0 ? "text-success-700" : "text-danger-700"
+                      (executeResult.importedRows > 0 || executeResult.updatedRows > 0) ? "text-success-700" : "text-danger-700"
                     }`}>
-                      Import {executeResult.importedRows > 0 ? "voltooid" : "mislukt"}
+                      Import {(executeResult.importedRows > 0 || executeResult.updatedRows > 0) ? "voltooid" : "mislukt"}
                     </span>
                   </div>
                   <div className="flex gap-4 text-sm">
@@ -746,8 +783,13 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                       Totaal: <span className="font-medium text-text-primary">{executeResult.totalRows}</span> rijen
                     </span>
                     <span className="text-success-700">
-                      Geïmporteerd: <span className="font-medium">{executeResult.importedRows}</span>
+                      Aangemaakt: <span className="font-medium">{executeResult.importedRows}</span>
                     </span>
+                    {executeResult.updatedRows > 0 && (
+                      <span className="text-brand-700">
+                        Bijgewerkt: <span className="font-medium">{executeResult.updatedRows}</span>
+                      </span>
+                    )}
                     {executeResult.skippedRows > 0 && (
                       <span className="text-warning-700">
                         Overgeslagen: <span className="font-medium">{executeResult.skippedRows}</span>

@@ -7,6 +7,8 @@ This is the central release log for CapPlan. All user-facing and significant int
 ## Unreleased
 
 - **Gebruikersidentiteit in zijbalk:** De zijbalk toont nu de naam en rol van de ingelogde gebruiker onderaan, naast het versienummer. Wanneer authenticatie niet is geconfigureerd, wordt alleen het versienummer getoond.
+- **CSV-import upsert modus:** Bij het importeren van CSV-bestanden kan nu gekozen worden tussen "Alleen aanmaken" (bestaand gedrag) en "Aanmaken of bijwerken". In de bijwerkmodus worden bestaande records herkend op basis van unieke sleutel (code voor stamtabellen, personeelsnummer voor chauffeurs) en bijgewerkt. Het importresultaat en de importgeschiedenis tonen nu apart het aantal aangemaakte, bijgewerkte en overgeslagen rijen.
+- **Sessie-optimalisatie:** De extra databasequery voor het ophalen van de gebruikersrol bij elk verzoek is verwijderd. De rol wordt nu direct gelezen uit het sessieobject, wat de responstijd van alle geauthenticeerde verzoeken verbetert.
 
 ## Release History
 

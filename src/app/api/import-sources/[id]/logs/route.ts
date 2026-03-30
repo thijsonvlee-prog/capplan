@@ -34,6 +34,7 @@ export async function GET(
         fileName: log.fileName,
         totalRows: log.totalRows,
         importedRows: log.importedRows,
+        updatedRows: log.updatedRows,
         skippedRows: log.skippedRows,
         errors: log.errors || [],
         executedAt: log.executedAt.toISOString(),

@@ -6,39 +6,26 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-086 (JSON parsing protection) and PB-088 (auth setup documentation) were completed this cycle:
-- `parseJsonBody()` helper added to `api-route-utils.ts` and applied to all 23 POST/PUT routes. Malformed JSON now returns 400 instead of 500.
-- `AUTH_SETUP.md` created with step-by-step guidance for Google OAuth and Azure AD configuration in Vercel.
+PB-090 (session role caching) and PB-091 (CSV import upsert mode) were completed this cycle:
+- Session callback no longer performs an extra `findUnique` query — role is read directly from the PrismaAdapter-provided user object. Eliminates one DB round-trip per authenticated request.
+- Import execute endpoint now supports `mode: "create" | "upsert"`. Stamtabellen match on `code`, drivers match on `employeeNumber`. UI offers radio toggle before execution. Import log and results distinguish created/updated/skipped counts. Schema migration adds `updatedRows` column to `ImportLog`.
 
-All scheduled Delivery Agent work is now complete. Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma models, 29 route files. The authentication track is fully delivered (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation).
+All scheduled Delivery Agent work is now complete. Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma models, 29 route files. Both the authentication and import tracks are fully delivered.
 
 ## Recommended Next Improvements
 
-### DE-REC-042: Extend import execution with update/upsert mode
+### DE-REC-043: Add CSV row count limit to import execution
 
-- **Title:** Add upsert capability to CSV import for existing records
-- **Problem:** The current import execution only creates new records. For stamtabel entities, `skipDuplicates` silently skips rows with existing codes. Users may want to update descriptions of existing records via CSV import.
-- **Proposed improvement:** Add an optional `mode` parameter to the execute endpoint: "create" (current behavior, default) or "upsert" (update existing records matched by unique key).
-- **Expected product/technical value:** Makes the import feature useful for ongoing data synchronization, not just initial data load.
-- **Priority:** P3 Medium
-- **Effort:** Medium
-- **Risk:** Medium — upsert logic needs careful unique key handling per entity.
-- **Dependencies:** PB-078 (completed).
-- **Suggested owner:** Delivery Agent
-- **Why now:** Natural follow-up to PB-078. Users who import data regularly will need this quickly.
-
-### DE-REC-040: Optimize NextAuth session callback role lookup
-
-- **Title:** Cache user role in session to avoid per-request DB query
-- **Problem:** The NextAuth session callback in `src/lib/auth.ts` queries the database for the user's role on every session access. With role enforcement now active on all write routes, this adds one extra DB query per authenticated mutation.
-- **Proposed improvement:** Either extend the PrismaAdapter to include `role` in the user response, or cache the role in the session record itself.
-- **Expected product/technical value:** Eliminates one DB query per authenticated request. Matters as concurrent user count grows.
+- **Title:** Limit maximum CSV rows per import to prevent memory/timeout issues
+- **Problem:** The import execute endpoint has a 5MB file size limit but no limit on row count. A CSV with many thousands of rows creates one database operation per row inside a single transaction, which could hit Neon connection timeouts or exhaust Node.js memory.
+- **Proposed improvement:** Add a maximum row count (e.g., 10,000 rows) and return a clear error if exceeded.
+- **Expected product/technical value:** Prevents silent failures and timeouts during large imports. Improves reliability.
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Role enforcement is now active, so the extra query is hit on every write request.
+- **Why now:** Import pipeline is now fully featured (create + upsert). This is a guardrail to prevent production incidents.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -56,7 +43,7 @@ All scheduled Delivery Agent work is now complete. Codebase remains healthy: 0 E
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 100 (max code length), 5MB (max file size), 20 (max import logs).
+- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 90 (max date range), 100 (max code length), 5MB (max file size), 20 (max import logs).
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
@@ -108,10 +95,11 @@ All scheduled Delivery Agent work is now complete. Codebase remains healthy: 0 E
 ## Risks / Watch-outs
 
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive and role enforcement is skipped. See `AUTH_SETUP.md` for configuration guidance.
-- **Session callback DB query:** Each authenticated session access triggers a `findUnique` for the user's role. Now that role enforcement is active, this query runs on every write request. Acceptable at current scale but worth optimizing (DE-REC-040).
+- **Role changes require session refresh:** With the session role caching optimization (PB-090), role changes made via the admin panel take effect on the user's next session refresh or re-login, not immediately on their current active session.
 - **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory.
-- **Import transaction size:** Large CSV imports (thousands of rows) create one driver per row inside a single transaction. Very large imports could hit Neon connection timeouts.
+- **Import transaction size:** Large CSV imports (thousands of rows) create individual operations per row inside a single transaction. Very large imports could hit Neon connection timeouts. DE-REC-043 addresses this with a row count limit.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed.
+- **Driver upsert without unique constraint:** Driver upsert matches on `employeeNumber` using `findFirst` (not a unique constraint). If multiple drivers share an `employeeNumber`, only the first is updated. Adding a unique constraint is a product decision (see "Items Intentionally Not Recommended").
 
 ## Items Intentionally Not Recommended
 
@@ -140,6 +128,9 @@ All scheduled Delivery Agent work is now complete. Codebase remains healthy: 0 E
 - **Add scheduled/automatic imports:** Requires external trigger mechanism. Out of scope for current MVP.
 - **Add React.memo to StatusBadge/StatusSelector:** Rendered within already-memoized DayCell; marginal improvement.
 - **Batch FK validation in driver POST route:** Current parallel Promise.all approach is already efficient; batching into fewer queries adds complexity for marginal gain.
+- **Add React.memo to GroupRows component:** Marginal improvement — PlanningGrid manages re-renders via entry maps.
+- **CSV injection sanitization:** CSV data is stored in database fields, not re-exported to spreadsheets. The import pipeline is server-side only. If CSV export is added later, sanitization should be added at that point.
+- **Standardize API response wrapping:** Some routes use `{ data }` wrapper, others return raw objects. Changing this is a breaking API contract change with no functional benefit.
 
 ## Recommendation Rules
 

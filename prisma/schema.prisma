@@ -296,6 +296,7 @@ model ImportLog {
   fileName       String
   totalRows      Int
   importedRows   Int
+  updatedRows    Int      @default(0)
   skippedRows    Int
   errors         Json?    @db.JsonB // Array of { row: number, field?: string, message: string }
   executedAt     DateTime @default(now())

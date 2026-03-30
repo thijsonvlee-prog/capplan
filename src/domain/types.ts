@@ -188,6 +188,7 @@ export type ImportLog = {
   fileName: string;
   totalRows: number;
   importedRows: number;
+  updatedRows: number;
   skippedRows: number;
   errors: ImportRowError[];
   executedAt: string;
@@ -196,6 +197,7 @@ export type ImportLog = {
 export type ImportExecuteResult = {
   totalRows: number;
   importedRows: number;
+  updatedRows: number;
   skippedRows: number;
   errors: ImportRowError[];
 };

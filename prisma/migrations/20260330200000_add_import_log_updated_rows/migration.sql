@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "ImportLog" ADD COLUMN "updatedRows" INTEGER NOT NULL DEFAULT 0;

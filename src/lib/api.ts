@@ -442,9 +442,10 @@ const importSources = {
     }).then(r => r.data);
   },
 
-  execute(id: string, file: File): Promise<ImportExecuteResult> {
+  execute(id: string, file: File, mode: "create" | "upsert" = "create"): Promise<ImportExecuteResult> {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("mode", mode);
     return fetchJson<{ data: ImportExecuteResult }>(`/api/import-sources/${id}/execute`, {
       method: "POST",
       body: formData,

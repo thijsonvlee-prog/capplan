@@ -39,16 +39,13 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   callbacks: {
-    async session({ session, user }) {
-      // Attach user ID and role to the session
+    session({ session, user }) {
+      // Attach user ID and role to the session.
+      // The PrismaAdapter fetches the full user record (include: { user: true }),
+      // so role is already available — no extra DB query needed.
       if (session.user) {
         session.user.id = user.id;
-        // Fetch the role from the database (adapter doesn't include custom fields)
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { role: true },
-        });
-        session.user.role = dbUser?.role ?? "PLANNER";
+        session.user.role = (user as any).role ?? "PLANNER";
       }
       return session;
     },

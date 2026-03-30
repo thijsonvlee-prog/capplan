@@ -21,10 +21,16 @@ const REQUIRED_FIELD_LABELS: Record<string, string> = {
   code: "Code",
 };
 
+type ImportMode = "create" | "upsert";
+
 /**
  * POST /api/import-sources/[id]/execute
  * Execute a CSV import: parse the file, apply field mappings, validate rows,
- * and insert data into the target entity table within a transaction.
+ * and insert/upsert data into the target entity table.
+ *
+ * Accepts an optional "mode" form field: "create" (default) or "upsert".
+ * In upsert mode, existing records are matched by unique key (code for
+ * stamtabellen, employeeNumber for drivers) and updated.
  */
 export async function POST(
   request: NextRequest,
@@ -55,6 +61,10 @@ export async function POST(
     // Parse multipart form data
     const formData = await request.formData();
     const file = formData.get("file");
+    const modeParam = formData.get("mode");
+
+    // Validate mode
+    const mode: ImportMode = modeParam === "upsert" ? "upsert" : "create";
 
     if (!file || !(file instanceof File)) {
       return NextResponse.json(
@@ -161,27 +171,31 @@ export async function POST(
       }
     }
 
-    // Execute the import in a transaction
+    // Execute the import
     let importedCount = 0;
+    let updatedCount = 0;
     const insertErrors: ImportRowError[] = [];
 
     if (validRows.length > 0) {
       if (source.targetEntity === "drivers") {
-        const result = await importDrivers(validRows, targetToSource, insertErrors);
-        importedCount = result;
+        const result = await importDrivers(validRows, targetToSource, insertErrors, mode);
+        importedCount = result.created;
+        updatedCount = result.updated;
       } else {
         const result = await importStamtabel(
           source.targetEntity,
           validRows,
           targetToSource,
-          insertErrors
+          insertErrors,
+          mode
         );
-        importedCount = result;
+        importedCount = result.created;
+        updatedCount = result.updated;
       }
     }
 
     const allErrors = [...errors, ...insertErrors];
-    const skippedRows = rows.length - importedCount;
+    const skippedRows = rows.length - importedCount - updatedCount;
 
     // Log the import
     await prisma.importLog.create({
@@ -190,6 +204,7 @@ export async function POST(
         fileName: file.name,
         totalRows: rows.length,
         importedRows: importedCount,
+        updatedRows: updatedCount,
         skippedRows,
         errors: allErrors.length > 0 ? allErrors : undefined,
       },
@@ -199,6 +214,7 @@ export async function POST(
       data: {
         totalRows: rows.length,
         importedRows: importedCount,
+        updatedRows: updatedCount,
         skippedRows,
         errors: allErrors,
       },
@@ -215,18 +231,22 @@ export async function POST(
   }
 }
 
+type ImportResult = { created: number; updated: number };
+
 /**
  * Import driver records from CSV rows.
- * Uses a transaction with individual creates (drivers have array fields).
- * Returns number of successfully imported rows.
+ * In create mode: creates new drivers.
+ * In upsert mode: matches on employeeNumber — updates if found, creates if not.
+ * Drivers without employeeNumber are always created (no unique key for matching).
  */
 async function importDrivers(
   rows: Record<string, string>[],
   targetToSource: Map<string, string>,
-  errors: ImportRowError[]
-): Promise<number> {
+  errors: ImportRowError[],
+  mode: ImportMode
+): Promise<ImportResult> {
   const driverData = rows.map((row, i) => {
-    const rowNum = i + 2; // offset for error reporting
+    const rowNum = i + 2;
     const firstName = row[targetToSource.get("firstName")!]?.trim() || "";
     const lastName = row[targetToSource.get("lastName")!]?.trim() || "";
     const employeeNumberCol = targetToSource.get("employeeNumber");
@@ -246,11 +266,35 @@ async function importDrivers(
     };
   });
 
-  let imported = 0;
+  let created = 0;
+  let updated = 0;
 
   await prisma.$transaction(async (tx) => {
     for (const d of driverData) {
       try {
+        if (mode === "upsert" && d.employeeNumber) {
+          // Find existing driver by employeeNumber
+          const existing = await tx.driver.findFirst({
+            where: { employeeNumber: d.employeeNumber },
+          });
+
+          if (existing) {
+            // Update only mapped fields
+            const updateData: Record<string, unknown> = {};
+            if (targetToSource.has("firstName")) updateData.firstName = d.firstName;
+            if (targetToSource.has("lastName")) updateData.lastName = d.lastName;
+            if (targetToSource.has("licenseTypes")) updateData.licenseTypes = d.licenseTypes;
+
+            await tx.driver.update({
+              where: { id: existing.id },
+              data: updateData,
+            });
+            updated++;
+            continue;
+          }
+        }
+
+        // Create new driver
         await tx.driver.create({
           data: {
             firstName: d.firstName,
@@ -259,30 +303,31 @@ async function importDrivers(
             licenseTypes: d.licenseTypes,
           },
         });
-        imported++;
+        created++;
       } catch (err) {
         errors.push({
           row: d.rowNum,
-          message: `Kan chauffeur "${d.firstName} ${d.lastName}" niet aanmaken: ${err instanceof Error ? err.message : "onbekende fout"}`,
+          message: `Kan chauffeur "${d.firstName} ${d.lastName}" niet ${mode === "upsert" ? "bijwerken/aanmaken" : "aanmaken"}: ${err instanceof Error ? err.message : "onbekende fout"}`,
         });
       }
     }
   });
 
-  return imported;
+  return { created, updated };
 }
 
 /**
  * Import stamtabel records (employers, departments, locations) from CSV rows.
- * Uses createMany with skipDuplicates to handle existing codes gracefully.
- * Returns number of successfully imported rows.
+ * In create mode: uses createMany with skipDuplicates.
+ * In upsert mode: uses Prisma upsert to update existing records matched by code.
  */
 async function importStamtabel(
   targetEntity: string,
   rows: Record<string, string>[],
   targetToSource: Map<string, string>,
-  errors: ImportRowError[]
-): Promise<number> {
+  errors: ImportRowError[],
+  mode: ImportMode
+): Promise<ImportResult> {
   const modelMap: Record<string, string> = {
     employers: "employer",
     departments: "department",
@@ -290,7 +335,7 @@ async function importStamtabel(
   };
 
   const modelName = modelMap[targetEntity];
-  if (!modelName) return 0;
+  if (!modelName) return { created: 0, updated: 0 };
 
   const model = (prisma as any)[modelName];
   const codeCol = targetToSource.get("code")!;
@@ -327,9 +372,49 @@ async function importStamtabel(
     uniqueData.push({ code, description });
   }
 
-  if (uniqueData.length === 0) return 0;
+  if (uniqueData.length === 0) return { created: 0, updated: 0 };
 
-  // Use createMany with skipDuplicates to handle existing codes
+  if (mode === "upsert") {
+    // Use individual upsert calls within a transaction
+    let created = 0;
+    let updated = 0;
+
+    await prisma.$transaction(async (tx) => {
+      const txModel = (tx as any)[modelName];
+      for (const item of uniqueData) {
+        try {
+          const existing = await txModel.findUnique({
+            where: { code: item.code },
+            select: { id: true, description: true },
+          });
+
+          if (existing) {
+            // Only update if description actually changed
+            if (existing.description !== item.description) {
+              await txModel.update({
+                where: { code: item.code },
+                data: { description: item.description },
+              });
+              updated++;
+            }
+            // If description is the same, count as skipped (not updated)
+          } else {
+            await txModel.create({ data: item });
+            created++;
+          }
+        } catch (err) {
+          errors.push({
+            row: 0,
+            message: `Kan "${item.code}" niet bijwerken/aanmaken: ${err instanceof Error ? err.message : "onbekende fout"}`,
+          });
+        }
+      }
+    });
+
+    return { created, updated };
+  }
+
+  // Create mode: use createMany with skipDuplicates
   const result = await model.createMany({
     data: uniqueData,
     skipDuplicates: true,
@@ -343,5 +428,5 @@ async function importStamtabel(
     });
   }
 
-  return result.count;
+  return { created: result.count, updated: 0 };
 }
