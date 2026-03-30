@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, validateOptionalForeignKey, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { resolveScenarioId, validateOptionalForeignKey, requireRole, parseJsonBody, validateDateFormats } from "@/lib/api-route-utils";
 
 export const POST = withPerfLogging(
   "POST /api/planning/bulk",
@@ -27,6 +27,11 @@ export const POST = withPerfLogging(
           { error: "Maximaal 366 datums per bulkbewerking" },
           { status: 400 }
         );
+      }
+
+      const dateError = validateDateFormats(dates.map(String));
+      if (dateError) {
+        return NextResponse.json({ error: dateError }, { status: 400 });
       }
 
       const resolvedScenarioId = resolveScenarioId(scenarioId);

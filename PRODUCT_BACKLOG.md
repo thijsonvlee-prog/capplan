@@ -27,35 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-099: Batch import transactions into chunks
-
-- **ID:** PB-099
-- **Title:** Chunk large CSV import transactions to prevent connection timeouts
-- **Problem / opportunity:** The import execute endpoint processes all rows inside a single `prisma.$transaction`. At 10,000 rows (the PB-092 limit), this creates 10,000+ individual queries in one transaction. Neon serverless connections have timeout limits that could cause partial imports to fail silently.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** PB-092 introduced the 10K row ceiling. The single-transaction approach is now the reliability bottleneck for large imports.
-- **Scope notes:** Split the transaction into chunks of 500-1000 rows, committing each chunk separately. Track progress across chunks and report partial results if a chunk fails. Preserve the existing import result summary (created/updated/skipped counts).
-- **Dependencies:** None.
-- **Definition of done:** Import of 10,000 rows completes reliably without timeout. Partial failures report which chunk failed. Verify with `npm run verify`.
-- **Implementation note:** Process rows in batches within a loop, committing each batch. Accumulate results across batches. If a batch fails, return partial results with error details.
-- **Source:** DE-REC-044.
-
-### PB-100: Add date format validation to planning endpoints
-
-- **ID:** PB-100
-- **Title:** Validate YYYY-MM-DD format on date parameters in planning routes
-- **Problem / opportunity:** `/api/planning/for-range`, `/api/planning/bulk`, and `/api/planning` accept date strings without format validation. Invalid dates like "2025-99-99" or "abc" silently produce empty results or unexpected behavior.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Planning endpoints are the highest-traffic routes. Basic input validation prevents silent data corruption.
-- **Scope notes:** Add a shared date format validator (`/^\d{4}-\d{2}-\d{2}$/`) to `api-route-utils.ts`. Apply it on all date-accepting planning endpoints. Return a clear Dutch error message for invalid dates.
-- **Dependencies:** None.
-- **Definition of done:** Invalid date inputs return a 400 error with Dutch message. Valid dates work unchanged. Verify with `npm run verify`.
-- **Implementation note:** Add `validateDateFormat()` to `api-route-utils.ts`. Apply to `startDate`/`endDate` in for-range, date arrays in bulk, and `date` in the base planning route.
-- **Source:** DE-REC-045.
+_No items currently ready._
 
 ---
 
@@ -66,6 +38,20 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-099: Batch import transactions into chunks
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Split both `importDrivers` and `importStamtabel` (upsert mode) into chunks of 500 rows, each processed in its own `prisma.$transaction`. Accumulated created/updated/error counts across chunks. If a chunk-level transaction fails, the error is recorded with the chunk number and row range, and remaining chunks continue processing. Existing import result summary and logging unchanged.
+
+### PB-100: Add date format validation to planning endpoints
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Added `validateDateFormat()` and `validateDateFormats()` to `api-route-utils.ts`. Validates regex format (`/^\d{4}-\d{2}-\d{2}$/`) and semantic validity (rejects dates like 2025-02-30 that would roll over). Applied to: GET `/api/planning/for-range` (dates query param), POST `/api/planning/bulk` (dates array in body), GET `/api/planning` (dates query param), POST `/api/planning` (single date in body). All return 400 with Dutch error messages.
 
 ### PB-096: Planning grid virtual scrolling
 

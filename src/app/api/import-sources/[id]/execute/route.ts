@@ -241,11 +241,16 @@ export async function POST(
 
 type ImportResult = { created: number; updated: number };
 
+const CHUNK_SIZE = 500;
+
 /**
  * Import driver records from CSV rows.
  * In create mode: creates new drivers.
  * In upsert mode: matches on employeeNumber — updates if found, creates if not.
  * Drivers without employeeNumber are always created (no unique key for matching).
+ *
+ * Processes rows in chunks of CHUNK_SIZE within separate transactions to prevent
+ * connection timeouts on Neon serverless with large imports.
  */
 async function importDrivers(
   rows: Record<string, string>[],
@@ -277,49 +282,58 @@ async function importDrivers(
   let created = 0;
   let updated = 0;
 
-  await prisma.$transaction(async (tx) => {
-    for (const d of driverData) {
-      try {
-        if (mode === "upsert" && d.employeeNumber) {
-          // Find existing driver by employeeNumber
-          const existing = await tx.driver.findFirst({
-            where: { employeeNumber: d.employeeNumber },
-          });
+  for (let offset = 0; offset < driverData.length; offset += CHUNK_SIZE) {
+    const chunk = driverData.slice(offset, offset + CHUNK_SIZE);
+    const chunkIndex = Math.floor(offset / CHUNK_SIZE) + 1;
 
-          if (existing) {
-            // Update only mapped fields
-            const updateData: Record<string, unknown> = {};
-            if (targetToSource.has("firstName")) updateData.firstName = d.firstName;
-            if (targetToSource.has("lastName")) updateData.lastName = d.lastName;
-            if (targetToSource.has("licenseTypes")) updateData.licenseTypes = d.licenseTypes;
+    try {
+      await prisma.$transaction(async (tx) => {
+        for (const d of chunk) {
+          try {
+            if (mode === "upsert" && d.employeeNumber) {
+              const existing = await tx.driver.findFirst({
+                where: { employeeNumber: d.employeeNumber },
+              });
 
-            await tx.driver.update({
-              where: { id: existing.id },
-              data: updateData,
+              if (existing) {
+                const updateData: Record<string, unknown> = {};
+                if (targetToSource.has("firstName")) updateData.firstName = d.firstName;
+                if (targetToSource.has("lastName")) updateData.lastName = d.lastName;
+                if (targetToSource.has("licenseTypes")) updateData.licenseTypes = d.licenseTypes;
+
+                await tx.driver.update({
+                  where: { id: existing.id },
+                  data: updateData,
+                });
+                updated++;
+                continue;
+              }
+            }
+
+            await tx.driver.create({
+              data: {
+                firstName: d.firstName,
+                lastName: d.lastName,
+                employeeNumber: d.employeeNumber,
+                licenseTypes: d.licenseTypes,
+              },
             });
-            updated++;
-            continue;
+            created++;
+          } catch (err) {
+            errors.push({
+              row: d.rowNum,
+              message: `Kan chauffeur "${d.firstName} ${d.lastName}" niet ${mode === "upsert" ? "bijwerken/aanmaken" : "aanmaken"}: ${err instanceof Error ? err.message : "onbekende fout"}`,
+            });
           }
         }
-
-        // Create new driver
-        await tx.driver.create({
-          data: {
-            firstName: d.firstName,
-            lastName: d.lastName,
-            employeeNumber: d.employeeNumber,
-            licenseTypes: d.licenseTypes,
-          },
-        });
-        created++;
-      } catch (err) {
-        errors.push({
-          row: d.rowNum,
-          message: `Kan chauffeur "${d.firstName} ${d.lastName}" niet ${mode === "upsert" ? "bijwerken/aanmaken" : "aanmaken"}: ${err instanceof Error ? err.message : "onbekende fout"}`,
-        });
-      }
+      });
+    } catch (err) {
+      errors.push({
+        row: 0,
+        message: `Chunk ${chunkIndex} (rijen ${offset + 2}-${offset + chunk.length + 1}) mislukt: ${err instanceof Error ? err.message : "onbekende fout"}`,
+      });
     }
-  });
+  }
 
   return { created, updated };
 }
@@ -383,41 +397,50 @@ async function importStamtabel(
   if (uniqueData.length === 0) return { created: 0, updated: 0 };
 
   if (mode === "upsert") {
-    // Use individual upsert calls within a transaction
     let created = 0;
     let updated = 0;
 
-    await prisma.$transaction(async (tx) => {
-      const txModel = (tx as any)[modelName];
-      for (const item of uniqueData) {
-        try {
-          const existing = await txModel.findUnique({
-            where: { code: item.code },
-            select: { id: true, description: true },
-          });
+    for (let offset = 0; offset < uniqueData.length; offset += CHUNK_SIZE) {
+      const chunk = uniqueData.slice(offset, offset + CHUNK_SIZE);
+      const chunkIndex = Math.floor(offset / CHUNK_SIZE) + 1;
 
-          if (existing) {
-            // Only update if description actually changed
-            if (existing.description !== item.description) {
-              await txModel.update({
+      try {
+        await prisma.$transaction(async (tx) => {
+          const txModel = (tx as any)[modelName];
+          for (const item of chunk) {
+            try {
+              const existing = await txModel.findUnique({
                 where: { code: item.code },
-                data: { description: item.description },
+                select: { id: true, description: true },
               });
-              updated++;
+
+              if (existing) {
+                if (existing.description !== item.description) {
+                  await txModel.update({
+                    where: { code: item.code },
+                    data: { description: item.description },
+                  });
+                  updated++;
+                }
+              } else {
+                await txModel.create({ data: item });
+                created++;
+              }
+            } catch (err) {
+              errors.push({
+                row: 0,
+                message: `Kan "${item.code}" niet bijwerken/aanmaken: ${err instanceof Error ? err.message : "onbekende fout"}`,
+              });
             }
-            // If description is the same, count as skipped (not updated)
-          } else {
-            await txModel.create({ data: item });
-            created++;
           }
-        } catch (err) {
-          errors.push({
-            row: 0,
-            message: `Kan "${item.code}" niet bijwerken/aanmaken: ${err instanceof Error ? err.message : "onbekende fout"}`,
-          });
-        }
+        });
+      } catch (err) {
+        errors.push({
+          row: 0,
+          message: `Chunk ${chunkIndex} mislukt: ${err instanceof Error ? err.message : "onbekende fout"}`,
+        });
       }
-    });
+    }
 
     return { created, updated };
   }

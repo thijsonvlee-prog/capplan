@@ -6,37 +6,24 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle delivered the Phase 1 scaling initiative (SMI-011): server-side pagination for the two heaviest API endpoints (`/api/planning/for-range` and `/api/drivers`), a covering index for capacity aggregation, and a CSV import row count guardrail. All four items shipped clean (0 typecheck errors, 0 lint warnings). PB-096 and PB-097 (frontend virtual scrolling and pagination UI) are now unblocked.
+This cycle completed the two remaining reliability items from Phase 1 scaling: import transaction chunking (PB-099) and date format validation on planning endpoints (PB-100). Both shipped clean (0 typecheck errors, 0 lint warnings). The import path now processes rows in 500-row chunks to prevent Neon connection timeouts. All planning endpoints reject invalid date formats with clear Dutch error messages.
 
-Fresh codebase scan identified several actionable improvements. The most impactful are: scenario duplication memory batching (already deferred as PB-098, now more relevant post-pagination), CapacitySummaryRow `.find()` optimization, and import transaction chunking for large driver imports. The codebase remains healthy at 22 models, 29 route files.
+Fresh codebase scan confirms the codebase is in healthy shape. The most impactful remaining improvements are: scenario duplication memory batching (PB-098, currently deferred), and the CapacitySummaryRow `.find()` optimization. No critical issues found.
 
 ## Recommended Next Improvements
 
-### DE-REC-044: Batch import transactions into chunks
+### DE-REC-046: Batch scenario duplication into chunks
 
-- **Title:** Chunk large CSV import transactions to prevent connection timeouts
-- **Problem:** The import execute endpoint processes driver rows sequentially inside a single `prisma.$transaction`. At 10,000 rows (the new limit), this creates 10,000+ individual queries in one transaction. Neon serverless connections have idle/total timeout limits that could cause partial imports to fail silently.
-- **Proposed improvement:** Split the transaction into chunks of 500-1000 rows, committing each chunk separately. Track progress across chunks and report partial results if a chunk fails.
-- **Expected product/technical value:** Reliable imports at the 10,000 row limit. No silent failures.
-- **Priority:** P3 Medium
-- **Effort:** Medium
-- **Risk:** Low — each chunk is independent; partial success is better than full failure.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** The row count limit (PB-092) prevents unbounded imports, but the transaction still runs as one unit. At the new 10K ceiling, timeouts are plausible.
-
-### DE-REC-045: Add date format validation to planning endpoints
-
-- **Title:** Validate YYYY-MM-DD format on date parameters in planning routes
-- **Problem:** `/api/planning/for-range`, `/api/planning/bulk`, and `/api/planning` accept date strings without format validation. Invalid dates like "2025-99-99" or "abc" are passed to Prisma and silently produce empty results or unexpected behavior.
-- **Proposed improvement:** Add a shared date format validator (`/^\d{4}-\d{2}-\d{2}$/`) to `api-route-utils.ts` and apply it on all date-accepting planning endpoints.
-- **Expected product/technical value:** Prevents silent data corruption and confusing empty query results.
+- **Title:** Chunk scenario duplication to reduce memory pressure at scale
+- **Problem:** `POST /api/scenarios/[id]/duplicate` loads all planning entries (up to 50,000) into Node.js memory at once, then creates them in a single `createMany`. Near the 50K ceiling, this creates a significant memory spike and risks timeouts.
+- **Proposed improvement:** Fetch and create entries in chunks of 5,000. This keeps memory usage constant regardless of total entries.
+- **Expected product/technical value:** Reliable duplication at scale without memory spikes or timeouts.
 - **Priority:** P3 Medium
 - **Effort:** Small
-- **Risk:** Low.
+- **Risk:** Low — same chunking pattern already proven in import execute (PB-099).
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** The planning endpoints are the highest-traffic routes. Input validation is a basic reliability measure.
+- **Why now:** PB-098 was deferred pending core scaling work. All Phase 1+2 scaling items are now complete. This is the last known reliability bottleneck for large datasets.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -54,7 +41,7 @@ Fresh codebase scan identified several actionable improvements. The most impactf
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 90 (max date range), 100 (max code length), 5MB (max file size), 10000 (max import rows), 500 (max page size), 20 (max import logs).
+- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 90 (max date range), 100 (max code length), 5MB (max file size), 10000 (max import rows), 500 (max page size/chunk size), 20 (max import logs).
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
@@ -62,7 +49,7 @@ Fresh codebase scan identified several actionable improvements. The most impactf
 - **Risk:** Low.
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Low-effort maintainability improvement. More limits were added this cycle.
+- **Why now:** Low-effort maintainability improvement. More limits were added this cycle (chunk size, page size).
 
 ### DE-REC-014: Move hardcoded comparison chart colors to constants
 
@@ -92,12 +79,11 @@ Fresh codebase scan identified several actionable improvements. The most impactf
 
 ## Risks / Watch-outs
 
-- **Frontend pagination integration:** PB-093 and PB-094 ship backward-compatible APIs, but the real scaling benefit only lands when the frontend (PB-096, PB-097) consumes pagination. Until then, existing callers load all data. This is by design — phase 2 is the Experience Agent's domain.
-- **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory. With 1000 drivers × 90 days, this limit could be approached. PB-098 (deferred) addresses this.
-- **Import transaction size at ceiling:** At the new 10K row limit, the single-transaction import could hit Neon connection timeouts. DE-REC-044 proposes chunking.
+- **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory. With 1000 drivers x 90 days, this limit could be approached. DE-REC-046 proposes chunking (same pattern as PB-099).
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed to avoid maintaining dead/experimental code.
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive and role enforcement is skipped.
 - **Driver upsert without unique constraint:** Driver upsert matches on `employeeNumber` using `findFirst` (not a unique constraint). If multiple drivers share an `employeeNumber`, only the first is updated. Adding a unique constraint is a product decision.
+- **Import partial failure semantics:** With chunked transactions (PB-099), a mid-import failure now means some chunks succeeded and some failed. The import log and response correctly report partial results, but the user cannot "undo" a partially completed import. This is expected behavior and documented in the error output.
 
 ## Items Intentionally Not Recommended
 
@@ -132,6 +118,7 @@ Fresh codebase scan identified several actionable improvements. The most impactf
 - **Add composite (driverId, scenarioId, date) index:** The unique constraint `(driverId, date, scenarioId)` already covers this query pattern. Adding a redundant index wastes write performance.
 - **Add request rate limiting on imports:** No user authentication → no per-user tracking. Rate limiting makes sense after multi-tenant features land.
 - **Add concurrent request deduplication in useApi:** Low-frequency issue; components share cache via 30s freshness window. Complexity not justified.
+- **Add progress tracking for long operations:** Would require streaming responses or a job queue — significant architectural change for an uncommon operation.
 
 ## Recommendation Rules
 

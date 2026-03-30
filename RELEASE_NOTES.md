@@ -10,6 +10,11 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 - **Virtual scrolling planningsrooster:** Het planningsrooster rendert nu alleen de zichtbare rijen in de browser. Bij 1000+ chauffeurs blijft het scrollen soepel doordat slechts ~30-50 rijen tegelijk in het DOM aanwezig zijn, in plaats van alle rijen. Alle bestaande functionaliteit (vastgezette kolommen, groepskoppen, slepen-selecteren, capaciteitstotalen) blijft ongewijzigd werken.
 
+### Betrouwbaarheid
+
+- **Import in chunks:** Grote CSV-imports worden nu in blokken van 500 rijen verwerkt in plaats van in één transactie. Bij 10.000 rijen voorkomt dit time-outs op de Neon serverless-verbinding. Als een blok mislukt, worden de reeds verwerkte rijen behouden en wordt een foutmelding getoond met het bloknummer en het rijbereik.
+- **Datumvalidatie planningsendpoints:** Alle planningsendpoints (`/api/planning`, `/api/planning/for-range`, `/api/planning/bulk`) valideren nu het datumformaat (JJJJ-MM-DD). Ongeldige datums zoals "2025-99-99" of "abc" geven een duidelijke 400-foutmelding in het Nederlands in plaats van lege of onverwachte resultaten.
+
 ### UX / design verbeteringen
 
 - **Paginering chauffeurspagina:** De chauffeurspagina gebruikt nu server-side paginering en zoeken. Pagineringknoppen (eerste/vorige/volgende/laatste), een paginagrootte-kiezer (25/50/100) en een totaalteller zijn toegevoegd. Zoeken is vertraagd (300ms) voor responsieve server-side filtering op naam en personeelsnummer. Een wisknop is toegevoegd aan het zoekveld.

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformDriver, transformPlanningEntry } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformDriver, transformPlanningEntry, validateDateFormats } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning/for-range",
@@ -32,6 +32,11 @@ export const GET = withPerfLogging(
           { error: "Maximaal 90 datums per verzoek" },
           { status: 400 }
         );
+      }
+
+      const dateError = validateDateFormats(dateList);
+      if (dateError) {
+        return NextResponse.json({ error: dateError }, { status: 400 });
       }
 
       const resolvedScenarioId = resolveScenarioId(scenarioId);

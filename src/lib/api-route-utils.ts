@@ -309,6 +309,43 @@ export async function validateOptionalForeignKey(
   return null;
 }
 
+// === Date validation utilities ===
+
+const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Validate that a date string is in YYYY-MM-DD format and represents a valid date.
+ * Returns a Dutch error message if invalid, or null if valid.
+ */
+export function validateDateFormat(date: string): string | null {
+  if (!DATE_FORMAT_REGEX.test(date)) {
+    return `Ongeldige datumnotatie: "${date}". Gebruik het formaat JJJJ-MM-DD.`;
+  }
+  // Check that the date is actually valid (e.g. reject 2025-02-30)
+  const parsed = new Date(date + "T00:00:00Z");
+  if (isNaN(parsed.getTime())) {
+    return `Ongeldige datum: "${date}".`;
+  }
+  // Verify the parsed date matches the input (catches e.g. Feb 30 → Mar 2)
+  const iso = parsed.toISOString().split("T")[0];
+  if (iso !== date) {
+    return `Ongeldige datum: "${date}".`;
+  }
+  return null;
+}
+
+/**
+ * Validate an array of date strings. Returns a Dutch error message for the first
+ * invalid date, or null if all dates are valid.
+ */
+export function validateDateFormats(dates: string[]): string | null {
+  for (const date of dates) {
+    const error = validateDateFormat(date);
+    if (error) return error;
+  }
+  return null;
+}
+
 // === Sub-record utilities ===
 
 /**

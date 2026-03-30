@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, parseJsonBody, validateDateFormat, validateDateFormats } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning",
@@ -29,7 +29,11 @@ export const GET = withPerfLogging(
     }
 
     if (dates) {
-      const dateList = dates.split(",").map((d) => d.trim());
+      const dateList = dates.split(",").map((d) => d.trim()).filter(Boolean);
+      const dateError = validateDateFormats(dateList);
+      if (dateError) {
+        return NextResponse.json({ error: dateError }, { status: 400 });
+      }
       where.date = { in: dateList };
     }
 
@@ -67,6 +71,11 @@ export const POST = withPerfLogging(
         { error: "driverId, datum en status zijn verplicht" },
         { status: 400 }
       );
+    }
+
+    const dateError = validateDateFormat(String(date));
+    if (dateError) {
+      return NextResponse.json({ error: dateError }, { status: 400 });
     }
 
     const resolvedScenarioId = resolveScenarioId(scenarioId);
