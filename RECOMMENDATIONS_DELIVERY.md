@@ -8,7 +8,7 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 This cycle completed PB-107: the PrismaAdapter's `createUser` method is now overridden to prevent auto-creation of User records during OAuth sign-in. Investigation of the NextAuth v4 source code confirmed the `signIn` callback already runs before `createUser`, so orphan creation was unlikely in the current version — the override serves as defense-in-depth. Login error handling was improved with Dutch messages for all OAuth error types and a generic fallback.
 
-The codebase remains in healthy shape. No critical issues found. The remaining recommendations are maintenance-level and low-priority. DE-REC-047 is now completed (PB-107).
+A fresh codebase scan identified several new findings: the import execute route has N+1 sequential queries per row inside transaction chunks (DE-REC-049), `groupDrivers` in PlanningGrid is not memoized (DE-REC-050), and the capacity endpoint lacks date validation and length limits (DE-REC-051). These are the most impactful improvements available. DE-REC-047 is now completed (PB-107).
 
 ## Recommended Next Improvements
 
@@ -24,6 +24,45 @@ The codebase remains in healthy shape. No critical issues found. The remaining r
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
 - **Why now:** Small fix, completes the login error handling story.
+
+### DE-REC-049: Import execute — batch lookups instead of per-row queries
+
+- **Title:** Replace sequential per-row `findFirst` + `create`/`update` with batched operations in import execute
+- **Problem:** In `src/app/api/import-sources/[id]/execute/route.ts` (lines 290–329), each row in a 500-row transaction chunk triggers a separate `tx.driver.findFirst()` followed by `tx.driver.update()` or `tx.driver.create()`. For a full 500-row chunk this means 500–1000 sequential round-trips to Neon, which is extremely slow on a serverless database with per-query latency.
+- **Proposed improvement:** Batch the `findFirst` calls into a single `findMany({ where: { employeeNumber: { in: chunkEmployeeNumbers } } })`, build a Map of existing drivers, then issue batched `createMany` for new drivers and individual updates only for upserts.
+- **Expected product/technical value:** Import execution speed improvement of 5–10x for large files. Direct user-facing improvement.
+- **Priority:** P2 High
+- **Effort:** Medium
+- **Risk:** Medium — the inner try/catch per row currently allows partial success within a chunk. Batching changes the error granularity. Needs careful error reporting preservation.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Import is a user-facing feature with 10,000-row capacity. Current performance degrades significantly at scale.
+
+### DE-REC-050: PlanningGrid — memoize groupDrivers call
+
+- **Title:** Wrap `groupDrivers()` in `useMemo` in PlanningGrid
+- **Problem:** In `src/components/planning/PlanningGrid.tsx` line 326, `groupDrivers(sortedDrivers, groupBy, { employers, departments, locations })` is called on every render without memoization. This builds new Map instances and iterates all drivers on each render cycle, including during scroll events.
+- **Proposed improvement:** Wrap in `useMemo` with dependencies `[sortedDrivers, groupBy, employers, departments, locations]`.
+- **Expected product/technical value:** Reduces unnecessary computation during scroll and re-renders. Consistent with the memoization patterns already used elsewhere in PlanningGrid.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low — straightforward memoization. Same pattern used throughout the component.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Easy win, directly improves scroll performance for large driver lists.
+
+### DE-REC-051: Capacity endpoint — add date validation and length limit
+
+- **Title:** Add date format validation and length cap to `/api/planning/capacity`
+- **Problem:** In `src/app/api/planning/capacity/route.ts` line 21, dates are split from a comma-separated string and passed directly to a Prisma `WHERE date IN (...)` clause without format validation or length limit. The `for-range` endpoint already validates date formats and caps at 90 dates — the capacity endpoint lacks both guards.
+- **Proposed improvement:** Add `validateDateFormats(dateList)` and a `dateList.length > 366` check, consistent with the pattern in `for-range`.
+- **Expected product/technical value:** Prevents oversized queries from hitting the database. Consistent validation across planning endpoints.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low.
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Small fix, closes a validation gap between related endpoints.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -79,11 +118,14 @@ The codebase remains in healthy shape. No critical issues found. The remaining r
 
 ## Risks / Watch-outs
 
+- **Import performance at scale:** The import execute route issues sequential per-row database queries (N+1 pattern). A 10,000-row import generates up to 20,000 individual queries across 20 chunks. On Neon serverless this can take minutes. DE-REC-049 proposes batching.
+- **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls — the promise is dropped with no `.catch()`. A failed save leaves the UI showing unsaved state. This is a known design choice (CLAUDE.md: "Apply optimistic updates only where the pattern already exists") but becomes riskier as more users are active.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed to avoid maintaining dead/experimental code.
-- **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive and role enforcement is skipped.
+- **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive and role enforcement is skipped. No warning is logged when auth is skipped.
 - **Driver upsert without unique constraint:** Driver upsert matches on `employeeNumber` using `findFirst` (not a unique constraint). If multiple drivers share an `employeeNumber`, only the first is updated. Adding a unique constraint is a product decision.
 - **Import partial failure semantics:** With chunked transactions, a mid-import failure means some chunks succeeded and some failed. The import log correctly reports partial results, but the user cannot "undo" a partially completed import.
 - **ESC-008 user groups scope:** Still open — blocks PB-104. This is the largest upcoming feature and will touch data model, API routes, and UI.
+- **Dead performance analysis code:** Five exported functions in `src/lib/perf.ts` (`getSlowEvents`, `getRouteStats`, `generateDailySummary`, `cleanupOldEvents`, `compareDays`) are never called. The PerformanceEvent table is written to on every request but never read, cleaned, or summarised.
 
 ## Items Intentionally Not Recommended
 
@@ -121,6 +163,10 @@ The codebase remains in healthy shape. No critical issues found. The remaining r
 - **Add progress tracking for long operations:** Would require streaming responses or a job queue — significant architectural change for an uncommon operation.
 - **Type-safe dynamic Prisma model access:** The `(prisma as any)[modelName]` pattern in import-sources is a pragmatic choice for entity-generic import logic. A typed wrapper adds complexity without functional benefit.
 - **Clean up orphan User records retroactively:** Requires manual identification. Separate concern from prevention (PB-107).
+- **Add planning status enum validation on API routes:** Frontend already constrains values via the status selector. Server-side validation would be defense-in-depth but the frontend is the only consumer. Revisit if an external API is exposed.
+- **Replace `useApi` cache key from `fetcher.toString()` to stable keys:** The current approach works because all fetch calls use named methods from `api.ts` (not inline arrows in JSX). Refactoring the cache key mechanism would touch every `useApiData` call site with no functional improvement.
+- **Add error handling to PlanningGrid optimistic updates:** The fire-and-forget pattern is a deliberate design choice documented in CLAUDE.md. Adding rollback logic would significantly increase complexity for a low-frequency failure scenario.
+- **Type the `parseJsonBody<T>` generic per route:** Would require creating ~25 request body interfaces. The `any` type is contained within API route handlers and doesn't leak to components.
 
 ## Recommendation Rules
 
