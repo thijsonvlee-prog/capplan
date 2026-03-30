@@ -10,6 +10,12 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-30 — Gebruikersbeheer, inloggen, CSV-import en authenticatie
+
+#### Functionele verbeteringen
+
+- **Gebruikersbeheer:** Nieuw tabblad "Gebruikers" op de instellingenpagina. Toont alle gebruikers met profielfoto, naam, e-mailadres, rol en lidmaatschapsdatum. Beheerders kunnen rollen toewijzen (Admin, Planner, Kijker) via klikbare rolbadges met bevestigingsdialoog.
+
 ### 2026-03-30 — Inloggen, CSV-import uitvoeren en authenticatie-infrastructuur
 
 #### Functionele verbeteringen

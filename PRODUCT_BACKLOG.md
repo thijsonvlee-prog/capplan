@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track is the primary focus. Login page and CSV import execution are both deployed. Next cycle completes the auth/user management track: Experience Agent builds the admin user management screen (PB-079), Delivery Agent implements role enforcement middleware (PB-082) plus a small validation fix (PB-083). Codebase healthy — 0 ESLint warnings, 0 typecheck errors.
+**Current direction:** Authentication track progressing well. User management screen (PB-079) is deployed. Remaining: Delivery Agent implements role enforcement middleware (PB-082) plus a small validation fix (PB-083). Codebase healthy — 0 ESLint warnings, 0 typecheck errors.
 
 ## Status Definitions
 
@@ -26,19 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-079: Admin panel — user management screen
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The Scrum Master wants an admin panel with user management. The User model exists in the database with roles (ADMIN, PLANNER, VIEWER) but no management UI exists.
-- **Why this matters now:** Direct SM directive (SMI-008). Login page (PB-081) is deployed, so users now have sessions. This is the natural next step to enable multi-user operation.
-- **Scope notes:** Build a user list/management screen within the settings page (new "Gebruikers" tab). Show all users with name, email, role, last login. Allow admins to change user roles. Follow the existing settings tab pattern.
-- **Dependencies:** PB-081 (completed).
-- **Definition of done:** Admin users can view all users and assign roles. New tab visible in settings. All text in Dutch. `npm run verify` passes.
-- **Implementation note:** Add as a new tab in the settings page, following the existing tab pattern (Stamgegevens, Competenties, Roosters, Connectiviteit). Use the existing User model fields. Auth infrastructure (PB-080) and login page (PB-081) are complete. API route needed: `GET /api/users` (list), `PUT /api/users/[id]` (update role). Experience Agent note: watch the settings tab count growth — 5 tabs may need responsive consideration.
-- **Source:** SMI-008, ESC-005.
 
 ### PB-082: Role enforcement middleware
 
@@ -81,6 +68,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-079: Admin panel — user management screen
+- **Completed:** 2026-03-30
+- **Owner:** Experience Agent
+- **Summary:** New "Gebruikers" tab in the settings page with user list and role management. Shows user avatar, name, email, role badge (Admin/Planner/Kijker), and member-since date. Clickable role badges open a dropdown with confirmation dialog for role changes. API routes: GET /api/users (list), PUT /api/users/[id] (update role). All text in Dutch. Design uses product-grade card layout with semantic role badges.
 
 ### PB-081: Login page and session UI
 - **Completed:** 2026-03-30

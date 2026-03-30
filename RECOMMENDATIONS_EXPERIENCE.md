@@ -3,26 +3,38 @@
 ## Summary
 
 **What was improved this cycle:**
-- PB-081: Built a complete login page and session UI. Login page (`/login`) uses a split-panel layout with a dark brand panel (left) and clean sign-in panel (right). Google and Microsoft provider buttons with loading states. NextAuth middleware protects all dashboard routes. Header now shows user avatar (or initials fallback), name, and logout button. All text in Dutch.
+- PB-079: Built a user management screen as a new "Gebruikers" tab in the settings page. Users are displayed with avatar, name, email, semantic role badges (Admin/Planner/Kijker), and member-since date. Clickable role badges trigger an inline dropdown with a confirmation dialog for role changes. Product-grade card layout with clear hierarchy.
 
 **Current design alignment with DESIGN.md:**
-- Login page: well-aligned. Split-panel composition with strong brand presence, editorial typography, restrained surfaces, and intentional hierarchy. Follows sections 2.1 (product-grade), 2.4 (premium restraint), 2.5 (composed screens), 7.1 (page headers), and 7.7 (inputs). Provider buttons use a reusable `.login-provider-btn` CSS class with design tokens.
-- Header session indicator: well-aligned. Compact user presence with avatar, name, and ghost logout button. Does not compete with page title. Follows section 7.2 (toolbar grouping) and 2.4 (restraint).
+- User management screen: well-aligned. Card layout with avatar-based identity, semantic role badges with icons, clear hierarchy between user identity and metadata. Follows sections 2.1 (product-grade), 2.5 (composed screens), 7.3 (cards and modules). Role badges use functional color: brand for Admin, success for Planner, neutral for Viewer.
+- Settings page overall: well-aligned (sections 2.5, 7.1, 7.2). Tab bar now has 5 tabs — still fits on desktop but may need responsive consideration on narrow viewports.
+- Login page: well-aligned. Split-panel composition with editorial typography.
+- Header session indicator: well-aligned.
 - Sidebar: well-aligned (section 7.8).
-- Settings page: well-aligned (sections 2.5, 7.1, 7.2).
-- Typography: improved. Manrope on page titles and login headline creates editorial contrast per section 5.1/5.3.
 - Capacity page: well-aligned.
 - Planning grid toolbar: well-aligned.
 - Import source manager: well-aligned.
 - Button system: fully aligned.
-- Planning grid matrix: partially aligned. Status chips and tonal row composition are good. Grid border structure and row composition have room for improvement.
+- Planning grid matrix: partially aligned. Status chips and tonal row composition are good. Grid border structure has room for improvement.
 - Drivers page: partially aligned. Page header is composed. Table is still table-first with generic CRUD feel.
 
 **Where design quality is still below target:**
 - The drivers table still reads as standard admin CRUD with alternating backgrounds, row borders, and table-first layout.
 - The planning grid matrix uses 1px row borders for structure. Pure tonal separation would be more aligned with DESIGN.md but risks reducing scanability in dense data.
+- Settings tab bar may overflow on narrow viewports now that there are 5 tabs.
 
 ## Recommended Next Improvements
+
+### EX-REC-045: Settings tab bar responsive treatment
+
+- **Problem:** The settings page now has 5 tabs (Stamgegevens, Competenties, Roosters, Connectiviteit, Gebruikers). On narrow viewports, tab labels may overflow or wrap awkwardly. This was flagged as a risk when PB-079 was scoped.
+- **Proposed improvement:** Add horizontal scrolling to `.settings-tabs` with `overflow-x: auto` and scroll-snap, or shorten tab labels on small screens. Could also add a mobile-friendly dropdown or accordion pattern.
+- **Expected user value:** Settings remain usable on tablets and narrow browser windows.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** The 5th tab was just added. Better to address before a 6th tab is needed.
 
 ### EX-REC-044: Add user identity to sidebar bottom section
 
@@ -37,8 +49,8 @@
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
 
-- **Problem:** The drivers table uses alternating row backgrounds (`bg-surface-secondary/50` on odd rows), `border-b border-border-subtle` on every row, and a flat table-first layout. Per DESIGN.md section 3.2, "table-first UI where the table dominates everything else" and "flat screens with weak hierarchy" are anti-patterns.
-- **Proposed improvement:** Remove alternating row backgrounds (they add noise, not clarity). Introduce subtle row hover as the primary visual differentiation. Consider whether the 9-column table could benefit from column grouping or a denser badge treatment for license/skill columns.
+- **Problem:** The drivers table uses alternating row backgrounds, `border-b border-border-subtle` on every row, and a flat table-first layout. Per DESIGN.md section 3.2, "table-first UI where the table dominates everything else" and "flat screens with weak hierarchy" are anti-patterns.
+- **Proposed improvement:** Remove alternating row backgrounds. Introduce subtle row hover as the primary visual differentiation. Consider whether the 9-column table could benefit from column grouping or a denser badge treatment for license/skill columns.
 - **Expected user value:** Cleaner, calmer table that feels more intentional and less like a default admin grid.
 - **Priority:** P4 Low
 - **Effort:** Small
@@ -48,8 +60,8 @@
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
-- **Problem:** Manrope is now applied to page titles but not to section titles or modal headers. Modal headers and form section headers could benefit from Manrope to reinforce hierarchy within complex screens.
-- **Proposed improvement:** Evaluate applying `font-family: var(--font-display)` to modal headers and possibly `.settings-section-title`. Keep `.text-section-title` on Inter to maintain the intended contrast with page titles.
+- **Problem:** Manrope is applied to page titles but not to section titles or modal headers. This creates an inconsistency in the typographic hierarchy across complex screens.
+- **Proposed improvement:** Evaluate applying `font-family: var(--font-display)` to modal headers and possibly `.settings-section-title`.
 - **Expected user value:** Stronger visual hierarchy within modals and settings sections.
 - **Priority:** P4 Low
 - **Effort:** Small
@@ -60,7 +72,7 @@
 ### EX-REC-043: Import source manager — visual mapping builder enhancement
 
 - **Problem:** The field mapping editor uses a functional grid layout with text inputs and dropdowns. While clear and usable, it reads as a standard form rather than a visual configuration tool.
-- **Proposed improvement:** Consider a card-based mapping representation where each mapping is a distinct visual unit, or a drag-connect style interface.
+- **Proposed improvement:** Consider a card-based mapping representation where each mapping is a distinct visual unit.
 - **Expected user value:** More intuitive, visual configuration experience.
 - **Priority:** P4 Low
 - **Effort:** Medium
@@ -81,12 +93,12 @@
 
 ## Risks / Watch-outs
 
-- **NextAuth middleware route matching.** The middleware matches all dashboard routes. If new top-level routes are added outside the dashboard group, they must be added to the middleware matcher to be protected.
-- **External image domains.** `next.config.mjs` now allows `lh3.googleusercontent.com` and `*.live.com` for OAuth avatars. If additional OAuth providers are added, their image domains must be allowlisted.
-- **PlanningGrid.tsx complexity.** The file is ~685 lines. Any further changes to the planning toolbar or grid must be verified carefully.
-- **Settings tab count growth.** The settings page now has 4 tabs. If more configuration categories are added (e.g., "Gebruikers" for PB-079), the tab bar may need responsive treatment.
+- **Settings tab count growth.** The settings page now has 5 tabs. If more configuration categories are added, the tab bar will need responsive treatment (EX-REC-045). Current tab bar is horizontal-only with no overflow handling.
+- **Role enforcement not yet active.** The user management screen allows role assignment, but PB-082 (role enforcement middleware) is not yet implemented. Until then, roles are decorative and all users have full access. This is expected and documented.
+- **NextAuth middleware route matching.** The middleware matches all dashboard routes. If new top-level routes are added, they must be added to the middleware matcher.
+- **External image domains.** `next.config.mjs` allows Google and Microsoft avatar domains. Additional OAuth providers need their image domains allowlisted.
+- **PlanningGrid.tsx complexity.** The file is ~685 lines. Any further changes must be verified carefully.
 - **Drivers table column density.** Removing alternating backgrounds (EX-REC-036) only helps if the remaining visual treatment provides enough row distinction at high driver counts.
-- **Planning grid No-Line Rule.** The grid's 1px row borders serve a functional purpose in dense data. Should be explored in a dedicated visual pass.
 
 ## Items Intentionally Not Recommended
 
@@ -101,7 +113,9 @@
 - **Recharts tooltip/axis custom styling:** Would improve premium feel but effort is disproportionate to impact.
 - **Planning grid No-Line Rule enforcement:** Should be explored in a dedicated planning grid visual pass.
 - **Separate sidebar entry for Connectiviteit:** Configuration belongs under Instellingen.
-- **Login page animation/transitions:** The current page is clean and fast. Animations would add complexity without clear user value.
+- **Login page animation/transitions:** Clean and fast. Animations would add complexity without clear user value.
+- **User deletion from admin panel:** Users are created via OAuth. Deletion should be handled carefully (cascading sessions, preferences). Not needed for MVP.
+- **Last login tracking:** The User model doesn't have a lastLogin field. Would require updating the session callback or adding a new field. Low priority — member-since date is sufficient for now.
 
 ## Recommendation Rules
 
