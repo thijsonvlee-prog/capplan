@@ -64,11 +64,31 @@ const drivers = {
   list(filter?: {
     isActive?: boolean;
     search?: string;
+    page?: number;
+    pageSize?: number;
   }): Promise<Driver[]> {
     return fetchJson<Driver[]>(
       buildUrl("/api/drivers", {
         isActive: filter?.isActive !== undefined ? String(filter.isActive) : undefined,
         search: filter?.search,
+        page: filter?.page !== undefined ? String(filter.page) : undefined,
+        pageSize: filter?.pageSize !== undefined ? String(filter.pageSize) : undefined,
+      })
+    );
+  },
+
+  listPaginated(filter?: {
+    isActive?: boolean;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<{ data: Driver[]; total: number; page: number; pageSize: number }> {
+    return fetchJson<{ data: Driver[]; total: number; page: number; pageSize: number }>(
+      buildUrl("/api/drivers", {
+        isActive: filter?.isActive !== undefined ? String(filter.isActive) : undefined,
+        search: filter?.search,
+        page: String(filter?.page ?? 1),
+        pageSize: String(filter?.pageSize ?? 50),
       })
     );
   },
@@ -168,12 +188,15 @@ const drivers = {
 const planning = {
   getForRange(
     dates: string[],
-    scenarioId?: string
-  ): Promise<{ drivers: DriverWithEntries[]; dates: string[] }> {
-    return fetchJson<{ drivers: DriverWithEntries[]; dates: string[] }>(
+    scenarioId?: string,
+    pagination?: { page: number; pageSize: number }
+  ): Promise<{ drivers: DriverWithEntries[]; dates: string[]; total?: number; page?: number; pageSize?: number }> {
+    return fetchJson<{ drivers: DriverWithEntries[]; dates: string[]; total?: number; page?: number; pageSize?: number }>(
       buildUrl("/api/planning/for-range", {
         dates: dates.join(","),
         scenarioId,
+        page: pagination ? String(pagination.page) : undefined,
+        pageSize: pagination ? String(pagination.pageSize) : undefined,
       })
     );
   },

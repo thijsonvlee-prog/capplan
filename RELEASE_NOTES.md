@@ -8,6 +8,18 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 _Geen wijzigingen in afwachting van release._
 
+### 2026-03-30 — Schaalbaarheid: paginering en index-optimalisatie
+
+#### Prestaties
+
+- **Paginering planningsrooster-API:** Het endpoint `/api/planning/for-range` ondersteunt nu optionele `page` en `pageSize` parameters. Hiermee worden chauffeurs in pagina's opgehaald in plaats van allemaal tegelijk, wat de laadtijd bij grote aantallen chauffeurs aanzienlijk verkort.
+- **Paginering chauffeurs-API:** Het endpoint `/api/drivers` ondersteunt nu optionele `page` en `pageSize` parameters met server-side zoeken op voornaam, achternaam en personeelsnummer. Bestaande aanroepen zonder paginering blijven ongewijzigd werken.
+- **Capaciteitsindex:** Een samengestelde index op `(scenarioId, date, status)` is toegevoegd aan de PlanningEntry-tabel. Dit versnelt de capaciteitsberekeningen bij groeiende datavolumes.
+
+#### Betrouwbaarheid
+
+- **CSV-import rijlimiet:** Het importeren van CSV-bestanden is nu begrensd tot maximaal 10.000 rijen per import. Bij overschrijding wordt een duidelijke foutmelding getoond. Dit voorkomt geheugen- en time-outproblemen bij grote bestanden.
+
 ## Release History
 
 ### 2026-03-30 — Gebruikersidentiteit, upsert-import en sessie-optimalisatie

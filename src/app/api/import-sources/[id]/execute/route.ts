@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/api-route-utils";
 import type { ImportRowError } from "@/domain/types";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_ROW_COUNT = 10_000;
 
 const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
 
@@ -109,6 +110,13 @@ export async function POST(
     if (rows.length === 0) {
       return NextResponse.json(
         { error: "Het bestand bevat geen gegevensrijen." },
+        { status: 400 }
+      );
+    }
+
+    if (rows.length > MAX_ROW_COUNT) {
+      return NextResponse.json(
+        { error: `Het bestand bevat ${rows.length} rijen. Maximaal ${MAX_ROW_COUNT.toLocaleString("nl-NL")} rijen per import toegestaan.` },
         { status: 400 }
       );
     }

@@ -235,6 +235,7 @@ model PlanningEntry {
   @@index([date])
   @@index([scenarioId])
   @@index([scenarioId, date])
+  @@index([scenarioId, date, status])
 }
 
 // === Scenario Domain ===

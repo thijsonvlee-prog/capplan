@@ -11,6 +11,13 @@ export const GET = withPerfLogging(
     const isActive = searchParams.get("isActive");
     const search = searchParams.get("search");
 
+    // Pagination parameters (optional — if not provided, return all)
+    const pageParam = searchParams.get("page");
+    const pageSizeParam = searchParams.get("pageSize");
+    const isPaginated = pageParam !== null || pageSizeParam !== null;
+    const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+    const pageSize = Math.min(500, Math.max(1, parseInt(pageSizeParam || "50", 10) || 50));
+
     const where: any = {};
 
     if (isActive !== null) {
@@ -26,15 +33,30 @@ export const GET = withPerfLogging(
       where.OR = [
         { firstName: { contains: search, mode: "insensitive" } },
         { lastName: { contains: search, mode: "insensitive" } },
+        { employeeNumber: { contains: search, mode: "insensitive" } },
       ];
     }
 
-    const drivers = await prisma.driver.findMany({
-      where,
-      include: driverInclude,
-      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-    });
+    const [drivers, total] = await Promise.all([
+      prisma.driver.findMany({
+        where,
+        include: driverInclude,
+        orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+        ...(isPaginated ? { skip: (page - 1) * pageSize, take: pageSize } : {}),
+      }),
+      isPaginated ? prisma.driver.count({ where }) : Promise.resolve(0),
+    ]);
 
+    if (isPaginated) {
+      return NextResponse.json({
+        data: drivers.map(transformDriver),
+        total,
+        page,
+        pageSize,
+      });
+    }
+
+    // Backward compatible: return plain array when no pagination params
     return NextResponse.json(drivers.map(transformDriver));
   } catch (error) {
     console.error("Error fetching drivers:", error instanceof Error ? error.message : "Unknown error");
