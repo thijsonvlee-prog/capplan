@@ -110,6 +110,28 @@ export function validateFieldMappings(
   return null;
 }
 
+// === JSON body parsing ===
+
+/**
+ * Safely parse the JSON body from a request.
+ * Returns { data } on success, or { error } with a 400 response on malformed JSON.
+ */
+export async function parseJsonBody<T = any>(
+  request: Request
+): Promise<{ data: T; error?: never } | { data?: never; error: NextResponse }> {
+  try {
+    const data = await request.json();
+    return { data };
+  } catch {
+    return {
+      error: NextResponse.json(
+        { error: "Ongeldige JSON in verzoek" },
+        { status: 400 }
+      ),
+    };
+  }
+}
+
 // === Driver utilities ===
 
 /** Prisma include object for fetching a driver with all relations */

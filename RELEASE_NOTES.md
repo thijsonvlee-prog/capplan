@@ -11,6 +11,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 - **Rolbewuste interface:** De interface past zich nu aan op basis van de rol van de ingelogde gebruiker. Kijkers (VIEWER) zien geen bewerkingsknoppen meer op het planningsscherm, chauffeurscherm en scenario's. Niet-beheerders zien geen schrijfknoppen meer op de instellingenpagina en het tabblad "Gebruikers" is alleen zichtbaar voor beheerders. Wanneer authenticatie niet is geconfigureerd, blijven alle acties beschikbaar.
 - **Instellingen-tabbladen op smal scherm:** De tabbalk op de instellingenpagina scrollt nu horizontaal op smalle schermen in plaats van tekst af te kappen of te laten terugvloeien.
 
+### Betrouwbaarheid
+
+- **JSON-parseerbeveiliging:** Alle 23 POST/PUT API-routes gebruiken nu een gedeelde `parseJsonBody()` helper die ongeldige JSON afvangt en een duidelijke 400-foutmelding ("Ongeldige JSON in verzoek") teruggeeft in plaats van een generieke 500-fout. Relevant voor externe integraties die data naar de import-API sturen.
+
+### Documentatie
+
+- **Authenticatie-setuphandleiding:** Nieuw `AUTH_SETUP.md` document met stapsgewijze instructies voor het configureren van authenticatie in Vercel. Behandelt alle vereiste omgevingsvariabelen, generatie van `NEXTAUTH_SECRET`, Google OAuth-setup, Azure AD-setup, verificatiestappen, roloverzicht en probleemoplossing.
+
 ## Release History
 
 ### 2026-03-30 — Bugfix: server error bij openen applicatie

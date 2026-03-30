@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSettingsModel, validateRequired, requireRole } from "@/lib/api-route-utils";
+import { getSettingsModel, validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
 export async function PUT(
   request: NextRequest,
@@ -19,7 +19,9 @@ export async function PUT(
       );
     }
 
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
     const { code, description } = body;
 
     const validationError = validateRequired(body, [

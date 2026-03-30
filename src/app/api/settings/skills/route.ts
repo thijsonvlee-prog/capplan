@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, requireRole } from "@/lib/api-route-utils";
+import { validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
 export async function GET() {
   try {
@@ -23,7 +23,9 @@ export async function POST(request: NextRequest) {
     const authError = await requireRole("ADMIN");
     if (authError) return authError;
 
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
     const { name } = body;
 
     const validationError = validateRequired(body, [

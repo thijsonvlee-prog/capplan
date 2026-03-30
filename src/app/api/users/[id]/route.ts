@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/api-route-utils";
+import { requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
 const VALID_ROLES = ["ADMIN", "PLANNER", "VIEWER"];
 
@@ -13,7 +13,9 @@ export async function PUT(
     if (authError) return authError;
 
     const { id } = await params;
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
     const { role } = body;
 
     if (!role || !VALID_ROLES.includes(role)) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, validateOptionalForeignKey, requireRole } from "@/lib/api-route-utils";
+import { validateRequired, validateOptionalForeignKey, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
 export async function PUT(
   request: NextRequest,
@@ -11,7 +11,9 @@ export async function PUT(
     if (authError) return authError;
 
     const { id, recordId } = await params;
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
 
     const validationError = validateRequired(body, [
       { field: "startDate", label: "Startdatum" },

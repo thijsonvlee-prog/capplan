@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, requireRole, validateFieldMappings } from "@/lib/api-route-utils";
+import { validateRequired, requireRole, validateFieldMappings, parseJsonBody } from "@/lib/api-route-utils";
 
 const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
 
@@ -39,7 +39,9 @@ export async function PUT(
     if (authError) return authError;
 
     const { id } = await params;
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
     const { name, targetEntity, fieldMappings, description } = body;
 
     const validationError = validateRequired(body, [

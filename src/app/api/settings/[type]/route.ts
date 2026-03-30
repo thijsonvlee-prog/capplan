@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSettingsModel, requireRole } from "@/lib/api-route-utils";
+import { getSettingsModel, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -48,7 +48,9 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
     const { code, description } = body;
 
     if (!code || typeof code !== "string" || code.trim().length === 0) {

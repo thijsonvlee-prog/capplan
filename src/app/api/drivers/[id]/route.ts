@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { transformDriver, driverInclude, validateForeignKeys, requireRole } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, validateForeignKeys, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -36,7 +36,9 @@ export async function PUT(
     if (authError) return authError;
 
     const { id } = await params;
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
     const { skillIds, ...driverData } = body;
 
     const updateData: any = {};

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning",
@@ -57,7 +57,9 @@ export const POST = withPerfLogging(
     const authError = await requireRole("PLANNER");
     if (authError) return authError;
 
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
     const { driverId, date, status, leaveTypeId, sickPercentage, notes, scenarioId } = body;
 
     if (!driverId || !date || !status) {

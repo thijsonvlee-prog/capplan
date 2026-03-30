@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, requireRole } from "@/lib/api-route-utils";
+import { validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
 export async function PUT(
   request: NextRequest,
@@ -11,7 +11,9 @@ export async function PUT(
     if (authError) return authError;
 
     const { id } = await params;
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
     const { name } = body;
 
     const validationError = validateRequired(body, [

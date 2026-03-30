@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, requireRole, validateFieldMappings } from "@/lib/api-route-utils";
+import { validateRequired, requireRole, validateFieldMappings, parseJsonBody } from "@/lib/api-route-utils";
 
 const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
 
@@ -25,7 +25,9 @@ export async function POST(request: NextRequest) {
     const authError = await requireRole("ADMIN");
     if (authError) return authError;
 
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
     const { name, type, targetEntity, fieldMappings, description } = body;
 
     const validationError = validateRequired(body, [

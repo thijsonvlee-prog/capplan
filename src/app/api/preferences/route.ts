@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired } from "@/lib/api-route-utils";
+import { validateRequired, parseJsonBody } from "@/lib/api-route-utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +34,9 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (parsed.error) return parsed.error;
+    const body = parsed.data;
 
     const validationError = validateRequired(body, [
       { field: "key", label: "Sleutel" },

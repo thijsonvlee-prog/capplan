@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { requireRole } from "@/lib/api-route-utils";
+import { requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
 export const POST = withPerfLogging(
   "POST /api/scenarios/duplicate",
@@ -14,7 +14,9 @@ export const POST = withPerfLogging(
       if (authError) return authError;
 
       const { id: sourceId } = await context.params;
-      const body = await request.json();
+      const parsed = await parseJsonBody(request);
+      if (parsed.error) return parsed.error;
+      const body = parsed.data;
       const { name } = body;
 
       if (!name || typeof name !== "string" || name.trim().length === 0) {

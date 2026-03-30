@@ -6,27 +6,13 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-082 (role enforcement) and PB-083 (fieldMappings validation) were completed this cycle:
-- `requireRole()` helper enforces VIEWER < PLANNER < ADMIN hierarchy on all write API routes. Graceful skip when auth is not configured.
-- `validateFieldMappings()` validates structure and target fields per entity. Applied to import-sources POST and PUT.
-- CLAUDE.md updated to reflect role enforcement is live.
+PB-086 (JSON parsing protection) and PB-088 (auth setup documentation) were completed this cycle:
+- `parseJsonBody()` helper added to `api-route-utils.ts` and applied to all 23 POST/PUT routes. Malformed JSON now returns 400 instead of 500.
+- `AUTH_SETUP.md` created with step-by-step guidance for Google OAuth and Azure AD configuration in Vercel.
 
-Authentication track is now **complete**: infrastructure (PB-080), login (PB-081), admin panel (PB-079), role enforcement (PB-082). Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma models, 29 route files.
+All scheduled Delivery Agent work is now complete. Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma models, 29 route files. The authentication track is fully delivered (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation).
 
 ## Recommended Next Improvements
-
-### DE-REC-044: Protect request.json() calls against malformed JSON
-
-- **Title:** Wrap JSON parsing in API routes to return 400 instead of 500
-- **Problem:** All API routes that call `request.json()` do so inside a generic try/catch. When a client sends malformed JSON, the SyntaxError is caught by the outer catch block and returns a generic 500 error instead of a clear 400 "Ongeldige JSON" message. This affects all 23 POST/PUT routes.
-- **Proposed improvement:** Add a shared `parseJsonBody()` helper in `api-route-utils.ts` that wraps `request.json()` and returns a typed `{ data, error }` result. Routes call it first and return 400 on parse failure. Alternatively, add a centralized error handler pattern.
-- **Expected product/technical value:** Clearer error messages for API consumers. Better debuggability when integration tools send malformed requests.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Low effort, improves robustness across all write endpoints.
 
 ### DE-REC-042: Extend import execution with update/upsert mode
 
@@ -53,19 +39,6 @@ Authentication track is now **complete**: infrastructure (PB-080), login (PB-081
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
 - **Why now:** Role enforcement is now active, so the extra query is hit on every write request.
-
-### DE-REC-045: Frontend role-aware UI (hide actions for insufficient roles)
-
-- **Title:** Conditionally hide/disable write actions based on session role
-- **Problem:** Role enforcement is now server-side, but the UI still shows all action buttons (create, edit, delete) to all users regardless of role. VIEWER users will see buttons but get 403 errors when clicking them.
-- **Proposed improvement:** Create a `useUserRole()` hook or extend the existing session access to expose the role. Conditionally render action buttons based on role. Show disabled state or hide entirely for VIEWER users on write actions, and for non-ADMIN users on settings/user management.
-- **Expected product/technical value:** Prevents confusion — users only see actions they can perform.
-- **Priority:** P2 High
-- **Effort:** Medium
-- **Risk:** Low — purely UI, server enforcement remains the source of truth.
-- **Dependencies:** PB-082 (completed).
-- **Suggested owner:** Experience Agent
-- **Why now:** Completes the user experience for role-based access. Without this, VIEWERs hit confusing 403 errors.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -134,13 +107,11 @@ Authentication track is now **complete**: infrastructure (PB-080), login (PB-081
 
 ## Risks / Watch-outs
 
-- **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive and role enforcement is skipped.
+- **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive and role enforcement is skipped. See `AUTH_SETUP.md` for configuration guidance.
 - **Session callback DB query:** Each authenticated session access triggers a `findUnique` for the user's role. Now that role enforcement is active, this query runs on every write request. Acceptable at current scale but worth optimizing (DE-REC-040).
-- **Frontend doesn't hide unauthorized actions:** VIEWER users can see all buttons but get 403 when clicking. DE-REC-045 addresses this.
 - **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory.
 - **Import transaction size:** Large CSV imports (thousands of rows) create one driver per row inside a single transaction. Very large imports could hit Neon connection timeouts.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed.
-- **Malformed JSON returns 500:** All `request.json()` calls lack specific error handling — SyntaxError is caught generically and returns 500 instead of 400 (DE-REC-044).
 
 ## Items Intentionally Not Recommended
 

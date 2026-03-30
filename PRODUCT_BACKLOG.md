@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement). Import pipeline operational. Server error bug fixed. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Auth is confirmed needed (ESC-006 Option B). Next focus: completing the role-based UX so users only see actions they can perform, auth environment documentation, plus small robustness and polish items.
+**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation). Import pipeline operational. API robustness improved (JSON parsing protection). Codebase healthy — 0 ESLint warnings, 0 typecheck errors. No active Ready items — all scheduled work completed. Next focus: deferred items from the backlog or new recommendations.
 
 ## Status Definitions
 
@@ -27,35 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-088: Auth environment setup documentation
-
-- **ID:** PB-088
-- **Title:** Auth environment setup documentation
-- **Problem / opportunity:** The Scrum Master confirmed auth is needed (ESC-006 Option B). The required environment variables and provider setup steps should be documented clearly so the Vercel environment can be configured correctly.
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Auth infrastructure is built but cannot function without correct environment configuration. The Scrum Master needs clear guidance to set up OAuth providers.
-- **Scope notes:** Add a concise auth setup section to the project documentation (either in `CLAUDE.md` or a dedicated `AUTH_SETUP.md`). Cover: required env vars (`NEXTAUTH_SECRET`, `NEXTAUTH_URL`, provider credentials), how to generate `NEXTAUTH_SECRET`, how to set up Google OAuth (Cloud Console steps), how to set up Azure AD (Azure portal steps), how to verify the configuration works. Keep it practical — step-by-step, not exhaustive.
-- **Dependencies:** PB-080 (completed), PB-087 (completed).
-- **Definition of done:** A clear document exists that guides the Scrum Master through setting up auth in Vercel. Covers all required env vars and at least one provider setup flow.
-- **Implementation note:** Do not create a separate documentation page in the app. This is a project-level document for the deployment administrator.
-- **Source:** ESC-006 (Option B chosen).
-
-### PB-086: Protect request.json() calls against malformed JSON
-
-- **ID:** PB-086
-- **Title:** JSON body parsing protection
-- **Problem / opportunity:** All 23 POST/PUT API routes call `request.json()` inside a generic try/catch. Malformed JSON triggers a SyntaxError caught by the outer handler, returning a generic 500 error instead of a clear 400 "Ongeldige JSON" message.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Low effort, improves robustness across all write endpoints. Especially relevant now that external tools may send data via the import API.
-- **Scope notes:** Add a shared `parseJsonBody()` helper in `api-route-utils.ts`. Routes call it first and return 400 on parse failure. Apply to all POST/PUT routes.
-- **Dependencies:** None.
-- **Definition of done:** Malformed JSON sent to any POST/PUT endpoint returns 400 with `{ error: "Ongeldige JSON in verzoek" }` instead of 500.
-- **Implementation note:** Keep it simple — a helper that wraps `request.json()` and returns `{ data, error }`. No need for a centralized error handler framework.
-- **Source:** DE-REC-044.
+_No items currently ready._
 
 ---
 
@@ -72,6 +44,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-088: Auth environment setup documentation
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Created `AUTH_SETUP.md` with step-by-step guidance for configuring authentication in Vercel. Covers all required environment variables, `NEXTAUTH_SECRET` generation, Google OAuth setup (Cloud Console), Azure AD setup (Azure Portal), verification steps, role overview, behavior without auth, and troubleshooting. Written in Dutch for the deployment administrator.
+
+### PB-086: JSON body parsing protection
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Added `parseJsonBody()` helper to `api-route-utils.ts` that wraps `request.json()` and returns `{ data, error }`. Applied to all 23 POST/PUT API routes. Malformed JSON now returns 400 with `{ error: "Ongeldige JSON in verzoek" }` instead of a generic 500 error.
 
 ### PB-084: Frontend role-aware UI
 - **Completed:** 2026-03-30
