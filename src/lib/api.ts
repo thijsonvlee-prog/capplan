@@ -4,6 +4,7 @@ import type {
   DriverFunctionRecord,
   DriverRosterAssignment,
   DriverWithEntries,
+  ImportSource,
   PlanningEntry,
   RosterProfile,
   RosterProfileEntry,
@@ -407,6 +408,28 @@ const rosterProfiles = {
   },
 };
 
+const importSources = {
+  list(): Promise<ImportSource[]> {
+    return fetchJson<{ data: ImportSource[] }>("/api/import-sources").then(r => r.data);
+  },
+
+  get(id: string): Promise<ImportSource> {
+    return fetchJson<{ data: ImportSource }>(`/api/import-sources/${id}`).then(r => r.data);
+  },
+
+  create(data: { name: string; targetEntity: string; fieldMappings: Record<string, string>; description?: string }): Promise<ImportSource> {
+    return fetchJson<{ data: ImportSource }>("/api/import-sources", jsonBody(data)).then(r => r.data);
+  },
+
+  update(id: string, data: { name: string; targetEntity: string; fieldMappings: Record<string, string>; description?: string }): Promise<ImportSource> {
+    return fetchJson<{ data: ImportSource }>(`/api/import-sources/${id}`, putBody(data)).then(r => r.data);
+  },
+
+  remove(id: string): Promise<void> {
+    return fetchJson<void>(`/api/import-sources/${id}`, deleteMethod());
+  },
+};
+
 const preferences = {
   get(key: string): Promise<string | null> {
     return fetchJson<string | null>(
@@ -430,6 +453,7 @@ export const api = {
   scenarios,
   settings,
   rosterProfiles,
+  importSources,
   preferences,
 };
 

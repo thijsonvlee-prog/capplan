@@ -141,6 +141,19 @@ export type UserContext = {
   role: UserRole;
 };
 
+// === Import Source Domain ===
+
+export type ImportSource = {
+  id: string;
+  name: string;
+  type: string;
+  targetEntity: string;
+  fieldMappings: Record<string, string>;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 // === Computed Types ===
 
 export type DriverComputedFields = {

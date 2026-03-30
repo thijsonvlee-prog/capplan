@@ -4,16 +4,18 @@ import { useState, useMemo } from "react";
 import { SkillManager } from "@/components/settings/SkillManager";
 import { StamtabelManager } from "@/components/settings/StamtabelManager";
 import { RosterProfileEditor } from "@/components/settings/RosterProfileEditor";
+import { ImportSourceManager } from "@/components/settings/ImportSourceManager";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
 
-type TabKey = "stamgegevens" | "competenties" | "roosters";
+type TabKey = "stamgegevens" | "competenties" | "roosters" | "connectiviteit";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "stamgegevens", label: "Stamgegevens" },
   { key: "competenties", label: "Competenties" },
   { key: "roosters", label: "Roosters" },
+  { key: "connectiviteit", label: "Connectiviteit" },
 ];
 
 const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
@@ -29,6 +31,10 @@ const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
     title: "Roosterprofielen beheren",
     desc: "Cyclische roosters van 4 weken die aan chauffeurs toegewezen kunnen worden.",
   },
+  connectiviteit: {
+    title: "Importbronnen beheren",
+    desc: "CSV-importconfiguraties met veldkoppelingen voor het automatisch inlezen van gegevens uit externe systemen.",
+  },
 };
 
 export default function SettingsPage() {
@@ -43,6 +49,7 @@ export default function SettingsPage() {
     stamgegevens: employers.length + departments.length + locations.length + leaveTypes.length,
     competenties: null,
     roosters: null,
+    connectiviteit: null,
   }), [employers.length, departments.length, locations.length, leaveTypes.length]);
 
   function toastMutate(fn: () => Promise<unknown>, successMsg: string) {
@@ -133,6 +140,8 @@ export default function SettingsPage() {
       {activeTab === "competenties" && <SkillManager />}
 
       {activeTab === "roosters" && <RosterProfileEditor />}
+
+      {activeTab === "connectiviteit" && <ImportSourceManager />}
     </div>
   );
 }

@@ -27,16 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-016: Connectivity hub — admin screen for import source configuration
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** Second phase of connectivity hub MVP. Admin screen for CSV import source configuration with field mapping. The data model and API (PB-015) are complete — this is the UI layer.
-- **Dependencies:** PB-015 (completed).
-- **Definition of done:** Working admin screen for managing CSV import sources with field mapping. Follows existing design token system and component patterns. Passes `npm run verify`.
-- **Implementation note:** Use existing StamtabelManager patterns as reference. All labels and error messages in Dutch. Use design tokens only. Follow the import source API at `/api/import-sources`.
-- **Source:** ESC-001 decision (Option A), SMI-001.
+_No items ready for next cycle._
 
 ---
 
@@ -53,6 +44,12 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-016: Connectivity hub — admin screen for import source configuration
+- **Completed:** 2026-03-30
+- **Owner:** Experience Agent
+- **Summary:** Working admin screen for managing CSV import sources with field mapping. Added as "Connectiviteit" tab within the settings page. Includes create/edit form with name, target entity selector, description, and visual field mapping editor (CSV column → target field). List view shows all sources with type badge, target entity, mapping count, and mapping preview chips. Full CRUD with toast notifications and delete confirmation dialog. All labels and messages in Dutch. Uses design tokens only. `npm run verify` passes with 0 errors.
+- **Implementation note:** New files: `ImportSourceManager.tsx` component, `ImportSource` type in `types.ts`, `importSources` namespace in `api.ts`. Settings page extended with 4th tab. API returns `{ data: ... }` wrapper which the client unwraps.
 
 ### PB-071: Remove unused utility exports from utils.ts
 - **Completed:** 2026-03-30
