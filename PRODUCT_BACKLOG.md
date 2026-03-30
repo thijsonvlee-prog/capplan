@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The codebase is in excellent shape — 0 ESLint warnings, 0 typecheck errors, Map-based lookups consistent across all hot paths, all API routes hardened with validation and Dutch error messages, design alignment with DESIGN.md is high across all major surfaces. The major design overhaul (SMI-004) is complete. The active backlog is light: the next feature milestone is PB-016 (connectivity hub admin screen). Remaining work is low-priority refinement in the deferred section.
+**Current direction:** The codebase is in excellent shape — 0 ESLint warnings, 0 typecheck errors, Map-based lookups consistent across all hot paths, all API routes hardened with validation and Dutch error messages, design alignment with DESIGN.md is high across all major surfaces. The major design overhaul (SMI-004) is complete and the connectivity hub admin screen (PB-016) is delivered. The active backlog is light — the next cycle focuses on small cleanup and consistency items. Remaining work is low-priority refinement.
 
 ## Status Definitions
 
@@ -27,7 +27,44 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-073: Remove remaining unused utility functions and enum
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** Six exported functions in `utils.ts` (`getWeekDates`, `get4WeekDates`, `formatDateNL`, `getCurrentWeek`, `getMonthDates`, `getYearMonths`) and the `StamtabelType` enum in `enums.ts` are defined but never imported anywhere. Dead code creates maintenance noise and misleading API surface.
+- **Why this matters now:** Trivial cleanup, same pattern as completed PB-071. Keeps the codebase lean.
+- **Scope notes:** Remove the 6 unused functions and their now-unused imports. Remove `StamtabelType` enum. Update documentatie page text if it references these.
+- **Dependencies:** None.
+- **Definition of done:** Functions and enum removed. `npm run verify` passes with 0 errors.
+- **Implementation note:** Confirm each function/enum is unused via grep before removing.
+- **Source:** DE-REC-038.
+
+### PB-074: Add `btn-danger` CSS class and replace inline button styles
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** `ConfirmDialog.tsx` uses a long inline class string for the destructive confirm button instead of a reusable CSS class. `documentatie/page.tsx` uses inline styles instead of `btn-primary`. This violates the CLAUDE.md convention of using predefined CSS classes.
+- **Why this matters now:** Quick design consistency win. Prevents further inline style proliferation. All other button variants already have reusable classes.
+- **Scope notes:** Add `.btn-danger` to `globals.css` alongside existing `.btn-primary`/`.btn-secondary` pattern. Replace inline styles in ConfirmDialog and documentatie page.
+- **Dependencies:** None.
+- **Definition of done:** `.btn-danger` class exists in `globals.css`. ConfirmDialog and documentatie page use the class. `npm run verify` passes with 0 errors.
+- **Implementation note:** Match the token structure of `.btn-primary` (background, text, hover, focus ring) but using `danger-*` tokens.
+- **Source:** DE-REC-039.
+
+### PB-075: Memoize Map creation in DriverForm.tsx
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** `DriverForm.tsx` creates `new Map(employers.map(...))`, `new Map(departments.map(...))`, `new Map(locations.map(...))` on every render without `useMemo`. Inconsistent with the Map-based memoization pattern used throughout PlanningGrid.
+- **Why this matters now:** Small pattern consistency fix. Same approach already proven in PlanningGrid.
+- **Scope notes:** Wrap the three Map creations in `useMemo` with appropriate dependency arrays.
+- **Dependencies:** None.
+- **Definition of done:** Maps are memoized. `npm run verify` passes with 0 errors.
+- **Implementation note:** Dependencies should be `[employers]`, `[departments]`, `[locations]` respectively.
+- **Source:** DE-REC-040.
 
 ---
 
@@ -48,18 +85,17 @@ _No items currently in progress._
 ### PB-016: Connectivity hub — admin screen for import source configuration
 - **Completed:** 2026-03-30
 - **Owner:** Experience Agent
-- **Summary:** Working admin screen for managing CSV import sources with field mapping. Added as "Connectiviteit" tab within the settings page. Includes create/edit form with name, target entity selector, description, and visual field mapping editor (CSV column → target field). List view shows all sources with type badge, target entity, mapping count, and mapping preview chips. Full CRUD with toast notifications and delete confirmation dialog. All labels and messages in Dutch. Uses design tokens only. `npm run verify` passes with 0 errors.
-- **Implementation note:** New files: `ImportSourceManager.tsx` component, `ImportSource` type in `types.ts`, `importSources` namespace in `api.ts`. Settings page extended with 4th tab. API returns `{ data: ... }` wrapper which the client unwraps.
+- **Summary:** Working admin screen for managing CSV import sources with field mapping. Added as "Connectiviteit" tab within the settings page. Includes create/edit form with name, target entity selector, description, and visual field mapping editor. Full CRUD with toast notifications and delete confirmation dialog. All labels in Dutch. Uses design tokens only.
 
 ### PB-071: Remove unused utility exports from utils.ts
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** Removed four unused functions from `src/lib/utils.ts`. `npm run verify` passes with 0 errors.
+- **Summary:** Removed four unused functions from `src/lib/utils.ts`.
 
 ### PB-072: Planning page header subtitle
 - **Completed:** 2026-03-30
 - **Owner:** Experience Agent
-- **Summary:** Planning page header now shows active scenario name as subtitle. All three major pages (planning, capacity, drivers) now show contextual subtitles consistently.
+- **Summary:** Planning page header now shows active scenario name as subtitle. All three major pages show contextual subtitles consistently.
 
 ---
 
@@ -112,6 +148,22 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Low-risk follow-up but needs visual evaluation before broad application.
 - **Source:** EX-REC-038.
+
+### EX-REC-043: Import source manager — visual mapping builder enhancement
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Current field mapping editor is functional and usable. Card-based or drag-connect interface would be a polish item for when the connectivity hub sees regular use. CSV preview is a future enhancement.
+- **Source:** EX-REC-043.
+
+### EX-REC-042: Deduplicate scenarios list fetch
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** No direct user impact. Minor code hygiene. Scenarios payload is small. Only worth addressing if PlanningGrid is refactored for other reasons.
+- **Source:** EX-REC-042.
 
 ---
 

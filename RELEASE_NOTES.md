@@ -6,16 +6,15 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-### Connectiviteitshub — Beheerinterface
-
-- **Importbronnen beheerinterface:** Nieuw tabblad "Connectiviteit" in de instellingenpagina voor het configureren van CSV-importbronnen. Ondersteuning voor aanmaken, bewerken en verwijderen van importconfiguraties met visuele veldkoppelingseditor. Elke bron bevat een naam, doelentiteit (chauffeurs, werkgevers, afdelingen, standplaatsen), optionele omschrijving en veldkoppelingen die CSV-kolommen aan doelvelden koppelen. Overzichtslijst toont alle bronnen met type-badge, doelentiteit, aantal koppelingen en koppelingschips.
+_No unreleased changes._
 
 ## Release History
 
-### 2026-03-30 — Contextuele koptekst en codekwaliteit
+### 2026-03-30 — Connectiviteitshub en codekwaliteit
 
 #### UX / design verbeteringen
 
+- **Importbronnen beheerinterface:** Nieuw tabblad "Connectiviteit" in de instellingenpagina voor het configureren van CSV-importbronnen. Ondersteuning voor aanmaken, bewerken en verwijderen van importconfiguraties met visuele veldkoppelingseditor. Elke bron bevat een naam, doelentiteit (chauffeurs, werkgevers, afdelingen, standplaatsen), optionele omschrijving en veldkoppelingen die CSV-kolommen aan doelvelden koppelen. Overzichtslijst toont alle bronnen met type-badge, doelentiteit, aantal koppelingen en koppelingschips.
 - **Planningspagina koptekst:** De koptekstbalk op de planningspagina toont nu het actieve scenario ("Basisplanning" of scenarionaam), consistent met de capaciteits- en chauffeurspagina. Alle drie de hoofdpagina's tonen nu contextuele informatie in de koptekst.
 
 #### Interne kwaliteit
