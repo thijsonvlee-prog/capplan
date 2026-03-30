@@ -32,7 +32,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 **Choose one option:**
 
-- ( ) **Option A — Use `react-window` library** (recommended)
+- ( ) **Option A — Use `react-window` library** (X) (recommended)
   - Add `react-window` (~6KB gzipped) as a dependency
   - Well-maintained, proven at scale, minimal bundle impact
   - Handles the windowing math; Experience Agent focuses on integration with PlanningGrid
