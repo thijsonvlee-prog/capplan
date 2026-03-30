@@ -7,6 +7,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 ## Unreleased
 
 - **Planningspagina koptekst:** De koptekstbalk op de planningspagina toont nu het actieve scenario ("Basisplanning" of scenarionaam), consistent met de capaciteits- en chauffeurspagina.
+- **Dode code verwijderd:** Vier ongebruikte hulpfuncties verwijderd uit `utils.ts` (datumbereik- en kwartaalfuncties). Vermindert onderhoudsruis zonder functionele impact.
 
 ## Release History
 

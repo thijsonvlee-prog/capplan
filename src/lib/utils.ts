@@ -75,47 +75,8 @@ export function getDateRange(startDate: string, days: number): string[] {
   });
 }
 
-// Get start date for "today minus offset days"
-export function getStartDateForRange(daysBefore: number): string {
-  const d = addDays(new Date(), -daysBefore);
-  // Snap to Monday
-  const dayOfWeek = d.getDay();
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const monday = addDays(d, mondayOffset);
-  return monday.toISOString().split("T")[0];
-}
-
-// Get quarter dates for a year+quarter (1-4)
-export function getQuarterDates(year: number, quarter: number): Date[] {
-  const startMonth = (quarter - 1) * 3;
-  const dates: Date[] = [];
-  for (let m = startMonth; m < startMonth + 3; m++) {
-    const monthStart = startOfMonth(new Date(year, m));
-    const days = getDaysInMonth(monthStart);
-    for (let d = 0; d < days; d++) {
-      dates.push(addDays(monthStart, d));
-    }
-  }
-  return dates;
-}
-
-export function getQuarterLabel(year: number, quarter: number): string {
-  return `Q${quarter} ${year}`;
-}
-
 // Get ISO week number for a date string
 export function getISOWeekNumber(dateStr: string): number {
   return getISOWeek(new Date(dateStr + "T00:00:00"));
 }
 
-// Compute valid 4-week ISO period start dates for a given year
-export function get4WeekPeriodStarts(year: number): string[] {
-  const jan4 = new Date(year, 0, 4);
-  const startOfWeek1 = startOfWeek(jan4, { weekStartsOn: 1 });
-  const starts: string[] = [];
-  for (let w = 0; w < 13; w++) {
-    const d = addDays(startOfWeek1, w * 28);
-    starts.push(d.toISOString().split("T")[0]);
-  }
-  return starts;
-}

@@ -27,18 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-071: Remove unused utility exports from utils.ts
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** Four exported functions in `src/lib/utils.ts` are never imported anywhere: `getStartDateForRange()`, `getQuarterDates()`, `getQuarterLabel()`, `get4WeekPeriodStarts()`. Dead exports create confusion about what is actually used.
-- **Why this matters now:** Quick cleanup that reduces maintenance noise. Confirmed unused via grep.
-- **Scope notes:** Remove the four unused functions only. Do not refactor adjacent code.
-- **Dependencies:** None.
-- **Definition of done:** Four unused functions removed from `src/lib/utils.ts`. `npm run verify` passes with 0 errors.
-- **Implementation note:** If any function turns out to have an import that grep missed, keep it.
-- **Source:** DE-REC-037.
+_No items ready for next cycle._
 
 ---
 
@@ -69,6 +58,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-071: Remove unused utility exports from utils.ts
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Removed four unused functions (`getStartDateForRange`, `getQuarterDates`, `getQuarterLabel`, `get4WeekPeriodStarts`) from `src/lib/utils.ts`. Confirmed unused via grep. `npm run verify` passes with 0 errors.
 
 ### PB-072: Planning page header subtitle
 - **Completed:** 2026-03-30
