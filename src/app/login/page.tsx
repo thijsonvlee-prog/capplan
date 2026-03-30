@@ -1,10 +1,27 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
+const ERROR_MESSAGES: Record<string, string> = {
+  NietGeautoriseerd: "Je account is niet geautoriseerd. Neem contact op met je beheerder.",
+  GeenEmailAdres: "Er kon geen e-mailadres worden opgehaald. Probeer het opnieuw.",
+};
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const [loading, setLoading] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const errorParam = searchParams.get("error");
+  const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] : null;
 
   function handleSignIn(provider: string) {
     setLoading(provider);
@@ -64,6 +81,19 @@ export default function LoginPage() {
               Gebruik je organisatieaccount om in te loggen.
             </p>
           </div>
+
+          {errorMessage && (
+            <div className="mb-4 flex items-center gap-2 px-3 py-2.5 rounded-lg bg-danger-50 border border-danger-200">
+              <svg className="w-4 h-4 text-danger-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              <p className="text-[0.8125rem] text-danger-700 leading-snug">
+                {errorMessage}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-3">
             <button

@@ -55,37 +55,51 @@ export const POST = withPerfLogging(
         );
       }
 
-      const newScenario = await prisma.$transaction(async (tx) => {
-        // Create the new scenario
-        const created = await tx.scenario.create({
-          data: {
-            name: name.trim(),
-          },
-        });
-
-        // Copy all planning entries from source to new scenario
-        const sourceEntries = await tx.planningEntry.findMany({
-          where: {
-            scenarioId: sourceScenarioFilter,
-          },
-        });
-
-        if (sourceEntries.length > 0) {
-          await tx.planningEntry.createMany({
-            data: sourceEntries.map((entry: any) => ({
-              driverId: entry.driverId,
-              date: entry.date,
-              status: entry.status,
-              leaveTypeId: entry.leaveTypeId,
-              sickPercentage: entry.sickPercentage,
-              notes: entry.notes,
-              scenarioId: created.id,
-            })),
-          });
-        }
-
-        return created;
+      // Create the new scenario first
+      const newScenario = await prisma.scenario.create({
+        data: {
+          name: name.trim(),
+        },
       });
+
+      try {
+        // Copy planning entries in chunks to keep memory usage constant
+        const CHUNK_SIZE = 5000;
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+          const sourceEntries = await prisma.planningEntry.findMany({
+            where: { scenarioId: sourceScenarioFilter },
+            skip: offset,
+            take: CHUNK_SIZE,
+            select: {
+              driverId: true,
+              date: true,
+              status: true,
+              leaveTypeId: true,
+              sickPercentage: true,
+              notes: true,
+            },
+          });
+
+          if (sourceEntries.length > 0) {
+            await prisma.planningEntry.createMany({
+              data: sourceEntries.map((entry) => ({
+                ...entry,
+                scenarioId: newScenario.id,
+              })),
+            });
+          }
+
+          hasMore = sourceEntries.length === CHUNK_SIZE;
+          offset += CHUNK_SIZE;
+        }
+      } catch (copyError) {
+        // Clean up the partially created scenario (cascade deletes its entries)
+        await prisma.scenario.delete({ where: { id: newScenario.id } }).catch(() => {});
+        throw copyError;
+      }
 
       return NextResponse.json(newScenario, { status: 201 });
     } catch (error) {

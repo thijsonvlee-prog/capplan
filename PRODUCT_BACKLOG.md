@@ -31,15 +31,11 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **ID:** PB-102
 - **Title:** Only allow login for users already added via admin panel
-- **Problem / opportunity:** Currently, PrismaAdapter auto-creates a new User record on first Google login with default PLANNER role. Anyone with a Google account can access the application. Only users explicitly added by an admin should be allowed to log in.
 - **Owner:** Delivery Agent
 - **Priority:** P1 Critical
-- **Status:** Ready
-- **Why this matters now:** Security gap — unauthorized users can gain PLANNER access by simply logging in with any Google account.
-- **Scope notes:** Add a `signIn` callback in `src/lib/auth.ts` that checks whether the user's email already exists in the User table. If not, reject the sign-in with a clear message. The admin must first create the user record via the admin panel before they can log in. Do not auto-create User records on first login. Ensure the error is visible to the rejected user (NextAuth error page or redirect with message).
-- **Dependencies:** None.
-- **Definition of done:** Only pre-existing users (added via admin panel) can successfully authenticate via Google. New unknown Google accounts are rejected with a Dutch error message. Verify passes.
-- **Implementation note:** Add `signIn` callback to NextAuth options in `src/lib/auth.ts`. Check `prisma.user.findUnique({ where: { email } })`. Return `false` or an error URL if user not found. Test with both existing and non-existing users.
+- **Status:** Completed
+- **Completed:** 2026-03-30
+- **Implementation note:** Added `signIn` callback to NextAuth options in `src/lib/auth.ts`. Checks `prisma.user.findUnique({ where: { email } })` for OAuth sign-ins. Returns redirect to `/login?error=NietGeautoriseerd` if user not found, `/login?error=GeenEmailAdres` if no email available. Login page (`src/app/login/page.tsx`) reads error from URL search params and displays a styled Dutch error banner. Non-OAuth callbacks (session checks) pass through. Verify passes.
 - **Source:** SMI-014.
 
 ### PB-103: Login page — show only Google + 'under construction' text
@@ -57,15 +53,11 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **ID:** PB-101
 - **Title:** Create masterdata.md with stamtabel field descriptions and relationships
-- **Problem / opportunity:** No central documentation exists describing all stamtabellen (master data tables), their fields, field specifications, and relationships between them. This makes onboarding and data governance harder.
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Direct Scrum Master request. Supports data governance and developer onboarding.
-- **Scope notes:** Create `masterdata.md` in the project root. Document all stamtabellen (Employer, Department, Location, LeaveType, Skill, RosterProfile, Function) with: table name, all fields with types and constraints, relationships to other tables, and any business rules. Also document the core entities (Driver, Employment, PlanningEntry, Scenario) and their relationships. Use the Prisma schema as the source of truth. Write in Dutch where appropriate (field descriptions), but technical field names in English as they appear in the schema.
-- **Dependencies:** None.
-- **Definition of done:** `masterdata.md` exists with complete field-level documentation for all stamtabellen and their relationships. Accurate to current Prisma schema.
-- **Implementation note:** Read `prisma/schema.prisma` and document each model systematically.
+- **Status:** Completed
+- **Completed:** 2026-03-30
+- **Implementation note:** Created `masterdata.md` documenting all 22 Prisma models across 5 sections: stamtabellen (Employer, Department, Location, LeaveType, Skill, RosterProfile, RosterProfileDay), kernentiteiten (Driver, DriverSkill, DriverEmploymentRecord, DriverFunctionRecord, DriverRosterAssignment, PlanningEntry, Scenario), gebruikersbeheer (User, Account, Session, UserPreference), connectiviteitshub (ImportSource, ImportLog), plus a relationship diagram and cascade-gedrag overzicht. Dutch field descriptions, English technical names.
 - **Source:** SMI-012.
 
 ### PB-105: Planning grid — integrate paginated data fetching
@@ -84,15 +76,11 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **ID:** PB-098
 - **Title:** Batch scenario duplication to reduce memory pressure at scale
-- **Problem / opportunity:** `POST /api/scenarios/[id]/duplicate` loads all planning entries (up to 50,000) into Node.js memory at once, then creates them in a single `createMany`. Near the 50K ceiling, this creates memory spikes and risks timeouts.
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** All Phase 1+2 scaling items are complete. This is the last known reliability bottleneck for large datasets. Same chunking pattern already proven in PB-099 (import chunking).
-- **Scope notes:** Fetch and create entries in chunks of 5,000. Keep memory usage constant regardless of total entries.
-- **Dependencies:** None.
-- **Definition of done:** Scenario duplication works reliably at 50K entries without memory spikes. Verify passes.
-- **Implementation note:** Apply same chunking pattern as PB-099. See DE-REC-046.
+- **Status:** Completed
+- **Completed:** 2026-03-30
+- **Implementation note:** Replaced single-transaction bulk load with chunked processing (5,000 entries per chunk). Scenario is created first, then entries are copied in chunks using `skip`/`take` with `select` (only needed fields). If copying fails mid-way, the partially created scenario is cleaned up (cascade delete). Memory usage is now constant regardless of total entry count. Verify passes.
 - **Source:** DE-REC-046, SMI-011.
 
 ---
@@ -122,6 +110,24 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-102: Restrict Google login to pre-added users only
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+
+### PB-098: Scenario duplication batch processing
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+
+### PB-101: Stamtabellen documentation in masterdata.md
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
 
 ### PB-105: Planning grid — integrate paginated data fetching
 

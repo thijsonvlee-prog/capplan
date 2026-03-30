@@ -6,24 +6,26 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed the two remaining reliability items from Phase 1 scaling: import transaction chunking (PB-099) and date format validation on planning endpoints (PB-100). Both shipped clean (0 typecheck errors, 0 lint warnings). The import path now processes rows in 500-row chunks to prevent Neon connection timeouts. All planning endpoints reject invalid date formats with clear Dutch error messages.
+This cycle completed three items: the P1 login restriction (PB-102), scenario duplication chunking (PB-098), and masterdata documentation (PB-101). All shipped clean (0 typecheck errors, 0 lint warnings).
 
-Fresh codebase scan confirms the codebase is in healthy shape. The most impactful remaining improvements are: scenario duplication memory batching (PB-098, currently deferred), and the CapacitySummaryRow `.find()` optimization. No critical issues found.
+The login restriction closes the most critical security gap — unauthorized Google accounts can no longer auto-create users. Scenario duplication now handles up to 50K entries with constant memory. The masterdata documentation covers all 22 Prisma models.
+
+Fresh codebase scan confirms the codebase is in healthy shape. The remaining recommendations are maintenance-level improvements — no critical issues found.
 
 ## Recommended Next Improvements
 
-### DE-REC-046: Batch scenario duplication into chunks
+### DE-REC-047: Prevent PrismaAdapter from auto-creating User records
 
-- **Title:** Chunk scenario duplication to reduce memory pressure at scale
-- **Problem:** `POST /api/scenarios/[id]/duplicate` loads all planning entries (up to 50,000) into Node.js memory at once, then creates them in a single `createMany`. Near the 50K ceiling, this creates a significant memory spike and risks timeouts.
-- **Proposed improvement:** Fetch and create entries in chunks of 5,000. This keeps memory usage constant regardless of total entries.
-- **Expected product/technical value:** Reliable duplication at scale without memory spikes or timeouts.
-- **Priority:** P3 Medium
+- **Title:** Disable PrismaAdapter auto-creation of User records on first OAuth sign-in
+- **Problem:** The `signIn` callback (PB-102) correctly rejects unknown users, but PrismaAdapter still attempts to create a User record before the callback runs. This creates orphan User records for rejected sign-ins (the sign-in is rejected but the User row persists).
+- **Proposed improvement:** Override the PrismaAdapter's `createUser` method to check if the user already exists by email. If not, throw an error to prevent auto-creation. Alternatively, add a periodic cleanup of User records with no linked Account/Session.
+- **Expected product/technical value:** Clean user table — no orphan records from rejected sign-in attempts.
+- **Priority:** P2 High
 - **Effort:** Small
-- **Risk:** Low — same chunking pattern already proven in import execute (PB-099).
-- **Dependencies:** None.
+- **Risk:** Medium — PrismaAdapter internals may vary between versions. Needs careful testing.
+- **Dependencies:** PB-102 (completed).
 - **Suggested owner:** Delivery Agent
-- **Why now:** PB-098 was deferred pending core scaling work. All Phase 1+2 scaling items are now complete. This is the last known reliability bottleneck for large datasets.
+- **Why now:** Direct follow-up to PB-102. Orphan users may appear in the admin panel's user list.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -41,7 +43,7 @@ Fresh codebase scan confirms the codebase is in healthy shape. The most impactfu
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 90 (max date range), 100 (max code length), 5MB (max file size), 10000 (max import rows), 500 (max page size/chunk size), 20 (max import logs).
+- **Problem:** Magic numbers scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (duplication chunk size), 366 (max bulk dates), 90 (max date range), 100 (max code length), 5MB (max file size), 10000 (max import rows), 500 (max page size/chunk size), 20 (max import logs).
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
@@ -49,7 +51,7 @@ Fresh codebase scan confirms the codebase is in healthy shape. The most impactfu
 - **Risk:** Low.
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Low-effort maintainability improvement. More limits were added this cycle (chunk size, page size).
+- **Why now:** Low-effort maintainability improvement. More limits were added this cycle.
 
 ### DE-REC-014: Move hardcoded comparison chart colors to constants
 
@@ -79,11 +81,11 @@ Fresh codebase scan confirms the codebase is in healthy shape. The most impactfu
 
 ## Risks / Watch-outs
 
-- **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory. With 1000 drivers x 90 days, this limit could be approached. DE-REC-046 proposes chunking (same pattern as PB-099).
+- **PrismaAdapter orphan users:** With PB-102 in place, the PrismaAdapter may still create User records before the `signIn` callback rejects them. These orphan records appear in the admin panel user list. DE-REC-047 proposes a fix.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed to avoid maintaining dead/experimental code.
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive and role enforcement is skipped.
 - **Driver upsert without unique constraint:** Driver upsert matches on `employeeNumber` using `findFirst` (not a unique constraint). If multiple drivers share an `employeeNumber`, only the first is updated. Adding a unique constraint is a product decision.
-- **Import partial failure semantics:** With chunked transactions (PB-099), a mid-import failure now means some chunks succeeded and some failed. The import log and response correctly report partial results, but the user cannot "undo" a partially completed import. This is expected behavior and documented in the error output.
+- **Import partial failure semantics:** With chunked transactions (PB-099), a mid-import failure means some chunks succeeded and some failed. The import log correctly reports partial results, but the user cannot "undo" a partially completed import.
 
 ## Items Intentionally Not Recommended
 
@@ -115,10 +117,11 @@ Fresh codebase scan confirms the codebase is in healthy shape. The most impactfu
 - **Add React.memo to GroupRows component:** Marginal improvement — PlanningGrid manages re-renders via entry maps.
 - **CSV injection sanitization:** CSV data is stored in database fields, not re-exported to spreadsheets. If CSV export is added later, sanitization should be added at that point.
 - **Standardize API response wrapping:** Some routes use `{ data }` wrapper, others return raw objects. Changing this is a breaking API contract change with no functional benefit.
-- **Add composite (driverId, scenarioId, date) index:** The unique constraint `(driverId, date, scenarioId)` already covers this query pattern. Adding a redundant index wastes write performance.
-- **Add request rate limiting on imports:** No user authentication → no per-user tracking. Rate limiting makes sense after multi-tenant features land.
-- **Add concurrent request deduplication in useApi:** Low-frequency issue; components share cache via 30s freshness window. Complexity not justified.
+- **Add composite (driverId, scenarioId, date) index:** The unique constraint `(driverId, date, scenarioId)` already covers this query pattern.
+- **Add request rate limiting on imports:** No per-user tracking at current scale. Rate limiting makes sense after multi-tenant features land.
+- **Add concurrent request deduplication in useApi:** Low-frequency issue; components share cache via 30s freshness window.
 - **Add progress tracking for long operations:** Would require streaming responses or a job queue — significant architectural change for an uncommon operation.
+- **Type-safe dynamic Prisma model access:** The `(prisma as any)[modelName]` pattern in import-sources is a pragmatic choice for entity-generic import logic. A typed wrapper adds complexity without functional benefit.
 
 ## Recommendation Rules
 

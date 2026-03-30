@@ -37,8 +37,28 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   callbacks: {
+    async signIn({ user, account }) {
+      // Only enforce restriction for OAuth sign-ins (not session checks)
+      if (!account) return true;
+
+      const email = user.email;
+      if (!email) return "/login?error=GeenEmailAdres";
+
+      // Check if user already exists in the database (pre-added by admin)
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true },
+      });
+
+      if (!existingUser) {
+        return "/login?error=NietGeautoriseerd";
+      }
+
+      return true;
+    },
     session({ session, user }) {
       // Attach user ID and role to the session.
       // The PrismaAdapter fetches the full user record (include: { user: true }),

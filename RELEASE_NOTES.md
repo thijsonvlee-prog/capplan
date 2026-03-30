@@ -6,6 +6,10 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
+### Beveiliging
+
+- **Loginbeperking tot bekende gebruikers:** Alleen gebruikers die vooraf door een beheerder zijn aangemaakt in het admin-paneel kunnen inloggen via Google. Onbekende Google-accounts worden geweigerd met een duidelijke Nederlandse foutmelding op de inlogpagina. Dit sluit het beveiligingsprobleem waarbij elke Google-gebruiker automatisch toegang kreeg met de PLANNER-rol.
+
 ### Inlogpagina
 
 - **Alleen Google-login:** De inlogpagina toont nu alleen de Google-knop. De Microsoft-knop is verborgen (backend-configuratie blijft intact voor toekomstig gebruik).
@@ -14,6 +18,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 ### Prestaties
 
 - **Paginering planningsrooster:** Het planningsrooster haalt chauffeurs nu op in pagina's van 100. Paginaknoppen (eerste/vorige/volgende/laatste) verschijnen onder het rooster bij meer dan 100 chauffeurs. De initiële laadtijd is onafhankelijk van het totaal aantal chauffeurs.
+
+### Betrouwbaarheid
+
+- **Scenario-duplicatie in chunks:** Het dupliceren van scenario's verwerkt planningitems nu in blokken van 5.000 in plaats van alles in één keer. Bij 50.000 items blijft het geheugengebruik constant. Als het kopiëren mislukt, wordt het gedeeltelijk aangemaakte scenario opgeruimd.
+
+### Documentatie
+
+- **Masterdata-documentatie:** Nieuw `masterdata.md` document met volledige veldbeschrijvingen, typen, constraints en relaties voor alle 22 databasemodellen. Inclusief relatiediagram en cascade-gedrag overzicht.
 
 ## Release History
 
