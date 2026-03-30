@@ -14,6 +14,8 @@ _No unreleased changes._
 
 #### UX / design verbeteringen
 
+- **Knopsysteem uitgebreid:** Nieuwe `.btn-danger` CSS-klasse toegevoegd voor destructieve acties. Bevestigingsdialogen en documentatiepagina gebruiken nu herbruikbare knopklassen in plaats van inline stijlen.
+
 - **Importbronnen beheerinterface:** Nieuw tabblad "Connectiviteit" in de instellingenpagina voor het configureren van CSV-importbronnen. Ondersteuning voor aanmaken, bewerken en verwijderen van importconfiguraties met visuele veldkoppelingseditor. Elke bron bevat een naam, doelentiteit (chauffeurs, werkgevers, afdelingen, standplaatsen), optionele omschrijving en veldkoppelingen die CSV-kolommen aan doelvelden koppelen. Overzichtslijst toont alle bronnen met type-badge, doelentiteit, aantal koppelingen en koppelingschips.
 - **Planningspagina koptekst:** De koptekstbalk op de planningspagina toont nu het actieve scenario ("Basisplanning" of scenarionaam), consistent met de capaciteits- en chauffeurspagina. Alle drie de hoofdpagina's tonen nu contextuele informatie in de koptekst.
 

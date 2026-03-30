@@ -21,7 +21,7 @@ export default function DocumentatiePage() {
         </p>
         <button
           onClick={handleDownload}
-          className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 shadow-xs transition-colors"
+          className="btn-primary"
         >
           Download documentatie (.txt)
         </button>

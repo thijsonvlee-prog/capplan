@@ -61,7 +61,7 @@ export function ConfirmDialog({
           </button>
           <button
             onClick={onConfirm}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-danger-600 text-white hover:bg-danger-700 shadow-xs transition-colors"
+            className="btn-danger"
           >
             {confirmLabel}
           </button>

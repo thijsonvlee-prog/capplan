@@ -40,19 +40,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Implementation note:** Confirm each function/enum is unused via grep before removing.
 - **Source:** DE-REC-038.
 
-### PB-074: Add `btn-danger` CSS class and replace inline button styles
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** `ConfirmDialog.tsx` uses a long inline class string for the destructive confirm button instead of a reusable CSS class. `documentatie/page.tsx` uses inline styles instead of `btn-primary`. This violates the CLAUDE.md convention of using predefined CSS classes.
-- **Why this matters now:** Quick design consistency win. Prevents further inline style proliferation. All other button variants already have reusable classes.
-- **Scope notes:** Add `.btn-danger` to `globals.css` alongside existing `.btn-primary`/`.btn-secondary` pattern. Replace inline styles in ConfirmDialog and documentatie page.
-- **Dependencies:** None.
-- **Definition of done:** `.btn-danger` class exists in `globals.css`. ConfirmDialog and documentatie page use the class. `npm run verify` passes with 0 errors.
-- **Implementation note:** Match the token structure of `.btn-primary` (background, text, hover, focus ring) but using `danger-*` tokens.
-- **Source:** DE-REC-039.
-
 ### PB-075: Memoize Map creation in DriverForm.tsx
 
 - **Owner:** Delivery Agent
@@ -81,6 +68,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-074: Add `btn-danger` CSS class and replace inline button styles
+- **Completed:** 2026-03-30
+- **Owner:** Experience Agent
+- **Summary:** Added `.btn-danger` class to `globals.css` following the same token structure as `.btn-primary` (danger-600 bg, inverse text, danger-800 hover, disabled state). Replaced inline class string in `ConfirmDialog.tsx` with `btn-danger`. Replaced inline class string in `documentatie/page.tsx` with `btn-primary`. Button system now has complete coverage: primary, secondary, danger, icon, icon-danger.
 
 ### PB-016: Connectivity hub — admin screen for import source configuration
 - **Completed:** 2026-03-30

@@ -3,17 +3,18 @@
 ## Summary
 
 **What was improved this cycle:**
-- PB-016: Connectivity hub admin screen. New "Connectiviteit" tab in settings page with full CRUD for CSV import sources. Includes visual field mapping editor with arrow indicators, mapping preview chips on list items, composed empty state, and consistent interaction patterns (toast, confirm dialog, validation).
+- PB-074: Added `.btn-danger` CSS class to `globals.css` and replaced inline button styles in `ConfirmDialog.tsx` and `documentatie/page.tsx`. The button system now has complete reusable coverage: `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-icon`, `.btn-icon-danger`.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: well-aligned (section 7.8). Calm, dark, well-spaced, clear active states.
-- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Composed tabs, clear hierarchy. New Connectiviteit tab follows the same pattern.
+- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Composed tabs, clear hierarchy. Connectiviteit tab follows the same pattern.
 - Typography: improved. Manrope on page titles creates editorial contrast per section 5.1/5.3.
 - Header: fully aligned. All three major pages show contextual subtitles per section 7.1.
 - Capacity page: well-aligned. Scenario toggle uses brand semantics.
 - Planning grid toolbar: well-aligned. Both rows use consistent `.control-group` pattern with labels.
 - Design tokens: warning scale matches the nuance of success and danger families.
-- Import source manager: well-aligned. Card-based layout, clear hierarchy, visual field mapping, composed empty state. Follows existing settings tab pattern.
+- Import source manager: well-aligned. Card-based layout, clear hierarchy, visual field mapping, composed empty state.
+- Button system: fully aligned. All button variants now use reusable CSS classes with design tokens. No remaining inline button styles.
 - Planning grid matrix: partially aligned. Status chips and tonal row composition are good. Grid border structure and row composition have room for improvement.
 - Drivers page: partially aligned. Page header is composed with contextual subtitle. Table is still table-first with generic CRUD feel.
 
@@ -72,8 +73,7 @@
 - **PlanningGrid.tsx complexity.** The file is ~685 lines. Any further changes to the planning toolbar or grid must be verified carefully against typecheck, lint, and visual behavior. The file has known exhaustive-deps warnings that are pre-existing and non-blocking.
 - **Manrope font weight on Vercel.** The font is loaded via `next/font/google` with `display: swap`. Verify on deployed build that Manrope renders correctly and does not cause layout shift.
 - **Consistency after partial typographic changes.** Manrope on page titles + Inter on section titles is the intended hierarchy. If Manrope is extended further (EX-REC-038), verify the contrast still reads well.
-- **Settings tab count growth.** The settings page now has 4 tabs. If more configuration categories are added (e.g., scheduled imports, user management), the tab bar may need responsive treatment or reorganization.
-- **Import source API wrapper pattern.** The import source API returns `{ data: ... }` unlike other endpoints that return arrays directly. The `api.ts` client unwraps this. If other APIs are standardized to this pattern, the inconsistency should be resolved.
+- **Settings tab count growth.** The settings page now has 4 tabs. If more configuration categories are added, the tab bar may need responsive treatment or reorganization.
 - **Drivers table column density.** Removing alternating backgrounds (EX-REC-036) only helps if the remaining visual treatment (hover, spacing) provides enough row distinction at high driver counts.
 - **Planning grid No-Line Rule.** The grid's 1px row borders serve a functional purpose in dense data. Replacing them with pure tonal separation risks reducing scanability. Should be explored in a dedicated visual pass.
 
