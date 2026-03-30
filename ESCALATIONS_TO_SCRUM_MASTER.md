@@ -22,7 +22,39 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-_No open escalations._
+### ESC-007: Virtual scrolling approach for 1000-driver planning grid
+
+- **Status:** Open
+- **Date / run context:** 2026-03-30 — triggered by SMI-011 (1000-driver scaling initiative)
+- **Decision needed:** The planning grid renders all driver rows in the DOM. At 1000 drivers this causes severe scroll jank and multi-second render delays. Virtual scrolling (rendering only visible rows) is needed. The question is whether to use an external library or build it manually.
+- **Why it matters:** This is the single biggest frontend bottleneck for the scaling initiative. The backend pagination (PB-093) is ready to proceed, but the frontend cannot consume paginated data efficiently without virtual scrolling. PB-096 and PB-097 are blocked on this decision.
+- **Recommendation from Product Owner Agent:** Option A. `react-window` is tiny (6KB), battle-tested, widely used, and the manual alternative would be fragile and time-consuming to build correctly for a complex table with sticky headers, group rows, and horizontal scroll.
+
+**Choose one option:**
+
+- ( ) **Option A — Use `react-window` library** (recommended)
+  - Add `react-window` (~6KB gzipped) as a dependency
+  - Well-maintained, proven at scale, minimal bundle impact
+  - Handles the windowing math; Experience Agent focuses on integration with PlanningGrid
+  - Trade-off: Introduces one new external dependency (CLAUDE.md requires explicit approval)
+
+- ( ) **Option B — Use `react-virtuoso` library**
+  - Add `react-virtuoso` (~15KB gzipped) as a dependency
+  - More feature-rich (auto-sizing rows, grouped items, sticky headers built-in)
+  - Better fit for variable-height rows and group headers in PlanningGrid
+  - Trade-off: Larger bundle size, more opinionated API
+
+- ( ) **Option C — Manual implementation with IntersectionObserver**
+  - No new dependencies
+  - Use CSS `overflow` container + IntersectionObserver to lazy-render row batches
+  - Trade-off: Significantly more implementation effort, harder to get right for complex table with sticky headers and horizontal scroll, higher risk of regressions
+
+- ( ) **Option D — Defer virtual scrolling, use pagination-only approach**
+  - No virtual scrolling. Use server-side pagination with page controls (e.g., show 100 drivers per page)
+  - Trade-off: Simpler but changes the UX significantly — planners can no longer see/scroll through all drivers in one view. May require a "load more" or page navigation pattern.
+
+- **What the Scrum Master must do:** Place `(X)` next to exactly one option.
+- **Product Owner action after choice:** Unblock PB-096 and PB-097. Update implementation notes with the chosen approach. If Option A or B, add the dependency to the project.
 
 ---
 

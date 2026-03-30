@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication and import tracks fully delivered. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: reliability guardrails for the import pipeline, then codebase quality and polish per agent recommendations.
+**Current direction:** Scaling initiative (SMI-011). The system must support 1000 drivers without feeling slow. Phase 1 focuses on backend pagination for the two heaviest API endpoints and a covering database index. Phase 2 (frontend virtual scrolling) is blocked on a dependency decision (ESC-007). Import reliability guardrails continue in parallel.
 
 ## Status Definitions
 
@@ -26,6 +26,51 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
+
+### PB-093: Add server-side pagination to planning for-range API
+
+- **ID:** PB-093
+- **Title:** Paginate the planning for-range endpoint to avoid returning all drivers at once
+- **Problem / opportunity:** `/api/planning/for-range` fetches all drivers with 4 relation includes and returns them in a single response. At 1000 drivers this produces a 5-10MB JSON payload with 2-5 second load times.
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Core scaling bottleneck. The planning grid is the primary product surface and it calls this endpoint on every load and date range change.
+- **Scope notes:** Add `page` and `pageSize` query parameters (default pageSize: 100). Return `{ data, total, page, pageSize }` response shape. Keep backward compatibility — if no pagination params are provided, return all (with a reasonable max). The frontend (`api.ts`) must be updated to support paginated fetching. PlanningGrid will need to handle paginated driver loading (but full virtual scrolling is a separate item PB-096).
+- **Dependencies:** None.
+- **Definition of done:** The endpoint supports pagination. Response includes total count. Existing callers continue to work. Verify with `npm run verify`.
+- **Implementation note:** Add `skip` and `take` to the Prisma `findMany`. Return total via `prisma.driver.count()` in parallel. Keep planning entries query unchanged (it filters by date range already). Update `api.ts` to pass pagination params.
+- **Source:** SMI-011.
+
+### PB-094: Add server-side pagination to drivers list API
+
+- **ID:** PB-094
+- **Title:** Paginate the drivers list endpoint
+- **Problem / opportunity:** `/api/drivers` returns all drivers with all relations in one response. At 1000 drivers this is the same payload size problem as the planning endpoint.
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** The drivers page is a high-frequency screen. Search and filter currently happen client-side after loading everything.
+- **Scope notes:** Add `page`, `pageSize`, and `search` query parameters. Move name/search filtering to the database query (Prisma `where` with `contains`). Return `{ data, total, page, pageSize }`. Default pageSize: 50.
+- **Dependencies:** None.
+- **Definition of done:** The endpoint supports pagination and server-side search. Existing callers continue to work. Verify with `npm run verify`.
+- **Implementation note:** Add `where` clause with `OR` on firstName/lastName `contains` for search. Add `skip`/`take` for pagination. Return count in parallel.
+- **Source:** SMI-011.
+
+### PB-009: Add covering index for capacity aggregation query
+
+- **ID:** PB-009
+- **Title:** Add (scenarioId, date, status) composite index on PlanningEntry
+- **Problem / opportunity:** The capacity endpoint uses `groupBy` on `date` and `status` filtered by `scenarioId` and `date`. The existing index `(scenarioId, date)` doesn't cover `status`, forcing a table scan for the aggregation at scale.
+- **Owner:** Delivery Agent
+- **Priority:** P2 High (promoted from P3 — now relevant for 1000-driver scaling)
+- **Status:** Ready
+- **Why this matters now:** At 1000 drivers × 90 days = up to 90,000 planning entries. The capacity aggregation query needs this index to remain fast.
+- **Scope notes:** Add `@@index([scenarioId, date, status])` to PlanningEntry in schema.prisma. Create a migration.
+- **Dependencies:** None.
+- **Definition of done:** Migration created and applied. Capacity endpoint query uses the new index. Verify with `npm run verify`.
+- **Implementation note:** `npx prisma migrate dev --name add-capacity-covering-index`. Small schema change.
+- **Source:** DE-REC-005, SMI-011.
 
 ### PB-092: Add CSV row count limit to import execution
 
@@ -46,7 +91,35 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Blocked / Needs Decision
 
-_No items currently blocked._
+### PB-096: Planning grid virtual scrolling
+
+- **ID:** PB-096
+- **Title:** Implement virtual scrolling in PlanningGrid to render only visible rows
+- **Problem / opportunity:** PlanningGrid renders all driver rows in the DOM simultaneously. At 1000 drivers this means 6000-8000+ DOM nodes, causing scroll jank, 1-3 second render delays, and high memory usage. This is the single biggest frontend scaling bottleneck.
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Blocked (ESC-007 — dependency decision needed)
+- **Why this matters now:** Without virtual scrolling, the planning grid will be unusable at 1000 drivers regardless of backend pagination.
+- **Scope notes:** Implement virtual scrolling so only visible rows (~30-50) are in the DOM. Must preserve sticky header, group row headers, and horizontal scroll behavior. Must work with paginated data from PB-093.
+- **Dependencies:** PB-093 (pagination API), ESC-007 (dependency decision).
+- **Definition of done:** Planning grid renders smoothly with 1000+ drivers. Scroll performance is consistent. All existing functionality preserved.
+- **Implementation note:** Approach depends on ESC-007 decision. If external library approved, use react-window or react-virtuoso. If not, implement CSS-based approach with IntersectionObserver.
+- **Source:** SMI-011.
+
+### PB-097: Drivers page pagination UI
+
+- **ID:** PB-097
+- **Title:** Add pagination controls and server-side search to drivers page
+- **Problem / opportunity:** The drivers page loads and renders all drivers at once. At 1000 drivers the page will be slow to load and scroll.
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Blocked (PB-094)
+- **Why this matters now:** Second highest-frequency screen after planning. Must remain fast at scale.
+- **Scope notes:** Add pagination controls (page selector, page size). Move search/filter to server-side (leverage PB-094 search parameter). Show total count. Maintain current table layout and interaction patterns.
+- **Dependencies:** PB-094 (pagination API).
+- **Definition of done:** Drivers page loads and navigates smoothly with 1000+ drivers. Search is responsive. Pagination controls are clear and Dutch-labeled.
+- **Implementation note:** Use `useApiData` with pagination params. Add a pagination component (page buttons, total indicator). Debounce search input for server-side filtering.
+- **Source:** SMI-011.
 
 ---
 
@@ -64,13 +137,16 @@ _Previous cycle items (PB-084 through PB-091) shipped 2026-03-30. Cleared per hy
 
 ## Deferred
 
-### PB-009: Add covering index for capacity aggregation query
+### PB-098: Scenario duplication batch processing
 
+- **ID:** PB-098
+- **Title:** Batch scenario duplication to reduce memory pressure at scale
+- **Problem / opportunity:** Scenario duplication loads all source entries (up to 50,000) into memory before bulk insert. At 1000 drivers × 90 days this is ~90,000 entries.
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Current query performance is acceptable. Revisit when capacity endpoint shows measurable slowness.
-- **Source:** DE-REC-005.
+- **Reason:** Existing 50,000 entry safeguard prevents worst case. Address after core pagination work is done.
+- **Source:** SMI-011.
 
 ### PB-030: Move hardcoded constants and chart colors to centralized config
 
@@ -101,7 +177,7 @@ _Previous cycle items (PB-084 through PB-091) shipped 2026-03-30. Cleared per hy
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Functional and usable. Minor visual issue.
+- **Reason:** Functional and usable. Minor visual issue. Lower priority than scaling work.
 - **Source:** EX-REC-036.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
