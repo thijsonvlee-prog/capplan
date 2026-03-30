@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** User groups (SMI-015) are fully shipped across all 3 phases. Authorization model is complete for list endpoints. One security gap remains: individual-access routes (`/api/drivers/[id]`, `/api/planning` by driverId) do not enforce group filtering (DE-REC-056). This is the top priority for the next cycle.
+**Current direction:** User groups (SMI-015) fully shipped across all 3 phases. Authorization model is complete for list endpoints. One security gap remains: individual-access routes do not enforce user group filtering (PB-121). Capacity endpoint optimization (PB-122) is the next performance item.
 
 ## Status Definitions
 
@@ -124,45 +124,17 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
 
-### PB-114: Login page — handle OAuthAccountNotLinked error
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-
-### PB-115: PlanningGrid — memoize groupDrivers call
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-
-### PB-116: Capacity endpoint — date validation and length limit
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-
-### PB-106: Planning grid — server-side search for paginated mode
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-30
-
-### PB-108: Capacity summary — full-dataset totals via aggregation API
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-30
-
-### PB-107: Prevent PrismaAdapter from auto-creating orphan User records
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-
 ---
 
 ## Deferred
+
+### EX-REC-044: User group member assignment — batch API
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Current sequential approach works for typical group sizes (< 20 users). Only relevant if user counts grow significantly.
+- **Source:** EX-REC-044.
 
 ### PB-030: Move hardcoded constants and chart colors to centralized config
 
@@ -193,7 +165,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Functional and usable. Lower priority than security and scalability work.
+- **Reason:** Functional and usable. Lower priority than security and performance items.
 - **Source:** EX-REC-036.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
@@ -219,14 +191,6 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** No direct user impact. Minor code hygiene.
 - **Source:** EX-REC-042.
-
-### EX-REC-044: User group member assignment — batch API
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Current sequential approach works for typical group sizes (< 20 users). Only relevant if user counts grow significantly.
-- **Source:** EX-REC-044.
 
 ---
 

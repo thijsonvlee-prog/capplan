@@ -31,7 +31,7 @@ _No active inputs._
 
 - **Type:** Initiative / new feature
 - **Status:** Closed
-- **Closed reason:** Fully delivered. All 3 phases completed 2026-03-30. Data model + API (PB-109), admin UI (PB-110), and enforcement on data routes (PB-111) are all shipped. One follow-up security gap (individual-access routes) tracked as PB-121.
+- **Closed reason:** Fully delivered. All 3 phases completed 2026-03-30: data model + API (PB-109), admin UI (PB-110), enforcement on data routes (PB-111). One follow-up security gap (individual-access routes) tracked as PB-121.
 - **Backlog linkage:** PB-109, PB-110, PB-111 (all completed). PB-121 (follow-up).
 
 ### SMI-016: Login pagina — alleen Google + 'under construction' tekst
