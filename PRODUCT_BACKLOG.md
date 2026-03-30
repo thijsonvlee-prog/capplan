@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** New Scrum Master inputs (SMI-012 through SMI-016) introduce auth hardening and user group management as the next initiative. The login restriction (PB-102) is a P1 security fix. Login page cleanup (PB-103) and masterdata documentation (PB-101) are quick wins. User groups (PB-104) is blocked pending scope decision (ESC-008). Scaling follow-ups (PB-105, PB-098) fill remaining capacity.
+**Current direction:** The login restriction and scaling initiatives are fully delivered. Next priority is fixing the orphan user issue (DE-REC-047) and adding server-side search to the planning grid (EX-REC-045) — both are direct follow-ups to recently shipped work. User groups (PB-104) remain blocked on ESC-008. Capacity summary full-dataset totals (PB-108) fill remaining capacity.
 
 ## Status Definitions
 
@@ -27,61 +27,48 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-102: Restrict Google login to pre-added users only
+### PB-107: Prevent PrismaAdapter from auto-creating orphan User records
 
-- **ID:** PB-102
-- **Title:** Only allow login for users already added via admin panel
+- **ID:** PB-107
+- **Title:** Stop PrismaAdapter from creating User records for rejected sign-ins
+- **Problem / opportunity:** PrismaAdapter creates a User record before the `signIn` callback rejects unknown users (PB-102). This leaves orphan User rows in the database that appear in the admin panel's user list.
 - **Owner:** Delivery Agent
-- **Priority:** P1 Critical
-- **Status:** Completed
-- **Completed:** 2026-03-30
-- **Implementation note:** Added `signIn` callback to NextAuth options in `src/lib/auth.ts`. Checks `prisma.user.findUnique({ where: { email } })` for OAuth sign-ins. Returns redirect to `/login?error=NietGeautoriseerd` if user not found, `/login?error=GeenEmailAdres` if no email available. Login page (`src/app/login/page.tsx`) reads error from URL search params and displays a styled Dutch error banner. Non-OAuth callbacks (session checks) pass through. Verify passes.
-- **Source:** SMI-014.
-
-### PB-103: Login page — show only Google + 'under construction' text
-
-- **ID:** PB-103
-- **Title:** Simplify login page to Google-only with under construction notice
-- **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Completed
-- **Completed:** 2026-03-30
-- **Implementation note:** Removed Microsoft/Azure AD button from login page UI. Added Dutch "Deze applicatie is in ontwikkeling" notice with warning icon below the Google button. Backend provider config unchanged for future use. Verify passes.
-- **Source:** SMI-016.
+- **Status:** Ready
+- **Why this matters now:** Direct follow-up to the P1 login restriction. Orphan users in the admin panel are confusing and undermine the login restriction feature.
+- **Scope notes:** Override PrismaAdapter's `createUser` method to check if the user already exists before creating. Alternatively, prevent auto-creation entirely and rely on the existing admin-created user flow. Test carefully — PrismaAdapter internals vary between versions.
+- **Dependencies:** PB-102 (completed).
+- **Definition of done:** No new User records are created when an unknown Google account attempts to sign in. Existing orphan records are not automatically cleaned (separate concern). Verify passes.
+- **Source:** DE-REC-047.
 
-### PB-101: Stamtabellen documentation in masterdata.md
+### PB-106: Planning grid — server-side search for paginated mode
 
-- **ID:** PB-101
-- **Title:** Create masterdata.md with stamtabel field descriptions and relationships
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Completed
-- **Completed:** 2026-03-30
-- **Implementation note:** Created `masterdata.md` documenting all 22 Prisma models across 5 sections: stamtabellen (Employer, Department, Location, LeaveType, Skill, RosterProfile, RosterProfileDay), kernentiteiten (Driver, DriverSkill, DriverEmploymentRecord, DriverFunctionRecord, DriverRosterAssignment, PlanningEntry, Scenario), gebruikersbeheer (User, Account, Session, UserPreference), connectiviteitshub (ImportSource, ImportLog), plus a relationship diagram and cascade-gedrag overzicht. Dutch field descriptions, English technical names.
-- **Source:** SMI-012.
-
-### PB-105: Planning grid — integrate paginated data fetching
-
-- **ID:** PB-105
-- **Title:** Connect planning grid to paginated API for large driver sets
-- **Owner:** Experience Agent
+- **ID:** PB-106
+- **Title:** Add server-side search to planning grid for cross-page driver lookup
+- **Problem / opportunity:** The planning grid name filter only searches the current page of 100 drivers. Users cannot find a driver on a different page without manually paging through.
+- **Owner:** Delivery Agent (API) + Experience Agent (frontend integration)
 - **Priority:** P2 High
-- **Status:** Completed
-- **Completed:** 2026-03-30
-- **Implementation note:** Planning grid now fetches drivers in pages of 100. Pagination controls (first/prev/next/last) appear below the grid when >1 page exists. Total driver count and page position displayed. Page resets to 1 on scenario or date range change. All existing interactions preserved (virtual scrolling, drag-select, group headers, sticky columns, capacity summary). Capacity summary shows totals for current page only. Client-side name filter works within current page. Verify passes.
-- **Follow-up:** Server-side search on for-range endpoint would improve the name filter for large datasets. Capacity summary could use a separate aggregation API for full-dataset totals.
-- **Source:** EX-REC-044, SMI-011.
+- **Status:** Ready
+- **Why this matters now:** Pagination (PB-105) made client-side search insufficient. This is the most impactful follow-up.
+- **Scope notes:** Add a `search` query parameter to `/api/planning/for-range` (matching the pattern already used in `/api/drivers`). Update the planning grid to use server-side search with debounced input, resetting to page 1 on search change.
+- **Dependencies:** PB-105 (completed).
+- **Definition of done:** Users can search for any driver by name across all pages from the planning grid. Search is debounced (300ms). Page resets to 1 on search change. Verify passes.
+- **Implementation note:** Delivery Agent adds `search` param to for-range API. Experience Agent wires up frontend.
+- **Source:** EX-REC-045.
 
-### PB-098: Scenario duplication batch processing
+### PB-108: Capacity summary — full-dataset totals via aggregation API
 
-- **ID:** PB-098
-- **Title:** Batch scenario duplication to reduce memory pressure at scale
-- **Owner:** Delivery Agent
+- **ID:** PB-108
+- **Title:** Show full-dataset capacity totals in planning grid summary row
+- **Problem / opportunity:** The capacity summary row at the bottom of the planning grid shows totals only for the current page of drivers. This gives an incomplete picture of overall capacity and could mislead planners.
+- **Owner:** Delivery Agent (API) + Experience Agent (frontend)
 - **Priority:** P3 Medium
-- **Status:** Completed
-- **Completed:** 2026-03-30
-- **Implementation note:** Replaced single-transaction bulk load with chunked processing (5,000 entries per chunk). Scenario is created first, then entries are copied in chunks using `skip`/`take` with `select` (only needed fields). If copying fails mid-way, the partially created scenario is cleaned up (cascade delete). Memory usage is now constant regardless of total entry count. Verify passes.
-- **Source:** DE-REC-046, SMI-011.
+- **Status:** Ready
+- **Why this matters now:** Completes the capacity picture after pagination was introduced. Planners rely on aggregate numbers.
+- **Scope notes:** Use the existing `/api/planning/capacity` endpoint (or extend it) to fetch full-dataset capacity totals independently of pagination. Display these in the summary row regardless of current page.
+- **Dependencies:** PB-105 (completed).
+- **Definition of done:** Capacity summary row shows totals across all drivers, not just the current page. Verify passes.
+- **Source:** EX-REC-046.
 
 ---
 
@@ -117,16 +104,10 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
 
-### PB-098: Scenario duplication batch processing
+### PB-103: Login page — show only Google + 'under construction' text
 
 - **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-
-### PB-101: Stamtabellen documentation in masterdata.md
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
+- **Owner:** Experience Agent
 - **Completed:** 2026-03-30
 
 ### PB-105: Planning grid — integrate paginated data fetching
@@ -135,55 +116,13 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-30
 
-### PB-103: Login page — show only Google + 'under construction' text
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-30
-
-### PB-099: Batch import transactions into chunks
+### PB-098: Scenario duplication batch processing
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
 
-### PB-100: Add date format validation to planning endpoints
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-
-### PB-096: Planning grid virtual scrolling
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-30
-
-### PB-097: Drivers page pagination UI
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-30
-
-### PB-093: Add server-side pagination to planning for-range API
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-
-### PB-094: Add server-side pagination to drivers list API
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-
-### PB-009: Add covering index for capacity aggregation query
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-
-### PB-092: Add CSV row count limit to import execution
+### PB-101: Stamtabellen documentation in masterdata.md
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
@@ -222,7 +161,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Functional and usable. Lower priority than auth and scaling work.
+- **Reason:** Functional and usable. Lower priority than search and capacity follow-ups.
 - **Source:** EX-REC-036.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers

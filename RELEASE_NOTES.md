@@ -4,30 +4,27 @@
 
 This is the central release log for CapPlan. All user-facing and significant internal changes are documented here. The Product Owner Agent updates this file when work is completed and deployed.
 
-## Unreleased
+## Release History
 
-### Beveiliging
+### 2026-03-30 — Loginbeveiliging, paginering planningsrooster en documentatie
 
-- **Loginbeperking tot bekende gebruikers:** Alleen gebruikers die vooraf door een beheerder zijn aangemaakt in het admin-paneel kunnen inloggen via Google. Onbekende Google-accounts worden geweigerd met een duidelijke Nederlandse foutmelding op de inlogpagina. Dit sluit het beveiligingsprobleem waarbij elke Google-gebruiker automatisch toegang kreeg met de PLANNER-rol.
+#### Beveiliging
 
-### Inlogpagina
+- **Loginbeperking tot bekende gebruikers:** Alleen gebruikers die vooraf door een beheerder zijn aangemaakt in het admin-paneel kunnen inloggen via Google. Onbekende Google-accounts worden geweigerd met een duidelijke Nederlandse foutmelding op de inlogpagina.
+
+#### Inlogpagina
 
 - **Alleen Google-login:** De inlogpagina toont nu alleen de Google-knop. De Microsoft-knop is verborgen (backend-configuratie blijft intact voor toekomstig gebruik).
 - **Ontwikkelingsmelding:** Een zichtbare melding "Deze applicatie is in ontwikkeling" is toegevoegd aan de inlogpagina.
 
-### Prestaties
+#### Prestaties
 
-- **Paginering planningsrooster:** Het planningsrooster haalt chauffeurs nu op in pagina's van 100. Paginaknoppen (eerste/vorige/volgende/laatste) verschijnen onder het rooster bij meer dan 100 chauffeurs. De initiële laadtijd is onafhankelijk van het totaal aantal chauffeurs.
+- **Paginering planningsrooster:** Het planningsrooster haalt chauffeurs nu op in pagina's van 100. Paginaknoppen (eerste/vorige/volgende/laatste) verschijnen onder het rooster bij meer dan 100 chauffeurs.
+- **Scenario-duplicatie in chunks:** Het dupliceren van scenario's verwerkt planningitems nu in blokken van 5.000 in plaats van alles in één keer. Bij 50.000 items blijft het geheugengebruik constant.
 
-### Betrouwbaarheid
+#### Documentatie
 
-- **Scenario-duplicatie in chunks:** Het dupliceren van scenario's verwerkt planningitems nu in blokken van 5.000 in plaats van alles in één keer. Bij 50.000 items blijft het geheugengebruik constant. Als het kopiëren mislukt, wordt het gedeeltelijk aangemaakte scenario opgeruimd.
-
-### Documentatie
-
-- **Masterdata-documentatie:** Nieuw `masterdata.md` document met volledige veldbeschrijvingen, typen, constraints en relaties voor alle 22 databasemodellen. Inclusief relatiediagram en cascade-gedrag overzicht.
-
-## Release History
+- **Masterdata-documentatie:** Nieuw `masterdata.md` document met volledige veldbeschrijvingen, typen, constraints en relaties voor alle 22 databasemodellen.
 
 ### 2026-03-30 — Virtual scrolling, paginering chauffeurs, import-betrouwbaarheid
 
@@ -37,34 +34,34 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### UX / design verbeteringen
 
-- **Paginering chauffeurspagina:** De chauffeurspagina gebruikt nu server-side paginering en zoeken. Pagineringknoppen (eerste/vorige/volgende/laatste), een paginagrootte-kiezer (25/50/100) en een totaalteller zijn toegevoegd. Zoeken is vertraagd (300ms) voor responsieve server-side filtering op naam en personeelsnummer. Een wisknop is toegevoegd aan het zoekveld.
+- **Paginering chauffeurspagina:** De chauffeurspagina gebruikt nu server-side paginering en zoeken. Pagineringknoppen (eerste/vorige/volgende/laatste), een paginagrootte-kiezer (25/50/100) en een totaalteller zijn toegevoegd. Zoeken is vertraagd (300ms) voor responsieve server-side filtering op naam en personeelsnummer.
 
 #### Betrouwbaarheid
 
-- **Import in chunks:** Grote CSV-imports worden nu in blokken van 500 rijen verwerkt in plaats van in één transactie. Bij 10.000 rijen voorkomt dit time-outs op de Neon serverless-verbinding. Als een blok mislukt, worden de reeds verwerkte rijen behouden en wordt een foutmelding getoond met het bloknummer en het rijbereik.
-- **Datumvalidatie planningsendpoints:** Alle planningsendpoints (`/api/planning`, `/api/planning/for-range`, `/api/planning/bulk`) valideren nu het datumformaat (JJJJ-MM-DD). Ongeldige datums zoals "2025-99-99" of "abc" geven een duidelijke 400-foutmelding in het Nederlands in plaats van lege of onverwachte resultaten.
+- **Import in chunks:** Grote CSV-imports worden nu in blokken van 500 rijen verwerkt in plaats van in één transactie. Bij 10.000 rijen voorkomt dit time-outs op de Neon serverless-verbinding.
+- **Datumvalidatie planningsendpoints:** Alle planningsendpoints valideren nu het datumformaat (JJJJ-MM-DD). Ongeldige datums geven een duidelijke 400-foutmelding in het Nederlands.
 
 ### 2026-03-30 — Schaalbaarheid: paginering en index-optimalisatie
 
 #### Prestaties
 
-- **Paginering planningsrooster-API:** Het endpoint `/api/planning/for-range` ondersteunt nu optionele `page` en `pageSize` parameters. Hiermee worden chauffeurs in pagina's opgehaald in plaats van allemaal tegelijk, wat de laadtijd bij grote aantallen chauffeurs aanzienlijk verkort.
-- **Paginering chauffeurs-API:** Het endpoint `/api/drivers` ondersteunt nu optionele `page` en `pageSize` parameters met server-side zoeken op voornaam, achternaam en personeelsnummer. Bestaande aanroepen zonder paginering blijven ongewijzigd werken.
-- **Capaciteitsindex:** Een samengestelde index op `(scenarioId, date, status)` is toegevoegd aan de PlanningEntry-tabel. Dit versnelt de capaciteitsberekeningen bij groeiende datavolumes.
+- **Paginering planningsrooster-API:** Het endpoint `/api/planning/for-range` ondersteunt nu optionele `page` en `pageSize` parameters.
+- **Paginering chauffeurs-API:** Het endpoint `/api/drivers` ondersteunt nu optionele `page` en `pageSize` parameters met server-side zoeken.
+- **Capaciteitsindex:** Een samengestelde index op `(scenarioId, date, status)` is toegevoegd aan de PlanningEntry-tabel.
 
 #### Betrouwbaarheid
 
-- **CSV-import rijlimiet:** Het importeren van CSV-bestanden is nu begrensd tot maximaal 10.000 rijen per import. Bij overschrijding wordt een duidelijke foutmelding getoond. Dit voorkomt geheugen- en time-outproblemen bij grote bestanden.
+- **CSV-import rijlimiet:** Het importeren van CSV-bestanden is nu begrensd tot maximaal 10.000 rijen per import.
 
 ### 2026-03-30 — Gebruikersidentiteit, upsert-import en sessie-optimalisatie
 
 #### Functionele verbeteringen
 
-- **CSV-import upsert modus:** Bij het importeren van CSV-bestanden kan nu gekozen worden tussen "Alleen aanmaken" en "Aanmaken of bijwerken". Bestaande records worden herkend op basis van unieke sleutel (code voor stamtabellen, personeelsnummer voor chauffeurs). Importresultaten en -geschiedenis tonen apart het aantal aangemaakte, bijgewerkte en overgeslagen rijen.
+- **CSV-import upsert modus:** Bij het importeren van CSV-bestanden kan nu gekozen worden tussen "Alleen aanmaken" en "Aanmaken of bijwerken".
 
 #### UX / design verbeteringen
 
-- **Gebruikersidentiteit in zijbalk:** De zijbalk toont nu de naam en rol van de ingelogde gebruiker onderaan, naast het versienummer.
+- **Gebruikersidentiteit in zijbalk:** De zijbalk toont nu de naam en rol van de ingelogde gebruiker onderaan.
 
 #### Prestaties
 
@@ -74,33 +71,33 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### UX / design verbeteringen
 
-- **Rolbewuste interface:** De interface past zich aan op basis van de rol van de ingelogde gebruiker. Kijkers (VIEWER) zien geen bewerkingsknoppen op het planningsscherm, chauffeurscherm en scenario's. Niet-beheerders zien geen schrijfknoppen op de instellingenpagina en het tabblad "Gebruikers" is alleen zichtbaar voor beheerders. Wanneer authenticatie niet is geconfigureerd, blijven alle acties beschikbaar.
-- **Instellingen-tabbladen op smal scherm:** De tabbalk op de instellingenpagina scrollt nu horizontaal op smalle schermen in plaats van tekst af te kappen of te laten terugvloeien.
+- **Rolbewuste interface:** De interface past zich aan op basis van de rol van de ingelogde gebruiker. Kijkers zien geen bewerkingsknoppen, niet-beheerders zien geen schrijfknoppen op instellingen.
+- **Instellingen-tabbladen op smal scherm:** De tabbalk scrollt nu horizontaal op smalle schermen.
 
 #### Betrouwbaarheid
 
-- **JSON-parseerbeveiliging:** Alle 23 POST/PUT API-routes gebruiken nu een gedeelde `parseJsonBody()` helper die ongeldige JSON afvangt en een duidelijke 400-foutmelding teruggeeft in plaats van een generieke 500-fout.
+- **JSON-parseerbeveiliging:** Alle 23 POST/PUT API-routes gebruiken nu een gedeelde `parseJsonBody()` helper die ongeldige JSON afvangt.
 
 #### Documentatie
 
-- **Authenticatie-setuphandleiding:** Nieuw `AUTH_SETUP.md` document met stapsgewijze instructies voor het configureren van authenticatie in Vercel. Behandelt alle vereiste omgevingsvariabelen, Google OAuth-setup, Azure AD-setup, verificatiestappen en probleemoplossing.
+- **Authenticatie-setuphandleiding:** Nieuw `AUTH_SETUP.md` document met stapsgewijze instructies voor het configureren van authenticatie in Vercel.
 
 ### 2026-03-30 — Bugfix: server error bij openen applicatie
 
 #### Bugfix
 
-- **Server error opgelost:** De applicatie gaf een "Server error" fout bij het openen wanneer authenticatie niet volledig was geconfigureerd. De middleware slaat authenticatie nu over wanneer `NEXTAUTH_SECRET` niet is ingesteld, zodat de applicatie ook zonder authenticatieconfiguratie werkt.
+- **Server error opgelost:** De applicatie gaf een "Server error" fout bij het openen wanneer authenticatie niet volledig was geconfigureerd. De middleware slaat authenticatie nu over wanneer `NEXTAUTH_SECRET` niet is ingesteld.
 
 ### 2026-03-30 — Rolhandhaving en importvalidatie
 
 #### Beveiliging
 
-- **Rolhandhaving op API-routes:** Alle schrijfbewerkingen (POST/PUT/DELETE) vereisen nu de juiste rol. Beheerders hebben volledige toegang, planners kunnen chauffeurs, planning en scenario's beheren, kijkers hebben alleen leestoegang.
+- **Rolhandhaving op API-routes:** Alle schrijfbewerkingen (POST/PUT/DELETE) vereisen nu de juiste rol.
 - **Rechtenmatrix:** Settings, gebruikersbeheer, importbronnen en roosterprofielen vereisen Admin-rechten. Chauffeurs, planning en scenario's vereisen Planner-rechten.
 
 #### Betrouwbaarheid
 
-- **Veldkoppelingsvalidatie verbeterd:** Import-bronnen valideren nu dat veldkoppelingen geldig zijn. Ongeldige configuraties worden bij opslaan afgewezen.
+- **Veldkoppelingsvalidatie verbeterd:** Import-bronnen valideren nu dat veldkoppelingen geldig zijn.
 
 ### 2026-03-30 — Gebruikersbeheer, inloggen, CSV-import en authenticatie
 
@@ -110,7 +107,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 - **Inlogpagina:** Nieuwe inlogpagina met ondersteuning voor Google en Microsoft.
 - **Sessie-indicator:** De koptekstbalk toont nu de ingelogde gebruiker met profielfoto, naam en uitlogknop.
 - **Routebeveiliging:** Niet-ingelogde gebruikers worden automatisch doorgestuurd naar de inlogpagina.
-- **CSV-import uitvoeren:** CSV-bestanden kunnen nu worden geüpload, gevalideerd en geïmporteerd met samenvatting van resultaten.
+- **CSV-import uitvoeren:** CSV-bestanden kunnen nu worden geüpload, gevalideerd en geïmporteerd.
 - **Importgeschiedenis:** Per importbron een logboek met de laatste 20 imports.
 
 #### Authenticatie-infrastructuur

@@ -23,14 +23,6 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-### SMI-016: Login pagina — alleen Google + 'under construction' tekst
-
-- **Type:** UX request
-- **Status:** Planned
-- **Input:** "Zorg ervoor dat op de login pagina alleen de google login optie zichtbaar is. Ook moet de login pagina nog even de tekst tonen 'under construction'"
-- **Analysis:** Login page currently shows both Google and Microsoft buttons. Simple UI change: hide Microsoft button, add 'under construction' text.
-- **Backlog linkage:** PB-103.
-
 ### SMI-015: Gebruikersgroepen met autorisatiefilters
 
 - **Type:** Initiative / new feature
@@ -39,39 +31,41 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Analysis:** This is a significant new feature. No UserGroup model or group-related code exists. Requires: data model (UserGroup, group membership, filter definitions), API routes, management UI, and filter enforcement on all data queries. The scope of "filterable dimensions" (employer, department, location, or others) and enforcement strategy need to be decided before implementation can start. Escalated to ESC-008.
 - **Backlog linkage:** PB-104 (blocked pending ESC-008).
 
+## Closed Inputs
+
+### SMI-016: Login pagina — alleen Google + 'under construction' tekst
+
+- **Type:** UX request
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-103 completed 2026-03-30. Login page shows only Google button with Dutch "under construction" notice.
+- **Backlog linkage:** PB-103 (completed).
+
 ### SMI-014: Alleen toegevoegde gebruikers mogen inloggen via Google
 
 - **Type:** Security fix
-- **Status:** Planned
-- **Input:** "Alleen gebruikers die zijn toegevoegd via Adminpanel moeten kunnen inloggen via google. Niet zo maar iedereen die probeert in te loggen moet toegang krijgen."
-- **Analysis:** Currently PrismaAdapter auto-creates a User record on first Google login with default PLANNER role. This means anyone with a Google account can access the application. Fix: add a `signIn` callback that rejects users not already in the User table.
-- **Backlog linkage:** PB-102.
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-102 completed 2026-03-30. Only pre-added users can now login via Google. Unknown accounts are rejected with Dutch error message.
+- **Backlog linkage:** PB-102 (completed).
 
 ### SMI-013: Admin autorisatierol
 
 - **Type:** Request
 - **Status:** Closed
-- **Input:** "Voeg de autorisatierol Admin toe. deze dient alle rechten te hebben."
 - **Closed reason:** Already fully implemented. The ADMIN role exists in the User model (Prisma schema), is enforced server-side via `requireRole()` in `api-route-utils.ts` with a clear hierarchy (VIEWER < PLANNER < ADMIN), and has full access to all functionality including settings, users, import sources, and roster profiles. No additional work needed.
 
 ### SMI-012: Stamtabellen documentatie in masterdata.md
 
 - **Type:** Documentation request
-- **Status:** Planned
-- **Input:** "Beschrijving van stamtabellen met alle velden en veldspecificaties in masterdata.md. ook de relaties tussen de stamtabellen hier beschrijven."
-- **Analysis:** No masterdata.md exists. Straightforward documentation task: describe all stamtabellen with fields, types, constraints, and relationships. Use Prisma schema as source of truth.
-- **Backlog linkage:** PB-101.
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-101 completed 2026-03-30. masterdata.md created with all 22 models documented.
+- **Backlog linkage:** PB-101 (completed).
 
 ### SMI-011: Voorbereidingen voor 1000 chauffeurs — performance en schaalbaarheid
 
 - **Type:** Initiative / priority signal
-- **Status:** Planned
-- **Input:** "Maak voorbereidingen voor grotere schaal en meer data input. Er moet straks voor uiteindelijk 1000 chauffeurs de planning kunnen worden gemaakt. Zorg ervoor dat de performance goed blijft. Het systeem mag nooit traag aanvoelen."
-- **Analysis:** Investigation reveals three critical bottlenecks at 1000 drivers: (1) PlanningGrid renders all rows in the DOM — no virtualization, (2) `/api/planning/for-range` and `/api/drivers` return all records without pagination — 5-10MB payloads, (3) no covering index for capacity aggregation at scale. Capacity groupBy and scenario duplication are lower risk.
-- **Breakdown:** Broken into 8 phased backlog items (PB-093 through PB-098, PB-105). **Phase 1 complete:** PB-093 (planning pagination), PB-094 (drivers pagination), PB-009 (capacity index), PB-092 (import guardrail) all shipped 2026-03-30. **Phase 2 complete:** PB-096 (virtual scrolling) and PB-097 (drivers pagination UI) shipped 2026-03-30. **Phase 3 ready:** PB-105 (planning grid paginated fetching) and PB-098 (scenario duplication batching) scheduled for next cycle.
-- **Backlog linkage:** PB-093, PB-094, PB-009, PB-092, PB-096, PB-097, PB-105, PB-098.
-
-## Closed Inputs
+- **Status:** Closed
+- **Closed reason:** Fully delivered. All 8 backlog items completed across 3 phases: server-side pagination (PB-093, PB-094), capacity index (PB-009), import guardrail (PB-092), virtual scrolling (PB-096), drivers pagination UI (PB-097), planning grid pagination (PB-105), and scenario duplication batching (PB-098). The application is now prepared for 1000+ drivers.
+- **Backlog linkage:** PB-093, PB-094, PB-009, PB-092, PB-096, PB-097, PB-105, PB-098 (all completed).
 
 ### SMI-010: Google OAuth redirect_uri_mismatch fout
 
