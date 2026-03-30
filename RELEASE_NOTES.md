@@ -6,6 +6,16 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-30 — Autorisatie individuele routes en capaciteitsoptimalisatie
+
+#### Beveiliging
+
+- **Gebruikersgroepen op individuele routes:** De endpoints `/api/drivers/[id]` GET en `/api/planning` GET (per chauffeur) passen nu dezelfde afdelingsfiltering toe als de lijstendpoints. Chauffeurs buiten de gebruikersgroep geven een 404-fout, zonder informatie te lekken over het bestaan van de chauffeur.
+
+#### Prestaties
+
+- **Capaciteitsendpoint geoptimaliseerd:** Het capaciteitsendpoint gebruikt nu een Prisma-relatiefilter in plaats van een aparte query om chauffeur-ID's op te halen. Dit vermindert het aantal queries en het geheugengebruik bij grote organisaties.
+
 ### 2026-03-30 — Gebruikersgroepen autorisatie, voorkeuren per gebruiker en validatie
 
 #### Beveiliging

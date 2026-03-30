@@ -6,39 +6,13 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed five backlog items: PB-111 (user group enforcement on data routes), PB-117 (stamtabel import batch optimization), PB-118 (preferences user-scoping), PB-119 (planning status enum validation), and PB-120 (planning sickPercentage range validation).
+This cycle completed PB-121 (user group enforcement on individual-access routes) and PB-122 (capacity endpoint relation-based filtering optimization). The authorization model is now complete — all read endpoints enforce user group department filtering consistently. The capacity endpoint no longer pre-fetches driver IDs, using a Prisma relation filter instead.
 
-With user groups fully shipped (Phases 1–3), the authorization model is now complete. All import paths use batch lookups. Preferences are per-user. Planning endpoints validate all input fields.
+A fresh codebase scan confirms the codebase is in good shape: no N+1 patterns, no large-array `.find()` in render paths, no missing input validation on write routes, and no TODO/FIXME/HACK comments. The only outstanding finding is the hardcoded chart colors in CapacityChart (already tracked as DE-REC-014).
 
-A fresh codebase scan identified several remaining opportunities. The most impactful are: user group enforcement on the planning single-entry GET (DE-REC-056), capacity endpoint scoping efficiency (DE-REC-057), and the ongoing POC capacity summary row decision (DE-REC-036).
+With the security and performance gaps closed, remaining recommendations are lower-priority maintainability and hygiene items.
 
 ## Recommended Next Improvements
-
-### DE-REC-056: User group enforcement — planning GET and individual driver routes
-
-- **Title:** Apply department filtering to planning GET and driver [id] GET routes
-- **Problem:** PB-111 applied user group filtering to the list endpoints (`/api/drivers` GET, `/api/planning/for-range` GET, `/api/planning/capacity` GET). However, the single-entry GET routes (`/api/planning` GET by dates/driverId, `/api/drivers/[id]` GET) do not enforce department filtering. A user could access a specific driver's data by ID even if the driver is outside their group's departments.
-- **Proposed improvement:** Apply the same `getAllowedDepartmentIds()` + `driverDepartmentFilter()` pattern to these individual-access routes.
-- **Expected product/technical value:** Complete authorization coverage. Prevents data leakage through direct ID access.
-- **Priority:** P2 High
-- **Effort:** Small
-- **Risk:** Low — same proven pattern as PB-111.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Completes the authorization gap left by PB-111's focus on list endpoints.
-
-### DE-REC-057: Capacity endpoint — avoid driver ID pre-fetch for user group filtering
-
-- **Title:** Optimize capacity endpoint user group filtering to avoid loading all driver IDs
-- **Problem:** The current PB-111 implementation in `/api/planning/capacity` fetches all driver IDs in the user's departments (`findMany` + `select: { id: true }`), then passes them as a `driverId: { in: [...] }` filter to `groupBy`. For organizations with many drivers, this means loading thousands of IDs into memory and passing a large `IN` clause.
-- **Proposed improvement:** Use a Prisma subquery or join-based approach: filter `planningEntry` where `driver.functionRecords.some({ departmentId: { in: allowedDeptIds } })` directly in the `groupBy` where clause.
-- **Expected product/technical value:** Reduces memory usage and query size for large organizations.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low — Prisma supports relation filters in `groupBy` where clauses.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Performance optimization for the capacity endpoint at scale.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -69,7 +43,7 @@ A fresh codebase scan identified several remaining opportunities. The most impac
 ### DE-REC-014: Move hardcoded comparison chart colors to constants
 
 - **Title:** Extract COMPARE_COLORS from CapacityChart to constants
-- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS` inline with hardcoded hex values.
+- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS` inline with hardcoded hex values (`#f97316`, `#06b6d4`, `#8b5cf6`).
 - **Proposed improvement:** Move to `src/domain/constants.ts` with comments referencing design token equivalents.
 - **Expected product/technical value:** Centralizes color definitions.
 - **Priority:** P4 Low
@@ -94,8 +68,6 @@ A fresh codebase scan identified several remaining opportunities. The most impac
 
 ## Risks / Watch-outs
 
-- **Individual-access routes not yet group-filtered:** `/api/drivers/[id]` GET and `/api/planning` GET (by driverId) do not enforce user group filtering. A user could access individual records outside their department scope by ID. DE-REC-056 proposes the fix.
-- **Capacity endpoint driver ID pre-fetch:** The `getAllowedDepartmentIds()` + `findMany` approach in the capacity endpoint works correctly but loads all matching driver IDs into memory. At current scale this is fine; at 10k+ drivers it could become a bottleneck. DE-REC-057 proposes an optimization.
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls. A failed save leaves the UI showing unsaved state. This is a known design choice.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed to avoid maintaining dead/experimental code.
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
@@ -141,7 +113,7 @@ A fresh codebase scan identified several remaining opportunities. The most impac
 - **Add driverId FK validation on planning POST:** Prisma FK constraint catches invalid IDs. Adding a pre-check doubles the query count for the most common write operation.
 - **Refactor useApi global cache invalidation:** The broadcast approach works because cache entries have a 30s freshness window.
 - **autoCloseOpenRecords race condition:** Theoretical at current concurrency. Would require wrapping callers in transactions.
-- **Add user group filtering to write endpoints:** Write endpoints already require the user to know the driver ID. The ID-level access gap (DE-REC-056) is the more impactful fix for reads.
+- **Add user group filtering to write endpoints:** Write endpoints already require the user to know the driver ID. The read-level filtering (now complete via PB-121) prevents discovery of out-of-scope IDs.
 
 ## Recommendation Rules
 

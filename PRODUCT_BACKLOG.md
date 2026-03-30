@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** User groups (SMI-015) fully shipped across all 3 phases. Authorization model is complete for list endpoints. One security gap remains: individual-access routes do not enforce user group filtering (PB-121). Capacity endpoint optimization (PB-122) is the next performance item.
+**Current direction:** User groups (SMI-015) fully shipped across all 3 phases. Authorization model is now complete — all read endpoints (list and individual-access) enforce user group department filtering. Capacity endpoint uses optimized relation-based filtering. No active security gaps remain. Next focus areas are deferred P4 items and any new recommendations from agents.
 
 ## Status Definitions
 
@@ -27,38 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-121: User group enforcement — individual-access routes
-
-- **ID:** PB-121
-- **Title:** Apply department filtering to planning GET (by driverId) and driver [id] GET routes
-- **Problem / opportunity:** PB-111 applied user group filtering to list endpoints (`/api/drivers`, `/api/planning/for-range`, `/api/planning/capacity`). However, `/api/planning` GET (by driverId) and `/api/drivers/[id]` GET do not enforce filtering. A user could access a specific driver's data by ID even if the driver is outside their group's departments.
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Security gap. Completes the authorization coverage started in PB-111. Same proven pattern — low risk, small effort.
-- **Scope notes:**
-  - Apply `getAllowedDepartmentIds()` + `driverDepartmentFilter()` to `/api/drivers/[id]` GET.
-  - Apply equivalent check to `/api/planning` GET when queried by driverId.
-  - Return 404 (not 403) when the driver exists but is outside the user's scope, to avoid leaking existence information.
-- **Dependencies:** None.
-- **Definition of done:** Individual-access routes enforce the same department filtering as list routes. `npm run verify` passes.
-- **Source:** DE-REC-056.
-
-### PB-122: Capacity endpoint — relation-based user group filtering
-
-- **ID:** PB-122
-- **Title:** Optimize capacity endpoint user group filtering to use Prisma relation filter instead of driver ID pre-fetch
-- **Problem / opportunity:** The current PB-111 implementation in `/api/planning/capacity` fetches all driver IDs in the user's departments (`findMany` + `select: { id: true }`), then passes them as `driverId: { in: [...] }`. For large organizations this loads thousands of IDs into memory and creates a large IN clause.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Scalability improvement for the capacity endpoint. Low risk — Prisma supports relation filters in `groupBy` where clauses.
-- **Scope notes:**
-  - Replace the driver ID pre-fetch with a Prisma relation filter: `driver: { functionRecords: { some: { departmentId: { in: allowedDeptIds } } } }` directly in the `groupBy` where clause.
-  - Verify query plan with representative data.
-- **Dependencies:** None.
-- **Definition of done:** Capacity endpoint no longer pre-fetches driver IDs for group filtering. Same results, fewer queries. `npm run verify` passes.
-- **Source:** DE-REC-057.
+_No items ready for next cycle._
 
 ---
 
@@ -75,6 +44,20 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-121: User group enforcement — individual-access routes
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Applied `getAllowedDepartmentIds()` + `driverDepartmentFilter()` to `/api/drivers/[id]` GET (switched from `findUnique` to `findFirst` with combined where clause) and `/api/planning` GET (added driver scope check via `prisma.driver.count` when `driverId` param is present). Returns 404 for out-of-scope drivers to avoid leaking existence.
+
+### PB-122: Capacity endpoint — relation-based user group filtering
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Replaced two-query approach (driver ID pre-fetch + IN clause) with a single Prisma relation filter `{ driver: driverDepartmentFilter(allowedDepts) }` directly in the `groupBy` where clause. Eliminates the intermediate `findMany` query and reduces memory usage for large organizations.
 
 ### PB-111: User groups — enforcement on data routes
 

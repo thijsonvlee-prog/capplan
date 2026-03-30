@@ -41,16 +41,11 @@ export const GET = withPerfLogging(
 
       const resolvedScenarioId = resolveScenarioId(scenarioId);
 
-      // Apply user group department filter: scope to drivers in allowed departments
+      // Apply user group department filter using a relation filter (no driver ID pre-fetch)
       const allowedDepts = await getAllowedDepartmentIds();
-      let driverIdFilter: { driverId?: { in: string[] } } = {};
-      if (allowedDepts !== null) {
-        const allowedDrivers = await prisma.driver.findMany({
-          where: driverDepartmentFilter(allowedDepts),
-          select: { id: true },
-        });
-        driverIdFilter = { driverId: { in: allowedDrivers.map((d) => d.id) } };
-      }
+      const driverFilter = allowedDepts !== null
+        ? { driver: driverDepartmentFilter(allowedDepts) }
+        : {};
 
       // Use groupBy to aggregate in the database instead of fetching all rows
       const grouped = await prisma.planningEntry.groupBy({
@@ -58,7 +53,7 @@ export const GET = withPerfLogging(
         where: {
           date: { in: dateList },
           scenarioId: resolvedScenarioId,
-          ...driverIdFilter,
+          ...driverFilter,
         },
         _count: { _all: true },
       });

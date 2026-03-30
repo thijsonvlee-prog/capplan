@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, parseJsonBody, validateDateFormat, validateDateFormats } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, parseJsonBody, validateDateFormat, validateDateFormats, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { PlanningStatus } from "@/domain/enums";
 
 const VALID_STATUSES = Object.values(PlanningStatus);
@@ -41,6 +41,19 @@ export const GET = withPerfLogging(
     }
 
     if (driverId) {
+      // Verify the driver is within the user's allowed departments
+      const allowedDepts = await getAllowedDepartmentIds();
+      if (allowedDepts !== null) {
+        const driverInScope = await prisma.driver.count({
+          where: { id: driverId, ...driverDepartmentFilter(allowedDepts) },
+        });
+        if (driverInScope === 0) {
+          return NextResponse.json(
+            { error: "Chauffeur niet gevonden" },
+            { status: 404 }
+          );
+        }
+      }
       where.driverId = driverId;
     }
 

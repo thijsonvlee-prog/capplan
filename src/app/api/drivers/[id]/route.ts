@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { transformDriver, driverInclude, validateForeignKeys, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, validateForeignKeys, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -8,8 +8,16 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const driver = await prisma.driver.findUnique({
-      where: { id },
+
+    // Apply user group department filter
+    const allowedDepts = await getAllowedDepartmentIds();
+    const where: any = { id };
+    if (allowedDepts !== null) {
+      Object.assign(where, driverDepartmentFilter(allowedDepts));
+    }
+
+    const driver = await prisma.driver.findFirst({
+      where,
       include: driverInclude,
     });
 
