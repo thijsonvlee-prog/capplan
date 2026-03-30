@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Two functional tracks advancing: (1) connectivity hub — CSV upload and column detection complete, import execution (PB-078) is next; (2) authentication — infrastructure complete (NextAuth.js + Google/Microsoft), login page (PB-081) and role enforcement (PB-082) are next. CLAUDE.md rewritten (PB-076). Codebase healthy — 0 ESLint warnings, 0 typecheck errors.
+**Current direction:** Two functional tracks advancing in parallel: (1) connectivity hub — CSV upload and column detection complete, import execution (PB-078) is next; (2) authentication — infrastructure complete (NextAuth.js + Google/Microsoft), login page (PB-081) is next, followed by admin panel (PB-079) and role enforcement (PB-082). Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next cycle: Experience Agent takes PB-081, Delivery Agent takes PB-078.
 
 ## Status Definitions
 
@@ -27,24 +27,48 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
-
----
-
-## Blocked / Needs Decision
-
 ### PB-081: Login page and session UI
 
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Ready (unblocked by PB-080 completion)
+- **Status:** Ready
 - **Problem / opportunity:** Users need a login screen and visual session state (logged-in user display, logout button). No login UI exists.
-- **Why this matters now:** Required for multi-user operation. Auth infrastructure is now in place.
+- **Why this matters now:** Required for multi-user operation. Auth infrastructure (PB-080) is complete.
 - **Scope notes:** Build a login page (`/login`) with provider sign-in buttons (Google, Microsoft). Add session indicator in the app header showing the logged-in user name and a logout action. Redirect unauthenticated users to login. All text in Dutch.
 - **Dependencies:** PB-080 (completed).
 - **Definition of done:** Login page renders with provider buttons. Successful login redirects to the app. Header shows logged-in user. Logout works. `npm run verify` passes.
 - **Implementation note:** Use NextAuth.js client hooks (`useSession`, `signIn`, `signOut`). Auth config is in `src/lib/auth.ts`. SessionProvider already wraps the app via `AuthProvider` in root layout. Style with existing design tokens. Login page should feel consistent with the app's visual identity.
 - **Source:** ESC-005, SMI-008.
+
+### PB-078: CSV import execution — apply field mappings and insert data
+
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** After uploading a CSV and detecting columns (PB-077), the system needs to actually execute the import: apply the configured field mappings, validate rows, and insert data into the target entity table.
+- **Why this matters now:** SM directive (SMI-008). This completes the connectivity hub's core value proposition.
+- **Scope notes:** Add an import execution endpoint that: reads the uploaded CSV, applies field mappings from the ImportSource config, validates each row against the target entity's required fields, inserts valid rows using `createMany`, and returns a summary (rows imported, rows skipped, errors). Target entities: chauffeurs, werkgevers, afdelingen, standplaatsen. Add an import history/log so users can see what was imported and when.
+- **Dependencies:** PB-077 (completed).
+- **Definition of done:** Users can upload a CSV, preview the mapping, execute the import, and see results. Import history is visible. `npm run verify` passes.
+- **Implementation note:** Use `prisma.$transaction` for the batch insert. Validate all rows before inserting (fail-fast on structural errors, skip individual bad rows with error log). The CSV upload endpoint (`POST /api/import-sources/[id]/upload`) already returns parsed data with mapping validation. Consider adding an ImportLog model to track imports. The frontend upload UI in `ImportSourceManager.tsx` already shows preview rows and mapping validation. Per DE-REC-041: ensure (1) all rows are validated before any inserts, (2) clear error report with row-level detail, (3) `prisma.$transaction` wraps the entire import, (4) duplicate detection uses existing unique constraints.
+- **Source:** SMI-008, DE-REC-041.
+
+### PB-082: Role enforcement middleware
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The User model has roles (ADMIN, PLANNER, VIEWER) but they are not enforced. Auth infrastructure is in place, so API routes and pages can now enforce role-based access control.
+- **Why this matters now:** Completes the user management feature set. Without enforcement, roles are decorative.
+- **Scope notes:** Add middleware or route-level checks that enforce role permissions. Define a permission matrix (e.g., VIEWER = read-only, PLANNER = read + write planning, ADMIN = full access). Apply to API routes and page navigation.
+- **Dependencies:** PB-080 (completed). Practically should wait until PB-081 (login page) is deployed so users actually have sessions. Schedule for the cycle after PB-081.
+- **Definition of done:** API routes reject unauthorized requests with appropriate error. Pages redirect unauthorized users. Permission matrix documented. `npm run verify` passes.
+- **Implementation note:** Auth config is in `src/lib/auth.ts`. Session includes `user.id` and `user.role`. Start with a simple helper function that checks session role against required role. Apply progressively to routes.
+- **Source:** ESC-005, SMI-008.
+
+---
+
+## Blocked / Needs Decision
 
 ### PB-079: Admin panel — user management screen
 
@@ -54,36 +78,10 @@ _No items currently ready._
 - **Problem / opportunity:** The Scrum Master wants an admin panel with user management. The User model exists in the database with roles (ADMIN, PLANNER, VIEWER) but no management UI exists.
 - **Why this matters now:** Direct SM directive (SMI-008). Required for multi-user operation.
 - **Scope notes:** Build a user list/management screen within the settings page (new "Gebruikers" tab). Show all users with name, email, role, last login. Allow admins to change user roles. Consider whether user deactivation is needed.
-- **Dependencies:** PB-081 (login page).
+- **Dependencies:** PB-081 (login page must be complete first).
 - **Definition of done:** Admin users can view all users and assign roles. `npm run verify` passes.
 - **Implementation note:** Add as a new tab in the settings page, following the existing tab pattern. Use the existing User model fields. Auth infrastructure (PB-080) is complete.
 - **Source:** SMI-008, ESC-005.
-
-### PB-078: CSV import execution — apply field mappings and insert data
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready (unblocked by PB-077 completion)
-- **Problem / opportunity:** After uploading a CSV and detecting columns (PB-077), the system needs to actually execute the import: apply the configured field mappings, validate rows, and insert data into the target entity table.
-- **Why this matters now:** SM directive (SMI-008). This completes the connectivity hub's core value proposition.
-- **Scope notes:** Add an import execution endpoint that: reads the uploaded CSV, applies field mappings from the ImportSource config, validates each row against the target entity's required fields, inserts valid rows using `createMany`, and returns a summary (rows imported, rows skipped, errors). Target entities: chauffeurs, werkgevers, afdelingen, standplaatsen. Add an import history/log so users can see what was imported and when.
-- **Dependencies:** PB-077 (completed).
-- **Definition of done:** Users can upload a CSV, preview the mapping, execute the import, and see results. Import history is visible. `npm run verify` passes.
-- **Implementation note:** Use `prisma.$transaction` for the batch insert. Validate all rows before inserting (fail-fast on structural errors, skip individual bad rows with error log). The CSV upload endpoint (`POST /api/import-sources/[id]/upload`) already returns parsed data with mapping validation. Consider adding an ImportLog model to track imports. The frontend upload UI in `ImportSourceManager.tsx` already shows preview rows and mapping validation.
-- **Source:** SMI-008.
-
-### PB-082: Role enforcement middleware
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready (unblocked by PB-080 completion)
-- **Problem / opportunity:** The User model has roles (ADMIN, PLANNER, VIEWER) but they are not enforced. Auth infrastructure is in place, so API routes and pages can now enforce role-based access control.
-- **Why this matters now:** Completes the user management feature set. Without enforcement, roles are decorative.
-- **Scope notes:** Add middleware or route-level checks that enforce role permissions. Define a permission matrix (e.g., VIEWER = read-only, PLANNER = read + write planning, ADMIN = full access). Apply to API routes and page navigation.
-- **Dependencies:** PB-080 (completed). Practically depends on PB-081 (login page) being deployed so users actually have sessions.
-- **Definition of done:** API routes reject unauthorized requests with appropriate error. Pages redirect unauthorized users. Permission matrix documented. `npm run verify` passes.
-- **Implementation note:** Auth config is in `src/lib/auth.ts`. Session includes `user.id` and `user.role`. Start with a simple helper function that checks session role against required role. Apply progressively to routes.
-- **Source:** ESC-005, SMI-008.
 
 ---
 
@@ -108,7 +106,12 @@ _No items currently in progress._
 ### PB-080: Auth infrastructure — NextAuth.js with Google/Microsoft provider
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** Installed `next-auth` v4 and `@next-auth/prisma-adapter`. Added Account and Session models to Prisma schema with migration. Created auth config (`src/lib/auth.ts`) with Google and Azure AD providers (conditionally loaded from env vars), database sessions, and session callback that includes user ID and role. Added `AuthProvider` wrapper in root layout. Created NextAuth type augmentation for session.user.role. Env vars needed: `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`/`SECRET`, `AZURE_AD_CLIENT_ID`/`SECRET`/`TENANT_ID`.
+- **Summary:** Installed `next-auth` v4 and `@next-auth/prisma-adapter`. Added Account and Session models to Prisma schema with migration. Created auth config (`src/lib/auth.ts`) with Google and Azure AD providers (conditionally loaded from env vars), database sessions, and session callback that includes user ID and role. Added `AuthProvider` wrapper in root layout. Created NextAuth type augmentation for session.user.role.
+
+### PB-074: Add `btn-danger` CSS class and replace inline button styles
+- **Completed:** 2026-03-30
+- **Owner:** Experience Agent
+- **Summary:** Added `.btn-danger` class to `globals.css`. Replaced inline class strings in `ConfirmDialog.tsx` and `documentatie/page.tsx`.
 
 ### PB-075: Memoize Map creation in DriverForm.tsx
 - **Completed:** 2026-03-30
@@ -120,29 +123,17 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Summary:** Removed 6 unused functions from `utils.ts` and the unused `StamtabelType` enum from `enums.ts`.
 
-### PB-074: Add `btn-danger` CSS class and replace inline button styles
-- **Completed:** 2026-03-30
-- **Owner:** Experience Agent
-- **Summary:** Added `.btn-danger` class to `globals.css`. Replaced inline class strings in `ConfirmDialog.tsx` and `documentatie/page.tsx`.
-
-### PB-016: Connectivity hub — admin screen for import source configuration
-- **Completed:** 2026-03-30
-- **Owner:** Experience Agent
-- **Summary:** Working admin screen for managing CSV import sources with field mapping.
-
-### PB-072: Planning page header subtitle
-- **Completed:** 2026-03-30
-- **Owner:** Experience Agent
-- **Summary:** Planning page header shows active scenario name as subtitle.
-
-### PB-071: Remove unused utility exports from utils.ts
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Removed four unused functions from `src/lib/utils.ts`.
-
 ---
 
 ## Deferred
+
+### DE-REC-040: Optimize NextAuth session callback role lookup
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Worth addressing once auth is actively used with concurrent users, but not before the login page (PB-081) exists and is validated. Revisit after auth is in production use.
+- **Source:** DE-REC-040.
 
 ### PB-009: Add covering index for capacity aggregation query
 

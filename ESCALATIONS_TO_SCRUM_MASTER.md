@@ -30,11 +30,11 @@ _No open escalations._
 
 ### ESC-005: Authentication approach for user management
 
-- **Status:** Planned
+- **Status:** Closed
 - **Date / run context:** 2026-03-30 — triggered by SMI-008
 - **Decision needed:** Which authentication approach should CapPlan use to enable user management and role enforcement?
 - **Chosen option:** Option B — NextAuth.js with external provider (Google/Microsoft). Delegates identity to an external provider. No password management needed. Good for organizations already on Microsoft 365.
-- **Product Owner action:** Created phased backlog items: PB-080 (auth infrastructure with NextAuth.js + Google/Microsoft provider), PB-081 (login page and session UI), PB-079 (admin user management screen — updated and unblocked), PB-082 (role enforcement middleware). Items are sequenced with dependencies.
+- **Product Owner action:** Created phased backlog items: PB-080 (auth infrastructure — completed), PB-081 (login page — ready), PB-079 (admin user management — blocked on PB-081), PB-082 (role enforcement — ready). PB-080 delivered. Remaining items are in backlog with clear sequencing.
 - **Backlog linkage:** PB-080, PB-081, PB-079, PB-082.
 
 ### ESC-004: Custom date picker — scope and approach
