@@ -30,7 +30,7 @@ _No open escalations._
 
 ### ESC-008: Gebruikersgroepen met autorisatiefilters — scope en fasering
 
-- **Status:** Planned
+- **Status:** Closed
 - **Date / run context:** 2026-03-30 — triggered by SMI-015
 - **Chosen option:** Option A — Minimal MVP with single-dimension filter, modified to use **Afdeling (Department)** as the filter criterion instead of Werkgever (Employer).
 - **Scrum Master note:** "maar laat 'afdeling' het filtercriterium zijn"

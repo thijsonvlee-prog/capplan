@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** User groups Phase 1 (PB-109) is complete — data model, migration, and CRUD API routes are deployed. PB-110 (admin UI) is unblocked and ready for the Experience Agent. Import batch optimization (PB-113) and all hardening fixes (PB-114, PB-115, PB-116) are complete. Stamtabel import upsert batching (DE-REC-052) and preferences authentication (DE-REC-053) are the next high-priority technical items.
+**Current direction:** User groups Phase 1 (PB-109) is complete. Phase 2 (PB-110, admin UI) is unblocked and ready for the Experience Agent. In parallel, the Delivery Agent should complete the stamtabel batch optimization (PB-117) and preferences user-scoping (PB-118), then pick up the two planning validation fixes (PB-119, PB-120). Phase 3 enforcement (PB-111) remains blocked on PB-110.
 
 ## Status Definitions
 
@@ -27,12 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready. See Blocked / Needs Decision for upcoming work._
-
----
-
-## Blocked / Needs Decision
-
 ### PB-110: User groups — admin UI in settings
 
 - **ID:** PB-110
@@ -41,33 +35,103 @@ _No items currently ready. See Blocked / Needs Decision for upcoming work._
 - **Owner:** Experience Agent
 - **Priority:** P2 High
 - **Status:** Ready
-- **Unblocked by:** PB-109 (completed 2026-03-30).
-- **Why this matters now:** Required for user groups feature. Scrum Master request.
+- **Why this matters now:** Unblocked by PB-109 (completed 2026-03-30). Required for user groups feature. Scrum Master request (SMI-015).
 - **Scope notes:**
   - New "Gebruikersgroepen" tab in settings (admin only).
   - Create/edit/delete groups.
   - Multi-select departments per group.
   - Assign users to groups.
   - Follow existing settings tab patterns (StamtabelManager-style or custom).
-- **Dependencies:** PB-109.
+- **Dependencies:** PB-109 (completed).
 - **Definition of done:** Admin can manage user groups via the settings UI. All interactions have toast notifications and confirm dialogs for destructive actions. `npm run verify` passes.
+
+### PB-117: Stamtabel import upsert — batch lookups instead of per-row queries
+
+- **ID:** PB-117
+- **Title:** Apply batch optimization to stamtabel upsert (same pattern as PB-113)
+- **Problem / opportunity:** Stamtabel upsert in `src/app/api/import-sources/[id]/execute/route.ts` (lines 449–496) issues per-row `findUnique` + conditional `update`/`create`. For a 500-row chunk this means 500 sequential round-trips.
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Direct follow-up to PB-113 (completed). Same code path, same fix pattern, different entity type.
+- **Scope notes:**
+  - Batch `findUnique` calls into a single `findMany({ where: { code: { in: chunkCodes } } })`.
+  - Build a Map for O(1) lookups.
+  - Use `createMany` for new records, individual updates for changed descriptions.
+- **Dependencies:** None.
+- **Definition of done:** Stamtabel upsert uses batch lookups and `createMany`. Same test pattern as PB-113. `npm run verify` passes.
+- **Source:** DE-REC-052.
+
+### PB-118: Preferences endpoint — scope to authenticated user
+
+- **ID:** PB-118
+- **Title:** Read userId from session instead of hardcoding "default" in preferences API
+- **Problem / opportunity:** All GET/PUT/DELETE operations in `/api/preferences/route.ts` use `userId = "default"`. Multiple users share one preference store. No authentication check at all.
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Multi-user auth is in place. Preferences are the last endpoint without proper user scoping.
+- **Scope notes:**
+  - Read userId from the NextAuth session.
+  - When auth is not configured, fall back to "default" for backward compatibility.
+  - Add session check so unauthenticated callers get 401.
+- **Dependencies:** None.
+- **Definition of done:** Preferences are per-user when auth is active. Unauthenticated callers get 401. Fallback to "default" when `NEXTAUTH_SECRET` is not set. `npm run verify` passes.
+- **Source:** DE-REC-053.
+
+### PB-119: Planning API — validate status against domain enum
+
+- **ID:** PB-119
+- **Title:** Add status enum validation to planning POST and bulk endpoints
+- **Problem / opportunity:** In planning POST and bulk endpoints, `status` is accepted without validation. Arbitrary strings can be written to the database.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Small fix that closes a validation gap on the most-used write endpoints.
+- **Scope notes:**
+  - Import `PlanningStatus` from `src/domain/enums.ts`.
+  - Validate that provided status is a valid enum value.
+  - Return 400 with Dutch error message listing valid statuses.
+- **Dependencies:** None.
+- **Definition of done:** Invalid status values are rejected with a 400 and Dutch error message. `npm run verify` passes.
+- **Source:** DE-REC-054.
+
+### PB-120: Planning API — sickPercentage range validation
+
+- **ID:** PB-120
+- **Title:** Add 0–100 range check for sickPercentage on planning endpoints
+- **Problem / opportunity:** `sickPercentage` is accepted without range validation. Values like -50 or 9999 will be stored.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Quick validation fix alongside PB-119. Same endpoints, complementary scope.
+- **Scope notes:**
+  - Add `if (sickPercentage !== undefined && (sickPercentage < 0 || sickPercentage > 100))` check.
+  - Return 400 with Dutch error message.
+- **Dependencies:** None.
+- **Definition of done:** Out-of-range sickPercentage values are rejected with a 400. `npm run verify` passes.
+- **Source:** DE-REC-055.
+
+---
+
+## Blocked / Needs Decision
 
 ### PB-111: User groups — enforcement on data routes
 
 - **ID:** PB-111
 - **Title:** Enforce Afdeling-based data filtering on drivers, planning, and capacity API routes
-- **Problem / opportunity:** Phase 3 of user groups. Once groups exist and have department assignments, data routes must filter results based on the logged-in user's group.
+- **Problem / opportunity:** Phase 3 of user groups. Data routes must filter results based on the logged-in user's group departments.
 - **Owner:** Delivery Agent
 - **Priority:** P2 High
 - **Status:** Blocked
-- **Blocked by:** PB-110 (admin UI needed so groups can actually be configured and tested).
-- **Why this matters now:** The enforcement phase is what delivers the actual authorization filtering value.
+- **Blocked by:** PB-110 (admin UI needed so groups can be configured and tested).
+- **Why this matters now:** The enforcement phase delivers the actual authorization filtering value.
 - **Scope notes:**
   - Read the current user's group and allowed department IDs from the session/database.
   - Apply department filter to drivers, planning entries, and capacity queries.
   - Users with no group see all data (backward compatible).
   - Settings/stamtabellen remain unfiltered.
-- **Dependencies:** PB-109, PB-110.
+- **Dependencies:** PB-109 (completed), PB-110.
 - **Definition of done:** Users in a group only see drivers/planning/capacity for their group's departments. Ungrouped users see everything. `npm run verify` passes.
 
 ---
@@ -85,37 +149,26 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** Created `UserGroup` and `UserGroupDepartment` Prisma models, added `userGroupId` FK to `User` model. Migration `20260330400000_add_user_groups` created. API routes at `/api/user-groups` and `/api/user-groups/[id]` with GET/POST/PUT/DELETE, all ADMIN-gated. Responses include department IDs and member count. Department FK validation on create/update. DELETE cascades department links and sets user `userGroupId` to null.
 
 ### PB-113: Import execute — batch lookups instead of per-row queries
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** Replaced per-row `findFirst` with single `findMany` per chunk, building a Map for O(1) lookups. New drivers use `createMany` for batch insert. Falls back to individual creates on batch failure to preserve per-row error reporting. Updates remain individual (different data per row). Reduces round-trips from 500–1000 to ~2 + update count per chunk.
 
 ### PB-114: Login page — handle OAuthAccountNotLinked error
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** Added `OAuthAccountNotLinked` to error message map with Dutch text.
 
 ### PB-115: PlanningGrid — memoize groupDrivers call
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** Wrapped `groupDrivers()` in `useMemo` with `[sortedDrivers, groupBy, employers, departments, locations]` dependencies.
 
 ### PB-116: Capacity endpoint — date validation and length limit
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-- **Implementation note:** Added `validateDateFormats(dateList)`, empty check, and `dateList.length > 366` cap. Consistent with `for-range` endpoint pattern.
-
-### PB-107: Prevent PrismaAdapter from auto-creating orphan User records
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
@@ -131,6 +184,12 @@ _No items currently in progress._
 
 - **Status:** Completed
 - **Owner:** Experience Agent
+- **Completed:** 2026-03-30
+
+### PB-107: Prevent PrismaAdapter from auto-creating orphan User records
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
 
 ---
