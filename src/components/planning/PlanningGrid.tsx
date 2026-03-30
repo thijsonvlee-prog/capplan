@@ -6,6 +6,7 @@ import type { DriverWithEntries, PlanningEntry, StamtabelRecord } from "@/domain
 import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, STATUS_DOT_COLORS, GROUP_BY_LABELS, EMPLOYMENT_TYPE_LABELS, DEFAULT_PERIOD_DAYS } from "@/domain/constants";
 import { useApiData } from "@/hooks/useApi";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useHeaderSubtitle } from "@/hooks/useHeaderSubtitle";
 import { api } from "@/lib/api";
 import { groupDrivers, getActiveRecord } from "@/lib/api-helpers";
 import { PeriodSelector } from "./WeekSelector";
@@ -79,6 +80,11 @@ export function PlanningGrid() {
   const bulkSelectorFocusTrapRef = useFocusTrap();
 
   const activeScenarioId = useApiData(() => api.scenarios.getActiveId(), [], "default");
+  const scenarios = useApiData(() => api.scenarios.list(), [], []);
+  const activeScenarioLabel = activeScenarioId === "default"
+    ? "Basisplanning"
+    : scenarios.find((s) => s.id === activeScenarioId)?.name || "";
+  useHeaderSubtitle(activeScenarioLabel);
   const leaveTypes = useApiData(() => api.settings.getLeaveTypes(), [], []);
   const skills = useApiData(() => api.settings.getSkills(), [], []);
   const employers = useApiData(() => api.settings.getEmployers(), [], []);

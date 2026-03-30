@@ -3,37 +3,24 @@
 ## Summary
 
 **What was improved this cycle:**
-- PB-070: Header contextual enhancements. Created a `HeaderSubtitleProvider` context with `useHeaderSubtitle` hook. The shared header bar now shows contextual subtitles on the capacity page (active scenario name or "Basisplanning") and the drivers page (driver count). Subtitles use `.text-caption` styling, visually subordinate to the page title. This aligns with DESIGN.md 7.1 (composed header zone with contextual subtitle).
-- PB-069: Warning design token scale expanded. Added `warning-50`, `warning-500`, `warning-700` to complete the warning color family. ScenarioSelector "Concept" badge updated to use softer `warning-50`/`warning-700` for a more refined treatment consistent with the `success-50`/`success-700` pattern.
+- PB-072: Planning page header subtitle. Added `useHeaderSubtitle` call in PlanningGrid with the active scenario name ("Basisplanning" or scenario name). All three major pages (planning, capacity, drivers) now show contextual subtitles consistently, completing the header enhancement initiative started in PB-070.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: well-aligned (section 7.8). Calm, dark, well-spaced, clear active states.
 - Settings page: well-aligned (sections 2.5, 7.1, 7.2). Composed tabs, clear hierarchy.
 - Typography: improved. Manrope on page titles creates editorial contrast per section 5.1/5.3.
-- Header: improved. Contextual subtitles on 2 pages per section 7.1. No-Line Rule followed.
+- Header: fully aligned. All three major pages show contextual subtitles per section 7.1. No-Line Rule followed.
 - Capacity page: well-aligned. Scenario toggle uses brand semantics. Header shows active scenario.
 - Planning grid toolbar: well-aligned. Both rows use consistent `.control-group` pattern with labels.
-- Design tokens: warning scale now matches the nuance of success and danger families.
+- Design tokens: warning scale matches the nuance of success and danger families.
 - Planning grid matrix: partially aligned. Status chips and tonal row composition are good. Grid border structure and row composition have room for improvement.
 - Drivers page: partially aligned. Page header is composed with contextual subtitle. Table is still table-first with generic CRUD feel.
 
 **Where design quality is still below target:**
 - The drivers table still reads as standard admin CRUD with alternating backgrounds, row borders, and table-first layout.
 - The planning grid matrix uses 1px row borders for structure. Pure tonal separation would be more aligned with DESIGN.md but risks reducing scanability in dense data.
-- Header contextual subtitles could be extended to the planning page (active scenario) if PlanningGrid is refactored to expose scenario data upward.
 
 ## Recommended Next Improvements
-
-### EX-REC-041: Planning page header subtitle
-
-- **Problem:** The planning page header currently shows only the page title. The capacity and drivers pages now show contextual subtitles (scenario name, driver count). The planning page could show the active scenario name for consistency, but PlanningGrid currently fetches `activeScenarioId` without the scenario name — ScenarioSelector fetches the list separately.
-- **Proposed improvement:** Have PlanningGrid (or a small wrapper) call `useHeaderSubtitle` with the active scenario name. This requires either lifting the scenarios list fetch to PlanningGrid or reading it from ScenarioSelector's data.
-- **Expected user value:** Consistent contextual header across all major pages. Immediate orientation on which scenario is active.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Dependencies:** PB-070 (completed). Requires minor data flow change in PlanningGrid.
-- **Suggested owner:** Experience Agent
-- **Why now:** Low effort, high consistency value. Natural follow-up to PB-070.
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
 
@@ -57,12 +44,23 @@
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-risk follow-up to PB-063. Should be evaluated visually before applying broadly.
 
+### EX-REC-042: Deduplicate scenarios list fetch between PlanningGrid and ScenarioSelector
+
+- **Problem:** PlanningGrid and ScenarioSelector both independently call `api.scenarios.list()`. While `useApiData` prevents redundant network requests within a single component lifecycle, the two components maintain separate state copies of the same data.
+- **Proposed improvement:** Lift the scenarios list fetch to a shared context or parent component, or accept the minor duplication as tolerable given the small payload size.
+- **Expected user value:** No direct user impact. Minor code hygiene.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Not urgent. The duplication is minimal and the scenarios list is small. Only worth addressing if PlanningGrid is refactored for other reasons.
+
 ## Risks / Watch-outs
 
-- **PlanningGrid.tsx complexity.** The file is ~679 lines. Any further changes to the planning toolbar or grid must be verified carefully against typecheck, lint, and visual behavior. The file has known exhaustive-deps warnings that are pre-existing and non-blocking.
+- **PlanningGrid.tsx complexity.** The file is ~685 lines. Any further changes to the planning toolbar or grid must be verified carefully against typecheck, lint, and visual behavior. The file has known exhaustive-deps warnings that are pre-existing and non-blocking.
 - **Manrope font weight on Vercel.** The font is loaded via `next/font/google` with `display: swap`. Verify on deployed build that Manrope renders correctly and does not cause layout shift.
 - **Consistency after partial typographic changes.** Manrope on page titles + Inter on section titles is the intended hierarchy. If Manrope is extended further (EX-REC-038), verify the contrast still reads well and doesn't flatten the hierarchy.
-- **HeaderSubtitleProvider context.** The new context is lightweight and only stores a string. Performance impact is negligible. But pages that unmount should clean up their subtitle (the hook handles this via useEffect cleanup).
+- **HeaderSubtitleProvider context.** The context is lightweight and only stores a string. Performance impact is negligible. Pages that unmount clean up their subtitle via useEffect cleanup.
 - **Drivers table column density.** Removing alternating backgrounds (EX-REC-036) only helps if the remaining visual treatment (hover, spacing) provides enough row distinction at high driver counts.
 - **Planning grid No-Line Rule.** The grid's 1px row borders serve a functional purpose in dense data. Replacing them with pure tonal separation risks reducing scanability. Should be explored in a dedicated visual pass, not as a standalone change.
 

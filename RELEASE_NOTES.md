@@ -6,7 +6,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_Geen onuitgebrachte wijzigingen._
+- **Planningspagina koptekst:** De koptekstbalk op de planningspagina toont nu het actieve scenario ("Basisplanning" of scenarionaam), consistent met de capaciteits- en chauffeurspagina.
 
 ## Release History
 

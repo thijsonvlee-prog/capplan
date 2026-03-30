@@ -40,19 +40,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Implementation note:** If any function turns out to have an import that grep missed, keep it.
 - **Source:** DE-REC-037.
 
-### PB-072: Planning page header subtitle
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** The capacity and drivers pages now show contextual subtitles in the header (scenario name, driver count) via PB-070. The planning page does not yet show a subtitle, breaking consistency across the three major pages.
-- **Why this matters now:** Small follow-up to PB-070. Consistent contextual headers across all major pages.
-- **Scope notes:** Have the planning page call `useHeaderSubtitle` with the active scenario name. May require reading the scenario name from the scenarios list already fetched by ScenarioSelector. Do not refactor PlanningGrid broadly — find the least invasive way to surface the scenario name.
-- **Dependencies:** PB-070 (completed).
-- **Definition of done:** Planning page header shows active scenario name as subtitle. `npm run verify` passes with 0 errors.
-- **Implementation note:** PlanningGrid currently fetches `activeScenarioId` but not the name. ScenarioSelector fetches the scenarios list. The simplest path may be to read from ScenarioSelector's data or lift a small fetch.
-- **Source:** EX-REC-041.
-
 ---
 
 ## Planned (Future Cycles)
@@ -82,6 +69,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-072: Planning page header subtitle
+- **Completed:** 2026-03-30
+- **Owner:** Experience Agent
+- **Summary:** Planning page header now shows active scenario name ("Basisplanning" or scenario name) as subtitle, consistent with capacity and drivers pages. Added scenarios list fetch and `useHeaderSubtitle` call in PlanningGrid.
 
 ### PB-070: Header contextual enhancements
 - **Completed:** 2026-03-29
