@@ -23,8 +23,21 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-- herschrijf het claude.md bestand op basis van de huidige staat van de applicatie, neem ook de design.md hierin mee
-- focus op het uitbouwen van functionaliteit: connectiviteit, admin panel met user management
+### SMI-007: Rewrite CLAUDE.md based on current application state, incorporate DESIGN.md
+
+- **Type:** Request
+- **Status:** Planned
+- **Input:** Herschrijf het CLAUDE.md bestand op basis van de huidige staat van de applicatie. Neem ook de DESIGN.md hierin mee.
+- **Product Owner action:** Created PB-076 (rewrite CLAUDE.md). Single focused task for the Delivery Agent, who has the best view of the current technical state. Design sections will be sourced from DESIGN.md. After merge, DESIGN.md will be kept as an appendix reference until the Scrum Master confirms it can be removed.
+- **Backlog linkage:** PB-076.
+
+### SMI-008: Focus on building out functionality — connectivity and user management
+
+- **Type:** Initiative / priority signal
+- **Status:** Planned (partially escalated)
+- **Input:** Focus op het uitbouwen van functionaliteit: connectiviteit, admin panel met user management.
+- **Product Owner action:** Connectivity expansion broken into phased backlog items (PB-077: CSV upload & parsing, PB-078: import execution). User management requires an authentication approach decision — escalated to ESC-005. Admin panel UI work (PB-079) is blocked on ESC-005.
+- **Backlog linkage:** PB-077, PB-078, PB-079, ESC-005.
 
 ### SMI-002: Keep improvements incremental during stabilization
 
