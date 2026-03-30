@@ -5,6 +5,8 @@ import type {
   DriverFunctionRecord,
   DriverRosterAssignment,
   DriverWithEntries,
+  ImportExecuteResult,
+  ImportLog,
   ImportSource,
   PlanningEntry,
   RosterProfile,
@@ -437,6 +439,19 @@ const importSources = {
       method: "POST",
       body: formData,
     }).then(r => r.data);
+  },
+
+  execute(id: string, file: File): Promise<ImportExecuteResult> {
+    const formData = new FormData();
+    formData.append("file", file);
+    return fetchJson<{ data: ImportExecuteResult }>(`/api/import-sources/${id}/execute`, {
+      method: "POST",
+      body: formData,
+    }).then(r => r.data);
+  },
+
+  getLogs(id: string): Promise<ImportLog[]> {
+    return fetchJson<{ data: ImportLog[] }>(`/api/import-sources/${id}/logs`).then(r => r.data);
   },
 };
 

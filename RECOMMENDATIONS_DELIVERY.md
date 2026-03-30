@@ -6,14 +6,28 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-Three backlog items were completed this cycle:
-- **PB-076:** Rewrote CLAUDE.md to reflect current application state, including design system strategy from DESIGN.md, authentication infrastructure, full file reference, and updated component/API inventory.
-- **PB-077:** Implemented CSV file upload and column detection. Built-in CSV parser (no external dependencies) with support for comma/semicolon/tab separators, quoted fields, and BOM handling. Frontend upload UI with preview, mapping validation, and unmapped column display.
-- **PB-080:** Implemented NextAuth.js authentication infrastructure with Google and Azure AD providers, Prisma adapter, database sessions, and session callback with user role. Auth is conditionally active based on env vars.
+PB-078 (CSV import execution) was completed this cycle:
+- Full import pipeline: upload → preview → validate → execute → results summary → import history.
+- New `ImportLog` model for audit trail. CSV parser extracted to shared `src/lib/csv-parser.ts`.
+- `prisma.$transaction` for drivers, `createMany` with `skipDuplicates` for stamtabel entities.
+- Frontend: execute button, result display with row-level errors, import history panel per source.
 
-Fresh codebase scan confirms strong health: 0 ESLint warnings, 0 typecheck errors, no N+1 patterns, no hardcoded colors in `.tsx` (except 1 Recharts exception already documented). ~27 `any` type usages remain (stable, mostly justified). The auth track is now unblocked for login UI and role enforcement.
+Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma models, 29 route files. Auth track fully unblocked — login page deployed, admin panel and role enforcement ready for next cycles.
 
 ## Recommended Next Improvements
+
+### DE-REC-042: Extend import execution with update/upsert mode
+
+- **Title:** Add upsert capability to CSV import for existing records
+- **Problem:** The current import execution only creates new records. For stamtabel entities (employers, departments, locations), `skipDuplicates` silently skips rows with existing codes. Users may want to update descriptions of existing records via CSV import.
+- **Proposed improvement:** Add an optional `mode` parameter to the execute endpoint: "create" (current behavior, default) or "upsert" (update existing records matched by unique key). For stamtabel entities, match on `code`; for drivers, match on `employeeNumber` if mapped.
+- **Expected product/technical value:** Makes the import feature useful for ongoing data synchronization, not just initial data load.
+- **Priority:** P3 Medium
+- **Effort:** Medium
+- **Risk:** Medium — upsert logic needs careful unique key handling per entity.
+- **Dependencies:** PB-078 (completed).
+- **Suggested owner:** Delivery Agent
+- **Why now:** Natural follow-up to PB-078. Users who import data regularly will need this quickly.
 
 ### DE-REC-040: Optimize NextAuth session callback role lookup
 
@@ -24,22 +38,22 @@ Fresh codebase scan confirms strong health: 0 ESLint warnings, 0 typecheck error
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low
-- **Dependencies:** PB-081 (login page) should be deployed first to validate the full auth flow.
+- **Dependencies:** PB-081 (completed). Should be validated with real auth sessions.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Worth addressing once auth is actively used, but not before the login page exists.
+- **Why now:** Auth is now live with login page deployed. Worth addressing before concurrent user load increases.
 
-### DE-REC-041: CSV import execution (PB-078 follow-up preparation)
+### DE-REC-043: fieldMappings deep validation in import-sources API
 
-- **Title:** Technical design for CSV import execution
-- **Problem:** PB-078 (CSV import execution) is now unblocked. The upload endpoint returns parsed data, but the execution step needs careful design: row validation per target entity, conflict handling (duplicate codes, existing records), error reporting granularity, and transaction boundaries.
-- **Proposed improvement:** When implementing PB-078, ensure: (1) all rows are validated before any inserts, (2) a clear error report is returned with row-level detail, (3) `prisma.$transaction` wraps the entire import, (4) duplicate detection uses existing unique constraints. Consider an ImportLog model for audit trail.
-- **Expected product/technical value:** Completes the connectivity hub's core value proposition. Enables operational CSV import workflows.
-- **Priority:** P2 High
-- **Effort:** Medium
-- **Risk:** Medium — needs careful validation per entity type.
-- **Dependencies:** PB-077 (completed).
+- **Title:** Validate fieldMappings structure beyond typeof check
+- **Problem:** The `import-sources` POST/PUT routes validate `typeof fieldMappings !== "object"` which passes for arrays and null. The execute endpoint now depends on `fieldMappings` being a well-formed `Record<string, string>`. Malformed mappings could cause confusing errors at import time.
+- **Proposed improvement:** Add validation that fieldMappings is a non-null, non-array object with string keys and string values. Validate that target fields are valid for the specified target entity.
+- **Expected product/technical value:** Catches configuration errors early at save time rather than at import execution time.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** PB-078 is now unblocked and is the next step on the connectivity track.
+- **Why now:** Now that import execution exists, bad fieldMappings have real consequences.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -57,7 +71,7 @@ Fresh codebase scan confirms strong health: 0 ESLint warnings, 0 typecheck error
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 100 (max code length). These are hard to discover and maintain.
+- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 100 (max code length), 5MB (max file size), 20 (max import logs). These are hard to discover and maintain.
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts` and reference it from the relevant routes.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
@@ -108,14 +122,12 @@ Fresh codebase scan confirms strong health: 0 ESLint warnings, 0 typecheck error
 
 ## Risks / Watch-outs
 
-- **Auth env vars required for deployment:** PB-080 auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive (providers load conditionally). The app continues to function without auth, but login will not work until env vars are configured.
+- **Auth env vars required for deployment:** PB-080 auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive (providers load conditionally).
 - **Session callback DB query:** Each authenticated session access triggers a `findUnique` for the user's role. Acceptable at current scale but becomes a concern with high concurrent users.
 - **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory. At ~200 bytes/row this is ~10 MB per request.
-- **Date timezone handling in aggregation:** `aggregation.ts` and `utils.ts` parse date strings using `new Date(date + "T00:00:00")` without timezone specifier. Vercel runs UTC so this is not a current risk.
+- **Import transaction size:** Large CSV imports (thousands of rows) create one driver per row inside a single transaction. Very large imports could hit Neon connection timeouts. Consider chunking for imports > 1000 rows.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed.
-- **DELETE race conditions:** Multiple DELETE routes use a check-then-delete pattern without a transaction. Low risk at current concurrency.
-- **Unbounded GET /api/planning results:** No row limit exists. Currently mitigated by required date/driver filter.
-- **fieldMappings validation weakness:** `import-sources` API validates `typeof fieldMappings !== "object"` which passes for arrays and null. Deep validation of fieldMappings structure is missing.
+- **fieldMappings validation weakness:** `import-sources` API validates `typeof fieldMappings !== "object"` which passes for arrays and null. Deep validation of fieldMappings structure is missing (DE-REC-043).
 
 ## Items Intentionally Not Recommended
 
@@ -137,10 +149,12 @@ Fresh codebase scan confirms strong health: 0 ESLint warnings, 0 typecheck error
 - **Add React.memo to settings list items:** Small lists, infrequent renders.
 - **Add missing foreign key indexes:** Not bottlenecks at current data volumes.
 - **Add input validation schema (Zod):** Introduces a new dependency. Not justified at current scale.
-- **Distinguish error types in catch blocks:** Significant refactoring across 27 route files for minimal benefit.
+- **Distinguish error types in catch blocks:** Significant refactoring across route files for minimal benefit.
 - **Add parent driver existence checks in sub-record routes:** Prisma FK constraints catch this.
 - **Add aria-pressed to toggle buttons:** Experience Agent scope.
 - **Use next-auth v5 (Auth.js):** v4 is proven and stable with Next.js 14. Migration to v5 can happen when upgrading to Next.js 15.
+- **Add file storage for uploaded CSVs:** Not needed — import re-uploads the file for execution. Server-side storage would add complexity without clear benefit.
+- **Add scheduled/automatic imports:** Requires external trigger mechanism (cron, webhook). Out of scope for current MVP.
 
 ## Recommendation Rules
 

@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
+### CSV-import uitvoeren
+
+- **Importuitvoering:** Gebruikers kunnen nu een CSV-bestand uploaden, de veldkoppelingen bekijken, en de import daadwerkelijk uitvoeren. Het systeem valideert alle rijen vooraf, importeert geldige rijen in een transactie, en toont een samenvatting met het aantal geïmporteerde en overgeslagen rijen en eventuele fouten per rij.
+- **Importgeschiedenis:** Per importbron is nu een logboek beschikbaar met de laatste 20 imports. Elk logboekitem toont datum, bestandsnaam, aantal rijen, en eventuele fouten (uitklapbaar).
+- **Doelentiteiten:** Import ondersteunt chauffeurs (voornaam, achternaam, personeelsnummer, rijbewijscategorieën), werkgevers, afdelingen en standplaatsen (code, omschrijving). Dubbele codes worden automatisch overgeslagen.
+
 ### Inloggen en sessie-UI
 
 - **Inlogpagina:** Nieuwe inlogpagina (`/login`) met ondersteuning voor inloggen via Google en Microsoft. Samengesteld ontwerp met merkpaneel en inlogformulier. Alle tekst in het Nederlands.

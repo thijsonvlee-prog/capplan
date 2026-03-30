@@ -45,13 +45,14 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Delivery Agent
 - **Priority:** P2 High
-- **Status:** Ready
+- **Status:** Completed
+- **Completed:** 2026-03-30
 - **Problem / opportunity:** After uploading a CSV and detecting columns (PB-077), the system needs to actually execute the import: apply the configured field mappings, validate rows, and insert data into the target entity table.
 - **Why this matters now:** SM directive (SMI-008). This completes the connectivity hub's core value proposition.
 - **Scope notes:** Add an import execution endpoint that: reads the uploaded CSV, applies field mappings from the ImportSource config, validates each row against the target entity's required fields, inserts valid rows using `createMany`, and returns a summary (rows imported, rows skipped, errors). Target entities: chauffeurs, werkgevers, afdelingen, standplaatsen. Add an import history/log so users can see what was imported and when.
 - **Dependencies:** PB-077 (completed).
 - **Definition of done:** Users can upload a CSV, preview the mapping, execute the import, and see results. Import history is visible. `npm run verify` passes.
-- **Implementation note:** Use `prisma.$transaction` for the batch insert. Validate all rows before inserting (fail-fast on structural errors, skip individual bad rows with error log). The CSV upload endpoint (`POST /api/import-sources/[id]/upload`) already returns parsed data with mapping validation. Consider adding an ImportLog model to track imports. The frontend upload UI in `ImportSourceManager.tsx` already shows preview rows and mapping validation. Per DE-REC-041: ensure (1) all rows are validated before any inserts, (2) clear error report with row-level detail, (3) `prisma.$transaction` wraps the entire import, (4) duplicate detection uses existing unique constraints.
+- **Implementation note:** Implemented: (1) New `ImportLog` model with migration for import history tracking. (2) `POST /api/import-sources/[id]/execute` endpoint — parses CSV, applies field mappings, validates all rows before inserting, uses `prisma.$transaction` for drivers and `createMany` with `skipDuplicates` for stamtabel entities, returns row-level error report. (3) `GET /api/import-sources/[id]/logs` endpoint — returns import history (last 20 imports). (4) CSV parser extracted to shared `src/lib/csv-parser.ts`. (5) Frontend: "Importeren" button after upload preview, execution result summary with success/error display, import history panel per source with expandable error details. All text in Dutch. `npm run verify` passes with 0 errors, 0 warnings.
 - **Source:** SMI-008, DE-REC-041.
 
 ### PB-082: Role enforcement middleware

@@ -87,7 +87,7 @@ CapPlan is a **driver workforce planning tool** (Dutch-language UI) for managing
 
 ## 5. Data & API Guidelines
 
-### Database / Prisma (21 models)
+### Database / Prisma (22 models)
 - **Use batch operations** (`createMany`, `updateMany`, `deleteMany`) instead of loops with individual queries. Neon serverless has per-query round-trip cost.
 - Use `prisma.groupBy` for aggregations instead of `findMany` + in-memory counting.
 - Wrap multi-step mutations in `prisma.$transaction` when data consistency matters.
@@ -95,7 +95,7 @@ CapPlan is a **driver workforce planning tool** (Dutch-language UI) for managing
 - **Never modify the Prisma schema without creating a migration** (`npx prisma migrate dev --name <description>`). If DATABASE_URL is unavailable, create the migration SQL manually following the existing migration format.
 - Do not add columns, tables, or indexes speculatively. Only add what the current task requires.
 
-### API Routes (27 route files)
+### API Routes (29 route files)
 - Return consistent response shapes: `{ data: ... }` for success, `{ error: ... }` for failures.
 - Validate required fields on input. Use `validateRequired()` and `validateForeignKeys()` from `api-route-utils.ts`.
 - Limit relation includes — use `select` to fetch only needed fields, especially for list endpoints.
@@ -295,7 +295,7 @@ Multiple scheduled agents (Product Owner, UX/Design, Technical/Functional) opera
 | `src/app/api/scenarios/` | Scenario CRUD + duplicate + active |
 | `src/app/api/settings/` | Stamtabel CRUD + skills |
 | `src/app/api/roster-profiles/` | Roster profile CRUD |
-| `src/app/api/import-sources/` | Import source CRUD + CSV upload |
+| `src/app/api/import-sources/` | Import source CRUD + CSV upload + execute + import logs |
 | `src/app/api/preferences/` | User preferences |
 | `src/app/api/auth/[...nextauth]/` | NextAuth.js route handler |
 | **Libraries** | |
@@ -306,6 +306,7 @@ Multiple scheduled agents (Product Owner, UX/Design, Technical/Functional) opera
 | `src/lib/aggregation.ts` | Shared aggregation logic (day/week/month/quarter/year) |
 | `src/lib/prisma.ts` | Prisma client singleton (PrismaPg adapter) |
 | `src/lib/perf.ts` | Performance observability utilities |
+| `src/lib/csv-parser.ts` | CSV parsing with separator detection and row object conversion |
 | `src/lib/utils.ts` | General utilities (cn, getMondayStart, getDateRange, getISOWeekNumber) |
 | **Domain** | |
 | `src/domain/constants.ts` | Shared constants (MONTH_SHORT, DEFAULT_PERIOD_DAYS, STATUS_COLORS, UNKNOWN_LABEL) |
@@ -316,7 +317,7 @@ Multiple scheduled agents (Product Owner, UX/Design, Technical/Functional) opera
 | `src/components/planning/DayCell.tsx` | Memoized day cell for planning grid |
 | `src/components/drivers/DriverForm.tsx` | Driver create/edit form (~475 lines, tab-based) |
 | `src/components/settings/StamtabelManager.tsx` | Shared stamtabel CRUD component |
-| `src/components/settings/ImportSourceManager.tsx` | CSV import source config + file upload |
+| `src/components/settings/ImportSourceManager.tsx` | CSV import source config + file upload + execute + history |
 | `src/components/settings/SkillManager.tsx` | Skill management |
 | `src/components/settings/RosterProfileEditor.tsx` | 4-week roster pattern editor |
 | `src/components/ui/Toast.tsx` | Toast notification system (showToast) |
@@ -333,6 +334,6 @@ Multiple scheduled agents (Product Owner, UX/Design, Technical/Functional) opera
 | `src/app/globals.css` | Design tokens, component classes, typography, animations |
 | `eslint.config.mjs` | ESLint flat config (next/core-web-vitals) |
 | `next.config.mjs` | Security headers |
-| `prisma/schema.prisma` | Database schema (21 models) |
+| `prisma/schema.prisma` | Database schema (22 models) |
 | `scripts/migrate.mjs` | Auto-migration on deploy |
 | `DESIGN.md` | Full design system strategy and creative direction |

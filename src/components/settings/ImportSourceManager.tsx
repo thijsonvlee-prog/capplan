@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, X, ArrowRight, FileSpreadsheet, Upload, CheckCircle2, AlertCircle } from "lucide-react";
-import type { ImportSource, CsvUploadResult } from "@/domain/types";
+import { Plus, Pencil, Trash2, X, ArrowRight, FileSpreadsheet, Upload, CheckCircle2, AlertCircle, Play, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import type { ImportSource, CsvUploadResult, ImportExecuteResult, ImportLog } from "@/domain/types";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
@@ -69,6 +69,17 @@ function recordToMappings(record: Record<string, string>): FieldMapping[] {
     : [{ sourceColumn: "", targetField: "" }];
 }
 
+function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("nl-NL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function ImportSourceManager() {
   const [sources, loading] = useApiDataWithLoading(() => api.importSources.list(), [], []);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -80,6 +91,13 @@ export function ImportSourceManager() {
   const [uploadResult, setUploadResult] = useState<CsvUploadResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [executing, setExecuting] = useState(false);
+  const [executeResult, setExecuteResult] = useState<ImportExecuteResult | null>(null);
+  const [logsSourceId, setLogsSourceId] = useState<string | null>(null);
+  const [logs, setLogs] = useState<ImportLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
   function openCreateForm() {
     setEditingId(null);
@@ -172,12 +190,16 @@ export function ImportSourceManager() {
     setUploadSourceId(sourceId);
     setUploadResult(null);
     setUploadError(null);
+    setUploadFile(null);
+    setExecuteResult(null);
   }
 
   function closeUpload() {
     setUploadSourceId(null);
     setUploadResult(null);
     setUploadError(null);
+    setUploadFile(null);
+    setExecuteResult(null);
   }
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -186,6 +208,8 @@ export function ImportSourceManager() {
     setUploading(true);
     setUploadError(null);
     setUploadResult(null);
+    setUploadFile(file);
+    setExecuteResult(null);
 
     api.importSources.upload(uploadSourceId, file)
       .then((result) => {
@@ -195,16 +219,66 @@ export function ImportSourceManager() {
       .catch((err) => {
         setUploadError(err instanceof Error ? err.message : "Upload mislukt. Controleer het bestand.");
         setUploading(false);
+        setUploadFile(null);
       });
 
     // Reset file input so the same file can be re-selected
     e.target.value = "";
   }
 
+  function handleExecute() {
+    if (!uploadSourceId || !uploadFile) return;
+    setExecuting(true);
+
+    api.importSources.execute(uploadSourceId, uploadFile)
+      .then((result) => {
+        setExecuteResult(result);
+        setExecuting(false);
+        if (result.importedRows > 0) {
+          showToast(`${result.importedRows} rij(en) geïmporteerd`);
+          // Invalidate data caches so imported records appear in other views
+          mutate(() => Promise.resolve());
+        }
+        if (result.importedRows === 0 && result.skippedRows > 0) {
+          showToast("Geen rijen geïmporteerd — controleer de fouten.", "error");
+        }
+      })
+      .catch((err) => {
+        setExecuting(false);
+        showToast(err instanceof Error ? err.message : "Import mislukt.", "error");
+      });
+  }
+
+  function toggleLogs(sourceId: string) {
+    if (logsSourceId === sourceId) {
+      setLogsSourceId(null);
+      setLogs([]);
+      return;
+    }
+    setLogsSourceId(sourceId);
+    setLogsLoading(true);
+    setLogs([]);
+    setExpandedLogId(null);
+
+    api.importSources.getLogs(sourceId)
+      .then((result) => {
+        setLogs(result);
+        setLogsLoading(false);
+      })
+      .catch(() => {
+        setLogsLoading(false);
+        showToast("Kan importlogboek niet laden.", "error");
+      });
+  }
+
   const targetEntityLabel = (entity: string) =>
     TARGET_ENTITIES.find(t => t.value === entity)?.label || entity;
 
   const availableTargetFields = TARGET_FIELDS[form.targetEntity] || [];
+
+  const allMappingsDetected = uploadResult
+    ? uploadResult.mappingValidation.every((mv) => mv.detected)
+    : false;
 
   return (
     <div className="space-y-4">
@@ -240,49 +314,116 @@ export function ImportSourceManager() {
         {!loading && sources.length > 0 && (
           <div className="divide-y divide-border-subtle">
             {sources.map(source => (
-              <div key={source.id} className="p-4 hover:bg-surface-secondary transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-sm font-medium text-text-primary">{source.name}</span>
-                      <span className="bg-surface-tertiary px-2 py-0.5 rounded text-xs font-mono text-text-secondary">
-                        {source.type}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-xs text-text-secondary">
-                        Doel: <span className="font-medium text-text-primary">{targetEntityLabel(source.targetEntity)}</span>
-                      </span>
-                      <span className="text-xs text-text-tertiary">
-                        {Object.keys(source.fieldMappings).length} veldkoppeling{Object.keys(source.fieldMappings).length !== 1 ? "en" : ""}
-                      </span>
-                    </div>
-                    {source.description && (
-                      <p className="text-xs text-text-tertiary mt-1">{source.description}</p>
-                    )}
-                    {/* Field mapping preview */}
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {Object.entries(source.fieldMappings).map(([src, target]) => (
-                        <span key={src} className="inline-flex items-center gap-1 bg-surface-tertiary px-2 py-0.5 rounded text-xs text-text-secondary">
-                          <span className="font-mono">{src}</span>
-                          <ArrowRight className="w-3 h-3 text-text-tertiary" />
-                          <span>{availableTargetFieldLabel(source.targetEntity, target)}</span>
+              <div key={source.id}>
+                <div className="p-4 hover:bg-surface-secondary transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-sm font-medium text-text-primary">{source.name}</span>
+                        <span className="bg-surface-tertiary px-2 py-0.5 rounded text-xs font-mono text-text-secondary">
+                          {source.type}
                         </span>
-                      ))}
+                      </div>
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <span className="text-xs text-text-secondary">
+                          Doel: <span className="font-medium text-text-primary">{targetEntityLabel(source.targetEntity)}</span>
+                        </span>
+                        <span className="text-xs text-text-tertiary">
+                          {Object.keys(source.fieldMappings).length} veldkoppeling{Object.keys(source.fieldMappings).length !== 1 ? "en" : ""}
+                        </span>
+                      </div>
+                      {source.description && (
+                        <p className="text-xs text-text-tertiary mt-1">{source.description}</p>
+                      )}
+                      {/* Field mapping preview */}
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {Object.entries(source.fieldMappings).map(([src, target]) => (
+                          <span key={src} className="inline-flex items-center gap-1 bg-surface-tertiary px-2 py-0.5 rounded text-xs text-text-secondary">
+                            <span className="font-mono">{src}</span>
+                            <ArrowRight className="w-3 h-3 text-text-tertiary" />
+                            <span>{availableTargetFieldLabel(source.targetEntity, target)}</span>
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1 ml-3 flex-shrink-0">
-                    <button onClick={() => openUpload(source.id)} className="btn-icon" aria-label="CSV uploaden">
-                      <Upload className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => openEditForm(source)} className="btn-icon" aria-label="Bewerken">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => setPendingDelete(source)} className="btn-icon-danger" aria-label="Verwijderen">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1 ml-3 flex-shrink-0">
+                      <button onClick={() => toggleLogs(source.id)} className="btn-icon" aria-label="Importgeschiedenis">
+                        <Clock className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => openUpload(source.id)} className="btn-icon" aria-label="CSV uploaden">
+                        <Upload className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => openEditForm(source)} className="btn-icon" aria-label="Bewerken">
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => setPendingDelete(source)} className="btn-icon-danger" aria-label="Verwijderen">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
+
+                {/* Import logs inline */}
+                {logsSourceId === source.id && (
+                  <div className="px-4 pb-4">
+                    <div className="bg-surface-secondary rounded-md border border-border-subtle">
+                      <div className="p-3 border-b border-border-subtle">
+                        <h4 className="text-label">Importgeschiedenis</h4>
+                      </div>
+                      {logsLoading && (
+                        <div className="p-4 flex justify-center">
+                          <div className="spinner" />
+                        </div>
+                      )}
+                      {!logsLoading && logs.length === 0 && (
+                        <div className="p-4 text-center">
+                          <p className="text-xs text-text-tertiary">Nog geen imports uitgevoerd voor deze bron.</p>
+                        </div>
+                      )}
+                      {!logsLoading && logs.length > 0 && (
+                        <div className="divide-y divide-border-subtle">
+                          {logs.map((log) => (
+                            <div key={log.id} className="p-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3 text-xs">
+                                  <span className="text-text-secondary">{formatDateTime(log.executedAt)}</span>
+                                  <span className="font-mono text-text-tertiary">{log.fileName}</span>
+                                  <span className="text-success-700 font-medium">{log.importedRows} geïmporteerd</span>
+                                  {log.skippedRows > 0 && (
+                                    <span className="text-warning-700">{log.skippedRows} overgeslagen</span>
+                                  )}
+                                  <span className="text-text-tertiary">van {log.totalRows} rijen</span>
+                                </div>
+                                {log.errors.length > 0 && (
+                                  <button
+                                    onClick={() => setExpandedLogId(expandedLogId === log.id ? null : log.id)}
+                                    className="btn-icon"
+                                    aria-label="Fouten tonen"
+                                  >
+                                    {expandedLogId === log.id ? (
+                                      <ChevronUp className="w-3.5 h-3.5" />
+                                    ) : (
+                                      <ChevronDown className="w-3.5 h-3.5" />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                              {expandedLogId === log.id && log.errors.length > 0 && (
+                                <div className="mt-2 bg-danger-50 rounded p-2 space-y-1">
+                                  {log.errors.map((err, i) => (
+                                    <p key={i} className="text-xs text-danger-700">
+                                      {err.row > 0 ? `Rij ${err.row}: ` : ""}{err.message}
+                                    </p>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -430,7 +571,7 @@ export function ImportSourceManager() {
       {uploadSourceId && (
         <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle">
           <div className="p-4 border-b border-border-subtle flex items-center justify-between">
-            <h3 className="text-section-title">CSV uploaden</h3>
+            <h3 className="text-section-title">CSV uploaden en importeren</h3>
             <button onClick={closeUpload} className="btn-icon" aria-label="Sluiten">
               <X className="w-4 h-4" />
             </button>
@@ -444,7 +585,7 @@ export function ImportSourceManager() {
                 accept=".csv,.txt"
                 onChange={handleFileSelect}
                 className="input-field w-full file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-surface-tertiary file:text-text-primary hover:file:bg-surface-inset"
-                disabled={uploading}
+                disabled={uploading || executing}
               />
               <p className="text-xs text-text-tertiary mt-1">CSV- of TXT-bestand, maximaal 5 MB.</p>
             </div>
@@ -465,7 +606,7 @@ export function ImportSourceManager() {
             )}
 
             {/* Upload results */}
-            {uploadResult && (
+            {uploadResult && !executeResult && (
               <div className="space-y-4">
                 {/* File info */}
                 <div className="flex items-center gap-4 text-sm text-text-secondary">
@@ -541,6 +682,86 @@ export function ImportSourceManager() {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Execute button */}
+                <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
+                  <div className="text-xs text-text-tertiary">
+                    {allMappingsDetected
+                      ? `Klaar om ${uploadResult.totalRows} rij(en) te importeren.`
+                      : "Let op: niet alle koppelingen zijn gevonden. Ontbrekende velden worden overgeslagen."
+                    }
+                  </div>
+                  <button
+                    onClick={handleExecute}
+                    disabled={executing || uploadResult.mappingValidation.length === 0}
+                    className="btn-primary"
+                  >
+                    {executing ? (
+                      <>
+                        <div className="spinner !w-4 !h-4" />
+                        Importeren…
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        Importeren
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Execute result */}
+            {executeResult && (
+              <div className="space-y-3">
+                <div className={`p-4 rounded-md border ${
+                  executeResult.importedRows > 0
+                    ? "bg-success-50 border-success-200"
+                    : "bg-danger-50 border-danger-200"
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    {executeResult.importedRows > 0 ? (
+                      <CheckCircle2 className="w-5 h-5 text-success-600" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-danger-600" />
+                    )}
+                    <span className={`text-sm font-medium ${
+                      executeResult.importedRows > 0 ? "text-success-700" : "text-danger-700"
+                    }`}>
+                      Import {executeResult.importedRows > 0 ? "voltooid" : "mislukt"}
+                    </span>
+                  </div>
+                  <div className="flex gap-4 text-sm">
+                    <span className="text-text-secondary">
+                      Totaal: <span className="font-medium text-text-primary">{executeResult.totalRows}</span> rijen
+                    </span>
+                    <span className="text-success-700">
+                      Geïmporteerd: <span className="font-medium">{executeResult.importedRows}</span>
+                    </span>
+                    {executeResult.skippedRows > 0 && (
+                      <span className="text-warning-700">
+                        Overgeslagen: <span className="font-medium">{executeResult.skippedRows}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Error details */}
+                {executeResult.errors.length > 0 && (
+                  <div className="bg-danger-50 rounded-md border border-danger-200 p-3">
+                    <h4 className="text-label text-danger-700 mb-2">
+                      Fouten ({executeResult.errors.length})
+                    </h4>
+                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                      {executeResult.errors.map((err, i) => (
+                        <p key={i} className="text-xs text-danger-700">
+                          {err.row > 0 ? `Rij ${err.row}: ` : ""}{err.message}
+                        </p>
+                      ))}
                     </div>
                   </div>
                 )}

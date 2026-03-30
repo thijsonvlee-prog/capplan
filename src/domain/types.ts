@@ -173,6 +173,32 @@ export type CsvUploadResult = {
   unmappedColumns: string[];
 };
 
+// === Import Execution Domain ===
+
+export type ImportRowError = {
+  row: number;
+  field?: string;
+  message: string;
+};
+
+export type ImportLog = {
+  id: string;
+  importSourceId: string;
+  fileName: string;
+  totalRows: number;
+  importedRows: number;
+  skippedRows: number;
+  errors: ImportRowError[];
+  executedAt: string;
+};
+
+export type ImportExecuteResult = {
+  totalRows: number;
+  importedRows: number;
+  skippedRows: number;
+  errors: ImportRowError[];
+};
+
 // === Computed Types ===
 
 export type DriverComputedFields = {

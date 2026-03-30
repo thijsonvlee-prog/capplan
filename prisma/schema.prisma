@@ -285,7 +285,25 @@ model ImportSource {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  importLogs ImportLog[]
+
   @@index([type])
+}
+
+model ImportLog {
+  id             String   @id @default(uuid())
+  importSourceId String
+  fileName       String
+  totalRows      Int
+  importedRows   Int
+  skippedRows    Int
+  errors         Json?    @db.JsonB // Array of { row: number, field?: string, message: string }
+  executedAt     DateTime @default(now())
+
+  importSource ImportSource @relation(fields: [importSourceId], references: [id], onDelete: Cascade)
+
+  @@index([importSourceId])
+  @@index([executedAt])
 }
 
 // === Performance Observability ===
