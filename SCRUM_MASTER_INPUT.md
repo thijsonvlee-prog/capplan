@@ -26,10 +26,10 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 ### SMI-015: Gebruikersgroepen met autorisatiefilters
 
 - **Type:** Initiative / new feature
-- **Status:** Escalated
+- **Status:** Planned
 - **Input:** "Implementeer een functionaliteit voor het beheren van gebruikersgroepen. Per gebruikersgroep moeten autorisatiefilters kunnen worden vastgelegd (dus filters op de zichtbare gegevens, niet op functionaliteit). Functionaliteit wordt vastgelegd in de autorisatierol."
-- **Analysis:** This is a significant new feature. No UserGroup model or group-related code exists. Requires: data model (UserGroup, group membership, filter definitions), API routes, management UI, and filter enforcement on all data queries. The scope of "filterable dimensions" (employer, department, location, or others) and enforcement strategy need to be decided before implementation can start. Escalated to ESC-008.
-- **Backlog linkage:** PB-104 (blocked pending ESC-008).
+- **Analysis:** ESC-008 decided: Option A (single-dimension MVP) with Afdeling (Department) as the filter criterion. Broken into 3 phased backlog items.
+- **Backlog linkage:** PB-109 (Phase 1: data model + API), PB-110 (Phase 2: admin UI), PB-111 (Phase 3: enforcement).
 
 ## Closed Inputs
 
@@ -37,42 +37,41 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 - **Type:** UX request
 - **Status:** Closed
-- **Closed reason:** Fully delivered. PB-103 completed 2026-03-30. Login page shows only Google button with Dutch "under construction" notice.
+- **Closed reason:** Fully delivered. PB-103 completed 2026-03-30.
 - **Backlog linkage:** PB-103 (completed).
 
 ### SMI-014: Alleen toegevoegde gebruikers mogen inloggen via Google
 
 - **Type:** Security fix
 - **Status:** Closed
-- **Closed reason:** Fully delivered. PB-102 completed 2026-03-30. Only pre-added users can now login via Google. Unknown accounts are rejected with Dutch error message.
+- **Closed reason:** Fully delivered. PB-102 completed 2026-03-30.
 - **Backlog linkage:** PB-102 (completed).
 
 ### SMI-013: Admin autorisatierol
 
 - **Type:** Request
 - **Status:** Closed
-- **Closed reason:** Already fully implemented. The ADMIN role exists in the User model (Prisma schema), is enforced server-side via `requireRole()` in `api-route-utils.ts` with a clear hierarchy (VIEWER < PLANNER < ADMIN), and has full access to all functionality including settings, users, import sources, and roster profiles. No additional work needed.
+- **Closed reason:** Already fully implemented.
 
 ### SMI-012: Stamtabellen documentatie in masterdata.md
 
 - **Type:** Documentation request
 - **Status:** Closed
-- **Closed reason:** Fully delivered. PB-101 completed 2026-03-30. masterdata.md created with all 22 models documented.
+- **Closed reason:** Fully delivered. PB-101 completed 2026-03-30.
 - **Backlog linkage:** PB-101 (completed).
 
 ### SMI-011: Voorbereidingen voor 1000 chauffeurs — performance en schaalbaarheid
 
 - **Type:** Initiative / priority signal
 - **Status:** Closed
-- **Closed reason:** Fully delivered. All 8 backlog items completed across 3 phases: server-side pagination (PB-093, PB-094), capacity index (PB-009), import guardrail (PB-092), virtual scrolling (PB-096), drivers pagination UI (PB-097), planning grid pagination (PB-105), and scenario duplication batching (PB-098). The application is now prepared for 1000+ drivers.
+- **Closed reason:** Fully delivered. All 8 backlog items completed.
 - **Backlog linkage:** PB-093, PB-094, PB-009, PB-092, PB-096, PB-097, PB-105, PB-098 (all completed).
 
 ### SMI-010: Google OAuth redirect_uri_mismatch fout
 
 - **Type:** Bug report (configuratie)
 - **Status:** Closed
-- **Closed reason:** Configuratie-issue in Google Cloud Console, geen code-wijziging nodig. Documentatie beschikbaar in AUTH_SETUP.md.
-- **Backlog linkage:** Geen.
+- **Closed reason:** Configuratie-issue in Google Cloud Console, geen code-wijziging nodig.
 
 ### SMI-009: Server error bij openen CapPlan
 
@@ -86,13 +85,12 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Type:** Constraint
 - **Status:** Closed (standing constraint, actively applied)
 - **Closed reason:** Standing constraint. Actively applied to all backlog items as a prioritization rule.
-- **Backlog linkage:** Applied as a standing constraint to all backlog items.
 
 ### SMI-008: Focus on building out functionality — connectivity and user management
 
 - **Type:** Initiative / priority signal
 - **Status:** Closed
-- **Closed reason:** Fully delivered. Connectivity and auth/user management all complete.
+- **Closed reason:** Fully delivered.
 - **Backlog linkage:** PB-077–PB-084.
 
 ### SMI-007: Rewrite CLAUDE.md based on current application state, incorporate DESIGN.md
@@ -106,14 +104,14 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 - **Type:** Initiative
 - **Status:** Closed
-- **Closed reason:** Fully delivered. Configuration MVP, CSV upload, import execution, validation all complete.
+- **Closed reason:** Fully delivered.
 - **Backlog linkage:** PB-015, PB-016, PB-077, PB-078, PB-083.
 
 ### SMI-004: Bigger design steps toward DESIGN.md compliance
 
 - **Type:** Priority signal / direction change
 - **Status:** Closed
-- **Closed reason:** Fully delivered. All major redesign work complete.
+- **Closed reason:** Fully delivered.
 - **Backlog linkage:** PB-032, PB-034, PB-035, PB-037–PB-041, PB-048, PB-052, PB-047, PB-057.
 
 ### SMI-006: Custom date picker design
@@ -127,7 +125,7 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 - **Type:** UX improvement request
 - **Status:** Closed
-- **Closed reason:** Fully delivered. PB-037, PB-038 completed 2026-03-29.
+- **Closed reason:** Fully delivered.
 - **Backlog linkage:** PB-037, PB-038.
 
 ### SMI-003: Drivers not visible in planning grid

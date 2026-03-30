@@ -22,49 +22,20 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-### ESC-008: Gebruikersgroepen met autorisatiefilters — scope en fasering
-
-- **Status:** Open
-- **Date / run context:** 2026-03-30 — triggered by SMI-015
-- **Decision needed:** The Scrum Master requests user group management with authorization filters (data visibility, not functionality). This is a significant new feature with no existing code. Before implementation can start, we need clarity on scope and phasing.
-
-- **Why it matters:** User groups with data filters add row-level security across the application. This touches the data model (new tables), every data-fetching API route (filter enforcement), and the admin UI (group management). Getting the scope right upfront prevents rework.
-
-- **Key questions:**
-  1. Which data dimensions should be filterable per group? (e.g., Werkgever/Employer, Afdeling/Department, Locatie/Location, or all three?)
-  2. Should a user belong to exactly one group, or multiple groups?
-  3. Should filter enforcement apply to all data views (planning, drivers, capacity, settings) or only specific screens?
-
-- **Choose one option:**
-
-  - ( ) **Option A — Minimal MVP: Single-dimension filter (Werkgever only)** (X) maar laat 'afdeling' het filtercriterium zijn
-    - Data model: UserGroup with a name and a list of allowed Werkgever IDs. Users are assigned to one group.
-    - Enforcement: API routes for drivers, planning, and capacity filter by the user's group Werkgever IDs. Settings/stamtabellen remain unfiltered.
-    - UI: New "Gebruikersgroepen" tab in settings (admin only) to create groups, assign werkgevers, and assign users.
-    - Phasing: 2 cycles (Phase 1: data model + API + admin UI, Phase 2: enforcement on data routes).
-    - Trade-off: Fast to deliver, but may need extension later if more filter dimensions are needed.
-
-  - ( ) **Option B — Multi-dimension filter (Werkgever + Afdeling + Locatie)**
-    - Data model: UserGroup with filter rules per dimension (werkgever IDs, afdeling IDs, locatie IDs). Users assigned to one group. Filters are AND-combined (user sees drivers matching ALL active filter dimensions).
-    - Enforcement: All data-fetching routes (drivers, planning, capacity) apply group filters. Settings/stamtabellen remain unfiltered.
-    - UI: Group management with multi-select per dimension.
-    - Phasing: 3 cycles (Phase 1: data model + API, Phase 2: admin UI, Phase 3: enforcement).
-    - Trade-off: More flexible but significantly more complex. Filter combinations need careful testing.
-
-  - ( ) **Option C — Multi-dimension filter with multi-group membership**
-    - Same as Option B, but users can belong to multiple groups. Effective filter is the union of all group filters (user sees data from ANY of their groups).
-    - Phasing: 3-4 cycles.
-    - Trade-off: Maximum flexibility, highest complexity. Only justified if real use cases require users to span multiple organizational units.
-
-- **Recommended option:** Option A. Start simple with Werkgever-only filtering. This covers the most common organizational boundary. Extend to more dimensions later if needed — the data model can be evolved without breaking changes.
-
-- **What the Scrum Master must do:** Place `(X)` next to exactly one option above.
-
-- **Product Owner action after choice:** Break the chosen option into phased backlog items (data model, API, UI, enforcement) with clear definitions of done. Assign Phase 1 to Delivery Agent (data model + API), subsequent phases split between agents.
+_No open escalations._
 
 ---
 
 ## Closed Escalations
+
+### ESC-008: Gebruikersgroepen met autorisatiefilters — scope en fasering
+
+- **Status:** Planned
+- **Date / run context:** 2026-03-30 — triggered by SMI-015
+- **Chosen option:** Option A — Minimal MVP with single-dimension filter, modified to use **Afdeling (Department)** as the filter criterion instead of Werkgever (Employer).
+- **Scrum Master note:** "maar laat 'afdeling' het filtercriterium zijn"
+- **Backlog linkage:** PB-109 (data model + API, Phase 1), PB-110 (admin UI, Phase 2), PB-111 (enforcement, Phase 3).
+- **Product Owner action:** Broken into 3 phased backlog items. Phase 1 (PB-109) is ready for the Delivery Agent. Phase 2 (PB-110) assigned to Experience Agent, blocked on PB-109. Phase 3 (PB-111) assigned to Delivery Agent, blocked on PB-110.
 
 ### ESC-007: Virtual scrolling approach for 1000-driver planning grid
 
