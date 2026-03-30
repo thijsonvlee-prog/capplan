@@ -8,6 +8,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   NietGeautoriseerd: "Je account is niet geautoriseerd. Neem contact op met je beheerder.",
   GeenEmailAdres: "Er kon geen e-mailadres worden opgehaald. Probeer het opnieuw.",
   OAuthCreateAccount: "Je account is niet geautoriseerd. Neem contact op met je beheerder.",
+  OAuthAccountNotLinked: "Je account kan niet worden gekoppeld. Neem contact op met je beheerder.",
   AccessDenied: "Toegang geweigerd. Neem contact op met je beheerder.",
 };
 

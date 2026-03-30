@@ -288,42 +288,92 @@ async function importDrivers(
 
     try {
       await prisma.$transaction(async (tx) => {
-        for (const d of chunk) {
-          try {
-            if (mode === "upsert" && d.employeeNumber) {
-              const existing = await tx.driver.findFirst({
-                where: { employeeNumber: d.employeeNumber },
-              });
+        // Batch lookup: collect all employee numbers in this chunk for a single findMany
+        const chunkEmployeeNumbers = chunk
+          .map((d) => d.employeeNumber)
+          .filter((n): n is string => n !== null && mode === "upsert");
 
-              if (existing) {
-                const updateData: Record<string, unknown> = {};
-                if (targetToSource.has("firstName")) updateData.firstName = d.firstName;
-                if (targetToSource.has("lastName")) updateData.lastName = d.lastName;
-                if (targetToSource.has("licenseTypes")) updateData.licenseTypes = d.licenseTypes;
-
-                await tx.driver.update({
-                  where: { id: existing.id },
-                  data: updateData,
-                });
-                updated++;
-                continue;
-              }
+        const existingDriverMap = new Map<string, { id: string }>();
+        if (chunkEmployeeNumbers.length > 0) {
+          const existingDrivers = await tx.driver.findMany({
+            where: { employeeNumber: { in: chunkEmployeeNumbers } },
+            select: { id: true, employeeNumber: true },
+          });
+          for (const d of existingDrivers) {
+            if (d.employeeNumber) {
+              existingDriverMap.set(d.employeeNumber, { id: d.id });
             }
+          }
+        }
 
-            await tx.driver.create({
-              data: {
+        // Separate into updates and creates
+        const toCreate: typeof chunk = [];
+        const toUpdate: { driver: typeof chunk[0]; existingId: string }[] = [];
+
+        for (const d of chunk) {
+          if (mode === "upsert" && d.employeeNumber) {
+            const existing = existingDriverMap.get(d.employeeNumber);
+            if (existing) {
+              toUpdate.push({ driver: d, existingId: existing.id });
+              continue;
+            }
+          }
+          toCreate.push(d);
+        }
+
+        // Batch update existing drivers (individual updates needed for per-row data)
+        for (const { driver: d, existingId } of toUpdate) {
+          try {
+            const updateData: Record<string, unknown> = {};
+            if (targetToSource.has("firstName")) updateData.firstName = d.firstName;
+            if (targetToSource.has("lastName")) updateData.lastName = d.lastName;
+            if (targetToSource.has("licenseTypes")) updateData.licenseTypes = d.licenseTypes;
+
+            await tx.driver.update({
+              where: { id: existingId },
+              data: updateData,
+            });
+            updated++;
+          } catch (err) {
+            errors.push({
+              row: d.rowNum,
+              message: `Kan chauffeur "${d.firstName} ${d.lastName}" niet bijwerken/aanmaken: ${err instanceof Error ? err.message : "onbekende fout"}`,
+            });
+          }
+        }
+
+        // Batch create new drivers
+        if (toCreate.length > 0) {
+          try {
+            const result = await tx.driver.createMany({
+              data: toCreate.map((d) => ({
                 firstName: d.firstName,
                 lastName: d.lastName,
                 employeeNumber: d.employeeNumber,
                 licenseTypes: d.licenseTypes,
-              },
+              })),
             });
-            created++;
-          } catch (err) {
-            errors.push({
-              row: d.rowNum,
-              message: `Kan chauffeur "${d.firstName} ${d.lastName}" niet ${mode === "upsert" ? "bijwerken/aanmaken" : "aanmaken"}: ${err instanceof Error ? err.message : "onbekende fout"}`,
-            });
+            created += result.count;
+          } catch {
+            // Batch create failed — fall back to individual creates for per-row error reporting
+            for (const d of toCreate) {
+              try {
+                await tx.driver.create({
+                  data: {
+                    firstName: d.firstName,
+                    lastName: d.lastName,
+                    employeeNumber: d.employeeNumber,
+                    licenseTypes: d.licenseTypes,
+                  },
+                });
+                created++;
+              } catch (err) {
+                errors.push({
+                  row: d.rowNum,
+                  message: `Kan chauffeur "${d.firstName} ${d.lastName}" niet aanmaken: ${err instanceof Error ? err.message : "onbekende fout"}`,
+                });
+              }
+            }
           }
         }
       });

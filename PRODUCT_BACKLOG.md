@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** User groups with Afdeling-based authorization filters (ESC-008 decided). Phase 1 (data model + API) is ready for the Delivery Agent. Import batch optimization (PB-113) is the next high-priority technical item. Small hardening fixes (PB-114, PB-115, PB-116) can be picked up alongside larger work.
+**Current direction:** User groups Phase 1 (PB-109) is complete — data model, migration, and CRUD API routes are deployed. PB-110 (admin UI) is unblocked and ready for the Experience Agent. Import batch optimization (PB-113) and all hardening fixes (PB-114, PB-115, PB-116) are complete. Stamtabel import upsert batching (DE-REC-052) and preferences authentication (DE-REC-053) are the next high-priority technical items.
 
 ## Status Definitions
 
@@ -27,85 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-109: User groups — data model + API routes
-
-- **ID:** PB-109
-- **Title:** Create UserGroup data model, migration, and CRUD API routes
-- **Problem / opportunity:** ESC-008 decided: implement user groups with single-dimension Afdeling (Department) filtering. This is Phase 1 — the data foundation.
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Direct Scrum Master request. Enables data visibility separation between organizational units. Unblocked by ESC-008 decision.
-- **Scope notes:**
-  - Create Prisma models: `UserGroup` (id, name, createdAt, updatedAt), `UserGroupDepartment` (userGroupId, departmentId — allowed departments for the group), add `userGroupId` field to `User` model (nullable, FK to UserGroup).
-  - Create migration.
-  - Create API routes: `GET/POST /api/user-groups`, `GET/PUT/DELETE /api/user-groups/[id]`. Include department list and member count in responses.
-  - API routes require ADMIN role.
-  - All error messages in Dutch.
-  - Follow existing API patterns from `api-route-utils.ts`.
-- **Dependencies:** None.
-- **Definition of done:** Migration created, API routes working with correct role enforcement, `npm run verify` passes.
-- **Implementation note:** A user belongs to exactly one group (or no group — ungrouped users see all data). Filter enforcement comes in Phase 3 (PB-111).
-
-### PB-113: Import execute — batch lookups instead of per-row queries
-
-- **ID:** PB-113
-- **Title:** Replace sequential per-row findFirst + create/update with batched operations in import execute
-- **Problem / opportunity:** Each row in a 500-row import chunk triggers a separate `tx.driver.findFirst()` + `tx.driver.update()`/`create()`. For 500 rows this means 500–1000 sequential round-trips to Neon. At scale (10,000 rows), import takes minutes.
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Import is a user-facing feature with 10,000-row capacity. Current performance degrades significantly at scale.
-- **Scope notes:**
-  - Batch `findFirst` calls into a single `findMany({ where: { employeeNumber: { in: chunkNumbers } } })`.
-  - Build a Map of existing drivers.
-  - Use `createMany` for new drivers, individual updates for upserts.
-  - Preserve per-row error reporting (partial success within a chunk must still work).
-- **Dependencies:** None.
-- **Definition of done:** Import of 500+ rows completes in under 10 seconds. Error reporting preserved. `npm run verify` passes.
-- **Source:** DE-REC-049.
-
-### PB-114: Login page — handle OAuthAccountNotLinked error
-
-- **ID:** PB-114
-- **Title:** Add Dutch error message for OAuthAccountNotLinked on login page
-- **Problem / opportunity:** The `OAuthAccountNotLinked` error code is not handled on the login page. Users with multiple OAuth providers who hit this edge case see a generic error.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Small fix that completes the login error handling story. Quick win.
-- **Scope notes:** Add `OAuthAccountNotLinked` to the login page error message map with Dutch text.
-- **Dependencies:** None.
-- **Definition of done:** Login page shows clear Dutch message for this error type. `npm run verify` passes.
-- **Source:** DE-REC-048.
-
-### PB-115: PlanningGrid — memoize groupDrivers call
-
-- **ID:** PB-115
-- **Title:** Wrap groupDrivers() in useMemo in PlanningGrid
-- **Problem / opportunity:** `groupDrivers()` is called on every render without memoization. Builds new Map instances and iterates all drivers on each render, including during scroll.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Easy win, directly improves scroll performance for large driver lists. Same memoization pattern already used elsewhere in PlanningGrid.
-- **Scope notes:** Wrap in `useMemo` with dependencies `[sortedDrivers, groupBy, employers, departments, locations]`.
-- **Dependencies:** None.
-- **Definition of done:** `groupDrivers` is memoized. No visual or functional regressions. `npm run verify` passes.
-- **Source:** DE-REC-050.
-
-### PB-116: Capacity endpoint — add date validation and length limit
-
-- **ID:** PB-116
-- **Title:** Add date format validation and length cap to /api/planning/capacity
-- **Problem / opportunity:** The capacity endpoint accepts comma-separated dates without format validation or length limit, unlike the `for-range` endpoint which has both.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Small fix that closes a validation gap between related endpoints. Prevents oversized queries.
-- **Scope notes:** Add `validateDateFormats(dateList)` and `dateList.length > 366` check, consistent with `for-range` pattern.
-- **Dependencies:** None.
-- **Definition of done:** Invalid dates and oversized requests return 400 with Dutch error message. `npm run verify` passes.
-- **Source:** DE-REC-051.
+_No items currently ready. See Blocked / Needs Decision for upcoming work._
 
 ---
 
@@ -118,8 +40,8 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Problem / opportunity:** Phase 2 of user groups. Admin needs a UI to create groups, assign departments, and assign users to groups.
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Blocked
-- **Blocked by:** PB-109 (data model + API must exist first).
+- **Status:** Ready
+- **Unblocked by:** PB-109 (completed 2026-03-30).
 - **Why this matters now:** Required for user groups feature. Scrum Master request.
 - **Scope notes:**
   - New "Gebruikersgroepen" tab in settings (admin only).
@@ -157,6 +79,41 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-109: User groups — data model + API routes
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Created `UserGroup` and `UserGroupDepartment` Prisma models, added `userGroupId` FK to `User` model. Migration `20260330400000_add_user_groups` created. API routes at `/api/user-groups` and `/api/user-groups/[id]` with GET/POST/PUT/DELETE, all ADMIN-gated. Responses include department IDs and member count. Department FK validation on create/update. DELETE cascades department links and sets user `userGroupId` to null.
+
+### PB-113: Import execute — batch lookups instead of per-row queries
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Replaced per-row `findFirst` with single `findMany` per chunk, building a Map for O(1) lookups. New drivers use `createMany` for batch insert. Falls back to individual creates on batch failure to preserve per-row error reporting. Updates remain individual (different data per row). Reduces round-trips from 500–1000 to ~2 + update count per chunk.
+
+### PB-114: Login page — handle OAuthAccountNotLinked error
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Added `OAuthAccountNotLinked` to error message map with Dutch text.
+
+### PB-115: PlanningGrid — memoize groupDrivers call
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Wrapped `groupDrivers()` in `useMemo` with `[sortedDrivers, groupBy, employers, departments, locations]` dependencies.
+
+### PB-116: Capacity endpoint — date validation and length limit
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Added `validateDateFormats(dateList)`, empty check, and `dateList.length > 366` cap. Consistent with `for-range` endpoint pattern.
 
 ### PB-107: Prevent PrismaAdapter from auto-creating orphan User records
 

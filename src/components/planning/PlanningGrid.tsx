@@ -323,7 +323,10 @@ export function PlanningGrid() {
     return sorted;
   }, [filteredDrivers, sortConfig, resolveColumnValue]);
 
-  const groups = groupDrivers(sortedDrivers, groupBy, { employers, departments, locations });
+  const groups = useMemo(
+    () => groupDrivers(sortedDrivers, groupBy, { employers, departments, locations }),
+    [sortedDrivers, groupBy, employers, departments, locations]
+  );
   const dc = DENSITY_CONFIG[density];
 
   // Flatten groups into a single item array for virtual scrolling

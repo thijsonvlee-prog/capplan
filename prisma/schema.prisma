@@ -16,12 +16,16 @@ model User {
   emailVerified DateTime?
   image         String?
   role          String    @default("PLANNER") // ADMIN, PLANNER, VIEWER
+  userGroupId   String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  userGroup   UserGroup? @relation(fields: [userGroupId], references: [id], onDelete: SetNull)
   accounts    Account[]
   sessions    Session[]
   preferences UserPreference[]
+
+  @@index([userGroupId])
 }
 
 model Account {
@@ -68,6 +72,31 @@ model UserPreference {
   @@index([userId])
 }
 
+// === User Groups (authorization filtering) ===
+
+model UserGroup {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  departments UserGroupDepartment[]
+  users       User[]
+}
+
+model UserGroupDepartment {
+  id           String @id @default(uuid())
+  userGroupId  String
+  departmentId String
+
+  userGroup  UserGroup  @relation(fields: [userGroupId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@unique([userGroupId, departmentId])
+  @@index([userGroupId])
+  @@index([departmentId])
+}
+
 // === Master Data ===
 
 model Skill {
@@ -99,7 +128,8 @@ model Department {
   externalId   String?
   syncedAt     DateTime?
 
-  functionRecords DriverFunctionRecord[]
+  functionRecords  DriverFunctionRecord[]
+  userGroupLinks   UserGroupDepartment[]
 }
 
 model Location {

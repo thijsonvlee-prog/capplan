@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId } from "@/lib/api-route-utils";
+import { resolveScenarioId, validateDateFormats } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning/capacity",
@@ -18,7 +18,27 @@ export const GET = withPerfLogging(
         );
       }
 
-      const dateList = dates.split(",").map((d) => d.trim());
+      const dateList = dates.split(",").map((d) => d.trim()).filter(Boolean);
+
+      if (dateList.length === 0) {
+        return NextResponse.json(
+          { error: "Minimaal één geldige datum is verplicht" },
+          { status: 400 }
+        );
+      }
+
+      if (dateList.length > 366) {
+        return NextResponse.json(
+          { error: "Maximaal 366 datums per verzoek" },
+          { status: 400 }
+        );
+      }
+
+      const dateError = validateDateFormats(dateList);
+      if (dateError) {
+        return NextResponse.json({ error: dateError }, { status: 400 });
+      }
+
       const resolvedScenarioId = resolveScenarioId(scenarioId);
 
       // Use groupBy to aggregate in the database instead of fetching all rows

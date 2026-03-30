@@ -6,6 +6,22 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-30 — Gebruikersgroepen, importprestaties en validatie
+
+#### Functionele verbeteringen
+
+- **Gebruikersgroepen datamodel:** Nieuw datamodel voor gebruikersgroepen met afdelingsfilters. Gebruikers kunnen aan een groep worden gekoppeld die bepaalt welke afdelingen ze mogen zien. API-routes voor CRUD-beheer beschikbaar op `/api/user-groups`.
+
+#### Prestaties
+
+- **Snellere CSV-import chauffeurs:** Import van chauffeurs gebruikt nu batch-lookups en `createMany` in plaats van per-rij queries. Dit vermindert het aantal database-queries met ~90% bij grote imports.
+- **Planningsrooster scroll-prestaties:** De `groupDrivers`-berekening wordt nu gecached met `useMemo`, wat onnodige herberekeningen bij scrollen voorkomt.
+
+#### Betrouwbaarheid
+
+- **Capaciteitsendpoint validatie:** Het `/api/planning/capacity`-endpoint valideert nu datumformaten en beperkt het aantal datums tot 366 per verzoek.
+- **Inlogfoutmelding accountkoppeling:** De inlogpagina toont nu een duidelijke Nederlandse foutmelding wanneer een OAuth-account niet kan worden gekoppeld.
+
 ### 2026-03-30 — Beveiliging OAuth-adapter en zoekverbeteringen
 
 #### Beveiliging
