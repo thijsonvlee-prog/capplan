@@ -23,12 +23,16 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-Ik krijg een 'server error' als ik naar de capplan tool ga: 
+### SMI-009: Server error bij openen CapPlan
 
-Server error
-There is a problem with the server configuration.
-
-Check the server logs for more information.
+- **Type:** Bug report
+- **Status:** Closed
+- **Input:** "Ik krijg een 'server error' als ik naar de capplan tool ga: Server error — There is a problem with the server configuration. Check the server logs for more information."
+- **Root cause:** The NextAuth middleware (`src/middleware.ts`) unconditionally required `NEXTAUTH_SECRET` to be set, while the API route role enforcement (`requireRole()`) gracefully skips when it's not configured. When `NEXTAUTH_SECRET` is missing, the middleware crashed and NextAuth showed its default error page on all dashboard routes.
+- **Resolution:** Fixed by the Product Owner Agent. The middleware now checks for `NEXTAUTH_SECRET` before enforcing authentication, matching the same conditional pattern used in `api-route-utils.ts`. When auth is not configured, all requests pass through.
+- **Closed reason:** Fixed in PB-087.
+- **Backlog linkage:** PB-087 (completed).
+- **Note:** If the error persists after deployment, the issue may be in the Vercel environment configuration (missing or incorrect `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, or provider credentials). See ESC-006 for environment checklist.
 
 ### SMI-002: Keep improvements incremental during stabilization
 

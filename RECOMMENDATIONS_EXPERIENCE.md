@@ -94,7 +94,7 @@
 ## Risks / Watch-outs
 
 - **Settings tab count growth.** The settings page now has 5 tabs. If more configuration categories are added, the tab bar will need responsive treatment (EX-REC-045). Current tab bar is horizontal-only with no overflow handling.
-- **Role enforcement not yet active.** The user management screen allows role assignment, but PB-082 (role enforcement middleware) is not yet implemented. Until then, roles are decorative and all users have full access. This is expected and documented.
+- **Role enforcement is active but UI not yet role-aware.** PB-082 (role enforcement) is complete. PB-084 (frontend role-aware UI) is next — until then, all action buttons are visible to all users.
 - **NextAuth middleware route matching.** The middleware matches all dashboard routes. If new top-level routes are added, they must be added to the middleware matcher.
 - **External image domains.** `next.config.mjs` allows Google and Microsoft avatar domains. Additional OAuth providers need their image domains allowlisted.
 - **PlanningGrid.tsx complexity.** The file is ~685 lines. Any further changes must be verified carefully.

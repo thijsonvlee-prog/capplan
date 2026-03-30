@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement). Import pipeline operational. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: completing the role-based UX so users only see actions they can perform, plus small robustness and polish items.
+**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement). Import pipeline operational. Server error bug fixed. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: completing the role-based UX so users only see actions they can perform, plus small robustness and polish items.
 
 ## Status Definitions
 
@@ -88,6 +88,11 @@ _No items currently in progress._
 
 ## Completed Recently
 
+### PB-087: Fix server error — conditional auth middleware
+- **Completed:** 2026-03-30
+- **Owner:** Product Owner Agent (corrective fix)
+- **Summary:** The NextAuth middleware unconditionally required `NEXTAUTH_SECRET`, causing a server error on all dashboard routes when auth was not configured. Fixed by making the middleware conditional — it now skips authentication when `NEXTAUTH_SECRET` is not set, matching the pattern used by `requireRole()` in API routes.
+
 ### PB-082: Role enforcement middleware
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
@@ -117,11 +122,6 @@ _No items currently in progress._
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
 - **Summary:** NextAuth.js v4 with Prisma adapter, Google and Azure AD providers, database sessions.
-
-### PB-076: Rewrite CLAUDE.md
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Full rewrite reflecting current codebase state.
 
 ---
 
@@ -227,7 +227,7 @@ _No items currently in progress._
 - Backlog IDs are sequential and never reused.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
-- Stale or superseded items should be removed or deferred.
-- Overlapping items should be merged.
+- Remove stale items that are no longer relevant.
+- Merge overlapping or duplicate items.
 - Vague items must be rewritten or split before they are ready for execution.
 - The backlog should be rewritten into a clean current state, not endlessly appended to.

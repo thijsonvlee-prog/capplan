@@ -10,6 +10,12 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-30 — Bugfix: server error bij openen applicatie
+
+#### Bugfix
+
+- **Server error opgelost:** De applicatie gaf een "Server error — There is a problem with the server configuration" fout bij het openen wanneer authenticatie niet volledig was geconfigureerd. De middleware voor routebeveiliging vereiste `NEXTAUTH_SECRET`, terwijl de rest van de applicatie daar niet van afhankelijk was. De middleware slaat authenticatie nu over wanneer `NEXTAUTH_SECRET` niet is ingesteld, zodat de applicatie ook zonder authenticatieconfiguratie werkt.
+
 ### 2026-03-30 — Rolhandhaving en importvalidatie
 
 #### Beveiliging
@@ -32,11 +38,6 @@ _No unreleased changes._
 #### Functionele verbeteringen
 
 - **Gebruikersbeheer:** Nieuw tabblad "Gebruikers" op de instellingenpagina. Toont alle gebruikers met profielfoto, naam, e-mailadres, rol en lidmaatschapsdatum. Beheerders kunnen rollen toewijzen (Admin, Planner, Kijker) via klikbare rolbadges met bevestigingsdialoog.
-
-### 2026-03-30 — Inloggen, CSV-import uitvoeren en authenticatie-infrastructuur
-
-#### Functionele verbeteringen
-
 - **Inlogpagina:** Nieuwe inlogpagina (`/login`) met ondersteuning voor inloggen via Google en Microsoft. Samengesteld ontwerp met merkpaneel (links) en inlogformulier (rechts). Alle tekst in het Nederlands.
 - **Sessie-indicator:** De koptekstbalk toont nu de ingelogde gebruiker met profielfoto (of initialen), naam en uitlogknop.
 - **Routebeveiliging:** Niet-ingelogde gebruikers worden automatisch doorgestuurd naar de inlogpagina.
