@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** User groups all 3 phases (PB-109, PB-110, PB-111) are complete. Stamtabel batch optimization (PB-117), preferences user-scoping (PB-118), and planning validation (PB-119, PB-120) are all shipped. No active Delivery Agent tasks remain — see Recommendations for next priorities.
+**Current direction:** User groups (SMI-015) are fully shipped across all 3 phases. Authorization model is complete for list endpoints. One security gap remains: individual-access routes (`/api/drivers/[id]`, `/api/planning` by driverId) do not enforce group filtering (DE-REC-056). This is the top priority for the next cycle.
 
 ## Status Definitions
 
@@ -27,25 +27,38 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-110: User groups — admin UI in settings
+### PB-121: User group enforcement — individual-access routes
 
-- **ID:** PB-110
-- **Title:** Create Gebruikersgroepen tab in settings for group management
-- **Problem / opportunity:** Phase 2 of user groups. Admin needs a UI to create groups, assign departments, and assign users to groups.
-- **Owner:** Experience Agent
+- **ID:** PB-121
+- **Title:** Apply department filtering to planning GET (by driverId) and driver [id] GET routes
+- **Problem / opportunity:** PB-111 applied user group filtering to list endpoints (`/api/drivers`, `/api/planning/for-range`, `/api/planning/capacity`). However, `/api/planning` GET (by driverId) and `/api/drivers/[id]` GET do not enforce filtering. A user could access a specific driver's data by ID even if the driver is outside their group's departments.
+- **Owner:** Delivery Agent
 - **Priority:** P2 High
-- **Status:** Completed
-- **Why this matters now:** Unblocked by PB-109 (completed 2026-03-30). Required for user groups feature. Scrum Master request (SMI-015).
+- **Status:** Ready
+- **Why this matters now:** Security gap. Completes the authorization coverage started in PB-111. Same proven pattern — low risk, small effort.
 - **Scope notes:**
-  - New "Gebruikersgroepen" tab in settings (admin only).
-  - Create/edit/delete groups.
-  - Multi-select departments per group.
-  - Assign users to groups.
-  - Follow existing settings tab patterns (StamtabelManager-style or custom).
-- **Dependencies:** PB-109 (completed).
-- **Definition of done:** Admin can manage user groups via the settings UI. All interactions have toast notifications and confirm dialogs for destructive actions. `npm run verify` passes.
+  - Apply `getAllowedDepartmentIds()` + `driverDepartmentFilter()` to `/api/drivers/[id]` GET.
+  - Apply equivalent check to `/api/planning` GET when queried by driverId.
+  - Return 404 (not 403) when the driver exists but is outside the user's scope, to avoid leaking existence information.
+- **Dependencies:** None.
+- **Definition of done:** Individual-access routes enforce the same department filtering as list routes. `npm run verify` passes.
+- **Source:** DE-REC-056.
 
-_No items ready for next cycle._
+### PB-122: Capacity endpoint — relation-based user group filtering
+
+- **ID:** PB-122
+- **Title:** Optimize capacity endpoint user group filtering to use Prisma relation filter instead of driver ID pre-fetch
+- **Problem / opportunity:** The current PB-111 implementation in `/api/planning/capacity` fetches all driver IDs in the user's departments (`findMany` + `select: { id: true }`), then passes them as `driverId: { in: [...] }`. For large organizations this loads thousands of IDs into memory and creates a large IN clause.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Scalability improvement for the capacity endpoint. Low risk — Prisma supports relation filters in `groupBy` where clauses.
+- **Scope notes:**
+  - Replace the driver ID pre-fetch with a Prisma relation filter: `driver: { functionRecords: { some: { departmentId: { in: allowedDeptIds } } } }` directly in the `groupBy` where clause.
+  - Verify query plan with representative data.
+- **Dependencies:** None.
+- **Definition of done:** Capacity endpoint no longer pre-fetches driver IDs for group filtering. Same results, fewer queries. `npm run verify` passes.
+- **Source:** DE-REC-057.
 
 ---
 
@@ -68,44 +81,38 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** Added `getAllowedDepartmentIds()` and `driverDepartmentFilter()` helpers to `api-route-utils.ts`. Applied department-based filtering to GET routes: `/api/drivers`, `/api/planning/for-range`, `/api/planning/capacity`. Users in a group only see drivers with function records matching the group's departments. Ungrouped users and unauthenticated environments see all data (backward compatible).
-
-### PB-117: Stamtabel import upsert — batch lookups
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-- **Implementation note:** Replaced per-row `findUnique` + `create`/`update` with batch `findMany` + Map lookup + `createMany` for new records. Same pattern as PB-113 for drivers. Includes fallback to individual creates on batch failure for per-row error reporting.
-
-### PB-118: Preferences endpoint — scope to authenticated user
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-- **Implementation note:** Added `resolveUserId()` helper that reads user ID from NextAuth session. All three handlers (GET/PUT/DELETE) now use the authenticated user's ID. Falls back to "default" when `NEXTAUTH_SECRET` is not set. Returns 401 for unauthenticated requests when auth is active.
-
-### PB-119: Planning API — validate status against domain enum
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-- **Implementation note:** Added status validation against `PlanningStatus` enum values in both `/api/planning` POST and `/api/planning/bulk` POST. Returns 400 with Dutch error message listing valid statuses.
-
-### PB-120: Planning API — sickPercentage range validation
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-30
-- **Implementation note:** Added 0–100 range check for `sickPercentage` in both `/api/planning` POST and `/api/planning/bulk` POST. Returns 400 with Dutch error message.
 
 ### PB-110: User groups — admin UI in settings
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** New "Gebruikersgroepen" tab in settings (admin only). Card-based group list with expandable detail panels showing departments and members. Modal editor for create/edit with department multi-select and user assignment. Users API extended to support `userGroupId` updates. All interactions have toast notifications and confirm dialogs.
 
 ### PB-109: User groups — data model + API routes
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+
+### PB-117: Stamtabel import upsert — batch lookups
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+
+### PB-118: Preferences endpoint — scope to authenticated user
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+
+### PB-119: Planning API — validate status against domain enum
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+
+### PB-120: Planning API — sickPercentage range validation
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
@@ -186,7 +193,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Functional and usable. Lower priority than user groups feature.
+- **Reason:** Functional and usable. Lower priority than security and scalability work.
 - **Source:** EX-REC-036.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
@@ -212,6 +219,14 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** No direct user impact. Minor code hygiene.
 - **Source:** EX-REC-042.
+
+### EX-REC-044: User group member assignment — batch API
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Current sequential approach works for typical group sizes (< 20 users). Only relevant if user counts grow significantly.
+- **Source:** EX-REC-044.
 
 ---
 
