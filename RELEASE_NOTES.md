@@ -19,9 +19,13 @@ _No unreleased changes._
 - **Importbronnen beheerinterface:** Nieuw tabblad "Connectiviteit" in de instellingenpagina voor het configureren van CSV-importbronnen. Ondersteuning voor aanmaken, bewerken en verwijderen van importconfiguraties met visuele veldkoppelingseditor. Elke bron bevat een naam, doelentiteit (chauffeurs, werkgevers, afdelingen, standplaatsen), optionele omschrijving en veldkoppelingen die CSV-kolommen aan doelvelden koppelen. Overzichtslijst toont alle bronnen met type-badge, doelentiteit, aantal koppelingen en koppelingschips.
 - **Planningspagina koptekst:** De koptekstbalk op de planningspagina toont nu het actieve scenario ("Basisplanning" of scenarionaam), consistent met de capaciteits- en chauffeurspagina. Alle drie de hoofdpagina's tonen nu contextuele informatie in de koptekst.
 
+#### Prestaties
+
+- **DriverForm Map-memoization:** Werkgever-, afdeling- en standplaats-lookups in het chauffeurformulier worden nu met `useMemo` gecached, consistent met het Map-patroon in het planningsrooster.
+
 #### Interne kwaliteit
 
-- **Dode code verwijderd:** Vier ongebruikte hulpfuncties verwijderd uit `utils.ts` (datumbereik- en kwartaalfuncties). Vermindert onderhoudsruis zonder functionele impact.
+- **Dode code verwijderd:** Tien ongebruikte hulpfuncties verwijderd uit `utils.ts` en het ongebruikte `StamtabelType` enum uit `enums.ts`. Zeven ongebruikte imports opgeruimd. `utils.ts` bevat nu alleen actief gebruikte functies.
 
 ### 2026-03-29 — Ontwerp, prestaties en betrouwbaarheid
 

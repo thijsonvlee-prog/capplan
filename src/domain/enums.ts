@@ -62,10 +62,3 @@ export const GroupByField = {
 } as const;
 export type GroupByField = (typeof GroupByField)[keyof typeof GroupByField];
 
-export const StamtabelType = {
-  EMPLOYERS: "employers",
-  DEPARTMENTS: "departments",
-  LOCATIONS: "locations",
-  LEAVE_TYPES: "leaveTypes",
-} as const;
-export type StamtabelType = (typeof StamtabelType)[keyof typeof StamtabelType];

@@ -27,31 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-073: Remove remaining unused utility functions and enum
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** Six exported functions in `utils.ts` (`getWeekDates`, `get4WeekDates`, `formatDateNL`, `getCurrentWeek`, `getMonthDates`, `getYearMonths`) and the `StamtabelType` enum in `enums.ts` are defined but never imported anywhere. Dead code creates maintenance noise and misleading API surface.
-- **Why this matters now:** Trivial cleanup, same pattern as completed PB-071. Keeps the codebase lean.
-- **Scope notes:** Remove the 6 unused functions and their now-unused imports. Remove `StamtabelType` enum. Update documentatie page text if it references these.
-- **Dependencies:** None.
-- **Definition of done:** Functions and enum removed. `npm run verify` passes with 0 errors.
-- **Implementation note:** Confirm each function/enum is unused via grep before removing.
-- **Source:** DE-REC-038.
-
-### PB-075: Memoize Map creation in DriverForm.tsx
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** `DriverForm.tsx` creates `new Map(employers.map(...))`, `new Map(departments.map(...))`, `new Map(locations.map(...))` on every render without `useMemo`. Inconsistent with the Map-based memoization pattern used throughout PlanningGrid.
-- **Why this matters now:** Small pattern consistency fix. Same approach already proven in PlanningGrid.
-- **Scope notes:** Wrap the three Map creations in `useMemo` with appropriate dependency arrays.
-- **Dependencies:** None.
-- **Definition of done:** Maps are memoized. `npm run verify` passes with 0 errors.
-- **Implementation note:** Dependencies should be `[employers]`, `[departments]`, `[locations]` respectively.
-- **Source:** DE-REC-040.
+_No items currently ready._
 
 ---
 
@@ -68,6 +44,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-075: Memoize Map creation in DriverForm.tsx
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Wrapped employer, department, and location Map creations in `useMemo` with appropriate dependency arrays. Consistent with Map-based memoization pattern used in PlanningGrid.
+
+### PB-073: Remove remaining unused utility functions and enum
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Removed 6 unused functions from `utils.ts` (`getWeekDates`, `get4WeekDates`, `formatDateNL`, `getCurrentWeek`, `getMonthDates`, `getYearMonths`) and their now-unused imports (`startOfMonth`, `endOfMonth`, `getYear`, `getDaysInMonth`, `format`, `nl`, `MONTH_SHORT`). Removed unused `StamtabelType` enum from `enums.ts`. Updated documentatie page description.
 
 ### PB-074: Add `btn-danger` CSS class and replace inline button styles
 - **Completed:** 2026-03-30

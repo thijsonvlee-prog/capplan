@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { EmploymentType } from "@/domain/enums";
 import type { DriverEmploymentRecord, DriverFunctionRecord, DriverRosterAssignment, Driver } from "@/domain/types";
 import { EMPLOYMENT_TYPE_LABELS } from "@/domain/constants";
@@ -104,9 +104,9 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
     { key: "rooster", label: "Rooster", editOnly: true },
   ];
 
-  const employerMap = new Map(employers.map((e) => [e.id, e.description]));
-  const departmentMap = new Map(departments.map((d) => [d.id, d.description]));
-  const locationMap = new Map(locations.map((l) => [l.id, l.description]));
+  const employerMap = useMemo(() => new Map(employers.map((e) => [e.id, e.description])), [employers]);
+  const departmentMap = useMemo(() => new Map(departments.map((d) => [d.id, d.description])), [departments]);
+  const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.description])), [locations]);
 
   return (
     <div className="bg-surface-primary p-6 rounded-lg shadow-card border border-border-subtle space-y-4">

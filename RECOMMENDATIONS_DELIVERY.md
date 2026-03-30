@@ -6,62 +6,21 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-No active Delivery Agent tasks were scheduled this cycle — all items remain deferred. A fresh full-codebase scan was performed. The codebase continues to be in strong shape: 0 ESLint warnings, 0 typecheck errors, consistent Map-based lookups on hot paths, comprehensive API validation with Dutch error messages, and full design token compliance in components.
+Both scheduled Delivery tasks (PB-073, PB-075) were completed this cycle:
+- **PB-073:** Removed 6 unused functions from `utils.ts` and the unused `StamtabelType` enum from `enums.ts`, along with 7 now-unused imports. Updated documentatie page.
+- **PB-075:** Memoized employer/department/location Map creations in `DriverForm.tsx` with `useMemo`.
 
-New findings this cycle:
-- **5 more unused utility functions** in `utils.ts` (beyond the 4 removed in PB-071): `getWeekDates`, `get4WeekDates`, `formatDateNL`, `getCurrentWeek`, `getMonthDates`, `getYearMonths` — none are imported anywhere.
-- **Unused `StamtabelType` enum** in `enums.ts` — defined but never imported.
-- **Missing `btn-danger` CSS class** — ConfirmDialog uses inline danger button styles instead of a reusable class. The documentatie page also uses inline styles instead of `btn-primary`.
-- **DriverForm.tsx creates Maps on every render** without `useMemo` (employer/department/location lookups).
+Fresh codebase scan confirms strong health: 0 ESLint warnings, 0 typecheck errors, no hardcoded colors in `.tsx` files, no inline styles remaining, consistent design token usage. The `utils.ts` file is now minimal (3 functions: `cn`, `getMondayStart`, `getDateRange`, `getISOWeekNumber`). The `any` type count in source files is ~36 instances across 12 files (stable, excluding generated code).
 
-The `any` type count (~41 instances) is stable. Existing deferred items remain valid.
+The active backlog is empty. Remaining work is all deferred P4 items. No new critical or high-priority findings.
 
 ## Recommended Next Improvements
-
-### DE-REC-038: Remove remaining unused utility functions and enum
-
-- **Title:** Remove dead code from `utils.ts` and `enums.ts`
-- **Problem:** Six exported functions in `utils.ts` (`getWeekDates`, `get4WeekDates`, `formatDateNL`, `getCurrentWeek`, `getMonthDates`, `getYearMonths`) are defined but never imported anywhere in `src/`. The `StamtabelType` enum in `enums.ts` is similarly unused. These create maintenance noise and misleading API surface.
-- **Proposed improvement:** Remove the 6 unused functions and their now-unused imports (`startOfMonth`, `endOfMonth`, `getYear`, `getDaysInMonth`, `format`, `nl`, `MONTH_SHORT`). Remove the `StamtabelType` enum. Update the documentatie page text that references these functions.
-- **Expected product/technical value:** Cleaner codebase, reduced maintenance surface, fewer misleading exports.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low. Functions are confirmed unused via grep.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Trivial cleanup, same pattern as completed PB-071.
-
-### DE-REC-039: Add `btn-danger` CSS class and fix inline button styles
-
-- **Title:** Add reusable danger button class, replace inline styles
-- **Problem:** `ConfirmDialog.tsx` (line 64) uses a long inline class string for the destructive confirm button instead of a reusable CSS class. `documentatie/page.tsx` (line 24) similarly uses inline styles instead of `btn-primary`. This violates the CLAUDE.md convention of using predefined CSS classes (`.btn-primary`, `.btn-secondary`, etc.).
-- **Proposed improvement:** Add `.btn-danger` to `globals.css` alongside the existing `.btn-primary`/`.btn-secondary` pattern. Replace inline styles in ConfirmDialog and documentatie page.
-- **Expected product/technical value:** Design consistency. All button variants follow the same pattern. Future destructive buttons can reuse the class.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low. Visual-only change, well-scoped.
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent (design system ownership)
-- **Why now:** Quick win for design consistency. Prevents further inline style proliferation.
-
-### DE-REC-040: Memoize Map creation in DriverForm.tsx
-
-- **Title:** Wrap employer/department/location Maps in `useMemo` in DriverForm
-- **Problem:** `DriverForm.tsx` (around line 107-109) creates `new Map(employers.map(...))`, `new Map(departments.map(...))`, `new Map(locations.map(...))` on every render. These Maps are used for display name lookups in sub-record tables. While the form doesn't render at high frequency, this is an easy consistency improvement.
-- **Proposed improvement:** Wrap the three Map creations in `useMemo` with `[employers]`, `[departments]`, `[locations]` as dependencies.
-- **Expected product/technical value:** Consistent with the Map-based memoization pattern used throughout PlanningGrid. Small performance improvement, mainly a pattern consistency win.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick consistency fix. Same pattern already proven in PlanningGrid.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
 - **Title:** Replace `planningEntries.find()` with Map-based lookup in CapacitySummaryRow
-- **Problem:** `CapacitySummaryRow.tsx` uses `driver.planningEntries.find((e) => e.date === date)` inside a nested loop over drivers × dates. This is the same hot-path pattern that was fixed in PlanningGrid (PB-066), but lives in the POC capacity summary component.
-- **Proposed improvement:** Either pass the `entryMaps` from PlanningGrid down to CapacitySummaryRow, or build a local Map inside the component. Alternatively, if the POC is to be promoted to production quality, this should be part of that effort.
+- **Problem:** `CapacitySummaryRow.tsx` line 47 uses `driver.planningEntries.find((e) => e.date === date)` inside a nested loop over drivers × dates. This is the same hot-path pattern that was fixed in PlanningGrid (PB-066).
+- **Proposed improvement:** Either pass the `entryMaps` from PlanningGrid down to CapacitySummaryRow, or build a local Map inside the component.
 - **Expected product/technical value:** Consistent O(1) lookup pattern. Performance improvement for large grids when totals row is visible.
 - **Priority:** P4 Low
 - **Effort:** Small
@@ -99,9 +58,9 @@ The `any` type count (~41 instances) is stable. Existing deferred items remain v
 ### DE-REC-014: Move hardcoded comparison chart colors to constants
 
 - **Title:** Extract COMPARE_COLORS from CapacityChart to constants
-- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS = ["#f97316", "#06b6d4", "#8b5cf6"]` inline. Hardcoded hex values violate CLAUDE.md design token rules (Recharts exception documented). Also recreated on every render — should be a module-level constant.
+- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS = ["#f97316", "#06b6d4", "#8b5cf6"]` inline. Hardcoded hex values (Recharts exception documented in CLAUDE.md). Also recreated on every render — should be a module-level constant.
 - **Proposed improvement:** Move to `src/domain/constants.ts` with comments referencing design token equivalents.
-- **Expected product/technical value:** CLAUDE.md compliance. Centralizes color definitions. Eliminates per-render array allocation.
+- **Expected product/technical value:** Centralizes color definitions. Eliminates per-render array allocation.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low.
@@ -126,7 +85,7 @@ The `any` type count (~41 instances) is stable. Existing deferred items remain v
 
 - **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory. At ~200 bytes/row this is ~10 MB per request. Acceptable now but worth documenting as a known ceiling.
 - **Date timezone handling in aggregation:** `aggregation.ts` and `utils.ts` parse date strings using `new Date(date + "T00:00:00")` without timezone specifier. Vercel serverless runs in UTC so this is not a current production risk, but could surface if the server environment changes.
-- **`any` types in source code:** ~41 uses of `any` across 11 source files (excluding generated). These are functional but reduce type safety. Not worth a dedicated backlog item — fix opportunistically when touching these files.
+- **`any` types in source code:** ~36 uses of `any` across 12 source files (excluding generated). These are functional but reduce type safety. Not worth a dedicated backlog item — fix opportunistically when touching these files.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". This should either be promoted to production quality or removed to avoid dead code confusion.
 - **DELETE race conditions:** Multiple DELETE routes use a check-then-delete pattern without a transaction. The record could theoretically be deleted between the existence check and the delete. Low risk at current concurrency levels.
 - **Unbounded GET /api/planning results:** The planning GET route has no limit or pagination. Could return 100k+ rows with large date range and many drivers. Currently mitigated by required date/driver filter, but no row limit exists.

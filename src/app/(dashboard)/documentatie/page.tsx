@@ -282,7 +282,7 @@ De applicatie volgt een gelaagde architectuur:
 
   /lib
     api.ts                          API fetch wrapper
-    utils.ts                        Datum-hulpfuncties (cn, getWeekDates, etc.)
+    utils.ts                        Hulpfuncties (cn, getMondayStart, getDateRange, etc.)
 
   /prisma
     schema.prisma                   Database schema

@@ -1,61 +1,9 @@
-import { MONTH_SHORT } from "@/domain/constants";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import {
-  startOfWeek,
-  startOfMonth,
-  endOfMonth,
-  addDays,
-  getISOWeek,
-  getYear,
-  getDaysInMonth,
-  format,
-} from "date-fns";
-import { nl } from "date-fns/locale";
+import { addDays, getISOWeek } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-export function getWeekDates(year: number, week: number): Date[] {
-  const jan4 = new Date(year, 0, 4);
-  const startOfWeek1 = startOfWeek(jan4, { weekStartsOn: 1 });
-  const weekStart = addDays(startOfWeek1, (week - 1) * 7);
-  return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-}
-
-export function getCurrentWeek(): { year: number; week: number } {
-  const now = new Date();
-  return { year: getYear(now), week: getISOWeek(now) };
-}
-
-export function formatDateNL(date: Date): string {
-  return format(date, "EEEEEE d MMM", { locale: nl });
-}
-
-export function get4WeekDates(year: number, week: number): Date[] {
-  const jan4 = new Date(year, 0, 4);
-  const startOfWeek1 = startOfWeek(jan4, { weekStartsOn: 1 });
-  const weekStart = addDays(startOfWeek1, (week - 1) * 7);
-  return Array.from({ length: 28 }, (_, i) => addDays(weekStart, i));
-}
-
-export function getMonthDates(year: number, month: number): Date[] {
-  const start = startOfMonth(new Date(year, month - 1));
-  const days = getDaysInMonth(start);
-  return Array.from({ length: days }, (_, i) => addDays(start, i));
-}
-
-export function getYearMonths(year: number): { label: string; startDate: string; endDate: string }[] {
-  return MONTH_SHORT.map((label, i) => {
-    const start = startOfMonth(new Date(year, i));
-    const end = endOfMonth(new Date(year, i));
-    return {
-      label,
-      startDate: format(start, "yyyy-MM-dd"),
-      endDate: format(end, "yyyy-MM-dd"),
-    };
-  });
 }
 
 /** Get today's date snapped to the preceding Monday (ISO string) */
