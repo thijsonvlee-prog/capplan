@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation, session optimization). Import pipeline fully operational with upsert support. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. All scheduled items completed. Next focus: codebase quality, performance optimization, and potential new features per Delivery/Experience recommendations.
+**Current direction:** Authentication and import tracks fully delivered. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: reliability guardrails for the import pipeline, then codebase quality and polish per agent recommendations.
 
 ## Status Definitions
 
@@ -27,7 +27,20 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-092: Add CSV row count limit to import execution
+
+- **ID:** PB-092
+- **Title:** Limit maximum CSV rows per import to prevent memory/timeout issues
+- **Problem / opportunity:** The import execute endpoint has a 5MB file size limit but no limit on row count. A CSV with many thousands of rows creates one database operation per row inside a single transaction, which could hit Neon connection timeouts or exhaust Node.js memory.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Import pipeline is now fully featured (create + upsert). This is a reliability guardrail to prevent production incidents before real data volumes arrive.
+- **Scope notes:** Add a maximum row count (e.g., 10,000 rows). Return a clear Dutch error message if exceeded. Check row count before starting the transaction.
+- **Dependencies:** None.
+- **Definition of done:** Import execution rejects CSVs exceeding the row limit with a clear error. Existing imports under the limit continue to work unchanged.
+- **Implementation note:** Small change in the import execute route. Add the limit constant to `API_LIMITS` in `constants.ts` if that object exists, otherwise use a local constant.
+- **Source:** DE-REC-043.
 
 ---
 
@@ -45,45 +58,7 @@ _No items currently in progress._
 
 ## Completed Recently
 
-### PB-091: Add upsert mode to CSV import execution
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Import execute endpoint now accepts a `mode` parameter: `"create"` (default, existing behavior) or `"upsert"` (update existing records matched by unique key). Stamtabellen match on `code`, drivers match on `employeeNumber`. UI shows radio toggle for mode selection before executing. Import log and results distinguish created vs. updated vs. skipped counts. Schema migration adds `updatedRows` column to `ImportLog`.
-
-### PB-090: Cache user role in NextAuth session to avoid per-request DB query
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Removed redundant `findUnique` query from the NextAuth session callback. The PrismaAdapter already provides the full user record (including `role`) via `include: { user: true }` — the session callback now reads `role` directly from the adapter-provided user object. Eliminates one DB query per authenticated request.
-
-### PB-089: Add user identity to sidebar bottom section
-- **Completed:** 2026-03-30
-- **Owner:** Experience Agent
-- **Summary:** Sidebar bottom section now shows logged-in user's name (or email), role icon+label, and version text. When auth is not configured, shows version only. Uses `useSession()` with role config consistent with UserManager.
-
-### PB-088: Auth environment setup documentation
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Created `AUTH_SETUP.md` with step-by-step guidance for configuring authentication in Vercel.
-
-### PB-086: JSON body parsing protection
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Added `parseJsonBody()` helper applied to all 23 POST/PUT routes.
-
-### PB-084: Frontend role-aware UI
-- **Completed:** 2026-03-30
-- **Owner:** Experience Agent
-- **Summary:** Created `useUserRole()` hook. VIEWER users see no write controls. Non-ADMIN users cannot see settings write controls.
-
-### PB-085: Settings tab bar responsive treatment
-- **Completed:** 2026-03-30
-- **Owner:** Experience Agent
-- **Summary:** Horizontal scroll on settings tabs for narrow viewports.
-
-### PB-087: Fix server error — conditional auth middleware
-- **Completed:** 2026-03-30
-- **Owner:** Product Owner Agent (corrective fix)
-- **Summary:** Made middleware conditional on `NEXTAUTH_SECRET` presence.
+_Previous cycle items (PB-084 through PB-091) shipped 2026-03-30. Cleared per hygiene rules._
 
 ---
 
