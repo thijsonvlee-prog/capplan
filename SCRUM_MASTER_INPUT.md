@@ -29,7 +29,7 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Status:** Planned
 - **Input:** "Maak voorbereidingen voor grotere schaal en meer data input. Er moet straks voor uiteindelijk 1000 chauffeurs de planning kunnen worden gemaakt. Zorg ervoor dat de performance goed blijft. Het systeem mag nooit traag aanvoelen."
 - **Analysis:** Investigation reveals three critical bottlenecks at 1000 drivers: (1) PlanningGrid renders all rows in the DOM — no virtualization, (2) `/api/planning/for-range` and `/api/drivers` return all records without pagination — 5-10MB payloads, (3) no covering index for capacity aggregation at scale. Capacity groupBy and scenario duplication are lower risk.
-- **Breakdown:** Broken into 6 phased backlog items (PB-093 through PB-098). Phase 1 (backend pagination: PB-093, PB-094, PB-009) is ready for the next cycle. Phase 2 (frontend: PB-096, PB-097) is fully unblocked after ESC-007 decision (react-window approved) and will become ready once Phase 1 ships. PB-092 (import guardrail) runs in parallel. PB-098 (scenario duplication batching) is deferred.
+- **Breakdown:** Broken into 6 phased backlog items (PB-093 through PB-098). **Phase 1 complete:** PB-093 (planning pagination), PB-094 (drivers pagination), PB-009 (capacity index), PB-092 (import guardrail) all shipped 2026-03-30. **Phase 2 ready:** PB-096 (virtual scrolling) and PB-097 (drivers pagination UI) are unblocked and assigned to Experience Agent for next cycle. PB-098 (scenario duplication batching) remains deferred.
 - **Backlog linkage:** PB-093, PB-094, PB-009 (promoted), PB-092, PB-096, PB-097, PB-098.
 
 ## Closed Inputs

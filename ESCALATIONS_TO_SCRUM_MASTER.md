@@ -30,7 +30,7 @@ _No open escalations._
 
 ### ESC-007: Virtual scrolling approach for 1000-driver planning grid
 
-- **Status:** Planned
+- **Status:** Closed
 - **Date / run context:** 2026-03-30 — triggered by SMI-011 (1000-driver scaling initiative)
 - **Decision needed:** The planning grid renders all driver rows in the DOM. At 1000 drivers this causes severe scroll jank and multi-second render delays. Virtual scrolling (rendering only visible rows) is needed. The question is whether to use an external library or build it manually.
 - **Chosen option:** Option A — Use `react-window` library (~6KB gzipped). Battle-tested, minimal bundle impact.

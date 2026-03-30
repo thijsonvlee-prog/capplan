@@ -8,6 +8,8 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 _Geen wijzigingen in afwachting van release._
 
+## Release History
+
 ### 2026-03-30 — Schaalbaarheid: paginering en index-optimalisatie
 
 #### Prestaties
@@ -19,8 +21,6 @@ _Geen wijzigingen in afwachting van release._
 #### Betrouwbaarheid
 
 - **CSV-import rijlimiet:** Het importeren van CSV-bestanden is nu begrensd tot maximaal 10.000 rijen per import. Bij overschrijding wordt een duidelijke foutmelding getoond. Dit voorkomt geheugen- en time-outproblemen bij grote bestanden.
-
-## Release History
 
 ### 2026-03-30 — Gebruikersidentiteit, upsert-import en sessie-optimalisatie
 
