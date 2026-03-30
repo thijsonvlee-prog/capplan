@@ -154,6 +154,25 @@ export type ImportSource = {
   updatedAt: string;
 };
 
+// === CSV Upload Domain ===
+
+export type CsvMappingValidation = {
+  sourceColumn: string;
+  targetField: string;
+  detected: boolean;
+};
+
+export type CsvUploadResult = {
+  fileName: string;
+  fileSize: number;
+  separator: string;
+  detectedColumns: string[];
+  totalRows: number;
+  previewRows: Record<string, string>[];
+  mappingValidation: CsvMappingValidation[];
+  unmappedColumns: string[];
+};
+
 // === Computed Types ===
 
 export type DriverComputedFields = {

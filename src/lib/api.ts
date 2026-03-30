@@ -1,4 +1,5 @@
 import type {
+  CsvUploadResult,
   Driver,
   DriverEmploymentRecord,
   DriverFunctionRecord,
@@ -427,6 +428,15 @@ const importSources = {
 
   remove(id: string): Promise<void> {
     return fetchJson<void>(`/api/import-sources/${id}`, deleteMethod());
+  },
+
+  upload(id: string, file: File): Promise<CsvUploadResult> {
+    const formData = new FormData();
+    formData.append("file", file);
+    return fetchJson<{ data: CsvUploadResult }>(`/api/import-sources/${id}/upload`, {
+      method: "POST",
+      body: formData,
+    }).then(r => r.data);
   },
 };
 

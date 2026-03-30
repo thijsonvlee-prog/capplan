@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Two functional tracks are active: (1) connectivity hub — expanding from configuration to actual CSV import, and (2) authentication + user management — ESC-005 decided: NextAuth.js with Google/Microsoft provider. CLAUDE.md rewrite is also due (SMI-007). Codebase is healthy — 0 ESLint warnings, 0 typecheck errors.
+**Current direction:** Two functional tracks advancing: (1) connectivity hub — CSV upload and column detection complete, import execution (PB-078) is next; (2) authentication — infrastructure complete (NextAuth.js + Google/Microsoft), login page (PB-081) and role enforcement (PB-082) are next. CLAUDE.md rewritten (PB-076). Codebase healthy — 0 ESLint warnings, 0 typecheck errors.
 
 ## Status Definitions
 
@@ -27,44 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-076: Rewrite CLAUDE.md based on current application state
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** CLAUDE.md was written at project start and has not been updated to reflect the current state of the application. The Scrum Master also wants DESIGN.md content incorporated into CLAUDE.md so there is one steering document.
-- **Why this matters now:** Direct Scrum Master request (SMI-007). CLAUDE.md is the primary governance file read by all agents on every run. An outdated steering document causes drift.
-- **Scope notes:** Rewrite CLAUDE.md to reflect: current file structure, current design token system, current component patterns, current API route patterns, current build/deploy setup, and incorporate the design system strategy from DESIGN.md as a dedicated section. Keep DESIGN.md in place as a reference until SM confirms removal. Do not change project rules or conventions — update descriptions to match reality.
-- **Dependencies:** None.
-- **Definition of done:** CLAUDE.md accurately describes the current application. Design system strategy from DESIGN.md is included. `npm run verify` passes. No functional code changes.
-- **Implementation note:** Read the full codebase structure, DESIGN.md, and current CLAUDE.md. Produce a clean rewrite. This is documentation only — no code changes.
-- **Source:** SMI-007.
-
-### PB-077: CSV file upload and column detection
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The connectivity hub currently only stores import source configurations. To be useful, it needs to accept actual CSV files, parse them, and detect column names for mapping validation.
-- **Why this matters now:** SM directive (SMI-008) to expand connectivity functionality. This is the natural next step after the config-only MVP (PB-015/016).
-- **Scope notes:** Add a file upload API endpoint (`POST /api/import-sources/[id]/upload`) that accepts a CSV file, parses the header row, and returns detected column names. Store the uploaded file temporarily (or in-memory) for the subsequent import step. Add basic validation: file size limit, CSV format check, encoding handling. No data import execution yet — that is PB-078.
-- **Dependencies:** PB-015, PB-016 (both completed).
-- **Definition of done:** API endpoint accepts CSV upload, returns detected columns. Frontend shows upload interface on import source detail. `npm run verify` passes.
-- **Implementation note:** Use a simple CSV parser (built-in or lightweight). Do not add heavy dependencies. Consider a `papaparse`-style approach or Node.js built-in stream parsing. The upload UI should be added to the existing Connectiviteit tab.
-- **Source:** SMI-008.
-
-### PB-080: Auth infrastructure — NextAuth.js with Google/Microsoft provider
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** No authentication exists. The Scrum Master chose NextAuth.js with external provider (Google/Microsoft) via ESC-005 Option B. This is the foundation for user management and role enforcement.
-- **Why this matters now:** Unblocks the entire user management track (PB-081, PB-079, PB-082). Direct SM directive (SMI-008).
-- **Scope notes:** Install and configure NextAuth.js (Auth.js) for Next.js App Router. Set up Google and/or Microsoft as identity providers. Connect to the existing User model in the database (adapter or manual sync). Configure session handling (JWT or database sessions). Add environment variables for provider credentials. Do NOT add role enforcement yet — that is PB-082.
-- **Dependencies:** None.
-- **Definition of done:** Users can log in via Google or Microsoft. Session is persisted. User record is created/matched in the database. `npm run verify` passes.
-- **Implementation note:** Use the `next-auth` package (v5/Auth.js if stable, v4 if more reliable). The existing User model has `email`, `name`, `role` fields. Map provider profile to these. Requires `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (and/or Microsoft equivalents) as env vars. Add a Prisma adapter or manual user upsert on sign-in.
-- **Source:** ESC-005 (Option B chosen), SMI-008.
+_No items currently ready._
 
 ---
 
@@ -74,52 +37,52 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Blocked (waiting on PB-080)
+- **Status:** Ready (unblocked by PB-080 completion)
 - **Problem / opportunity:** Users need a login screen and visual session state (logged-in user display, logout button). No login UI exists.
-- **Why this matters now:** Required for multi-user operation. Depends on auth infrastructure being in place.
+- **Why this matters now:** Required for multi-user operation. Auth infrastructure is now in place.
 - **Scope notes:** Build a login page (`/login`) with provider sign-in buttons (Google, Microsoft). Add session indicator in the app header showing the logged-in user name and a logout action. Redirect unauthenticated users to login. All text in Dutch.
-- **Dependencies:** PB-080 (auth infrastructure).
+- **Dependencies:** PB-080 (completed).
 - **Definition of done:** Login page renders with provider buttons. Successful login redirects to the app. Header shows logged-in user. Logout works. `npm run verify` passes.
-- **Implementation note:** Use NextAuth.js client hooks (`useSession`, `signIn`, `signOut`). Style with existing design tokens. Login page should feel consistent with the app's visual identity.
+- **Implementation note:** Use NextAuth.js client hooks (`useSession`, `signIn`, `signOut`). Auth config is in `src/lib/auth.ts`. SessionProvider already wraps the app via `AuthProvider` in root layout. Style with existing design tokens. Login page should feel consistent with the app's visual identity.
 - **Source:** ESC-005, SMI-008.
 
 ### PB-079: Admin panel — user management screen
 
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Blocked (waiting on PB-080, PB-081)
+- **Status:** Blocked (waiting on PB-081)
 - **Problem / opportunity:** The Scrum Master wants an admin panel with user management. The User model exists in the database with roles (ADMIN, PLANNER, VIEWER) but no management UI exists.
 - **Why this matters now:** Direct SM directive (SMI-008). Required for multi-user operation.
 - **Scope notes:** Build a user list/management screen within the settings page (new "Gebruikers" tab). Show all users with name, email, role, last login. Allow admins to change user roles. Consider whether user deactivation is needed.
-- **Dependencies:** PB-080 (auth infrastructure), PB-081 (login page).
+- **Dependencies:** PB-081 (login page).
 - **Definition of done:** Admin users can view all users and assign roles. `npm run verify` passes.
-- **Implementation note:** Add as a new tab in the settings page, following the existing tab pattern. Use the existing User model fields.
+- **Implementation note:** Add as a new tab in the settings page, following the existing tab pattern. Use the existing User model fields. Auth infrastructure (PB-080) is complete.
 - **Source:** SMI-008, ESC-005.
 
 ### PB-078: CSV import execution — apply field mappings and insert data
 
 - **Owner:** Delivery Agent
 - **Priority:** P2 High
-- **Status:** Blocked (waiting on PB-077)
+- **Status:** Ready (unblocked by PB-077 completion)
 - **Problem / opportunity:** After uploading a CSV and detecting columns (PB-077), the system needs to actually execute the import: apply the configured field mappings, validate rows, and insert data into the target entity table.
 - **Why this matters now:** SM directive (SMI-008). This completes the connectivity hub's core value proposition.
 - **Scope notes:** Add an import execution endpoint that: reads the uploaded CSV, applies field mappings from the ImportSource config, validates each row against the target entity's required fields, inserts valid rows using `createMany`, and returns a summary (rows imported, rows skipped, errors). Target entities: chauffeurs, werkgevers, afdelingen, standplaatsen. Add an import history/log so users can see what was imported and when.
-- **Dependencies:** PB-077 (CSV upload).
+- **Dependencies:** PB-077 (completed).
 - **Definition of done:** Users can upload a CSV, preview the mapping, execute the import, and see results. Import history is visible. `npm run verify` passes.
-- **Implementation note:** Use `prisma.$transaction` for the batch insert. Validate all rows before inserting (fail-fast on structural errors, skip individual bad rows with error log). Consider adding an ImportLog model to track imports.
+- **Implementation note:** Use `prisma.$transaction` for the batch insert. Validate all rows before inserting (fail-fast on structural errors, skip individual bad rows with error log). The CSV upload endpoint (`POST /api/import-sources/[id]/upload`) already returns parsed data with mapping validation. Consider adding an ImportLog model to track imports. The frontend upload UI in `ImportSourceManager.tsx` already shows preview rows and mapping validation.
 - **Source:** SMI-008.
 
 ### PB-082: Role enforcement middleware
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked (waiting on PB-080)
-- **Problem / opportunity:** The User model has roles (ADMIN, PLANNER, VIEWER) but they are not enforced. Once auth is in place, API routes and pages need role-based access control.
+- **Status:** Ready (unblocked by PB-080 completion)
+- **Problem / opportunity:** The User model has roles (ADMIN, PLANNER, VIEWER) but they are not enforced. Auth infrastructure is in place, so API routes and pages can now enforce role-based access control.
 - **Why this matters now:** Completes the user management feature set. Without enforcement, roles are decorative.
 - **Scope notes:** Add middleware or route-level checks that enforce role permissions. Define a permission matrix (e.g., VIEWER = read-only, PLANNER = read + write planning, ADMIN = full access). Apply to API routes and page navigation.
-- **Dependencies:** PB-080 (auth infrastructure).
+- **Dependencies:** PB-080 (completed). Practically depends on PB-081 (login page) being deployed so users actually have sessions.
 - **Definition of done:** API routes reject unauthorized requests with appropriate error. Pages redirect unauthorized users. Permission matrix documented. `npm run verify` passes.
-- **Implementation note:** Start with a simple helper function that checks session role against required role. Apply progressively to routes. Do not over-engineer — a simple role check per route is sufficient.
+- **Implementation note:** Auth config is in `src/lib/auth.ts`. Session includes `user.id` and `user.role`. Start with a simple helper function that checks session role against required role. Apply progressively to routes.
 - **Source:** ESC-005, SMI-008.
 
 ---
@@ -131,6 +94,21 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-076: Rewrite CLAUDE.md based on current application state
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Full rewrite of CLAUDE.md to reflect current codebase: updated file structure, design system (incorporated from DESIGN.md), auth infrastructure, component inventory, API routes, hooks, and config references. DESIGN.md kept in place as creative reference.
+
+### PB-077: CSV file upload and column detection
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Added `POST /api/import-sources/[id]/upload` endpoint with CSV parsing (supports comma, semicolon, tab separators; quoted fields; BOM handling). Returns detected columns, preview rows, mapping validation, and unmapped columns. Frontend upload UI added to ImportSourceManager with file picker, results display, and mapping validation indicators. Added `CsvUploadResult` type and `api.importSources.upload()` client method. No external dependencies.
+
+### PB-080: Auth infrastructure — NextAuth.js with Google/Microsoft provider
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Installed `next-auth` v4 and `@next-auth/prisma-adapter`. Added Account and Session models to Prisma schema with migration. Created auth config (`src/lib/auth.ts`) with Google and Azure AD providers (conditionally loaded from env vars), database sessions, and session callback that includes user ID and role. Added `AuthProvider` wrapper in root layout. Created NextAuth type augmentation for session.user.role. Env vars needed: `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`/`SECRET`, `AZURE_AD_CLIENT_ID`/`SECRET`/`TENANT_ID`.
 
 ### PB-075: Memoize Map creation in DriverForm.tsx
 - **Completed:** 2026-03-30

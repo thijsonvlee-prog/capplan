@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, X, ArrowRight, FileSpreadsheet } from "lucide-react";
-import type { ImportSource } from "@/domain/types";
+import { Plus, Pencil, Trash2, X, ArrowRight, FileSpreadsheet, Upload, CheckCircle2, AlertCircle } from "lucide-react";
+import type { ImportSource, CsvUploadResult } from "@/domain/types";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
@@ -76,6 +76,10 @@ export function ImportSourceManager() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [showValidation, setShowValidation] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<ImportSource | null>(null);
+  const [uploadSourceId, setUploadSourceId] = useState<string | null>(null);
+  const [uploadResult, setUploadResult] = useState<CsvUploadResult | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   function openCreateForm() {
     setEditingId(null);
@@ -164,6 +168,39 @@ export function ImportSourceManager() {
       .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
   }
 
+  function openUpload(sourceId: string) {
+    setUploadSourceId(sourceId);
+    setUploadResult(null);
+    setUploadError(null);
+  }
+
+  function closeUpload() {
+    setUploadSourceId(null);
+    setUploadResult(null);
+    setUploadError(null);
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !uploadSourceId) return;
+    setUploading(true);
+    setUploadError(null);
+    setUploadResult(null);
+
+    api.importSources.upload(uploadSourceId, file)
+      .then((result) => {
+        setUploadResult(result);
+        setUploading(false);
+      })
+      .catch((err) => {
+        setUploadError(err instanceof Error ? err.message : "Upload mislukt. Controleer het bestand.");
+        setUploading(false);
+      });
+
+    // Reset file input so the same file can be re-selected
+    e.target.value = "";
+  }
+
   const targetEntityLabel = (entity: string) =>
     TARGET_ENTITIES.find(t => t.value === entity)?.label || entity;
 
@@ -235,6 +272,9 @@ export function ImportSourceManager() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 ml-3 flex-shrink-0">
+                    <button onClick={() => openUpload(source.id)} className="btn-icon" aria-label="CSV uploaden">
+                      <Upload className="w-4 h-4" />
+                    </button>
                     <button onClick={() => openEditForm(source)} className="btn-icon" aria-label="Bewerken">
                       <Pencil className="w-4 h-4" />
                     </button>
@@ -383,6 +423,130 @@ export function ImportSourceManager() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Upload panel */}
+      {uploadSourceId && (
+        <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle">
+          <div className="p-4 border-b border-border-subtle flex items-center justify-between">
+            <h3 className="text-section-title">CSV uploaden</h3>
+            <button onClick={closeUpload} className="btn-icon" aria-label="Sluiten">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="p-4 space-y-4">
+            {/* File input */}
+            <div>
+              <label className="form-label">Bestand selecteren</label>
+              <input
+                type="file"
+                accept=".csv,.txt"
+                onChange={handleFileSelect}
+                className="input-field w-full file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-surface-tertiary file:text-text-primary hover:file:bg-surface-inset"
+                disabled={uploading}
+              />
+              <p className="text-xs text-text-tertiary mt-1">CSV- of TXT-bestand, maximaal 5 MB.</p>
+            </div>
+
+            {/* Loading state */}
+            {uploading && (
+              <div className="flex items-center gap-2 p-3 bg-surface-secondary rounded-md">
+                <div className="spinner" />
+                <span className="text-sm text-text-secondary">Bestand verwerken…</span>
+              </div>
+            )}
+
+            {/* Error state */}
+            {uploadError && (
+              <div className="p-3 bg-danger-50 border border-danger-200 rounded-md">
+                <p className="text-sm text-danger-700">{uploadError}</p>
+              </div>
+            )}
+
+            {/* Upload results */}
+            {uploadResult && (
+              <div className="space-y-4">
+                {/* File info */}
+                <div className="flex items-center gap-4 text-sm text-text-secondary">
+                  <span>{uploadResult.fileName}</span>
+                  <span>{(uploadResult.fileSize / 1024).toFixed(1)} KB</span>
+                  <span>{uploadResult.totalRows} rij{uploadResult.totalRows !== 1 ? "en" : ""}</span>
+                  <span>{uploadResult.detectedColumns.length} kolom{uploadResult.detectedColumns.length !== 1 ? "men" : ""}</span>
+                </div>
+
+                {/* Mapping validation */}
+                <div>
+                  <h4 className="text-label mb-2">Koppelingsvalidatie</h4>
+                  <div className="space-y-1">
+                    {uploadResult.mappingValidation.map((mv) => (
+                      <div key={mv.sourceColumn} className="flex items-center gap-2 text-sm">
+                        {mv.detected ? (
+                          <CheckCircle2 className="w-4 h-4 text-success-600 flex-shrink-0" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-danger-600 flex-shrink-0" />
+                        )}
+                        <span className="font-mono text-text-primary">{mv.sourceColumn}</span>
+                        <ArrowRight className="w-3 h-3 text-text-tertiary" />
+                        <span className="text-text-secondary">{mv.targetField}</span>
+                        {!mv.detected && (
+                          <span className="text-xs text-danger-600">— kolom niet gevonden</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {uploadResult.mappingValidation.length === 0 && (
+                    <p className="text-xs text-text-tertiary">Geen veldkoppelingen geconfigureerd voor deze bron.</p>
+                  )}
+                </div>
+
+                {/* Unmapped columns */}
+                {uploadResult.unmappedColumns.length > 0 && (
+                  <div>
+                    <h4 className="text-label mb-2">Niet-gekoppelde kolommen</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {uploadResult.unmappedColumns.map((col) => (
+                        <span key={col} className="bg-surface-tertiary px-2 py-0.5 rounded text-xs font-mono text-text-secondary">
+                          {col}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Preview table */}
+                {uploadResult.previewRows.length > 0 && (
+                  <div>
+                    <h4 className="text-label mb-2">Voorbeeld ({Math.min(uploadResult.previewRows.length, 5)} van {uploadResult.totalRows} rijen)</h4>
+                    <div className="overflow-x-auto rounded-md border border-border-subtle">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="bg-surface-tertiary">
+                            {uploadResult.detectedColumns.map((col) => (
+                              <th key={col} className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                                {col}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {uploadResult.previewRows.map((row, i) => (
+                            <tr key={i} className={i % 2 === 1 ? "bg-surface-secondary" : ""}>
+                              {uploadResult.detectedColumns.map((col) => (
+                                <td key={col} className="px-3 py-1.5 text-text-primary whitespace-nowrap">
+                                  {row[col] || ""}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

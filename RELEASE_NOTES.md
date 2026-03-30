@@ -10,6 +10,20 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-30 — Authenticatie-infrastructuur, CSV-upload en documentatie
+
+#### Authenticatie
+
+- **NextAuth.js infrastructuur:** Authenticatie-infrastructuur opgezet met NextAuth.js v4. Ondersteuning voor inloggen via Google en Microsoft (Azure AD). Gebruikerssessies worden opgeslagen in de database via Prisma-adapter. Sessie bevat gebruikers-ID en rol. Auth is conditioneel actief — de applicatie werkt zonder auth-configuratie, maar inloggen vereist dat provideromgevingsvariabelen zijn ingesteld (`NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`/`SECRET` of `AZURE_AD_CLIENT_ID`/`SECRET`/`TENANT_ID`).
+
+#### Connectiviteitshub
+
+- **CSV-bestand uploaden:** Nieuwe uploadfunctie voor CSV-bestanden per importbron. Ondersteunt komma-, puntkomma- en tabgescheiden bestanden, aanhalingstekens in velden, en BOM-detectie. Na upload worden gedetecteerde kolommen getoond, een voorbeeld van de eerste 5 rijen, validatie van geconfigureerde veldkoppelingen (welke kolommen gevonden zijn), en niet-gekoppelde kolommen. Uploadknop toegevoegd per importbron in het connectiviteitstabblad.
+
+#### Documentatie
+
+- **CLAUDE.md herschreven:** Volledig herschreven projecthandboek dat de huidige applicatiestaat weerspiegelt: bijgewerkte bestandsstructuur, alle 27 API-routes, 21 databasemodellen, ontwerpstrategie (uit DESIGN.md), authenticatie-infrastructuur, hooks, componentenbibliotheek en configuratiereferenties.
+
 ### 2026-03-30 — Connectiviteitshub en codekwaliteit
 
 #### UX / design verbeteringen
