@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, BarChart3, Users, Settings, FileText } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { CalendarDays, BarChart3, Users, Settings, FileText, ShieldCheck, Shield, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -13,8 +14,18 @@ const navItems = [
   { href: "/documentatie", label: "Documentatie", icon: FileText },
 ];
 
+const SIDEBAR_ROLE_CONFIG: Record<string, { label: string; icon: typeof Shield }> = {
+  ADMIN: { label: "Admin", icon: ShieldCheck },
+  PLANNER: { label: "Planner", icon: Shield },
+  VIEWER: { label: "Kijker", icon: Eye },
+};
+
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const user = session?.user;
+  const roleConfig = user?.role ? SIDEBAR_ROLE_CONFIG[user.role] ?? null : null;
 
   return (
     <aside className="w-60 bg-sidebar-bg text-sidebar-text min-h-screen flex flex-col">
@@ -52,9 +63,29 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom section */}
-      <div className="px-5 py-4 border-t border-white/[0.06]">
-        <span className="text-[0.6875rem] text-sidebar-text/60">v2.0</span>
+      {/* Bottom section — user identity + version */}
+      <div className="px-4 py-4 border-t border-white/[0.06]">
+        {user ? (
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center flex-shrink-0">
+              <span className="text-[0.6875rem] font-semibold text-white/80">
+                {(user.name ?? user.email ?? "?").charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[0.75rem] font-medium text-white/90 truncate leading-tight">
+                {user.name ?? user.email}
+              </p>
+              {roleConfig && (
+                <span className="inline-flex items-center gap-1 mt-0.5 text-[0.625rem] font-medium text-sidebar-text/70 uppercase tracking-wider">
+                  <roleConfig.icon className="w-3 h-3" />
+                  {roleConfig.label}
+                </span>
+              )}
+            </div>
+          </div>
+        ) : null}
+        <span className="text-[0.6875rem] text-sidebar-text/40">v2.0</span>
       </div>
     </aside>
   );

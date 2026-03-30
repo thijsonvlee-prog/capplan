@@ -3,15 +3,14 @@
 ## Summary
 
 **What was improved this cycle:**
-- PB-084: Built role-aware UI across the entire application. Created a `useUserRole()` hook that derives permission flags (`canWrite`, `canWriteSettings`) from the NextAuth session. Applied role-based hiding to all write action buttons: VIEWER users see no create/edit/delete controls on planning, drivers, or scenarios. Non-ADMIN users see no write controls on any settings tab and cannot access the "Gebruikers" tab. When auth is not configured, all actions remain visible (development mode). DayCell shows read-only styling (no hover, no cursor-pointer) for VIEWER users.
-- PB-085: Added horizontal scroll with hidden scrollbar to settings tab bar. Tabs remain usable on viewports down to ~768px without wrapping or clipping.
+- PB-089: Added user identity to the sidebar bottom section. When authenticated, the sidebar now shows the user's name (or email), a role icon with label (Admin/Planner/Kijker), and the version number. The avatar uses a subtle translucent circle on the dark sidebar surface. When auth is not configured, only the version text is shown. This completes the DESIGN.md section 7.8 requirement for "a composed relationship between logo, nav items, and user identity."
 
 **Current design alignment with DESIGN.md:**
-- Role-aware UI: well-aligned. Actions are hidden rather than disabled, reducing visual noise for VIEWER users. This follows the principle of "clarity through space, hierarchy, and surfaces" (section 2.3).
-- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Tab bar now scrolls on narrow viewports. Non-ADMIN users see a cleaner, read-only view without distracting form controls.
+- Sidebar: fully aligned (section 7.8). Brand mark at top, navigation in center, user identity + version at bottom. The bottom section creates a composed anchor point.
+- Role-aware UI: well-aligned. Actions hidden rather than disabled for VIEWER users.
+- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Tab bar scrolls on narrow viewports.
 - Login page: well-aligned. Split-panel composition with editorial typography.
 - Header session indicator: well-aligned.
-- Sidebar: well-aligned (section 7.8) but missing user identity in the bottom section.
 - Capacity page: well-aligned.
 - Planning grid toolbar: well-aligned.
 - Import source manager: well-aligned.
@@ -22,20 +21,8 @@
 **Where design quality is still below target:**
 - The drivers table still reads as standard admin CRUD with alternating backgrounds, row borders, and table-first layout.
 - The planning grid matrix uses 1px row borders for structure. Pure tonal separation would be more aligned with DESIGN.md but risks reducing scanability in dense data.
-- The sidebar bottom section shows only "v2.0" — DESIGN.md section 7.8 calls for user identity there.
 
 ## Recommended Next Improvements
-
-### EX-REC-044: Add user identity to sidebar bottom section
-
-- **Problem:** The sidebar bottom section currently shows only "v2.0". Now that users have sessions, the sidebar could display the logged-in user's name or email in the bottom section, consistent with DESIGN.md section 7.8 ("a composed relationship between logo, nav items, and user identity").
-- **Proposed improvement:** Replace or augment the version text in the sidebar bottom section with the session user's name/email and role badge. Keep the version text as secondary information.
-- **Expected user value:** Stronger identity presence in the primary navigation surface. More product-grade feel.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Dependencies:** PB-081 (completed), PB-084 (completed).
-- **Suggested owner:** Experience Agent
-- **Why now:** Auth session is available, role-aware UI is complete. The sidebar bottom section is underutilized and DESIGN.md specifically calls for user identity in the sidebar.
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
 
@@ -83,12 +70,10 @@
 
 ## Risks / Watch-outs
 
-- **Role enforcement is complete end-to-end.** Server-side (PB-082) and UI-side (PB-084) are both active. Testing with actual VIEWER/PLANNER/ADMIN accounts will verify the full flow once auth is configured.
 - **Settings tab count growth.** The settings page has 5 tabs with horizontal scroll. If more tabs are added, the scroll treatment will handle overflow, but visual affordance (e.g., fade edges) may be needed to signal scrollability.
-- **NextAuth middleware route matching.** The middleware matches all dashboard routes. If new top-level routes are added, they must be added to the middleware matcher.
-- **External image domains.** `next.config.mjs` allows Google and Microsoft avatar domains. Additional OAuth providers need their image domains allowlisted.
 - **PlanningGrid.tsx complexity.** The file is ~710 lines. Any further changes must be verified carefully.
 - **Drivers table column density.** Removing alternating backgrounds (EX-REC-036) only helps if the remaining visual treatment provides enough row distinction at high driver counts.
+- **External image domains.** `next.config.mjs` allows Google and Microsoft avatar domains. Additional OAuth providers need their image domains allowlisted.
 
 ## Items Intentionally Not Recommended
 
@@ -99,14 +84,15 @@
 - **Settings tab URL persistence:** Low-frequency page. Low impact.
 - **Driver detail page / route-based navigation:** Current inline edit pattern works for the data volume.
 - **Capacity page full redesign:** The page is functional and visually consistent with grouped toolbar.
-- **Full sidebar redesign:** Already meets DESIGN.md section 7.8 (except user identity — covered in EX-REC-044).
+- **Full sidebar redesign:** Now fully aligned with DESIGN.md section 7.8 after PB-089.
 - **Recharts tooltip/axis custom styling:** Would improve premium feel but effort is disproportionate to impact.
 - **Planning grid No-Line Rule enforcement:** Should be explored in a dedicated planning grid visual pass.
 - **Separate sidebar entry for Connectiviteit:** Configuration belongs under Instellingen.
 - **Login page animation/transitions:** Clean and fast. Animations would add complexity without clear user value.
-- **User deletion from admin panel:** Users are created via OAuth. Deletion should be handled carefully (cascading sessions, preferences). Not needed for MVP.
-- **Last login tracking:** The User model doesn't have a lastLogin field. Would require updating the session callback or adding a new field. Low priority — member-since date is sufficient for now.
-- **Disable vs. hide for VIEWER buttons:** Hiding is cleaner — disabled buttons with no explanation create confusion. Server-side enforcement is the safety net.
+- **User deletion from admin panel:** Users are created via OAuth. Deletion should be handled carefully. Not needed for MVP.
+- **Last login tracking:** Low priority — member-since date is sufficient for now.
+- **Disable vs. hide for VIEWER buttons:** Hiding is cleaner. Server-side enforcement is the safety net.
+- **Sidebar user avatar from session image:** Could use `session.user.image` for the sidebar avatar, but the translucent initial circle is more visually consistent with the dark sidebar surface. The header already shows the profile photo. Revisit if users request it.
 
 ## Recommendation Rules
 

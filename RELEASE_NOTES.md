@@ -6,7 +6,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_Geen wijzigingen._
+- **Gebruikersidentiteit in zijbalk:** De zijbalk toont nu de naam en rol van de ingelogde gebruiker onderaan, naast het versienummer. Wanneer authenticatie niet is geconfigureerd, wordt alleen het versienummer getoond.
 
 ## Release History
 

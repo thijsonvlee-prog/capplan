@@ -27,21 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-089: Add user identity to sidebar bottom section
-
-- **ID:** PB-089
-- **Title:** Display logged-in user name and role in sidebar bottom section
-- **Problem / opportunity:** The sidebar bottom section shows only "v2.0". Now that authentication is active, DESIGN.md section 7.8 explicitly calls for "a composed relationship between logo, nav items, and user identity" in the sidebar. The bottom section is underutilized.
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Auth session is available, role-aware UI is complete. This is a visible quick win that makes the app feel more product-grade and personalized.
-- **Scope notes:** Display user name (or email if no name) and a small role badge below or next to it. Keep version text as secondary info. When auth is not configured, show current behavior (version only). Use existing session data from `useSession()` — no new API calls.
-- **Dependencies:** PB-081 (completed), PB-084 (completed).
-- **Definition of done:** Sidebar bottom section shows logged-in user's name and role badge. Version text still visible. Works correctly when auth is not configured. Passes `npm run verify`.
-- **Implementation note:** Modify `Sidebar.tsx`. Use `useSession()` from next-auth/react. Role badge can reuse the badge styling from the Gebruikers tab. Keep the component simple — no dropdown menu or user settings from the sidebar.
-- **Source:** EX-REC-044.
-
 ### PB-090: Cache user role in NextAuth session to avoid per-request DB query
 
 - **ID:** PB-090
@@ -87,6 +72,11 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-089: Add user identity to sidebar bottom section
+- **Completed:** 2026-03-30
+- **Owner:** Experience Agent
+- **Summary:** Sidebar bottom section now shows logged-in user's name (or email), role icon+label, and version text. When auth is not configured, shows version only. Uses `useSession()` with role config consistent with UserManager.
 
 ### PB-088: Auth environment setup documentation
 - **Completed:** 2026-03-30
