@@ -36,8 +36,8 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Type:** Initiative / priority signal
 - **Status:** Planned
 - **Input:** Focus op het uitbouwen van functionaliteit: connectiviteit, admin panel met user management.
-- **Product Owner action:** Connectivity expansion broken into phased backlog items (PB-077: CSV upload & parsing, PB-078: import execution). Auth approach decided via ESC-005 (Option B: NextAuth.js with Google/Microsoft). Auth work broken into phased items: PB-080 (auth infrastructure), PB-081 (login page), PB-079 (admin user management), PB-082 (role enforcement).
-- **Backlog linkage:** PB-077, PB-078, PB-079, PB-080, PB-081, PB-082.
+- **Product Owner action:** Connectivity expansion broken into phased backlog items (PB-077: CSV upload & parsing, PB-078: import execution). Auth approach decided via ESC-005 (Option B: NextAuth.js with Google/Microsoft). Auth work broken into phased items: PB-080 (auth infrastructure), PB-081 (login page), PB-079 (admin user management), PB-082 (role enforcement). PB-077, PB-078, PB-080, PB-081 all completed. PB-079 and PB-082 scheduled for next cycle.
+- **Backlog linkage:** PB-077 (done), PB-078 (done), PB-079 (ready), PB-080 (done), PB-081 (done), PB-082 (ready).
 
 ### SMI-002: Keep improvements incremental during stabilization
 

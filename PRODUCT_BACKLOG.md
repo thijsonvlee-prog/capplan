@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Two functional tracks advancing in parallel: (1) connectivity hub — CSV upload and column detection complete, import execution (PB-078) is next; (2) authentication — infrastructure complete (NextAuth.js + Google/Microsoft), login page (PB-081) is next, followed by admin panel (PB-079) and role enforcement (PB-082). Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next cycle: Experience Agent takes PB-081, Delivery Agent takes PB-078.
+**Current direction:** Authentication track is the primary focus. Login page and CSV import execution are both deployed. Next cycle completes the auth/user management track: Experience Agent builds the admin user management screen (PB-079), Delivery Agent implements role enforcement middleware (PB-082) plus a small validation fix (PB-083). Codebase healthy — 0 ESLint warnings, 0 typecheck errors.
 
 ## Status Definitions
 
@@ -27,63 +27,50 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-081: Login page and session UI
+### PB-079: Admin panel — user management screen
 
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Completed
-- **Completed:** 2026-03-30
-- **Problem / opportunity:** Users need a login screen and visual session state (logged-in user display, logout button). No login UI exists.
-- **Why this matters now:** Required for multi-user operation. Auth infrastructure (PB-080) is complete.
-- **Scope notes:** Build a login page (`/login`) with provider sign-in buttons (Google, Microsoft). Add session indicator in the app header showing the logged-in user name and a logout action. Redirect unauthenticated users to login. All text in Dutch.
-- **Dependencies:** PB-080 (completed).
-- **Definition of done:** Login page renders with provider buttons. Successful login redirects to the app. Header shows logged-in user. Logout works. `npm run verify` passes.
-- **Implementation note:** Implemented: login page at `/login` with split-panel layout (brand panel + sign-in panel), Google and Microsoft provider buttons with loading states, NextAuth middleware for route protection, session indicator in header with avatar/initials + name + logout button. All text in Dutch. `npm run verify` passes with 0 errors, 0 warnings. New CSS class `.login-provider-btn` added to design system. `next/image` configured for Google/Microsoft avatar domains.
-- **Source:** ESC-005, SMI-008.
-
-### PB-078: CSV import execution — apply field mappings and insert data
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Completed
-- **Completed:** 2026-03-30
-- **Problem / opportunity:** After uploading a CSV and detecting columns (PB-077), the system needs to actually execute the import: apply the configured field mappings, validate rows, and insert data into the target entity table.
-- **Why this matters now:** SM directive (SMI-008). This completes the connectivity hub's core value proposition.
-- **Scope notes:** Add an import execution endpoint that: reads the uploaded CSV, applies field mappings from the ImportSource config, validates each row against the target entity's required fields, inserts valid rows using `createMany`, and returns a summary (rows imported, rows skipped, errors). Target entities: chauffeurs, werkgevers, afdelingen, standplaatsen. Add an import history/log so users can see what was imported and when.
-- **Dependencies:** PB-077 (completed).
-- **Definition of done:** Users can upload a CSV, preview the mapping, execute the import, and see results. Import history is visible. `npm run verify` passes.
-- **Implementation note:** Implemented: (1) New `ImportLog` model with migration for import history tracking. (2) `POST /api/import-sources/[id]/execute` endpoint — parses CSV, applies field mappings, validates all rows before inserting, uses `prisma.$transaction` for drivers and `createMany` with `skipDuplicates` for stamtabel entities, returns row-level error report. (3) `GET /api/import-sources/[id]/logs` endpoint — returns import history (last 20 imports). (4) CSV parser extracted to shared `src/lib/csv-parser.ts`. (5) Frontend: "Importeren" button after upload preview, execution result summary with success/error display, import history panel per source with expandable error details. All text in Dutch. `npm run verify` passes with 0 errors, 0 warnings.
-- **Source:** SMI-008, DE-REC-041.
+- **Status:** Ready
+- **Problem / opportunity:** The Scrum Master wants an admin panel with user management. The User model exists in the database with roles (ADMIN, PLANNER, VIEWER) but no management UI exists.
+- **Why this matters now:** Direct SM directive (SMI-008). Login page (PB-081) is deployed, so users now have sessions. This is the natural next step to enable multi-user operation.
+- **Scope notes:** Build a user list/management screen within the settings page (new "Gebruikers" tab). Show all users with name, email, role, last login. Allow admins to change user roles. Follow the existing settings tab pattern.
+- **Dependencies:** PB-081 (completed).
+- **Definition of done:** Admin users can view all users and assign roles. New tab visible in settings. All text in Dutch. `npm run verify` passes.
+- **Implementation note:** Add as a new tab in the settings page, following the existing tab pattern (Stamgegevens, Competenties, Roosters, Connectiviteit). Use the existing User model fields. Auth infrastructure (PB-080) and login page (PB-081) are complete. API route needed: `GET /api/users` (list), `PUT /api/users/[id]` (update role). Experience Agent note: watch the settings tab count growth — 5 tabs may need responsive consideration.
+- **Source:** SMI-008, ESC-005.
 
 ### PB-082: Role enforcement middleware
 
 - **Owner:** Delivery Agent
-- **Priority:** P3 Medium
+- **Priority:** P2 High (upgraded from P3 — blocking user management value)
 - **Status:** Ready
 - **Problem / opportunity:** The User model has roles (ADMIN, PLANNER, VIEWER) but they are not enforced. Auth infrastructure is in place, so API routes and pages can now enforce role-based access control.
-- **Why this matters now:** Completes the user management feature set. Without enforcement, roles are decorative.
-- **Scope notes:** Add middleware or route-level checks that enforce role permissions. Define a permission matrix (e.g., VIEWER = read-only, PLANNER = read + write planning, ADMIN = full access). Apply to API routes and page navigation.
-- **Dependencies:** PB-080 (completed). Practically should wait until PB-081 (login page) is deployed so users actually have sessions. Schedule for the cycle after PB-081.
-- **Definition of done:** API routes reject unauthorized requests with appropriate error. Pages redirect unauthorized users. Permission matrix documented. `npm run verify` passes.
-- **Implementation note:** Auth config is in `src/lib/auth.ts`. Session includes `user.id` and `user.role`. Start with a simple helper function that checks session role against required role. Apply progressively to routes.
+- **Why this matters now:** Without enforcement, roles are decorative. PB-079 (admin panel) creates the UI to assign roles, but those roles must be checked server-side. Both items together complete the user management feature.
+- **Scope notes:** Add a helper function that checks session role against required role. Define a permission matrix (VIEWER = read-only, PLANNER = read + write planning/drivers, ADMIN = full access including settings and user management). Apply to API routes. Return 403 with Dutch error message for unauthorized requests.
+- **Dependencies:** PB-080 (completed), PB-081 (completed).
+- **Definition of done:** API routes reject unauthorized requests with 403 and Dutch error message. Permission matrix defined and applied. `npm run verify` passes.
+- **Implementation note:** Auth config is in `src/lib/auth.ts`. Session includes `user.id` and `user.role`. Start with a `requireRole()` helper in `api-route-utils.ts` or a new `src/lib/auth-helpers.ts`. Apply progressively — start with write routes and settings/user management routes.
 - **Source:** ESC-005, SMI-008.
+
+### PB-083: Validate fieldMappings structure in import-sources API
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The `import-sources` POST/PUT routes validate `typeof fieldMappings !== "object"` which passes for arrays and null. Now that import execution (PB-078) depends on well-formed fieldMappings, malformed data can cause confusing errors at import time.
+- **Why this matters now:** Small defensive fix that catches configuration errors early. Import execution is live.
+- **Scope notes:** Validate that fieldMappings is a non-null, non-array object with string keys and string values. Optionally validate that target fields are valid for the specified target entity. Return clear Dutch error message on invalid input.
+- **Dependencies:** None.
+- **Definition of done:** Malformed fieldMappings (null, array, non-string values) are rejected at save time with a clear error. `npm run verify` passes.
+- **Implementation note:** Small addition to existing validation in `src/app/api/import-sources/route.ts` and the PUT handler. Use `validateRequired` pattern from `api-route-utils.ts`.
+- **Source:** DE-REC-043.
 
 ---
 
 ## Blocked / Needs Decision
 
-### PB-079: Admin panel — user management screen
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready (PB-081 completed)
-- **Problem / opportunity:** The Scrum Master wants an admin panel with user management. The User model exists in the database with roles (ADMIN, PLANNER, VIEWER) but no management UI exists.
-- **Why this matters now:** Direct SM directive (SMI-008). Required for multi-user operation.
-- **Scope notes:** Build a user list/management screen within the settings page (new "Gebruikers" tab). Show all users with name, email, role, last login. Allow admins to change user roles. Consider whether user deactivation is needed.
-- **Dependencies:** PB-081 (login page must be complete first).
-- **Definition of done:** Admin users can view all users and assign roles. `npm run verify` passes.
-- **Implementation note:** Add as a new tab in the settings page, following the existing tab pattern. Use the existing User model fields. Auth infrastructure (PB-080) is complete.
-- **Source:** SMI-008, ESC-005.
+_No items currently blocked._
 
 ---
 
@@ -95,46 +82,52 @@ _No items currently in progress._
 
 ## Completed Recently
 
+### PB-081: Login page and session UI
+- **Completed:** 2026-03-30
+- **Owner:** Experience Agent
+- **Summary:** Login page at `/login` with split-panel layout (brand panel + sign-in panel), Google and Microsoft provider buttons with loading states, NextAuth middleware for route protection, session indicator in header with avatar/initials + name + logout button. All text in Dutch.
+
+### PB-078: CSV import execution — apply field mappings and insert data
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** Full import pipeline: upload → preview → validate → execute → results summary → import history. New `ImportLog` model with migration. `prisma.$transaction` for drivers, `createMany` with `skipDuplicates` for stamtabel entities. CSV parser extracted to shared `src/lib/csv-parser.ts`. Frontend: execute button, result display with row-level errors, import history panel per source.
+
 ### PB-076: Rewrite CLAUDE.md based on current application state
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** Full rewrite of CLAUDE.md to reflect current codebase: updated file structure, design system (incorporated from DESIGN.md), auth infrastructure, component inventory, API routes, hooks, and config references. DESIGN.md kept in place as creative reference.
-
-### PB-077: CSV file upload and column detection
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Added `POST /api/import-sources/[id]/upload` endpoint with CSV parsing (supports comma, semicolon, tab separators; quoted fields; BOM handling). Returns detected columns, preview rows, mapping validation, and unmapped columns. Frontend upload UI added to ImportSourceManager with file picker, results display, and mapping validation indicators. Added `CsvUploadResult` type and `api.importSources.upload()` client method. No external dependencies.
+- **Summary:** Full rewrite of CLAUDE.md to reflect current codebase: updated file structure, design system, auth infrastructure, component inventory, API routes, hooks, and config references.
 
 ### PB-080: Auth infrastructure — NextAuth.js with Google/Microsoft provider
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** Installed `next-auth` v4 and `@next-auth/prisma-adapter`. Added Account and Session models to Prisma schema with migration. Created auth config (`src/lib/auth.ts`) with Google and Azure AD providers (conditionally loaded from env vars), database sessions, and session callback that includes user ID and role. Added `AuthProvider` wrapper in root layout. Created NextAuth type augmentation for session.user.role.
-
-### PB-074: Add `btn-danger` CSS class and replace inline button styles
-- **Completed:** 2026-03-30
-- **Owner:** Experience Agent
-- **Summary:** Added `.btn-danger` class to `globals.css`. Replaced inline class strings in `ConfirmDialog.tsx` and `documentatie/page.tsx`.
-
-### PB-075: Memoize Map creation in DriverForm.tsx
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Wrapped employer, department, and location Map creations in `useMemo` with appropriate dependency arrays.
-
-### PB-073: Remove remaining unused utility functions and enum
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Removed 6 unused functions from `utils.ts` and the unused `StamtabelType` enum from `enums.ts`.
+- **Summary:** NextAuth.js v4 with Prisma adapter, Google and Azure AD providers, database sessions, session callback with user ID and role. AuthProvider in root layout.
 
 ---
 
 ## Deferred
+
+### EX-REC-044: Add user identity to sidebar bottom section
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Good idea aligned with DESIGN.md section 7.8, but not urgent. Can be picked up as a quick win in a future cycle or bundled with other sidebar work.
+- **Source:** EX-REC-044.
+
+### DE-REC-042: Extend import execution with upsert mode
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Valuable for ongoing data synchronization, but initial import (create-only) is sufficient for the MVP. Revisit when users report needing update capability.
+- **Source:** DE-REC-042.
 
 ### DE-REC-040: Optimize NextAuth session callback role lookup
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Worth addressing once auth is actively used with concurrent users, but not before the login page (PB-081) exists and is validated. Revisit after auth is in production use.
+- **Reason:** Worth addressing once auth is actively used with concurrent users. Not a bottleneck at current scale.
 - **Source:** DE-REC-040.
 
 ### PB-009: Add covering index for capacity aggregation query
@@ -150,7 +143,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low user impact. Includes API magic numbers (DE-REC-030) and chart colors (DE-REC-014). Schedule when capacity allows.
+- **Reason:** Low user impact. Schedule when capacity allows.
 - **Source:** DE-REC-014, DE-REC-030.
 
 ### PB-061: Add PerformanceEvent table cleanup mechanism
@@ -158,7 +151,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** `cleanupOldEvents()` in `perf.ts` is defined but never called. Table grows unbounded, but traffic is low. Low urgency.
+- **Reason:** Table grows unbounded but traffic is low. Low urgency.
 - **Source:** DE-REC-031.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
@@ -166,7 +159,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Same `.find()` pattern as PB-066 but in the POC capacity summary component. Depends on whether the POC is promoted or removed.
+- **Reason:** Depends on whether the POC capacity summary is promoted or removed.
 - **Source:** DE-REC-036.
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
@@ -174,7 +167,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Functional and usable. Minor visual issue. Defer until higher-priority UX work is complete.
+- **Reason:** Functional and usable. Minor visual issue.
 - **Source:** EX-REC-036.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
@@ -182,7 +175,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low-risk follow-up but needs visual evaluation before broad application.
+- **Reason:** Low-risk follow-up but needs visual evaluation.
 - **Source:** EX-REC-038.
 
 ### EX-REC-043: Import source manager — visual mapping builder enhancement
@@ -190,7 +183,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current field mapping editor is functional. Card-based or drag-connect interface is a polish item for when the connectivity hub sees regular use.
+- **Reason:** Current field mapping editor is functional. Polish item.
 - **Source:** EX-REC-043.
 
 ### EX-REC-042: Deduplicate scenarios list fetch
@@ -198,7 +191,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** No direct user impact. Minor code hygiene. Only worth addressing if PlanningGrid is refactored for other reasons.
+- **Reason:** No direct user impact. Minor code hygiene.
 - **Source:** EX-REC-042.
 
 ---
