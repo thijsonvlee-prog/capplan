@@ -6,21 +6,33 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-078 (CSV import execution) was completed this cycle:
-- Full import pipeline: upload → preview → validate → execute → results summary → import history.
-- New `ImportLog` model for audit trail. CSV parser extracted to shared `src/lib/csv-parser.ts`.
-- `prisma.$transaction` for drivers, `createMany` with `skipDuplicates` for stamtabel entities.
-- Frontend: execute button, result display with row-level errors, import history panel per source.
+PB-082 (role enforcement) and PB-083 (fieldMappings validation) were completed this cycle:
+- `requireRole()` helper enforces VIEWER < PLANNER < ADMIN hierarchy on all write API routes. Graceful skip when auth is not configured.
+- `validateFieldMappings()` validates structure and target fields per entity. Applied to import-sources POST and PUT.
+- CLAUDE.md updated to reflect role enforcement is live.
 
-Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma models, 29 route files. Auth track fully unblocked — login page deployed, admin panel and role enforcement ready for next cycles.
+Authentication track is now **complete**: infrastructure (PB-080), login (PB-081), admin panel (PB-079), role enforcement (PB-082). Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma models, 29 route files.
 
 ## Recommended Next Improvements
+
+### DE-REC-044: Protect request.json() calls against malformed JSON
+
+- **Title:** Wrap JSON parsing in API routes to return 400 instead of 500
+- **Problem:** All API routes that call `request.json()` do so inside a generic try/catch. When a client sends malformed JSON, the SyntaxError is caught by the outer catch block and returns a generic 500 error instead of a clear 400 "Ongeldige JSON" message. This affects all 23 POST/PUT routes.
+- **Proposed improvement:** Add a shared `parseJsonBody()` helper in `api-route-utils.ts` that wraps `request.json()` and returns a typed `{ data, error }` result. Routes call it first and return 400 on parse failure. Alternatively, add a centralized error handler pattern.
+- **Expected product/technical value:** Clearer error messages for API consumers. Better debuggability when integration tools send malformed requests.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Low effort, improves robustness across all write endpoints.
 
 ### DE-REC-042: Extend import execution with update/upsert mode
 
 - **Title:** Add upsert capability to CSV import for existing records
-- **Problem:** The current import execution only creates new records. For stamtabel entities (employers, departments, locations), `skipDuplicates` silently skips rows with existing codes. Users may want to update descriptions of existing records via CSV import.
-- **Proposed improvement:** Add an optional `mode` parameter to the execute endpoint: "create" (current behavior, default) or "upsert" (update existing records matched by unique key). For stamtabel entities, match on `code`; for drivers, match on `employeeNumber` if mapped.
+- **Problem:** The current import execution only creates new records. For stamtabel entities, `skipDuplicates` silently skips rows with existing codes. Users may want to update descriptions of existing records via CSV import.
+- **Proposed improvement:** Add an optional `mode` parameter to the execute endpoint: "create" (current behavior, default) or "upsert" (update existing records matched by unique key).
 - **Expected product/technical value:** Makes the import feature useful for ongoing data synchronization, not just initial data load.
 - **Priority:** P3 Medium
 - **Effort:** Medium
@@ -32,35 +44,35 @@ Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma model
 ### DE-REC-040: Optimize NextAuth session callback role lookup
 
 - **Title:** Cache user role in session to avoid per-request DB query
-- **Problem:** The NextAuth session callback in `src/lib/auth.ts` queries the database for the user's role on every session access. With database sessions, the adapter already loads the user record — but the custom `role` field isn't included in the standard adapter response.
-- **Proposed improvement:** Either extend the PrismaAdapter to include `role` in the user response, or cache the role in the session record itself (e.g., store role in a session metadata field). Alternatively, accept the overhead since it's a single indexed query.
+- **Problem:** The NextAuth session callback in `src/lib/auth.ts` queries the database for the user's role on every session access. With role enforcement now active on all write routes, this adds one extra DB query per authenticated mutation.
+- **Proposed improvement:** Either extend the PrismaAdapter to include `role` in the user response, or cache the role in the session record itself.
 - **Expected product/technical value:** Eliminates one DB query per authenticated request. Matters as concurrent user count grows.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** PB-081 (completed). Should be validated with real auth sessions.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Auth is now live with login page deployed. Worth addressing before concurrent user load increases.
-
-### DE-REC-043: fieldMappings deep validation in import-sources API
-
-- **Title:** Validate fieldMappings structure beyond typeof check
-- **Problem:** The `import-sources` POST/PUT routes validate `typeof fieldMappings !== "object"` which passes for arrays and null. The execute endpoint now depends on `fieldMappings` being a well-formed `Record<string, string>`. Malformed mappings could cause confusing errors at import time.
-- **Proposed improvement:** Add validation that fieldMappings is a non-null, non-array object with string keys and string values. Validate that target fields are valid for the specified target entity.
-- **Expected product/technical value:** Catches configuration errors early at save time rather than at import execution time.
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Now that import execution exists, bad fieldMappings have real consequences.
+- **Why now:** Role enforcement is now active, so the extra query is hit on every write request.
+
+### DE-REC-045: Frontend role-aware UI (hide actions for insufficient roles)
+
+- **Title:** Conditionally hide/disable write actions based on session role
+- **Problem:** Role enforcement is now server-side, but the UI still shows all action buttons (create, edit, delete) to all users regardless of role. VIEWER users will see buttons but get 403 errors when clicking them.
+- **Proposed improvement:** Create a `useUserRole()` hook or extend the existing session access to expose the role. Conditionally render action buttons based on role. Show disabled state or hide entirely for VIEWER users on write actions, and for non-ADMIN users on settings/user management.
+- **Expected product/technical value:** Prevents confusion — users only see actions they can perform.
+- **Priority:** P2 High
+- **Effort:** Medium
+- **Risk:** Low — purely UI, server enforcement remains the source of truth.
+- **Dependencies:** PB-082 (completed).
+- **Suggested owner:** Experience Agent
+- **Why now:** Completes the user experience for role-based access. Without this, VIEWERs hit confusing 403 errors.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
 - **Title:** Replace `planningEntries.find()` with Map-based lookup in CapacitySummaryRow
-- **Problem:** `CapacitySummaryRow.tsx` uses `driver.planningEntries.find((e) => e.date === date)` inside a nested loop over drivers × dates. This is the same hot-path pattern that was fixed in PlanningGrid (PB-066).
-- **Proposed improvement:** Either pass the `entryMaps` from PlanningGrid down to CapacitySummaryRow, or build a local Map inside the component.
-- **Expected product/technical value:** Consistent O(1) lookup pattern. Performance improvement for large grids when totals row is visible.
+- **Problem:** `CapacitySummaryRow.tsx` uses `.find()` inside a nested loop over drivers x dates. Same hot-path pattern that was fixed in PlanningGrid (PB-066).
+- **Proposed improvement:** Build a local Map inside the component or pass `entryMaps` from PlanningGrid.
+- **Expected product/technical value:** Consistent O(1) lookup pattern. Performance improvement for large grids.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low. Same proven pattern.
@@ -71,8 +83,8 @@ Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma model
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 100 (max code length), 5MB (max file size), 20 (max import logs). These are hard to discover and maintain.
-- **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts` and reference it from the relevant routes.
+- **Problem:** Several magic numbers are scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 366 (max bulk dates), 100 (max code length), 5MB (max file size), 20 (max import logs).
+- **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
 - **Effort:** Small
@@ -84,7 +96,7 @@ Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma model
 ### DE-REC-005: Add covering index for capacity aggregation query
 
 - **Title:** Add (scenarioId, date, status) index on PlanningEntry
-- **Problem:** `GET /api/planning/capacity` uses `groupBy` on `date` and `status` filtered by `scenarioId` and `date`. The existing `[scenarioId, date]` index doesn't cover `status`, forcing a table scan for status values.
+- **Problem:** Capacity endpoint uses `groupBy` on `date` and `status` filtered by `scenarioId` and `date`. The existing index doesn't cover `status`.
 - **Proposed improvement:** Add `@@index([scenarioId, date, status])` to PlanningEntry.
 - **Expected product/technical value:** Faster capacity calculations as data volume grows.
 - **Priority:** P3 Medium
@@ -97,9 +109,9 @@ Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma model
 ### DE-REC-014: Move hardcoded comparison chart colors to constants
 
 - **Title:** Extract COMPARE_COLORS from CapacityChart to constants
-- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS = ["#f97316", "#06b6d4", "#8b5cf6"]` inline. Hardcoded hex values (Recharts exception documented in CLAUDE.md). Also recreated on every render.
+- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS` inline with hardcoded hex values.
 - **Proposed improvement:** Move to `src/domain/constants.ts` with comments referencing design token equivalents.
-- **Expected product/technical value:** Centralizes color definitions. Eliminates per-render array allocation.
+- **Expected product/technical value:** Centralizes color definitions.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low.
@@ -110,8 +122,8 @@ Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma model
 ### DE-REC-031: Add PerformanceEvent table cleanup
 
 - **Title:** Call `cleanupOldEvents()` or add TTL-based cleanup for PerformanceEvent
-- **Problem:** `cleanupOldEvents()` in `src/lib/perf.ts` is defined but never called. The `PerformanceEvent` table grows indefinitely.
-- **Proposed improvement:** Either call `cleanupOldEvents()` at the end of `withPerfLogging`, or add a periodic cleanup mechanism.
+- **Problem:** `cleanupOldEvents()` in `src/lib/perf.ts` is defined but never called. Table grows indefinitely.
+- **Proposed improvement:** Call `cleanupOldEvents()` periodically or at the end of `withPerfLogging`.
 - **Expected product/technical value:** Prevents unbounded table growth.
 - **Priority:** P4 Low
 - **Effort:** Small
@@ -122,12 +134,13 @@ Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma model
 
 ## Risks / Watch-outs
 
-- **Auth env vars required for deployment:** PB-080 auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive (providers load conditionally).
-- **Session callback DB query:** Each authenticated session access triggers a `findUnique` for the user's role. Acceptable at current scale but becomes a concern with high concurrent users.
-- **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory. At ~200 bytes/row this is ~10 MB per request.
-- **Import transaction size:** Large CSV imports (thousands of rows) create one driver per row inside a single transaction. Very large imports could hit Neon connection timeouts. Consider chunking for imports > 1000 rows.
+- **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive and role enforcement is skipped.
+- **Session callback DB query:** Each authenticated session access triggers a `findUnique` for the user's role. Now that role enforcement is active, this query runs on every write request. Acceptable at current scale but worth optimizing (DE-REC-040).
+- **Frontend doesn't hide unauthorized actions:** VIEWER users can see all buttons but get 403 when clicking. DE-REC-045 addresses this.
+- **Scenario duplication memory ceiling:** `POST /api/scenarios/[id]/duplicate` loads up to 50,000 planning entries into Node.js memory.
+- **Import transaction size:** Large CSV imports (thousands of rows) create one driver per row inside a single transaction. Very large imports could hit Neon connection timeouts.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed.
-- **fieldMappings validation weakness:** `import-sources` API validates `typeof fieldMappings !== "object"` which passes for arrays and null. Deep validation of fieldMappings structure is missing (DE-REC-043).
+- **Malformed JSON returns 500:** All `request.json()` calls lack specific error handling — SyntaxError is caught generically and returns 500 instead of 400 (DE-REC-044).
 
 ## Items Intentionally Not Recommended
 
@@ -138,10 +151,9 @@ Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma model
 - **Add unique constraints on Driver/Scenario names:** Requires a product decision.
 - **Add enum validation for status fields:** Frontend already constrains values.
 - **Extend withPerfLogging to all routes:** Fix the analysis layer before expanding collection.
-- **Replace `any` types broadly:** Low impact. ~27 instances are internal and well-contained. Fix opportunistically.
+- **Replace `any` types broadly:** ~27 instances are internal and well-contained. Fix opportunistically.
 - **Add settings code length validation to PUT route:** Minor inconsistency, low impact.
 - **Add duplicate employeeNumber check on driver creation:** Requires a product decision.
-- **Standardize `validateRequired` usage in drivers POST:** Functionally equivalent to inline validation.
 - **Translate console.error messages:** Server-facing logging should remain in English.
 - **Split DriverForm.tsx (~475 lines):** Well-structured with tab-based organization.
 - **Other `.find()` calls in render paths:** ScenarioSelector, RosterAssigner, etc. operate on small arrays (<10 items).
@@ -153,8 +165,10 @@ Codebase remains healthy: 0 ESLint warnings, 0 typecheck errors, 22 Prisma model
 - **Add parent driver existence checks in sub-record routes:** Prisma FK constraints catch this.
 - **Add aria-pressed to toggle buttons:** Experience Agent scope.
 - **Use next-auth v5 (Auth.js):** v4 is proven and stable with Next.js 14. Migration to v5 can happen when upgrading to Next.js 15.
-- **Add file storage for uploaded CSVs:** Not needed — import re-uploads the file for execution. Server-side storage would add complexity without clear benefit.
-- **Add scheduled/automatic imports:** Requires external trigger mechanism (cron, webhook). Out of scope for current MVP.
+- **Add file storage for uploaded CSVs:** Not needed — import re-uploads the file for execution.
+- **Add scheduled/automatic imports:** Requires external trigger mechanism. Out of scope for current MVP.
+- **Add React.memo to StatusBadge/StatusSelector:** Rendered within already-memoized DayCell; marginal improvement.
+- **Batch FK validation in driver POST route:** Current parallel Promise.all approach is already efficient; batching into fewer queries adds complexity for marginal gain.
 
 ## Recommendation Rules
 

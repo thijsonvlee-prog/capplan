@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey } from "@/lib/api-route-utils";
+import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, requireRole } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -28,6 +28,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authError = await requireRole("PLANNER");
+    if (authError) return authError;
+
     const { id } = await params;
     const body = await request.json();
     const { startDate, endDate, employmentType, employerId } = body;

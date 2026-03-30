@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSettingsModel, validateRequired } from "@/lib/api-route-utils";
+import { getSettingsModel, validateRequired, requireRole } from "@/lib/api-route-utils";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ type: string; id: string }> }
 ) {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const { type, id } = await params;
     const model = getSettingsModel(type);
 
@@ -47,6 +50,9 @@ export async function DELETE(
   { params }: { params: Promise<{ type: string; id: string }> }
 ) {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const { type, id } = await params;
     const model = getSettingsModel(type);
 

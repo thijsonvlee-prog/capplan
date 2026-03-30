@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { transformProfile, validateRequired } from "@/lib/api-route-utils";
+import { transformProfile, validateRequired, requireRole } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -36,6 +36,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const { id } = await params;
     const body = await request.json();
     const { name, entries } = body;
@@ -92,6 +95,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const { id } = await params;
 
     await prisma.rosterProfile.delete({

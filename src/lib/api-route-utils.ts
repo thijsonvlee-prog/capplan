@@ -2,7 +2,113 @@
  * Shared utilities for API route handlers.
  * Extracted to eliminate duplication across route files.
  */
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { UserRole } from "@/domain/enums";
+
+// === Role enforcement ===
+
+/**
+ * Role hierarchy: ADMIN > PLANNER > VIEWER.
+ * Higher index = more permissions.
+ */
+const ROLE_HIERARCHY: Record<string, number> = {
+  VIEWER: 0,
+  PLANNER: 1,
+  ADMIN: 2,
+};
+
+/**
+ * Check that the current session user has at least the required role.
+ * Returns null if authorized, or a NextResponse (403/401) if not.
+ *
+ * When auth providers are not configured (no NEXTAUTH_SECRET), enforcement is
+ * skipped to avoid blocking development/preview environments without auth.
+ */
+export async function requireRole(
+  minimumRole: UserRole
+): Promise<NextResponse | null> {
+  // Skip enforcement when auth is not configured
+  if (!process.env.NEXTAUTH_SECRET) return null;
+
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: "Niet ingelogd. Log in om deze actie uit te voeren." },
+      { status: 401 }
+    );
+  }
+
+  const userLevel = ROLE_HIERARCHY[session.user.role] ?? 0;
+  const requiredLevel = ROLE_HIERARCHY[minimumRole] ?? 0;
+
+  if (userLevel < requiredLevel) {
+    return NextResponse.json(
+      { error: "Onvoldoende rechten om deze actie uit te voeren." },
+      { status: 403 }
+    );
+  }
+
+  return null;
+}
+
+// === Field mapping validation ===
+
+/** Valid target fields per entity for import field mappings */
+const VALID_TARGET_FIELDS: Record<string, string[]> = {
+  drivers: ["firstName", "lastName", "employeeNumber", "licenseTypes"],
+  employers: ["code", "description"],
+  departments: ["code", "description"],
+  locations: ["code", "description"],
+};
+
+/**
+ * Validate that fieldMappings is a well-formed Record<string, string>.
+ * Returns a Dutch error message if invalid, or null if valid.
+ * Optionally validates that target fields are valid for the specified target entity.
+ */
+export function validateFieldMappings(
+  fieldMappings: unknown,
+  targetEntity?: string
+): string | null {
+  if (
+    typeof fieldMappings !== "object" ||
+    fieldMappings === null ||
+    Array.isArray(fieldMappings)
+  ) {
+    return "Veldkoppelingen moeten een object zijn met bronkolom-doelveld paren";
+  }
+
+  const entries = Object.entries(fieldMappings as Record<string, unknown>);
+
+  if (entries.length === 0) {
+    return "Veldkoppelingen mogen niet leeg zijn";
+  }
+
+  for (const [key, value] of entries) {
+    if (typeof key !== "string" || key.trim() === "") {
+      return "Alle bronkolomnamen in veldkoppelingen moeten niet-lege tekst zijn";
+    }
+    if (typeof value !== "string" || value.trim() === "") {
+      return `Doelveld voor bronkolom "${key}" moet niet-lege tekst zijn`;
+    }
+  }
+
+  // Validate target fields against known entity fields
+  if (targetEntity && VALID_TARGET_FIELDS[targetEntity]) {
+    const validFields = VALID_TARGET_FIELDS[targetEntity];
+    for (const [key, value] of entries) {
+      if (!validFields.includes(value as string)) {
+        return `Ongeldig doelveld "${value}" voor bronkolom "${key}". Geldige doelvelden voor ${targetEntity}: ${validFields.join(", ")}`;
+      }
+    }
+  }
+
+  return null;
+}
 
 // === Driver utilities ===
 

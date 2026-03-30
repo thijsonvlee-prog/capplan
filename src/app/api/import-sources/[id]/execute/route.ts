@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseCSVToRows } from "@/lib/csv-parser";
+import { requireRole } from "@/lib/api-route-utils";
 import type { ImportRowError } from "@/domain/types";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -30,6 +31,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const { id } = await params;
 
     // Load import source with its configuration

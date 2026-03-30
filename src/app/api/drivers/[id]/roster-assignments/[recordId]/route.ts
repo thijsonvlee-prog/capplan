@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, validateOptionalForeignKey } from "@/lib/api-route-utils";
+import { validateRequired, validateOptionalForeignKey, requireRole } from "@/lib/api-route-utils";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; recordId: string }> }
 ) {
   try {
+    const authError = await requireRole("PLANNER");
+    if (authError) return authError;
+
     const { id, recordId } = await params;
     const body = await request.json();
 
@@ -68,6 +71,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; recordId: string }> }
 ) {
   try {
+    const authError = await requireRole("PLANNER");
+    if (authError) return authError;
+
     const { id, recordId } = await params;
 
     // Verify the record belongs to the specified driver

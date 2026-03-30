@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired } from "@/lib/api-route-utils";
+import { validateRequired, requireRole } from "@/lib/api-route-utils";
 
 const DEFAULT_USER_ID = "default";
 const PREFERENCE_KEY = "activeScenario";
@@ -26,6 +26,9 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
+    const authError = await requireRole("PLANNER");
+    if (authError) return authError;
+
     const body = await request.json();
 
     const validationError = validateRequired(body, [

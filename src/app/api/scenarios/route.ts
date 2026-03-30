@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired } from "@/lib/api-route-utils";
+import { validateRequired, requireRole } from "@/lib/api-route-utils";
 
 export async function GET() {
   try {
@@ -20,6 +20,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const authError = await requireRole("PLANNER");
+    if (authError) return authError;
+
     const body = await request.json();
     const { name, description } = body;
 

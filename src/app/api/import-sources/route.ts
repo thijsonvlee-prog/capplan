@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired } from "@/lib/api-route-utils";
+import { validateRequired, requireRole, validateFieldMappings } from "@/lib/api-route-utils";
 
 const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
 
@@ -22,6 +22,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const body = await request.json();
     const { name, type, targetEntity, fieldMappings, description } = body;
 
@@ -41,11 +44,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (typeof fieldMappings !== "object" || fieldMappings === null || Array.isArray(fieldMappings)) {
-      return NextResponse.json(
-        { error: "Veldkoppelingen moeten een object zijn met bronkolom-doelveld paren" },
-        { status: 400 }
-      );
+    const mappingError = validateFieldMappings(fieldMappings, targetEntity);
+    if (mappingError) {
+      return NextResponse.json({ error: mappingError }, { status: 400 });
     }
 
     // Only CSV is supported for now

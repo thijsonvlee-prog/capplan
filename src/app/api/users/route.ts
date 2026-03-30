@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/api-route-utils";
 
 export async function GET() {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const users = await prisma.user.findMany({
       select: {
         id: true,

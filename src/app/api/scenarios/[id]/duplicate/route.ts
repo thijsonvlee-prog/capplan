@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
+import { requireRole } from "@/lib/api-route-utils";
 
 export const POST = withPerfLogging(
   "POST /api/scenarios/duplicate",
@@ -9,6 +10,9 @@ export const POST = withPerfLogging(
     context?: any
   ) => {
     try {
+      const authError = await requireRole("PLANNER");
+      if (authError) return authError;
+
       const { id: sourceId } = await context.params;
       const body = await request.json();
       const { name } = body;

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey } from "@/lib/api-route-utils";
+import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, requireRole } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/drivers/[id]/roster-assignments",
@@ -41,6 +41,9 @@ export const POST = withPerfLogging(
     context?: any
   ) => {
     try {
+      const authError = await requireRole("PLANNER");
+      if (authError) return authError;
+
       const { id: driverId } = await context.params;
       const body = await request.json();
       const { startDate, endDate, rosterProfileId, weeklyHours, scenarioId } =

@@ -10,6 +10,23 @@ _No unreleased changes._
 
 ## Release History
 
+### 2026-03-30 — Rolhandhaving en importvalidatie
+
+#### Beveiliging
+
+- **Rolhandhaving op API-routes:** Alle schrijfbewerkingen (POST/PUT/DELETE) vereisen nu de juiste rol. Beheerders (Admin) hebben volledige toegang. Planners kunnen chauffeurs, planning en scenario's beheren. Kijkers hebben alleen leestoegang. Ongeautoriseerde verzoeken worden afgewezen met 401 of 403 en een duidelijke Nederlandse foutmelding.
+- **Rechtenmatrix:** Settings, gebruikersbeheer, importbronnen en roosterprofielen vereisen Admin-rechten. Chauffeurs, planning en scenario's vereisen Planner-rechten. Voorkeuren zijn beschikbaar voor alle ingelogde gebruikers.
+- **Ontwikkelomgevingen:** Rolhandhaving wordt automatisch overgeslagen als `NEXTAUTH_SECRET` niet is ingesteld, zodat lokale ontwikkeling en preview-omgevingen zonder authenticatie blijven werken.
+
+#### Betrouwbaarheid
+
+- **Veldkoppelingsvalidatie verbeterd:** Import-bronnen valideren nu diepgaand dat veldkoppelingen een geldig object zijn met niet-lege tekst als sleutels en waarden. Doelvelden worden gevalideerd tegen een lijst per entiteit (chauffeurs, werkgevers, afdelingen, standplaatsen). Ongeldige configuraties worden nu direct bij opslaan afgewezen.
+
+#### Interne kwaliteit
+
+- **CLAUDE.md bijgewerkt:** Authenticatiesecties aangepast om aan te geven dat rolhandhaving actief is.
+- **0 ESLint-waarschuwingen, 0 typecheck-fouten.**
+
 ### 2026-03-30 — Gebruikersbeheer, inloggen, CSV-import en authenticatie
 
 #### Functionele verbeteringen

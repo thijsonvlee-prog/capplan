@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { transformDriver, driverInclude, validateForeignKeys } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, validateForeignKeys, requireRole } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -32,6 +32,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authError = await requireRole("PLANNER");
+    if (authError) return authError;
+
     const { id } = await params;
     const body = await request.json();
     const { skillIds, ...driverData } = body;
@@ -87,6 +90,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authError = await requireRole("PLANNER");
+    if (authError) return authError;
+
     const { id } = await params;
 
     await prisma.driver.delete({ where: { id } });

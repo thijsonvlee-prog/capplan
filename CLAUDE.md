@@ -75,7 +75,9 @@ CapPlan is a **driver workforce planning tool** (Dutch-language UI) for managing
 - `AuthProvider` wraps the app in `src/app/layout.tsx` via `SessionProvider`.
 - Session includes `user.id` and `user.role` via custom session callback.
 - Providers are conditionally loaded — only active if env vars are set.
-- **Role enforcement is NOT yet implemented.** Roles exist in the User model (ADMIN/PLANNER/VIEWER) but are not checked on routes or pages.
+- **Role enforcement is implemented.** `requireRole()` in `api-route-utils.ts` checks session role against a hierarchy (VIEWER < PLANNER < ADMIN). Returns 401/403 with Dutch error messages. Enforcement is skipped when `NEXTAUTH_SECRET` is not set (development/preview without auth).
+- **Permission matrix:** VIEWER = read-only (all GET endpoints), PLANNER = read + write planning/drivers/scenarios, ADMIN = full access including settings, users, import-sources, and roster profiles.
+- Preferences (`/api/preferences`) are not role-gated — any authenticated user can manage personal preferences.
 
 ### Hooks
 - `useApiData` / `useApiDataWithLoading`: cached data fetching with 30s freshness window.
@@ -212,12 +214,12 @@ CapPlan aims to be a premium, modern B2B planning product — not a generic admi
 
 ## 9. Security & Robustness
 
-- **Authentication infrastructure is in place** (NextAuth.js with Google/Microsoft providers) but **role enforcement is NOT yet implemented.** Do not rely on roles for access control until enforcement middleware is added.
+- **Authentication and role enforcement are in place** (NextAuth.js with Google/Microsoft providers). API routes enforce role-based access via `requireRole()` from `api-route-utils.ts`. Enforcement is skipped when `NEXTAUTH_SECRET` is not set.
 - Validate and sanitize all user input in API routes before passing to Prisma.
 - Do not expose internal error details (stack traces, Prisma errors) in API responses. Return user-friendly Dutch error messages.
 - Do not store secrets in code. Use environment variables.
 - Security headers are configured in `next.config.mjs` (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy).
-- The User model has roles (ADMIN/PLANNER/VIEWER) in the schema. These will be enforced once role enforcement middleware is implemented.
+- The User model has roles (ADMIN/PLANNER/VIEWER) in the schema. These are enforced server-side on all write API routes via `requireRole()`.
 
 ---
 

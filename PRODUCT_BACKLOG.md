@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track progressing well. User management screen (PB-079) is deployed. Remaining: Delivery Agent implements role enforcement middleware (PB-082) plus a small validation fix (PB-083). Codebase healthy — 0 ESLint warnings, 0 typecheck errors.
+**Current direction:** Authentication track complete. Role enforcement (PB-082) and fieldMappings validation (PB-083) delivered. Codebase healthy — 0 ESLint warnings, 0 typecheck errors.
 
 ## Status Definitions
 
@@ -27,31 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-082: Role enforcement middleware
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High (upgraded from P3 — blocking user management value)
-- **Status:** Ready
-- **Problem / opportunity:** The User model has roles (ADMIN, PLANNER, VIEWER) but they are not enforced. Auth infrastructure is in place, so API routes and pages can now enforce role-based access control.
-- **Why this matters now:** Without enforcement, roles are decorative. PB-079 (admin panel) creates the UI to assign roles, but those roles must be checked server-side. Both items together complete the user management feature.
-- **Scope notes:** Add a helper function that checks session role against required role. Define a permission matrix (VIEWER = read-only, PLANNER = read + write planning/drivers, ADMIN = full access including settings and user management). Apply to API routes. Return 403 with Dutch error message for unauthorized requests.
-- **Dependencies:** PB-080 (completed), PB-081 (completed).
-- **Definition of done:** API routes reject unauthorized requests with 403 and Dutch error message. Permission matrix defined and applied. `npm run verify` passes.
-- **Implementation note:** Auth config is in `src/lib/auth.ts`. Session includes `user.id` and `user.role`. Start with a `requireRole()` helper in `api-route-utils.ts` or a new `src/lib/auth-helpers.ts`. Apply progressively — start with write routes and settings/user management routes.
-- **Source:** ESC-005, SMI-008.
-
-### PB-083: Validate fieldMappings structure in import-sources API
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The `import-sources` POST/PUT routes validate `typeof fieldMappings !== "object"` which passes for arrays and null. Now that import execution (PB-078) depends on well-formed fieldMappings, malformed data can cause confusing errors at import time.
-- **Why this matters now:** Small defensive fix that catches configuration errors early. Import execution is live.
-- **Scope notes:** Validate that fieldMappings is a non-null, non-array object with string keys and string values. Optionally validate that target fields are valid for the specified target entity. Return clear Dutch error message on invalid input.
-- **Dependencies:** None.
-- **Definition of done:** Malformed fieldMappings (null, array, non-string values) are rejected at save time with a clear error. `npm run verify` passes.
-- **Implementation note:** Small addition to existing validation in `src/app/api/import-sources/route.ts` and the PUT handler. Use `validateRequired` pattern from `api-route-utils.ts`.
-- **Source:** DE-REC-043.
+_No items currently ready._
 
 ---
 
@@ -68,6 +44,16 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-082: Role enforcement middleware
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** `requireRole()` helper in `api-route-utils.ts` checks session role against a VIEWER < PLANNER < ADMIN hierarchy. Applied to all write API routes: ADMIN required for settings, users, import-sources, roster-profiles; PLANNER required for drivers, planning, scenarios. Returns 401 (not logged in) or 403 (insufficient role) with Dutch error messages. Enforcement skipped when `NEXTAUTH_SECRET` is not set (dev/preview). CLAUDE.md updated to reflect enforcement is live.
+
+### PB-083: Validate fieldMappings structure in import-sources API
+- **Completed:** 2026-03-30
+- **Owner:** Delivery Agent
+- **Summary:** New `validateFieldMappings()` helper in `api-route-utils.ts` validates that fieldMappings is a non-null, non-array object with non-empty string keys and values. Also validates target fields against a whitelist per entity (drivers: firstName/lastName/employeeNumber/licenseTypes; stamtabellen: code/description). Applied to POST and PUT routes. Clear Dutch error messages for each validation failure.
 
 ### PB-079: Admin panel — user management screen
 - **Completed:** 2026-03-30

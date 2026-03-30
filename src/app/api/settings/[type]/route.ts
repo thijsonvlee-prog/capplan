@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSettingsModel } from "@/lib/api-route-utils";
+import { getSettingsModel, requireRole } from "@/lib/api-route-utils";
 
 export async function GET(
   request: NextRequest,
@@ -35,6 +35,9 @@ export async function POST(
   { params }: { params: Promise<{ type: string }> }
 ) {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const { type } = await params;
     const model = getSettingsModel(type);
 

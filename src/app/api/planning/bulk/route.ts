@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, validateOptionalForeignKey } from "@/lib/api-route-utils";
+import { resolveScenarioId, validateOptionalForeignKey, requireRole } from "@/lib/api-route-utils";
 
 export const POST = withPerfLogging(
   "POST /api/planning/bulk",
   async (request: NextRequest) => {
     try {
+      const authError = await requireRole("PLANNER");
+      if (authError) return authError;
+
       const body = await request.json();
       const { driverId, dates, status, leaveTypeId, sickPercentage, notes, scenarioId } = body;
 
