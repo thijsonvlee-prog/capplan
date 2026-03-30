@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement). Import pipeline operational. Server error bug fixed. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: completing the role-based UX so users only see actions they can perform, plus small robustness and polish items.
+**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement). Import pipeline operational. Server error bug fixed. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Auth is confirmed needed (ESC-006 Option B). Next focus: completing the role-based UX so users only see actions they can perform, auth environment documentation, plus small robustness and polish items.
 
 ## Status Definitions
 
@@ -35,12 +35,27 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Owner:** Experience Agent
 - **Priority:** P2 High
 - **Status:** Ready
-- **Why this matters now:** Completes the user experience for the auth track. Without this, the role system feels broken from the user's perspective.
+- **Why this matters now:** Completes the user experience for the auth track. Without this, the role system feels broken from the user's perspective. Auth is confirmed needed (ESC-006).
 - **Scope notes:** Create a `useUserRole()` hook (or extend session access) to expose the current user's role. Conditionally hide or disable write action buttons for VIEWER users. Hide settings/user management for non-ADMIN users. Server enforcement remains the source of truth — this is purely UX.
 - **Dependencies:** PB-082 (completed).
 - **Definition of done:** VIEWER users do not see create/edit/delete buttons on planning, drivers, and scenarios pages. Non-ADMIN users do not see settings write controls or user management. When auth is not configured, all actions remain visible (development mode).
 - **Implementation note:** Check how `useSession()` exposes the role (it was added to the session callback in PB-080). The role is available at `session.user.role`.
 - **Source:** DE-REC-045.
+
+### PB-088: Auth environment setup documentation
+
+- **ID:** PB-088
+- **Title:** Auth environment setup documentation
+- **Problem / opportunity:** The Scrum Master confirmed auth is needed (ESC-006 Option B). The required environment variables and provider setup steps should be documented clearly so the Vercel environment can be configured correctly.
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Auth infrastructure is built but cannot function without correct environment configuration. The Scrum Master needs clear guidance to set up OAuth providers.
+- **Scope notes:** Add a concise auth setup section to the project documentation (either in `CLAUDE.md` or a dedicated `AUTH_SETUP.md`). Cover: required env vars (`NEXTAUTH_SECRET`, `NEXTAUTH_URL`, provider credentials), how to generate `NEXTAUTH_SECRET`, how to set up Google OAuth (Cloud Console steps), how to set up Azure AD (Azure portal steps), how to verify the configuration works. Keep it practical — step-by-step, not exhaustive.
+- **Dependencies:** PB-080 (completed), PB-087 (completed).
+- **Definition of done:** A clear document exists that guides the Scrum Master through setting up auth in Vercel. Covers all required env vars and at least one provider setup flow.
+- **Implementation note:** Do not create a separate documentation page in the app. This is a project-level document for the deployment administrator.
+- **Source:** ESC-006 (Option B chosen).
 
 ### PB-085: Settings tab bar responsive treatment
 
@@ -91,17 +106,17 @@ _No items currently in progress._
 ### PB-087: Fix server error — conditional auth middleware
 - **Completed:** 2026-03-30
 - **Owner:** Product Owner Agent (corrective fix)
-- **Summary:** The NextAuth middleware unconditionally required `NEXTAUTH_SECRET`, causing a server error on all dashboard routes when auth was not configured. Fixed by making the middleware conditional — it now skips authentication when `NEXTAUTH_SECRET` is not set, matching the pattern used by `requireRole()` in API routes.
+- **Summary:** The NextAuth middleware unconditionally required `NEXTAUTH_SECRET`, causing a server error on all dashboard routes when auth was not configured. Fixed by making the middleware conditional.
 
 ### PB-082: Role enforcement middleware
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** `requireRole()` helper enforces VIEWER < PLANNER < ADMIN hierarchy on all write API routes. Returns 401/403 with Dutch error messages. Enforcement skipped when `NEXTAUTH_SECRET` is not set.
+- **Summary:** `requireRole()` helper enforces VIEWER < PLANNER < ADMIN hierarchy on all write API routes.
 
 ### PB-083: Validate fieldMappings structure in import-sources API
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** `validateFieldMappings()` validates structure and target fields per entity. Applied to import-sources POST and PUT routes.
+- **Summary:** `validateFieldMappings()` validates structure and target fields per entity.
 
 ### PB-079: Admin panel — user management screen
 - **Completed:** 2026-03-30
@@ -132,7 +147,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Good idea aligned with DESIGN.md section 7.8. Auth is now complete so this is feasible. Can be picked up as a quick win in a future cycle when higher-priority items are cleared.
+- **Reason:** Good idea aligned with DESIGN.md section 7.8. Auth is confirmed needed. Can be picked up as a quick win once PB-084 (role-aware UI) is complete.
 - **Source:** EX-REC-044.
 
 ### DE-REC-042: Extend import execution with upsert mode

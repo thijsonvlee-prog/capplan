@@ -22,31 +22,28 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-### ESC-006: Server error — Vercel environment verification
-
-- **Status:** Open
-- **Date / run context:** 2026-03-30 — triggered by SMI-009
-- **Decision needed:** The server error reported in SMI-009 was caused by the auth middleware crashing when `NEXTAUTH_SECRET` is not set. The code fix is deployed (PB-087). However, if the error persists, the Vercel environment may need verification.
-- **Why it matters:** If the Scrum Master intends to use authentication, the OAuth provider credentials must be correctly configured. If not, the fix ensures the app works without auth.
-- **Choose one option:**
-  - ( ) **Option A — Auth is not needed yet.** The middleware fix (PB-087) should resolve the error. No further action required. The app will work without authentication.
-  - ( ) **Option B — Auth is needed. Please verify Vercel environment.** (X) Ensure the following environment variables are set correctly in Vercel: `NEXTAUTH_SECRET` (any random string), `NEXTAUTH_URL` (the deployed URL, e.g. `https://capplan.vercel.app`), `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (from Google Cloud Console), or `AZURE_AD_CLIENT_ID` + `AZURE_AD_CLIENT_SECRET` + `AZURE_AD_TENANT_ID` (from Azure portal). At least one provider pair is required.
-  - ( ) **Option C — The error persists after deployment.** Share the Vercel function logs so the Delivery Agent can diagnose further.
-- **Recommended option:** Option A — most likely the fix resolves the issue. Auth can be enabled later when provider credentials are configured.
-- **What the Scrum Master must do:** Place `(X)` next to one option. If Option B, verify the listed environment variables in Vercel.
-- **Product Owner action after choice:** If A, close the escalation. If B, create a backlog item for auth environment verification documentation. If C, create a P1 diagnostic item for Delivery Agent.
+_No open escalations._
 
 ---
 
 ## Closed Escalations
+
+### ESC-006: Server error — Vercel environment verification
+
+- **Status:** Planned
+- **Date / run context:** 2026-03-30 — triggered by SMI-009
+- **Decision needed:** Whether auth is needed and whether Vercel environment should be verified.
+- **Chosen option:** Option B — Auth is needed. Verify Vercel environment. Ensure `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and at least one provider credential pair are set correctly in Vercel.
+- **Product Owner action:** Created PB-088 (auth environment setup documentation) to provide clear setup guidance. PB-084 (role-aware UI) already scheduled to complete the auth UX.
+- **Backlog linkage:** PB-088, PB-084.
 
 ### ESC-005: Authentication approach for user management
 
 - **Status:** Closed
 - **Date / run context:** 2026-03-30 — triggered by SMI-008
 - **Decision needed:** Which authentication approach should CapPlan use to enable user management and role enforcement?
-- **Chosen option:** Option B — NextAuth.js with external provider (Google/Microsoft). Delegates identity to an external provider. No password management needed. Good for organizations already on Microsoft 365.
-- **Product Owner action:** Created phased backlog items: PB-080 (auth infrastructure — completed), PB-081 (login page — ready), PB-079 (admin user management — blocked on PB-081), PB-082 (role enforcement — ready). PB-080 delivered. Remaining items are in backlog with clear sequencing.
+- **Chosen option:** Option B — NextAuth.js with external provider (Google/Microsoft).
+- **Product Owner action:** Created phased backlog items: PB-080 (auth infrastructure — completed), PB-081 (login page — completed), PB-079 (admin user management — completed), PB-082 (role enforcement — completed).
 - **Backlog linkage:** PB-080, PB-081, PB-079, PB-082.
 
 ### ESC-004: Custom date picker — scope and approach
