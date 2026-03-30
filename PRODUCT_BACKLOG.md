@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation). Import pipeline operational. API robustness improved (JSON parsing protection). Codebase healthy — 0 ESLint warnings, 0 typecheck errors. No active Ready items — all scheduled work completed. Next focus: deferred items from the backlog or new recommendations.
+**Current direction:** Authentication track fully complete (infrastructure, login, admin panel, role enforcement, role-aware UI, setup documentation). Import pipeline operational. Codebase healthy — 0 ESLint warnings, 0 typecheck errors. Next focus: polish auth experience (sidebar user identity), optimize auth performance (session role caching), and extend import capabilities (upsert mode).
 
 ## Status Definitions
 
@@ -27,7 +27,50 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-089: Add user identity to sidebar bottom section
+
+- **ID:** PB-089
+- **Title:** Display logged-in user name and role in sidebar bottom section
+- **Problem / opportunity:** The sidebar bottom section shows only "v2.0". Now that authentication is active, DESIGN.md section 7.8 explicitly calls for "a composed relationship between logo, nav items, and user identity" in the sidebar. The bottom section is underutilized.
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Auth session is available, role-aware UI is complete. This is a visible quick win that makes the app feel more product-grade and personalized.
+- **Scope notes:** Display user name (or email if no name) and a small role badge below or next to it. Keep version text as secondary info. When auth is not configured, show current behavior (version only). Use existing session data from `useSession()` — no new API calls.
+- **Dependencies:** PB-081 (completed), PB-084 (completed).
+- **Definition of done:** Sidebar bottom section shows logged-in user's name and role badge. Version text still visible. Works correctly when auth is not configured. Passes `npm run verify`.
+- **Implementation note:** Modify `Sidebar.tsx`. Use `useSession()` from next-auth/react. Role badge can reuse the badge styling from the Gebruikers tab. Keep the component simple — no dropdown menu or user settings from the sidebar.
+- **Source:** EX-REC-044.
+
+### PB-090: Cache user role in NextAuth session to avoid per-request DB query
+
+- **ID:** PB-090
+- **Title:** Optimize session callback to eliminate extra role lookup query
+- **Problem / opportunity:** The NextAuth session callback in `src/lib/auth.ts` queries the database for the user's role on every session access. With role enforcement active on all write routes (`requireRole()`), this adds one extra `findUnique` query per authenticated mutation request.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Role enforcement is now active on all write routes. Every authenticated write request triggers an extra DB query. While acceptable at current scale, this is a straightforward optimization that improves request latency.
+- **Scope notes:** Either store the role in the JWT/session token so it doesn't need to be re-fetched, or extend the Prisma adapter's user response to include role. Ensure role changes (from the admin panel) are reflected within a reasonable timeframe — a session refresh or next login is acceptable.
+- **Dependencies:** None.
+- **Definition of done:** Authenticated API requests no longer trigger a separate `findUnique` for role lookup. Role is still available in the session. Role changes take effect on next session refresh. Passes `npm run verify`.
+- **Implementation note:** The simplest approach is likely to include `role` in the JWT callback and pass it through to the session callback. This avoids a DB hit per request while still being refreshed on token rotation.
+- **Source:** DE-REC-040.
+
+### PB-091: Add upsert mode to CSV import execution
+
+- **ID:** PB-091
+- **Title:** Allow CSV imports to update existing records (upsert mode)
+- **Problem / opportunity:** The current import execution only creates new records. For stamtabel entities, `skipDuplicates` silently skips rows with existing codes. Users who maintain external data sources need to update existing records via CSV import (e.g., changing a department description).
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Natural follow-up to the import pipeline (PB-078). Users who regularly sync data from external systems will need this capability quickly.
+- **Scope notes:** Add an optional `mode` parameter to the execute endpoint: `"create"` (current default behavior) and `"upsert"` (update existing records matched by unique key — typically `code` for stamtabellen, `employeeNumber` for drivers). The UI should offer a toggle or dropdown to select the mode before executing. Import log should distinguish created vs. updated rows in the summary.
+- **Dependencies:** PB-078 (completed).
+- **Definition of done:** Users can choose between create-only and upsert mode when executing an import. Upsert correctly matches existing records by unique key and updates fields. Import log shows created/updated/skipped counts. Passes `npm run verify`.
+- **Implementation note:** Upsert logic per entity: stamtabellen match on `code`, drivers match on `employeeNumber`. Use Prisma `upsert` or a find-then-update pattern within the transaction. Be careful with the driver entity — upsert should only update mapped fields, not overwrite unmapped fields with defaults.
+- **Source:** DE-REC-042.
 
 ---
 
@@ -48,85 +91,31 @@ _No items currently in progress._
 ### PB-088: Auth environment setup documentation
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** Created `AUTH_SETUP.md` with step-by-step guidance for configuring authentication in Vercel. Covers all required environment variables, `NEXTAUTH_SECRET` generation, Google OAuth setup (Cloud Console), Azure AD setup (Azure Portal), verification steps, role overview, behavior without auth, and troubleshooting. Written in Dutch for the deployment administrator.
+- **Summary:** Created `AUTH_SETUP.md` with step-by-step guidance for configuring authentication in Vercel.
 
 ### PB-086: JSON body parsing protection
 - **Completed:** 2026-03-30
 - **Owner:** Delivery Agent
-- **Summary:** Added `parseJsonBody()` helper to `api-route-utils.ts` that wraps `request.json()` and returns `{ data, error }`. Applied to all 23 POST/PUT API routes. Malformed JSON now returns 400 with `{ error: "Ongeldige JSON in verzoek" }` instead of a generic 500 error.
+- **Summary:** Added `parseJsonBody()` helper applied to all 23 POST/PUT routes.
 
 ### PB-084: Frontend role-aware UI
 - **Completed:** 2026-03-30
 - **Owner:** Experience Agent
-- **Summary:** Created `useUserRole()` hook exposing role-based permissions. VIEWER users no longer see create/edit/delete buttons on planning, drivers, or scenarios. Non-ADMIN users cannot see settings write controls or the "Gebruikers" tab. All actions remain visible when auth is not configured (development mode).
+- **Summary:** Created `useUserRole()` hook. VIEWER users see no write controls. Non-ADMIN users cannot see settings write controls.
 
 ### PB-085: Settings tab bar responsive treatment
 - **Completed:** 2026-03-30
 - **Owner:** Experience Agent
-- **Summary:** Added horizontal scroll with hidden scrollbar to `.settings-tabs` for narrow viewports. Tabs no longer wrap or clip on screens down to 768px.
+- **Summary:** Horizontal scroll on settings tabs for narrow viewports.
 
 ### PB-087: Fix server error — conditional auth middleware
 - **Completed:** 2026-03-30
 - **Owner:** Product Owner Agent (corrective fix)
-- **Summary:** The NextAuth middleware unconditionally required `NEXTAUTH_SECRET`, causing a server error on all dashboard routes when auth was not configured. Fixed by making the middleware conditional.
-
-### PB-082: Role enforcement middleware
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** `requireRole()` helper enforces VIEWER < PLANNER < ADMIN hierarchy on all write API routes.
-
-### PB-083: Validate fieldMappings structure in import-sources API
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** `validateFieldMappings()` validates structure and target fields per entity.
-
-### PB-079: Admin panel — user management screen
-- **Completed:** 2026-03-30
-- **Owner:** Experience Agent
-- **Summary:** "Gebruikers" tab in settings with user list, role badges, and role change functionality.
-
-### PB-081: Login page and session UI
-- **Completed:** 2026-03-30
-- **Owner:** Experience Agent
-- **Summary:** Login page with split-panel layout, provider buttons, route protection middleware, session indicator in header.
-
-### PB-078: CSV import execution
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** Full import pipeline with upload, preview, validate, execute, results summary, and import history.
-
-### PB-080: Auth infrastructure — NextAuth.js
-- **Completed:** 2026-03-30
-- **Owner:** Delivery Agent
-- **Summary:** NextAuth.js v4 with Prisma adapter, Google and Azure AD providers, database sessions.
+- **Summary:** Made middleware conditional on `NEXTAUTH_SECRET` presence.
 
 ---
 
 ## Deferred
-
-### EX-REC-044: Add user identity to sidebar bottom section
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Deferred
-- **Reason:** Good idea aligned with DESIGN.md section 7.8. Auth is confirmed needed. Can be picked up as a quick win once PB-084 (role-aware UI) is complete.
-- **Source:** EX-REC-044.
-
-### DE-REC-042: Extend import execution with upsert mode
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Deferred
-- **Reason:** Valuable for ongoing data synchronization, but initial import (create-only) is sufficient for MVP. Revisit when users report needing update capability.
-- **Source:** DE-REC-042.
-
-### DE-REC-040: Optimize NextAuth session callback role lookup
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Deferred
-- **Reason:** Worth addressing once auth is actively used with concurrent users. Not a bottleneck at current scale.
-- **Source:** DE-REC-040.
 
 ### PB-009: Add covering index for capacity aggregation query
 
