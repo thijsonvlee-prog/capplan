@@ -23,6 +23,10 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+Bij inloggen met Google krijg ik de foutmelding: Fout 400: redirect_uri_mismatch Details van verzoek: flowName=GeneralOAuthFlow
+
+
+
 ### SMI-009: Server error bij openen CapPlan
 
 - **Type:** Bug report
