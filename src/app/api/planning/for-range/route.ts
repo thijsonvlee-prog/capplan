@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformDriver, transformPlanningEntry, validateDateFormats } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformDriver, transformPlanningEntry, validateDateFormats, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning/for-range",
@@ -56,16 +56,22 @@ export const GET = withPerfLogging(
         rosterAssignments: { select: { id: true, sequenceNumber: true, startDate: true, endDate: true, rosterProfileId: true, weeklyHours: true } },
       };
 
-      // Build driver where clause for search
-      const driverWhere = search
-        ? {
-            OR: [
-              { firstName: { contains: search, mode: "insensitive" as const } },
-              { lastName: { contains: search, mode: "insensitive" as const } },
-              { employeeNumber: { contains: search, mode: "insensitive" as const } },
-            ],
-          }
-        : {};
+      // Build driver where clause for search and user group filtering
+      const driverWhere: any = {};
+
+      // Apply user group department filter
+      const allowedDepts = await getAllowedDepartmentIds();
+      if (allowedDepts !== null) {
+        Object.assign(driverWhere, driverDepartmentFilter(allowedDepts));
+      }
+
+      if (search) {
+        driverWhere.OR = [
+          { firstName: { contains: search, mode: "insensitive" as const } },
+          { lastName: { contains: search, mode: "insensitive" as const } },
+          { employeeNumber: { contains: search, mode: "insensitive" as const } },
+        ];
+      }
 
       // Fetch drivers (with pagination if requested) and count in parallel
       const [drivers, total] = await Promise.all([

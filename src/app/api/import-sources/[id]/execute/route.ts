@@ -457,29 +457,66 @@ async function importStamtabel(
       try {
         await prisma.$transaction(async (tx) => {
           const txModel = (tx as any)[modelName];
-          for (const item of chunk) {
-            try {
-              const existing = await txModel.findUnique({
-                where: { code: item.code },
-                select: { id: true, description: true },
-              });
 
-              if (existing) {
-                if (existing.description !== item.description) {
-                  await txModel.update({
-                    where: { code: item.code },
-                    data: { description: item.description },
-                  });
-                  updated++;
-                }
-              } else {
-                await txModel.create({ data: item });
-                created++;
+          // Batch lookup: single findMany instead of per-row findUnique
+          const chunkCodes = chunk.map((item) => item.code);
+          const existingRecords = await txModel.findMany({
+            where: { code: { in: chunkCodes } },
+            select: { id: true, code: true, description: true },
+          });
+          const existingMap = new Map<string, { id: string; description: string }>();
+          for (const rec of existingRecords) {
+            existingMap.set(rec.code, { id: rec.id, description: rec.description });
+          }
+
+          // Separate into creates and updates
+          const toCreate: typeof chunk = [];
+          const toUpdate: { code: string; description: string }[] = [];
+
+          for (const item of chunk) {
+            const existing = existingMap.get(item.code);
+            if (existing) {
+              if (existing.description !== item.description) {
+                toUpdate.push(item);
               }
+            } else {
+              toCreate.push(item);
+            }
+          }
+
+          // Batch create new records
+          if (toCreate.length > 0) {
+            try {
+              const result = await txModel.createMany({ data: toCreate });
+              created += result.count;
+            } catch {
+              // Batch create failed — fall back to individual creates for per-row error reporting
+              for (const item of toCreate) {
+                try {
+                  await txModel.create({ data: item });
+                  created++;
+                } catch (err) {
+                  errors.push({
+                    row: 0,
+                    message: `Kan "${item.code}" niet aanmaken: ${err instanceof Error ? err.message : "onbekende fout"}`,
+                  });
+                }
+              }
+            }
+          }
+
+          // Individual updates for changed descriptions (each row may have different data)
+          for (const item of toUpdate) {
+            try {
+              await txModel.update({
+                where: { code: item.code },
+                data: { description: item.description },
+              });
+              updated++;
             } catch (err) {
               errors.push({
                 row: 0,
-                message: `Kan "${item.code}" niet bijwerken/aanmaken: ${err instanceof Error ? err.message : "onbekende fout"}`,
+                message: `Kan "${item.code}" niet bijwerken: ${err instanceof Error ? err.message : "onbekende fout"}`,
               });
             }
           }

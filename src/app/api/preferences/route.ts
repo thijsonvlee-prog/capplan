@@ -1,12 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validateRequired, parseJsonBody } from "@/lib/api-route-utils";
 
+/**
+ * Resolve the userId from the session. When auth is not configured
+ * (no NEXTAUTH_SECRET), falls back to "default" for backward compatibility.
+ * Returns null if auth is configured but the user is not logged in.
+ */
+async function resolveUserId(): Promise<{ userId: string } | { error: NextResponse }> {
+  if (!process.env.NEXTAUTH_SECRET) {
+    return { userId: "default" };
+  }
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return {
+      error: NextResponse.json(
+        { error: "Niet ingelogd. Log in om voorkeuren te beheren." },
+        { status: 401 }
+      ),
+    };
+  }
+  return { userId: session.user.id };
+}
+
 export async function GET(request: NextRequest) {
   try {
+    const resolved = await resolveUserId();
+    if ("error" in resolved) return resolved.error;
+    const { userId } = resolved;
+
     const { searchParams } = new URL(request.url);
-    // userId is server-determined; do not accept from client to prevent cross-user access
-    const userId = "default";
     const key = searchParams.get("key");
 
     if (key) {
@@ -47,8 +72,10 @@ export async function PUT(request: NextRequest) {
     }
 
     const { key, value } = body;
-    // userId is server-determined; do not accept from client to prevent cross-user access
-    const userId = "default";
+
+    const resolved = await resolveUserId();
+    if ("error" in resolved) return resolved.error;
+    const { userId } = resolved;
 
     const pref = await prisma.userPreference.upsert({
       where: {
@@ -70,9 +97,11 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const resolved = await resolveUserId();
+    if ("error" in resolved) return resolved.error;
+    const { userId } = resolved;
+
     const { searchParams } = new URL(request.url);
-    // userId is server-determined; do not accept from client to prevent cross-user access
-    const userId = "default";
     const key = searchParams.get("key");
 
     if (!key) {

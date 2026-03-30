@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
 import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, parseJsonBody, validateDateFormat, validateDateFormats } from "@/lib/api-route-utils";
+import { PlanningStatus } from "@/domain/enums";
+
+const VALID_STATUSES = Object.values(PlanningStatus);
 
 export const GET = withPerfLogging(
   "GET /api/planning",
@@ -69,6 +72,20 @@ export const POST = withPerfLogging(
     if (!driverId || !date || !status) {
       return NextResponse.json(
         { error: "driverId, datum en status zijn verplicht" },
+        { status: 400 }
+      );
+    }
+
+    if (!VALID_STATUSES.includes(status)) {
+      return NextResponse.json(
+        { error: `Ongeldige status "${status}". Geldige waarden: ${VALID_STATUSES.join(", ")}` },
+        { status: 400 }
+      );
+    }
+
+    if (sickPercentage !== undefined && sickPercentage !== null && (sickPercentage < 0 || sickPercentage > 100)) {
+      return NextResponse.json(
+        { error: "Ziektepercentage moet tussen 0 en 100 liggen" },
         { status: 400 }
       );
     }

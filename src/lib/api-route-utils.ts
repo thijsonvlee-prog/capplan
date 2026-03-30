@@ -55,6 +55,53 @@ export async function requireRole(
   return null;
 }
 
+// === User group department filtering ===
+
+/**
+ * Get the allowed department IDs for the current user based on their user group.
+ * Returns null if:
+ * - Auth is not configured (no NEXTAUTH_SECRET)
+ * - User has no session
+ * - User has no group (ungrouped users see all data)
+ *
+ * Returns a string[] of department IDs if the user belongs to a group.
+ */
+export async function getAllowedDepartmentIds(): Promise<string[] | null> {
+  if (!process.env.NEXTAUTH_SECRET) return null;
+
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { userGroupId: true },
+  });
+
+  if (!user?.userGroupId) return null;
+
+  const groupDepts = await prisma.userGroupDepartment.findMany({
+    where: { userGroupId: user.userGroupId },
+    select: { departmentId: true },
+  });
+
+  return groupDepts.map((gd) => gd.departmentId);
+}
+
+/**
+ * Build a Prisma where clause to filter drivers by allowed departments.
+ * Drivers are linked to departments via DriverFunctionRecord.departmentId.
+ * A driver is visible if they have at least one function record with a matching department.
+ */
+export function driverDepartmentFilter(departmentIds: string[]) {
+  return {
+    functionRecords: {
+      some: {
+        departmentId: { in: departmentIds },
+      },
+    },
+  };
+}
+
 // === Field mapping validation ===
 
 /** Valid target fields per entity for import field mappings */

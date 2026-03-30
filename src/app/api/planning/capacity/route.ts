@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, validateDateFormats } from "@/lib/api-route-utils";
+import { resolveScenarioId, validateDateFormats, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning/capacity",
@@ -41,12 +41,24 @@ export const GET = withPerfLogging(
 
       const resolvedScenarioId = resolveScenarioId(scenarioId);
 
+      // Apply user group department filter: scope to drivers in allowed departments
+      const allowedDepts = await getAllowedDepartmentIds();
+      let driverIdFilter: { driverId?: { in: string[] } } = {};
+      if (allowedDepts !== null) {
+        const allowedDrivers = await prisma.driver.findMany({
+          where: driverDepartmentFilter(allowedDepts),
+          select: { id: true },
+        });
+        driverIdFilter = { driverId: { in: allowedDrivers.map((d) => d.id) } };
+      }
+
       // Use groupBy to aggregate in the database instead of fetching all rows
       const grouped = await prisma.planningEntry.groupBy({
         by: ["date", "status"],
         where: {
           date: { in: dateList },
           scenarioId: resolvedScenarioId,
+          ...driverIdFilter,
         },
         _count: { _all: true },
       });

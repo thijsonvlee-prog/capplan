@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateOptionalForeignKey, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateOptionalForeignKey, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/drivers",
@@ -19,6 +19,12 @@ export const GET = withPerfLogging(
     const pageSize = Math.min(500, Math.max(1, parseInt(pageSizeParam || "50", 10) || 50));
 
     const where: any = {};
+
+    // Apply user group department filter
+    const allowedDepts = await getAllowedDepartmentIds();
+    if (allowedDepts !== null) {
+      Object.assign(where, driverDepartmentFilter(allowedDepts));
+    }
 
     if (isActive !== null) {
       if (isActive === "true") {

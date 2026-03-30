@@ -6,6 +6,22 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-30 — Gebruikersgroepen autorisatie, voorkeuren per gebruiker en validatie
+
+#### Beveiliging
+
+- **Gebruikersgroepen autorisatie:** Gebruikers die aan een groep zijn toegewezen zien alleen chauffeurs, planning en capaciteit voor de afdelingen van hun groep. Gebruikers zonder groep zien alle gegevens (achterwaarts compatibel). Filtering wordt toegepast op `/api/drivers`, `/api/planning/for-range` en `/api/planning/capacity`.
+- **Voorkeuren per gebruiker:** Het voorkeuren-endpoint (`/api/preferences`) leest nu de gebruikers-ID uit de sessie in plaats van een gedeelde "default"-gebruiker. Niet-ingelogde gebruikers krijgen een 401-fout. Bij gebruik zonder authenticatie wordt automatisch teruggevallen op de standaardgebruiker.
+
+#### Betrouwbaarheid
+
+- **Statusvalidatie planningsendpoints:** De planning POST en bulk-endpoints valideren nu de status tegen de domein-enum (`PlanningStatus`). Ongeldige waarden worden afgewezen met een 400-fout en een lijst van geldige statussen.
+- **Ziektepercentage bereikvalidatie:** Het `sickPercentage`-veld wordt nu gevalideerd op het bereik 0–100 in zowel het planning POST als het bulk-endpoint.
+
+#### Prestaties
+
+- **Snellere stamtabel-import (upsert):** Stamtabel-import in upsert-modus gebruikt nu batch-lookups (`findMany`) en `createMany` in plaats van per-rij queries. Zelfde optimalisatiepatroon als chauffeur-import.
+
 ### 2026-03-30 — Gebruikersgroepen admin-UI
 
 #### Functionele verbeteringen

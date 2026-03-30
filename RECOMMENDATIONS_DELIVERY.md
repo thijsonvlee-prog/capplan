@@ -6,63 +6,39 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed five backlog items: PB-109 (user groups data model + API), PB-113 (import batch optimization), PB-114 (OAuthAccountNotLinked error), PB-115 (groupDrivers memoization), and PB-116 (capacity endpoint validation). The user groups feature Phase 1 is complete, unblocking PB-110 (admin UI) for the Experience Agent. Import driver execution now uses batch lookups and `createMany` instead of per-row queries, reducing round-trips by ~90%.
+This cycle completed five backlog items: PB-111 (user group enforcement on data routes), PB-117 (stamtabel import batch optimization), PB-118 (preferences user-scoping), PB-119 (planning status enum validation), and PB-120 (planning sickPercentage range validation).
 
-A fresh codebase scan identified new findings: the preferences endpoint is not user-scoped (DE-REC-053), the stamtabel import upsert has the same N+1 pattern that was just fixed for drivers (DE-REC-052), and planning API status fields are never validated against the domain enum (DE-REC-054). These are the most impactful improvements available.
+With user groups fully shipped (Phases 1–3), the authorization model is now complete. All import paths use batch lookups. Preferences are per-user. Planning endpoints validate all input fields.
+
+A fresh codebase scan identified several remaining opportunities. The most impactful are: user group enforcement on the planning single-entry GET (DE-REC-056), capacity endpoint scoping efficiency (DE-REC-057), and the ongoing POC capacity summary row decision (DE-REC-036).
 
 ## Recommended Next Improvements
 
-### DE-REC-052: Stamtabel import upsert — batch lookups instead of per-row queries
+### DE-REC-056: User group enforcement — planning GET and individual driver routes
 
-- **Title:** Apply the same batch optimization to stamtabel upsert as was done for drivers (PB-113)
-- **Problem:** In `src/app/api/import-sources/[id]/execute/route.ts` (lines 449–496), the stamtabel upsert mode issues a per-row `findUnique` + conditional `update`/`create` inside transaction chunks. For a 500-row chunk this means 500 sequential round-trips, same N+1 pattern that was just fixed for driver imports.
-- **Proposed improvement:** Batch `findUnique` calls into a single `findMany({ where: { code: { in: chunkCodes } } })`, build a Map, then issue `createMany` for new records and individual updates for changed descriptions.
-- **Expected product/technical value:** Consistent performance across all import target entities. Same optimization pattern as PB-113.
+- **Title:** Apply department filtering to planning GET and driver [id] GET routes
+- **Problem:** PB-111 applied user group filtering to the list endpoints (`/api/drivers` GET, `/api/planning/for-range` GET, `/api/planning/capacity` GET). However, the single-entry GET routes (`/api/planning` GET by dates/driverId, `/api/drivers/[id]` GET) do not enforce department filtering. A user could access a specific driver's data by ID even if the driver is outside their group's departments.
+- **Proposed improvement:** Apply the same `getAllowedDepartmentIds()` + `driverDepartmentFilter()` pattern to these individual-access routes.
+- **Expected product/technical value:** Complete authorization coverage. Prevents data leakage through direct ID access.
 - **Priority:** P2 High
 - **Effort:** Small
-- **Risk:** Low — same proven pattern as PB-113. Stamtabellen have unique `code` constraint, making batch lookup straightforward.
+- **Risk:** Low — same proven pattern as PB-111.
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Direct follow-up to PB-113. Same code path, same fix, different entity type.
+- **Why now:** Completes the authorization gap left by PB-111's focus on list endpoints.
 
-### DE-REC-053: Preferences endpoint — scope to authenticated user
+### DE-REC-057: Capacity endpoint — avoid driver ID pre-fetch for user group filtering
 
-- **Title:** Read userId from session instead of hardcoding "default" in preferences API
-- **Problem:** In `src/app/api/preferences/route.ts`, all GET/PUT/DELETE operations use `userId = "default"`. When multiple real users exist, they share one preference store and can overwrite each other's settings. The endpoint also has no authentication check at all.
-- **Proposed improvement:** Read userId from the NextAuth session. When auth is not configured, fall back to "default" for backward compatibility. Add a session check so unauthenticated callers get 401.
-- **Expected product/technical value:** Correct per-user preferences when auth is active. Prevents cross-user preference overwrites.
-- **Priority:** P2 High
-- **Effort:** Small
-- **Risk:** Low — the UserPreference model already has a `userId` field and `@@unique([userId, key])`.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Multi-user auth is now in place. Preferences are the last endpoint without proper user scoping.
-
-### DE-REC-054: Planning API — validate status against domain enum
-
-- **Title:** Add status enum validation to planning POST and bulk endpoints
-- **Problem:** In `src/app/api/planning/route.ts` POST and `src/app/api/planning/bulk/route.ts`, the `status` field is accepted without validation against the domain enum. An arbitrary string will be written to the database.
-- **Proposed improvement:** Import `PlanningStatus` from `src/domain/enums.ts` and validate that the provided status is a valid enum value. Return a 400 with a Dutch error message listing valid statuses.
-- **Expected product/technical value:** Defense-in-depth against invalid data. The domain enum already exists but is only enforced on the frontend.
+- **Title:** Optimize capacity endpoint user group filtering to avoid loading all driver IDs
+- **Problem:** The current PB-111 implementation in `/api/planning/capacity` fetches all driver IDs in the user's departments (`findMany` + `select: { id: true }`), then passes them as a `driverId: { in: [...] }` filter to `groupBy`. For organizations with many drivers, this means loading thousands of IDs into memory and passing a large `IN` clause.
+- **Proposed improvement:** Use a Prisma subquery or join-based approach: filter `planningEntry` where `driver.functionRecords.some({ departmentId: { in: allowedDeptIds } })` directly in the `groupBy` where clause.
+- **Expected product/technical value:** Reduces memory usage and query size for large organizations.
 - **Priority:** P3 Medium
 - **Effort:** Small
-- **Risk:** Low.
+- **Risk:** Low — Prisma supports relation filters in `groupBy` where clauses.
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Small fix that closes a validation gap on the most-used write endpoints.
-
-### DE-REC-055: sickPercentage range validation
-
-- **Title:** Add 0–100 range check for sickPercentage on planning endpoints
-- **Problem:** In `src/app/api/planning/route.ts` and `src/app/api/planning/bulk/route.ts`, `sickPercentage` is accepted without range validation. Values like -50 or 9999 will be stored.
-- **Proposed improvement:** Add `if (sickPercentage !== undefined && (sickPercentage < 0 || sickPercentage > 100))` check returning a 400.
-- **Expected product/technical value:** Prevents nonsensical data from entering the database.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low.
-- **Dependencies:** None.
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick validation fix alongside DE-REC-054.
+- **Why now:** Performance optimization for the capacity endpoint at scale.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -118,8 +94,8 @@ A fresh codebase scan identified new findings: the preferences endpoint is not u
 
 ## Risks / Watch-outs
 
-- **Preferences endpoint is not user-scoped:** All users share `userId = "default"`. When multiple users are active, preference changes (e.g. planning page size, density) overwrite each other silently. DE-REC-053 proposes the fix.
-- **Stamtabel import upsert remains sequential:** The batch optimization from PB-113 only applies to driver imports. Stamtabel upserts still issue per-row `findUnique` + `update`/`create`. DE-REC-052 proposes the same fix.
+- **Individual-access routes not yet group-filtered:** `/api/drivers/[id]` GET and `/api/planning` GET (by driverId) do not enforce user group filtering. A user could access individual records outside their department scope by ID. DE-REC-056 proposes the fix.
+- **Capacity endpoint driver ID pre-fetch:** The `getAllowedDepartmentIds()` + `findMany` approach in the capacity endpoint works correctly but loads all matching driver IDs into memory. At current scale this is fine; at 10k+ drivers it could become a bottleneck. DE-REC-057 proposes an optimization.
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls. A failed save leaves the UI showing unsaved state. This is a known design choice.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed to avoid maintaining dead/experimental code.
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
@@ -158,14 +134,14 @@ A fresh codebase scan identified new findings: the preferences endpoint is not u
 - **Add progress tracking for long operations:** Would require streaming responses or a job queue.
 - **Type-safe dynamic Prisma model access:** The `(prisma as any)[modelName]` pattern is pragmatic for entity-generic import logic.
 - **Clean up orphan User records retroactively:** Requires manual identification. Separate concern from prevention (PB-107).
-- **Add planning status enum validation on API routes:** Promoted to DE-REC-054.
 - **Replace `useApi` cache key from `fetcher.toString()` to stable keys:** The current approach works because all fetch calls use named methods from `api.ts`.
 - **Add error handling to PlanningGrid optimistic updates:** Deliberate design choice documented in CLAUDE.md.
 - **Type the `parseJsonBody<T>` generic per route:** Would require ~25 request body interfaces.
-- **Add auth checks to GET endpoints:** CLAUDE.md states VIEWER = read-only on all GET endpoints. Until auth is enforced in production, adding individual route checks adds code without effect.
+- **Add auth checks to GET endpoints:** CLAUDE.md states VIEWER = read-only on all GET endpoints. User group filtering handles data scoping without blocking reads.
 - **Add driverId FK validation on planning POST:** Prisma FK constraint catches invalid IDs. Adding a pre-check doubles the query count for the most common write operation.
 - **Refactor useApi global cache invalidation:** The broadcast approach works because cache entries have a 30s freshness window.
 - **autoCloseOpenRecords race condition:** Theoretical at current concurrency. Would require wrapping callers in transactions.
+- **Add user group filtering to write endpoints:** Write endpoints already require the user to know the driver ID. The ID-level access gap (DE-REC-056) is the more impactful fix for reads.
 
 ## Recommendation Rules
 
