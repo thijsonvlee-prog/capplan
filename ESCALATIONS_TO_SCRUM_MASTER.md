@@ -37,7 +37,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 - **Choose one option:**
 
-  - ( ) **Option A — Minimal MVP: Single-dimension filter (Werkgever only)**
+  - ( ) **Option A — Minimal MVP: Single-dimension filter (Werkgever only)** (X) maar laat 'afdeling' het filtercriterium zijn
     - Data model: UserGroup with a name and a list of allowed Werkgever IDs. Users are assigned to one group.
     - Enforcement: API routes for drivers, planning, and capacity filter by the user's group Werkgever IDs. Settings/stamtabellen remain unfiltered.
     - UI: New "Gebruikersgroepen" tab in settings (admin only) to create groups, assign werkgevers, and assign users.
