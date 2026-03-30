@@ -23,15 +23,44 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-Beschrijving van stamtabellen met alle velden en veldspecificaties in masterdata.md. ook de relaties tussen de stamtabellen hier beschrijven.
+### SMI-016: Login pagina — alleen Google + 'under construction' tekst
 
-Voeg de autorisatierol Admin toe. deze dient alle rechten te hebben. 
+- **Type:** UX request
+- **Status:** Planned
+- **Input:** "Zorg ervoor dat op de login pagina alleen de google login optie zichtbaar is. Ook moet de login pagina nog even de tekst tonen 'under construction'"
+- **Analysis:** Login page currently shows both Google and Microsoft buttons. Simple UI change: hide Microsoft button, add 'under construction' text.
+- **Backlog linkage:** PB-103.
 
-Alleen gebruikers die zijn toegevoegd via Adminpanel moeten kunnen inloggen via google. Niet zo maar iedereen die probeert in te loggen moet toegang krijgen.
+### SMI-015: Gebruikersgroepen met autorisatiefilters
 
-Implementeer een functionaliteit voor het beheren van gebruikersgroepen. Per gebruikersgroep moeten autorisatiefilters kunnen worden vastgelegd (dus filters op de zichtbare gegevens, niet op functionaliteit). Functionaliteit wordt vastgelegd in de autorisatierol.
+- **Type:** Initiative / new feature
+- **Status:** Escalated
+- **Input:** "Implementeer een functionaliteit voor het beheren van gebruikersgroepen. Per gebruikersgroep moeten autorisatiefilters kunnen worden vastgelegd (dus filters op de zichtbare gegevens, niet op functionaliteit). Functionaliteit wordt vastgelegd in de autorisatierol."
+- **Analysis:** This is a significant new feature. No UserGroup model or group-related code exists. Requires: data model (UserGroup, group membership, filter definitions), API routes, management UI, and filter enforcement on all data queries. The scope of "filterable dimensions" (employer, department, location, or others) and enforcement strategy need to be decided before implementation can start. Escalated to ESC-008.
+- **Backlog linkage:** PB-104 (blocked pending ESC-008).
 
-Zorg ervoor dat op de login pagina alleen de google login optie zichtbaar is. Ook moet de login pagina nog even de tekst tonen 'under construction'
+### SMI-014: Alleen toegevoegde gebruikers mogen inloggen via Google
+
+- **Type:** Security fix
+- **Status:** Planned
+- **Input:** "Alleen gebruikers die zijn toegevoegd via Adminpanel moeten kunnen inloggen via google. Niet zo maar iedereen die probeert in te loggen moet toegang krijgen."
+- **Analysis:** Currently PrismaAdapter auto-creates a User record on first Google login with default PLANNER role. This means anyone with a Google account can access the application. Fix: add a `signIn` callback that rejects users not already in the User table.
+- **Backlog linkage:** PB-102.
+
+### SMI-013: Admin autorisatierol
+
+- **Type:** Request
+- **Status:** Closed
+- **Input:** "Voeg de autorisatierol Admin toe. deze dient alle rechten te hebben."
+- **Closed reason:** Already fully implemented. The ADMIN role exists in the User model (Prisma schema), is enforced server-side via `requireRole()` in `api-route-utils.ts` with a clear hierarchy (VIEWER < PLANNER < ADMIN), and has full access to all functionality including settings, users, import sources, and roster profiles. No additional work needed.
+
+### SMI-012: Stamtabellen documentatie in masterdata.md
+
+- **Type:** Documentation request
+- **Status:** Planned
+- **Input:** "Beschrijving van stamtabellen met alle velden en veldspecificaties in masterdata.md. ook de relaties tussen de stamtabellen hier beschrijven."
+- **Analysis:** No masterdata.md exists. Straightforward documentation task: describe all stamtabellen with fields, types, constraints, and relationships. Use Prisma schema as source of truth.
+- **Backlog linkage:** PB-101.
 
 ### SMI-011: Voorbereidingen voor 1000 chauffeurs — performance en schaalbaarheid
 
@@ -39,8 +68,8 @@ Zorg ervoor dat op de login pagina alleen de google login optie zichtbaar is. Oo
 - **Status:** Planned
 - **Input:** "Maak voorbereidingen voor grotere schaal en meer data input. Er moet straks voor uiteindelijk 1000 chauffeurs de planning kunnen worden gemaakt. Zorg ervoor dat de performance goed blijft. Het systeem mag nooit traag aanvoelen."
 - **Analysis:** Investigation reveals three critical bottlenecks at 1000 drivers: (1) PlanningGrid renders all rows in the DOM — no virtualization, (2) `/api/planning/for-range` and `/api/drivers` return all records without pagination — 5-10MB payloads, (3) no covering index for capacity aggregation at scale. Capacity groupBy and scenario duplication are lower risk.
-- **Breakdown:** Broken into 6 phased backlog items (PB-093 through PB-098). **Phase 1 complete:** PB-093 (planning pagination), PB-094 (drivers pagination), PB-009 (capacity index), PB-092 (import guardrail) all shipped 2026-03-30. **Phase 2 ready:** PB-096 (virtual scrolling) and PB-097 (drivers pagination UI) are unblocked and assigned to Experience Agent for next cycle. PB-098 (scenario duplication batching) remains deferred.
-- **Backlog linkage:** PB-093, PB-094, PB-009 (promoted), PB-092, PB-096, PB-097, PB-098.
+- **Breakdown:** Broken into 8 phased backlog items (PB-093 through PB-098, PB-105). **Phase 1 complete:** PB-093 (planning pagination), PB-094 (drivers pagination), PB-009 (capacity index), PB-092 (import guardrail) all shipped 2026-03-30. **Phase 2 complete:** PB-096 (virtual scrolling) and PB-097 (drivers pagination UI) shipped 2026-03-30. **Phase 3 ready:** PB-105 (planning grid paginated fetching) and PB-098 (scenario duplication batching) scheduled for next cycle.
+- **Backlog linkage:** PB-093, PB-094, PB-009, PB-092, PB-096, PB-097, PB-105, PB-098.
 
 ## Closed Inputs
 
@@ -48,37 +77,28 @@ Zorg ervoor dat op de login pagina alleen de google login optie zichtbaar is. Oo
 
 - **Type:** Bug report (configuratie)
 - **Status:** Closed
-- **Input:** "Bij inloggen met Google krijg ik de foutmelding: Fout 400: redirect_uri_mismatch Details van verzoek: flowName=GeneralOAuthFlow"
-- **Root cause:** De "Authorized redirect URI" in Google Cloud Console komt niet overeen met de daadwerkelijke callback-URL van NextAuth.js. De exacte URI die geconfigureerd moet worden is: `https://<jouw-vercel-url>/api/auth/callback/google` (let op het pad `/api/auth/callback/google`).
-- **Resolution:** Dit is een configuratie-issue in Google Cloud Console, geen code-issue. De stappen staan beschreven in `AUTH_SETUP.md` (Stap 3a, punt 6). Controleer dat de redirect URI exact overeenkomt, inclusief protocol (`https://`) en het volledige pad. De probleemoplossingstabel in `AUTH_SETUP.md` behandelt dit scenario al ("Callback-fout na inloggen → Redirect URI komt niet overeen").
-- **Closed reason:** Geen code-wijziging nodig. Configuratie-aanpassing in Google Cloud Console vereist. Documentatie is reeds beschikbaar in AUTH_SETUP.md.
-- **Backlog linkage:** Geen — geen backlog item nodig.
+- **Closed reason:** Configuratie-issue in Google Cloud Console, geen code-wijziging nodig. Documentatie beschikbaar in AUTH_SETUP.md.
+- **Backlog linkage:** Geen.
 
 ### SMI-009: Server error bij openen CapPlan
 
 - **Type:** Bug report
 - **Status:** Closed
-- **Input:** "Ik krijg een 'server error' als ik naar de capplan tool ga: Server error — There is a problem with the server configuration. Check the server logs for more information."
-- **Root cause:** The NextAuth middleware (`src/middleware.ts`) unconditionally required `NEXTAUTH_SECRET` to be set, while the API route role enforcement (`requireRole()`) gracefully skips when it's not configured. When `NEXTAUTH_SECRET` is missing, the middleware crashed and NextAuth showed its default error page on all dashboard routes.
-- **Resolution:** Fixed by the Product Owner Agent. The middleware now checks for `NEXTAUTH_SECRET` before enforcing authentication, matching the same conditional pattern used in `api-route-utils.ts`. When auth is not configured, all requests pass through.
 - **Closed reason:** Fixed in PB-087.
 - **Backlog linkage:** PB-087 (completed).
-- **Note:** If the error persists after deployment, the issue may be in the Vercel environment configuration (missing or incorrect `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, or provider credentials). See ESC-006 for environment checklist.
 
 ### SMI-002: Keep improvements incremental during stabilization
 
 - **Type:** Constraint
 - **Status:** Closed (standing constraint, actively applied)
-- **Input:** While core workflows (planning grid, roster assignment, driver management) are still stabilizing, all improvements must be incremental. Avoid broad redesigns, large refactors, or architectural changes that touch multiple domains at once.
-- **Update (2026-03-29):** SMI-004 relaxes this constraint for design work. Meaningful redesign toward DESIGN.md compliance is now expected, but must still be phased and independently verifiable. Technical/architectural refactors remain subject to the incremental constraint.
-- **Closed reason:** Standing constraint. Actively applied to all backlog items as a prioritization rule. No further processing needed.
+- **Closed reason:** Standing constraint. Actively applied to all backlog items as a prioritization rule.
 - **Backlog linkage:** Applied as a standing constraint to all backlog items.
 
 ### SMI-008: Focus on building out functionality — connectivity and user management
 
 - **Type:** Initiative / priority signal
 - **Status:** Closed
-- **Closed reason:** Fully delivered. Connectivity: PB-077 (CSV upload), PB-078 (import execution), PB-083 (fieldMappings validation) all complete. Auth & user management: PB-080 (infrastructure), PB-081 (login page), PB-079 (admin panel), PB-082 (role enforcement) all complete. Follow-up PB-084 (frontend role-aware UI) scheduled.
+- **Closed reason:** Fully delivered. Connectivity and auth/user management all complete.
 - **Backlog linkage:** PB-077–PB-084.
 
 ### SMI-007: Rewrite CLAUDE.md based on current application state, incorporate DESIGN.md
@@ -92,36 +112,36 @@ Zorg ervoor dat op de login pagina alleen de google login optie zichtbaar is. Oo
 
 - **Type:** Initiative
 - **Status:** Closed
-- **Closed reason:** Fully delivered. Configuration MVP (PB-015, PB-016), CSV upload (PB-077), import execution (PB-078), fieldMappings validation (PB-083) all complete.
+- **Closed reason:** Fully delivered. Configuration MVP, CSV upload, import execution, validation all complete.
 - **Backlog linkage:** PB-015, PB-016, PB-077, PB-078, PB-083.
 
 ### SMI-004: Bigger design steps toward DESIGN.md compliance
 
 - **Type:** Priority signal / direction change
 - **Status:** Closed
-- **Closed reason:** Fully delivered. All major redesign work is complete: planning grid (3 phases), DayCell popup, date input wrapper, settings page tab navigation, drivers page composition, SubTable consistency, capacity page badges, RosterAssigner table, RosterProfileEditor dots. No remaining dense-border tables. All common surfaces aligned with DESIGN.md.
-- **Backlog linkage:** PB-032 (done), PB-034 (done), PB-035 (done), PB-037 (done), PB-038 (done), PB-039 (done), PB-041 (done), PB-048 (done), PB-052 (done), PB-047 (done), PB-040 (done), PB-057 (done).
+- **Closed reason:** Fully delivered. All major redesign work complete.
+- **Backlog linkage:** PB-032, PB-034, PB-035, PB-037–PB-041, PB-048, PB-052, PB-047, PB-057.
 
 ### SMI-006: Custom date picker design
 
 - **Type:** UX improvement request
 - **Status:** Closed
-- **Closed reason:** Fully delivered. ESC-004 decided Option B (styled date input wrapper). PB-039 completed 2026-03-29 — all date fields now use a styled wrapper with calendar icon trigger.
-- **Backlog linkage:** PB-039 (completed).
+- **Closed reason:** Fully delivered. PB-039 completed 2026-03-29.
+- **Backlog linkage:** PB-039.
 
 ### SMI-005: DayCell popup positioning and redesign
 
 - **Type:** UX improvement request
 - **Status:** Closed
-- **Closed reason:** Fully delivered. PB-037 (reposition popup near click target) and PB-038 (visual redesign) both completed 2026-03-29.
-- **Backlog linkage:** PB-037 (completed), PB-038 (completed).
+- **Closed reason:** Fully delivered. PB-037, PB-038 completed 2026-03-29.
+- **Backlog linkage:** PB-037, PB-038.
 
 ### SMI-003: Drivers not visible in planning grid
 
 - **Type:** Bug report
 - **Status:** Closed
-- **Closed reason:** Fixed. PB-025 completed 2026-03-29 — removed the employment-based filter from the planning grid API. All drivers now appear in the planning grid.
-- **Backlog linkage:** PB-025 (completed).
+- **Closed reason:** Fixed. PB-025 completed 2026-03-29.
+- **Backlog linkage:** PB-025.
 
 ## Input Handling Rules
 

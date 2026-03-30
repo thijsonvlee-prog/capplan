@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Scaling initiative (SMI-011). Phase 1 (backend pagination + index) is complete. Phase 2 (frontend virtual scrolling + pagination UI) is the primary work for the next cycle — assigned to the Experience Agent. The Delivery Agent picks up reliability improvements (import chunking, date validation) that complement the scaling work.
+**Current direction:** New Scrum Master inputs (SMI-012 through SMI-016) introduce auth hardening and user group management as the next initiative. The login restriction (PB-102) is a P1 security fix. Login page cleanup (PB-103) and masterdata documentation (PB-101) are quick wins. User groups (PB-104) is blocked pending scope decision (ESC-008). Scaling follow-ups (PB-105, PB-098) fill remaining capacity.
 
 ## Status Definitions
 
@@ -27,7 +27,98 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-102: Restrict Google login to pre-added users only
+
+- **ID:** PB-102
+- **Title:** Only allow login for users already added via admin panel
+- **Problem / opportunity:** Currently, PrismaAdapter auto-creates a new User record on first Google login with default PLANNER role. Anyone with a Google account can access the application. Only users explicitly added by an admin should be allowed to log in.
+- **Owner:** Delivery Agent
+- **Priority:** P1 Critical
+- **Status:** Ready
+- **Why this matters now:** Security gap — unauthorized users can gain PLANNER access by simply logging in with any Google account.
+- **Scope notes:** Add a `signIn` callback in `src/lib/auth.ts` that checks whether the user's email already exists in the User table. If not, reject the sign-in with a clear message. The admin must first create the user record via the admin panel before they can log in. Do not auto-create User records on first login. Ensure the error is visible to the rejected user (NextAuth error page or redirect with message).
+- **Dependencies:** None.
+- **Definition of done:** Only pre-existing users (added via admin panel) can successfully authenticate via Google. New unknown Google accounts are rejected with a Dutch error message. Verify passes.
+- **Implementation note:** Add `signIn` callback to NextAuth options in `src/lib/auth.ts`. Check `prisma.user.findUnique({ where: { email } })`. Return `false` or an error URL if user not found. Test with both existing and non-existing users.
+- **Source:** SMI-014.
+
+### PB-103: Login page — show only Google + 'under construction' text
+
+- **ID:** PB-103
+- **Title:** Simplify login page to Google-only with under construction notice
+- **Problem / opportunity:** The login page currently shows both Google and Microsoft login buttons. The Scrum Master wants only Google visible, and a visible 'under construction' text on the page.
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Direct Scrum Master request. Quick UI change that aligns the login page with current product state.
+- **Scope notes:** Hide the Microsoft/Azure AD login button from the login page UI (keep the backend provider config intact for future use). Add a visible "Under construction" text/banner on the login page. All text in Dutch. Keep the existing visual design.
+- **Dependencies:** None.
+- **Definition of done:** Login page shows only Google button. "Under construction" text is visible. Microsoft button is hidden. Verify passes.
+- **Implementation note:** Modify `src/app/login/page.tsx`. Conditionally hide Microsoft button or hardcode Google-only for now. Add a Dutch "Under construction" notice (e.g., "Deze applicatie is in ontwikkeling" or simply "Under construction" if the SM prefers English for this label).
+- **Source:** SMI-016.
+
+### PB-101: Stamtabellen documentation in masterdata.md
+
+- **ID:** PB-101
+- **Title:** Create masterdata.md with stamtabel field descriptions and relationships
+- **Problem / opportunity:** No central documentation exists describing all stamtabellen (master data tables), their fields, field specifications, and relationships between them. This makes onboarding and data governance harder.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Direct Scrum Master request. Supports data governance and developer onboarding.
+- **Scope notes:** Create `masterdata.md` in the project root. Document all stamtabellen (Employer, Department, Location, LeaveType, Skill, RosterProfile, Function) with: table name, all fields with types and constraints, relationships to other tables, and any business rules. Also document the core entities (Driver, Employment, PlanningEntry, Scenario) and their relationships. Use the Prisma schema as the source of truth. Write in Dutch where appropriate (field descriptions), but technical field names in English as they appear in the schema.
+- **Dependencies:** None.
+- **Definition of done:** `masterdata.md` exists with complete field-level documentation for all stamtabellen and their relationships. Accurate to current Prisma schema.
+- **Implementation note:** Read `prisma/schema.prisma` and document each model systematically.
+- **Source:** SMI-012.
+
+### PB-105: Planning grid — integrate paginated data fetching
+
+- **ID:** PB-105
+- **Title:** Connect planning grid to paginated API for large driver sets
+- **Problem / opportunity:** The planning grid loads all drivers in a single request. Virtual scrolling (PB-096) handles DOM performance, but the data transfer and memory cost remains. At 1000+ drivers, initial load time will be significant.
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Completes the 1000-driver scaling story (SMI-011). Virtual scrolling handles rendering; this handles data transfer.
+- **Scope notes:** Integrate `api.planning.getForRange()` paginated endpoint into the planning grid. Load drivers in pages (e.g., 100 per page). Add pagination controls or infinite scroll to the grid. The capacity summary row may need a separate aggregation API call rather than client-side computation. Preserve all existing functionality (drag-select, group headers, sticky columns).
+- **Dependencies:** PB-096 (completed), PB-093 (completed).
+- **Definition of done:** Planning grid fetches drivers in pages. Initial load is fast regardless of total driver count. All existing interactions preserved. Verify passes.
+- **Implementation note:** See EX-REC-044 for detailed proposal.
+- **Source:** EX-REC-044, SMI-011.
+
+### PB-098: Scenario duplication batch processing
+
+- **ID:** PB-098
+- **Title:** Batch scenario duplication to reduce memory pressure at scale
+- **Problem / opportunity:** `POST /api/scenarios/[id]/duplicate` loads all planning entries (up to 50,000) into Node.js memory at once, then creates them in a single `createMany`. Near the 50K ceiling, this creates memory spikes and risks timeouts.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** All Phase 1+2 scaling items are complete. This is the last known reliability bottleneck for large datasets. Same chunking pattern already proven in PB-099 (import chunking).
+- **Scope notes:** Fetch and create entries in chunks of 5,000. Keep memory usage constant regardless of total entries.
+- **Dependencies:** None.
+- **Definition of done:** Scenario duplication works reliably at 50K entries without memory spikes. Verify passes.
+- **Implementation note:** Apply same chunking pattern as PB-099. See DE-REC-046.
+- **Source:** DE-REC-046, SMI-011.
+
+---
+
+## Blocked / Needs Decision
+
+### PB-104: User groups with authorization filters
+
+- **ID:** PB-104
+- **Title:** Implement user group management with data visibility filters
+- **Problem / opportunity:** The Scrum Master wants user groups where each group has authorization filters that control which data is visible to members (not functionality — that remains role-based). No UserGroup model or group-related code exists yet.
+- **Owner:** To be determined after scope decision
+- **Priority:** P2 High
+- **Status:** Blocked
+- **Blocked by:** ESC-008 — scope and phasing decision needed before implementation can start.
+- **Why this matters now:** Direct Scrum Master request. Enables multi-tenant-like data separation within the application.
+- **Scope notes:** Pending ESC-008 decision. Will be broken into phased backlog items after scope is defined.
+- **Dependencies:** ESC-008 decision.
+- **Source:** SMI-015.
 
 ---
 
@@ -44,28 +135,24 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** Split both `importDrivers` and `importStamtabel` (upsert mode) into chunks of 500 rows, each processed in its own `prisma.$transaction`. Accumulated created/updated/error counts across chunks. If a chunk-level transaction fails, the error is recorded with the chunk number and row range, and remaining chunks continue processing. Existing import result summary and logging unchanged.
 
 ### PB-100: Add date format validation to planning endpoints
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** Added `validateDateFormat()` and `validateDateFormats()` to `api-route-utils.ts`. Validates regex format (`/^\d{4}-\d{2}-\d{2}$/`) and semantic validity (rejects dates like 2025-02-30 that would roll over). Applied to: GET `/api/planning/for-range` (dates query param), POST `/api/planning/bulk` (dates array in body), GET `/api/planning` (dates query param), POST `/api/planning` (single date in body). All return 400 with Dutch error messages.
 
 ### PB-096: Planning grid virtual scrolling
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** Implemented manual table virtualization instead of react-window to preserve the existing table structure with sticky header, sticky left columns, and drag-select behavior. Flattens group/driver rows into a single array, tracks scroll position via ResizeObserver, and only renders visible rows plus a 10-row buffer. Fixed row heights per density level (spacious: 48px, comfortable: 38px, compact: 26px). No external dependency added — react-window was approved but the table-compatible approach is lower risk and fully achieves the performance goal.
 
 ### PB-097: Drivers page pagination UI
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-30
-- **Implementation note:** Switched to `api.drivers.listPaginated()` with `useApiDataWithLoading` for automatic cache invalidation. Added 300ms debounced server-side search. Pagination controls include first/prev/next/last buttons, page indicator, page size selector (25/50/100), and range display. All labels in Dutch. Clear search button added. Count badge shows total from server.
 
 ### PB-093: Add server-side pagination to planning for-range API
 
@@ -94,16 +181,6 @@ _No items currently in progress._
 ---
 
 ## Deferred
-
-### PB-098: Scenario duplication batch processing
-
-- **ID:** PB-098
-- **Title:** Batch scenario duplication to reduce memory pressure at scale
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Deferred
-- **Reason:** Existing 50,000 entry safeguard prevents worst case. Address after core scaling work (PB-096, PB-097) is done.
-- **Source:** SMI-011.
 
 ### PB-030: Move hardcoded constants and chart colors to centralized config
 
@@ -134,7 +211,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Functional and usable. Lower priority than scaling work.
+- **Reason:** Functional and usable. Lower priority than auth and scaling work.
 - **Source:** EX-REC-036.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers

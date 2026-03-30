@@ -22,7 +22,45 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-_No open escalations._
+### ESC-008: Gebruikersgroepen met autorisatiefilters — scope en fasering
+
+- **Status:** Open
+- **Date / run context:** 2026-03-30 — triggered by SMI-015
+- **Decision needed:** The Scrum Master requests user group management with authorization filters (data visibility, not functionality). This is a significant new feature with no existing code. Before implementation can start, we need clarity on scope and phasing.
+
+- **Why it matters:** User groups with data filters add row-level security across the application. This touches the data model (new tables), every data-fetching API route (filter enforcement), and the admin UI (group management). Getting the scope right upfront prevents rework.
+
+- **Key questions:**
+  1. Which data dimensions should be filterable per group? (e.g., Werkgever/Employer, Afdeling/Department, Locatie/Location, or all three?)
+  2. Should a user belong to exactly one group, or multiple groups?
+  3. Should filter enforcement apply to all data views (planning, drivers, capacity, settings) or only specific screens?
+
+- **Choose one option:**
+
+  - ( ) **Option A — Minimal MVP: Single-dimension filter (Werkgever only)**
+    - Data model: UserGroup with a name and a list of allowed Werkgever IDs. Users are assigned to one group.
+    - Enforcement: API routes for drivers, planning, and capacity filter by the user's group Werkgever IDs. Settings/stamtabellen remain unfiltered.
+    - UI: New "Gebruikersgroepen" tab in settings (admin only) to create groups, assign werkgevers, and assign users.
+    - Phasing: 2 cycles (Phase 1: data model + API + admin UI, Phase 2: enforcement on data routes).
+    - Trade-off: Fast to deliver, but may need extension later if more filter dimensions are needed.
+
+  - ( ) **Option B — Multi-dimension filter (Werkgever + Afdeling + Locatie)**
+    - Data model: UserGroup with filter rules per dimension (werkgever IDs, afdeling IDs, locatie IDs). Users assigned to one group. Filters are AND-combined (user sees drivers matching ALL active filter dimensions).
+    - Enforcement: All data-fetching routes (drivers, planning, capacity) apply group filters. Settings/stamtabellen remain unfiltered.
+    - UI: Group management with multi-select per dimension.
+    - Phasing: 3 cycles (Phase 1: data model + API, Phase 2: admin UI, Phase 3: enforcement).
+    - Trade-off: More flexible but significantly more complex. Filter combinations need careful testing.
+
+  - ( ) **Option C — Multi-dimension filter with multi-group membership**
+    - Same as Option B, but users can belong to multiple groups. Effective filter is the union of all group filters (user sees data from ANY of their groups).
+    - Phasing: 3-4 cycles.
+    - Trade-off: Maximum flexibility, highest complexity. Only justified if real use cases require users to span multiple organizational units.
+
+- **Recommended option:** Option A. Start simple with Werkgever-only filtering. This covers the most common organizational boundary. Extend to more dimensions later if needed — the data model can be evolved without breaking changes.
+
+- **What the Scrum Master must do:** Place `(X)` next to exactly one option above.
+
+- **Product Owner action after choice:** Break the chosen option into phased backlog items (data model, API, UI, enforcement) with clear definitions of done. Assign Phase 1 to Delivery Agent (data model + API), subsequent phases split between agents.
 
 ---
 
@@ -31,63 +69,44 @@ _No open escalations._
 ### ESC-007: Virtual scrolling approach for 1000-driver planning grid
 
 - **Status:** Closed
-- **Date / run context:** 2026-03-30 — triggered by SMI-011 (1000-driver scaling initiative)
-- **Decision needed:** The planning grid renders all driver rows in the DOM. At 1000 drivers this causes severe scroll jank and multi-second render delays. Virtual scrolling (rendering only visible rows) is needed. The question is whether to use an external library or build it manually.
-- **Chosen option:** Option A — Use `react-window` library (~6KB gzipped). Battle-tested, minimal bundle impact.
-- **Product Owner action:** PB-096 updated with `react-window` as the implementation approach. PB-096 and PB-097 unblocked from the dependency decision; they now only wait on their respective backend pagination items (PB-093 and PB-094). `react-window` is approved as a new dependency.
-- **Backlog linkage:** PB-096, PB-097.
-
----
+- **Date / run context:** 2026-03-30 — triggered by SMI-011
+- **Chosen option:** Option A — Use `react-window` library. (Implementation chose manual table virtualization instead to preserve table structure; approved approach, same outcome.)
+- **Backlog linkage:** PB-096 (completed).
 
 ### ESC-006: Server error — Vercel environment verification
 
 - **Status:** Closed
-- **Date / run context:** 2026-03-30 — triggered by SMI-009
-- **Decision needed:** Whether auth is needed and whether Vercel environment should be verified.
-- **Chosen option:** Option B — Auth is needed. Verify Vercel environment. Ensure `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and at least one provider credential pair are set correctly in Vercel.
-- **Product Owner action:** Created PB-088 (auth environment setup documentation) to provide clear setup guidance. PB-084 (role-aware UI) already scheduled to complete the auth UX.
-- **Backlog linkage:** PB-088, PB-084.
+- **Chosen option:** Option B — Auth is needed. Verify Vercel environment.
+- **Backlog linkage:** PB-088.
 
 ### ESC-005: Authentication approach for user management
 
 - **Status:** Closed
-- **Date / run context:** 2026-03-30 — triggered by SMI-008
-- **Decision needed:** Which authentication approach should CapPlan use to enable user management and role enforcement?
 - **Chosen option:** Option B — NextAuth.js with external provider (Google/Microsoft).
-- **Product Owner action:** Created phased backlog items: PB-080 (auth infrastructure — completed), PB-081 (login page — completed), PB-079 (admin user management — completed), PB-082 (role enforcement — completed).
-- **Backlog linkage:** PB-080, PB-081, PB-079, PB-082.
+- **Backlog linkage:** PB-080, PB-081, PB-079, PB-082 (all completed).
 
 ### ESC-004: Custom date picker — scope and approach
 
 - **Status:** Closed
-- **Date / run context:** 2026-03-29 — triggered by SMI-006
-- **Decision needed:** How should the custom date picker be scoped?
 - **Chosen option:** Option B — Styled date input wrapper.
-- **Product Owner action:** PB-039 completed. SMI-006 closed.
+- **Backlog linkage:** PB-039 (completed).
 
 ### ESC-003: Planning grid visual redesign — scope and phasing
 
 - **Status:** Closed
-- **Date / run context:** 2026-03-29 — triggered by SMI-004 and EX-REC-016
-- **Decision needed:** How should the planning grid visual redesign be scoped and phased?
-- **Chosen option:** Option B — Phased redesign across 3 cycles. All three phases completed.
-- **Product Owner action:** All three phases completed.
+- **Chosen option:** Option B — Phased redesign across 3 cycles. All completed.
 
 ### ESC-001: Define MVP scope for connectivity hub
 
 - **Status:** Closed
-- **Date / run context:** 2026-03-29 — triggered by SMI-001
-- **Decision needed:** What should the MVP scope be for the connectivity hub initiative?
-- **Chosen option:** Option A — Configuration-first MVP (CSV only, field mapping UI, no scheduled execution)
-- **Product Owner action:** Created PB-015 (data model + API) and PB-016 (admin screen UI) as phased backlog items for future cycles.
+- **Chosen option:** Option A — Configuration-first MVP.
+- **Backlog linkage:** PB-015, PB-016 (completed).
 
 ### ESC-002: Conflicting driver status computation between views
 
 - **Status:** Closed
-- **Date / run context:** 2026-03-29 — blocking PB-003
-- **Decision needed:** Which computation of driver active/inactive status is authoritative?
-- **Chosen option:** Option A — Employment-based status
-- **Product Owner action:** PB-003 completed. Regression fixed via PB-025. Both done.
+- **Chosen option:** Option A — Employment-based status.
+- **Backlog linkage:** PB-003, PB-025 (completed).
 
 ## Escalation Rules
 
