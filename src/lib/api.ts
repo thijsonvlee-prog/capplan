@@ -189,7 +189,8 @@ const planning = {
   getForRange(
     dates: string[],
     scenarioId?: string,
-    pagination?: { page: number; pageSize: number }
+    pagination?: { page: number; pageSize: number },
+    search?: string
   ): Promise<{ drivers: DriverWithEntries[]; dates: string[]; total?: number; page?: number; pageSize?: number }> {
     return fetchJson<{ drivers: DriverWithEntries[]; dates: string[]; total?: number; page?: number; pageSize?: number }>(
       buildUrl("/api/planning/for-range", {
@@ -197,6 +198,7 @@ const planning = {
         scenarioId,
         page: pagination ? String(pagination.page) : undefined,
         pageSize: pagination ? String(pagination.pageSize) : undefined,
+        search: search || undefined,
       })
     );
   },

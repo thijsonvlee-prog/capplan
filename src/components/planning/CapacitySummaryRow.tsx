@@ -1,13 +1,8 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useMemo } from "react";
 import type { PlanningStatus, DensityLevel } from "@/domain/enums";
-import type { DriverWithEntries } from "@/domain/types";
 import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, STATUS_LABELS } from "@/domain/constants";
-
-// POC EXPERIMENT: Capacity Summary Row
-// Shows per-column status totals at the bottom of the planning grid.
-// To remove: delete this file + remove import/usage from PlanningGrid.tsx
 
 type ColumnHeader = { key: string; label: string; sub?: string; dates: string[] };
 
@@ -18,7 +13,7 @@ const DENSITY_FONT: Record<DensityLevel, string> = {
 };
 
 export const CapacitySummaryRow = memo(function CapacitySummaryRow({
-  drivers,
+  capacityData,
   columnHeaders,
   extraColumnCount,
   density,
@@ -26,7 +21,7 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
   extraColWidth,
   minCellWidth,
 }: {
-  drivers: DriverWithEntries[];
+  capacityData: Record<string, Record<string, number>>;
   columnHeaders: ColumnHeader[];
   extraColumnCount: number;
   density: DensityLevel;
@@ -37,21 +32,24 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
   const [expanded, setExpanded] = useState(false);
   const fontSize = DENSITY_FONT[density];
 
-  // Pre-compute: for each column, count statuses
-  const columnCounts = columnHeaders.map((col) => {
-    const counts: Record<string, number> = {};
-    for (const status of ALL_PLANNING_STATUSES) counts[status] = 0;
+  // Aggregate capacity data per column from the full-dataset API response
+  const columnCounts = useMemo(() =>
+    columnHeaders.map((col) => {
+      const counts: Record<string, number> = {};
+      for (const status of ALL_PLANNING_STATUSES) counts[status] = 0;
 
-    for (const driver of drivers) {
       for (const date of col.dates) {
-        const entry = driver.planningEntries.find((e) => e.date === date);
-        if (entry) {
-          counts[entry.status] = (counts[entry.status] || 0) + 1;
+        const dayCounts = capacityData[date];
+        if (dayCounts) {
+          for (const status of ALL_PLANNING_STATUSES) {
+            counts[status] += dayCounts[status] || 0;
+          }
         }
       }
-    }
-    return counts;
-  });
+      return counts;
+    }),
+    [columnHeaders, capacityData]
+  );
 
   // Compact view: show only the "available" count (BASE_ROSTER + AVAILABLE_EXTRA)
   // Expanded view: show all statuses
@@ -76,7 +74,7 @@ export const CapacitySummaryRow = memo(function CapacitySummaryRow({
         ))}
         {columnCounts.map((counts, i) => {
           const available = counts.BASE_ROSTER + counts.AVAILABLE_EXTRA;
-          const total = drivers.length * columnHeaders[i].dates.length;
+          const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
           return (
             <td
               key={columnHeaders[i].key}

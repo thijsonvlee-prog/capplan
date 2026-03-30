@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef, type ChangeEvent } from "react";
 import type { PlanningStatus, AggregationLevel, DensityLevel, GroupByField } from "@/domain/enums";
 import type { DriverWithEntries, PlanningEntry } from "@/domain/types";
 import { ALL_PLANNING_STATUSES, STATUS_COLORS, STATUS_CODES, STATUS_DOT_COLORS, GROUP_BY_LABELS, EMPLOYMENT_TYPE_LABELS, DEFAULT_PERIOD_DAYS } from "@/domain/constants";
@@ -78,13 +78,28 @@ export function PlanningGrid() {
   const [dayCount] = useState(DEFAULT_PERIOD_DAYS);
   const [aggregation, setAggregation] = useState<AggregationLevel>("day");
   const [density, setDensity] = useState<DensityLevel>("comfortable");
-  const [filter, setFilter] = useState("");
   const [groupBy, setGroupBy] = useState<GroupByField>("none");
   const [assigningDriver, setAssigningDriver] = useState<{ id: string; name: string } | null>(null);
   const [extraColumns, setExtraColumns] = useState<DriverColumnKey[]>([]);
   const [showColumnPicker, setShowColumnPicker] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [showCapacitySummary, setShowCapacitySummary] = useState(true); // POC: capacity summary row
+
+  // Search state (debounced for server-side search)
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(value), 300);
+  }, []);
+
+  useEffect(() => {
+    return () => clearTimeout(searchTimerRef.current);
+  }, []);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -124,9 +139,16 @@ export function PlanningGrid() {
   );
 
   const data = useApiData(
-    () => allDates.length > 0 ? api.planning.getForRange(allDates, activeScenarioId, { page, pageSize }) : Promise.resolve(null),
-    [allDates.length > 0 ? allDates[0] : "", allDates.length, activeScenarioId, page, pageSize],
+    () => allDates.length > 0 ? api.planning.getForRange(allDates, activeScenarioId, { page, pageSize }, debouncedSearch) : Promise.resolve(null),
+    [allDates.length > 0 ? allDates[0] : "", allDates.length, activeScenarioId, page, pageSize, debouncedSearch],
     null as { drivers: DriverWithEntries[]; dates: string[]; total?: number; page?: number; pageSize?: number } | null
+  );
+
+  // Fetch full-dataset capacity totals (independent of pagination/search)
+  const capacityData = useApiData(
+    () => allDates.length > 0 ? api.planning.getCapacity(allDates, activeScenarioId) : Promise.resolve(null),
+    [allDates.length > 0 ? allDates[0] : "", allDates.length, activeScenarioId],
+    null as Record<string, Record<string, number>> | null
   );
 
   const totalDrivers = data?.total ?? data?.drivers.length ?? 0;
@@ -143,8 +165,8 @@ export function PlanningGrid() {
   const [localData, setLocalData] = useState(data);
   useEffect(() => { setLocalData(data); }, [data]);
 
-  // Reset page to 1 when scenario or date range changes
-  useEffect(() => { setPage(1); }, [activeScenarioId, startDate, dayCount]);
+  // Reset page to 1 when scenario, date range, or search changes
+  useEffect(() => { setPage(1); }, [activeScenarioId, startDate, dayCount, debouncedSearch]);
 
   const resolveColumnValue = useCallback((driver: DriverWithEntries, col: DriverColumnKey): string => {
     const emp = getActiveRecord(driver.employmentRecords);
@@ -279,14 +301,8 @@ export function PlanningGrid() {
     return () => document.removeEventListener("mouseup", onMouseUp);
   }, [dragState, handleDragEnd]);
 
-  const filteredDrivers = useMemo(() =>
-    localData?.drivers.filter(
-      (d) =>
-        !filter ||
-        `${d.firstName} ${d.lastName}`.toLowerCase().includes(filter.toLowerCase())
-    ) || [],
-    [localData, filter]
-  );
+  // Drivers come pre-filtered from the server (via search param)
+  const filteredDrivers = useMemo(() => localData?.drivers || [], [localData]);
 
   // Apply sorting
   const sortedDrivers = useMemo(() => {
@@ -396,10 +412,10 @@ export function PlanningGrid() {
         <div className="control-group">
           <input
             type="text"
-            placeholder="Zoek op naam..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-56 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
+            placeholder="Zoek op naam of personeelsnr..."
+            value={searchInput}
+            onChange={handleSearchChange}
+            className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-64 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
           />
           <label className="text-caption whitespace-nowrap">Groepeer op:</label>
           <select
@@ -682,14 +698,14 @@ export function PlanningGrid() {
               {filteredDrivers.length === 0 && (
                 <tr>
                   <td colSpan={totalColSpan} className="text-center py-8 text-text-tertiary text-sm">
-                    {filter ? `Geen chauffeurs gevonden voor "${filter}"` : "Geen chauffeurs beschikbaar. Voeg chauffeurs toe via het Chauffeurs-scherm."}
+                    {debouncedSearch ? `Geen chauffeurs gevonden voor "${debouncedSearch}"` : "Geen chauffeurs beschikbaar. Voeg chauffeurs toe via het Chauffeurs-scherm."}
                   </td>
                 </tr>
               )}
-              {/* Capacity summary row */}
-              {showCapacitySummary && filteredDrivers.length > 0 && (
+              {/* Capacity summary row (full-dataset totals from API) */}
+              {showCapacitySummary && capacityData && (
                 <CapacitySummaryRow
-                  drivers={filteredDrivers}
+                  capacityData={capacityData}
                   columnHeaders={columnHeaders}
                   extraColumnCount={extraColumns.length}
                   density={density}

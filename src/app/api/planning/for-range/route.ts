@@ -44,6 +44,7 @@ export const GET = withPerfLogging(
       // Pagination parameters (optional — if not provided, return all)
       const pageParam = searchParams.get("page");
       const pageSizeParam = searchParams.get("pageSize");
+      const search = searchParams.get("search")?.trim() || "";
       const isPaginated = pageParam !== null || pageSizeParam !== null;
       const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
       const pageSize = Math.min(500, Math.max(1, parseInt(pageSizeParam || "100", 10) || 100));
@@ -55,14 +56,26 @@ export const GET = withPerfLogging(
         rosterAssignments: { select: { id: true, sequenceNumber: true, startDate: true, endDate: true, rosterProfileId: true, weeklyHours: true } },
       };
 
+      // Build driver where clause for search
+      const driverWhere = search
+        ? {
+            OR: [
+              { firstName: { contains: search, mode: "insensitive" as const } },
+              { lastName: { contains: search, mode: "insensitive" as const } },
+              { employeeNumber: { contains: search, mode: "insensitive" as const } },
+            ],
+          }
+        : {};
+
       // Fetch drivers (with pagination if requested) and count in parallel
       const [drivers, total] = await Promise.all([
         prisma.driver.findMany({
+          where: driverWhere,
           include: driverIncludeFields,
           orderBy: { lastName: "asc" },
           ...(isPaginated ? { skip: (page - 1) * pageSize, take: pageSize } : {}),
         }),
-        isPaginated ? prisma.driver.count() : Promise.resolve(0),
+        isPaginated ? prisma.driver.count({ where: driverWhere }) : Promise.resolve(0),
       ]);
 
       // Get driver IDs for scoping planning entries query

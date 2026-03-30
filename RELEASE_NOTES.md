@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-30 — Server-side zoeken en volledige capaciteitstotalen
+
+#### UX / design verbeteringen
+
+- **Server-side zoeken planningsrooster:** Het zoekfilter in het planningsrooster doorzoekt nu alle chauffeurs in de database, niet alleen de huidige pagina. Zoeken werkt op naam en personeelsnummer. Resultaten worden vertraagd opgehaald (300ms) en de pagina springt terug naar 1 bij een nieuwe zoekopdracht.
+- **Volledige capaciteitstotalen:** De totaalrij onderaan het planningsrooster toont nu capaciteitstotalen over alle chauffeurs, onafhankelijk van de huidige pagina of zoekopdracht. Voorheen waren deze totalen beperkt tot de 100 chauffeurs op de huidige pagina.
+
 ### 2026-03-30 — Loginbeveiliging, paginering planningsrooster en documentatie
 
 #### Beveiliging

@@ -3,8 +3,8 @@
 ## Summary
 
 **What was improved this cycle:**
-- PB-103: Login page simplified to Google-only with Dutch "under construction" notice. Microsoft button hidden, backend config intact.
-- PB-105: Planning grid paginated data fetching. Drivers are loaded in pages of 100. Pagination controls (first/prev/next/last) appear below the grid. Page resets on scenario/date change. All existing interactions preserved.
+- PB-106: Server-side search for the planning grid. Search now queries the database across all drivers (name + employee number), replacing the client-side filter that only searched the current page. Debounced at 300ms, page resets on search change.
+- PB-108: Full-dataset capacity totals. The capacity summary row now fetches aggregated totals from the `/api/planning/capacity` endpoint independently of pagination and search, showing accurate numbers across all drivers.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8).
@@ -12,42 +12,18 @@
 - Login page: well-aligned. Clean, premium, brand-surface split.
 - Header session indicator: well-aligned.
 - Capacity page: well-aligned.
-- Planning grid toolbar: well-aligned.
+- Planning grid toolbar: well-aligned. Search and filter controls are grouped meaningfully.
 - Import source manager: well-aligned.
 - Button system: fully aligned.
-- Planning grid matrix: partially aligned. Virtual scrolling and pagination handle performance well. Visual structure (1px row borders, alternating backgrounds) still uses border-based separation rather than pure tonal layering per DESIGN.md.
-- Drivers page: partially aligned. Pagination controls are clean and well-integrated. The table itself still reads as standard admin CRUD.
+- Planning grid matrix: partially aligned. Virtual scrolling and pagination handle performance well. Search now works cross-page. Capacity totals are now full-dataset. Visual structure (1px row borders, alternating backgrounds) still uses border-based separation rather than pure tonal layering per DESIGN.md.
+- Drivers page: partially aligned. Pagination is clean. The table itself still reads as standard admin CRUD.
 - Pagination controls (both pages): consistent pattern, well-integrated with design tokens.
 
 **Where design quality is still below target:**
 - The drivers table still reads as standard admin CRUD with alternating backgrounds, row borders, and table-first layout.
 - The planning grid matrix uses 1px row borders for structure. Pure tonal separation would be more aligned with DESIGN.md but risks reducing scanability in dense data.
-- Client-side name filter on planning grid only searches the current page. Server-side search on for-range API would improve this.
-- Capacity summary row shows totals for current page only. A separate aggregation API call would provide full-dataset totals.
 
 ## Recommended Next Improvements
-
-### EX-REC-045: Planning grid — server-side search for paginated mode
-
-- **Problem:** The planning grid name filter now only searches within the current page of 100 drivers. Users cannot search across all drivers without paging through manually.
-- **Proposed improvement:** Add a `search` query parameter to the `/api/planning/for-range` endpoint (matching the pattern already used in `/api/drivers`). Update the planning grid to use server-side search with debounced input, resetting to page 1 on search change.
-- **Expected user value:** Users can quickly find any driver by name regardless of which page they're on.
-- **Priority:** P2 High
-- **Effort:** Small
-- **Dependencies:** PB-105 (completed).
-- **Suggested owner:** Delivery Agent (API change) + Experience Agent (frontend integration)
-- **Why now:** Pagination makes client-side search insufficient. This is the most impactful follow-up to PB-105.
-
-### EX-REC-046: Capacity summary — full-dataset totals via aggregation API
-
-- **Problem:** The capacity summary row at the bottom of the planning grid now shows totals only for the current page of drivers. This gives an incomplete picture of overall capacity.
-- **Proposed improvement:** Use the existing `/api/planning/capacity` endpoint (or extend it) to fetch full-dataset capacity totals independently of pagination. Display these in the summary row regardless of current page.
-- **Expected user value:** Accurate capacity overview without needing to view all pages.
-- **Priority:** P3 Medium
-- **Effort:** Medium
-- **Dependencies:** PB-105 (completed).
-- **Suggested owner:** Delivery Agent (API) + Experience Agent (frontend)
-- **Why now:** Completes the capacity picture after pagination was introduced.
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
 
@@ -58,7 +34,7 @@
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent, but the drivers page is a high-frequency screen. Now that pagination is in place, visual refinement is the next logical step.
+- **Why now:** Not urgent, but the drivers page is a high-frequency screen. Now that both search and capacity are resolved, visual refinement is the next logical step.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
@@ -95,11 +71,10 @@
 
 ## Risks / Watch-outs
 
-- **Planning grid client-side filter limitation.** The name filter only searches the current page of drivers. This could confuse users who search for a driver on a different page and see "Geen chauffeurs gevonden." EX-REC-045 addresses this.
-- **Capacity summary page-scoped totals.** The capacity summary row shows totals for the current page only, not the full dataset. This could mislead planners relying on aggregate numbers. EX-REC-046 addresses this.
 - **Planning grid row height accuracy.** Virtual scrolling uses fixed row heights (48/38/26px per density). Long driver names could cause minor scroll position drift.
-- **PlanningGrid.tsx complexity.** The file is ~770 lines. Future changes should be tested with both virtual scrolling and pagination enabled.
+- **PlanningGrid.tsx complexity.** The file is ~780 lines. Future changes should be tested with both virtual scrolling and pagination enabled.
 - **Settings tab count growth.** The settings page has 5 tabs with horizontal scroll. More tabs may need visual affordance.
+- **Capacity API call on every scenario/date change.** The capacity fetch is lightweight (uses `groupBy` aggregation) but adds one additional API call per navigation. Monitor if this becomes noticeable.
 
 ## Items Intentionally Not Recommended
 
