@@ -23,6 +23,16 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+Beschrijving van stamtabellen met alle velden en veldspecificaties in masterdata.md. ook de relaties tussen de stamtabellen hier beschrijven.
+
+Voeg de autorisatierol Admin toe. deze dient alle rechten te hebben. 
+
+Alleen gebruikers die zijn toegevoegd via Adminpanel moeten kunnen inloggen via google. Niet zo maar iedereen die probeert in te loggen moet toegang krijgen.
+
+Implementeer een functionaliteit voor het beheren van gebruikersgroepen. Per gebruikersgroep moeten autorisatiefilters kunnen worden vastgelegd (dus filters op de zichtbare gegevens, niet op functionaliteit). Functionaliteit wordt vastgelegd in de autorisatierol.
+
+Zorg ervoor dat op de login pagina alleen de google login optie zichtbaar is. Ook moet de login pagina nog even de tekst tonen 'under construction'
+
 ### SMI-011: Voorbereidingen voor 1000 chauffeurs — performance en schaalbaarheid
 
 - **Type:** Initiative / priority signal
