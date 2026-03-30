@@ -31,13 +31,14 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Ready
+- **Status:** Completed
+- **Completed:** 2026-03-30
 - **Problem / opportunity:** Users need a login screen and visual session state (logged-in user display, logout button). No login UI exists.
 - **Why this matters now:** Required for multi-user operation. Auth infrastructure (PB-080) is complete.
 - **Scope notes:** Build a login page (`/login`) with provider sign-in buttons (Google, Microsoft). Add session indicator in the app header showing the logged-in user name and a logout action. Redirect unauthenticated users to login. All text in Dutch.
 - **Dependencies:** PB-080 (completed).
 - **Definition of done:** Login page renders with provider buttons. Successful login redirects to the app. Header shows logged-in user. Logout works. `npm run verify` passes.
-- **Implementation note:** Use NextAuth.js client hooks (`useSession`, `signIn`, `signOut`). Auth config is in `src/lib/auth.ts`. SessionProvider already wraps the app via `AuthProvider` in root layout. Style with existing design tokens. Login page should feel consistent with the app's visual identity.
+- **Implementation note:** Implemented: login page at `/login` with split-panel layout (brand panel + sign-in panel), Google and Microsoft provider buttons with loading states, NextAuth middleware for route protection, session indicator in header with avatar/initials + name + logout button. All text in Dutch. `npm run verify` passes with 0 errors, 0 warnings. New CSS class `.login-provider-btn` added to design system. `next/image` configured for Google/Microsoft avatar domains.
 - **Source:** ESC-005, SMI-008.
 
 ### PB-078: CSV import execution — apply field mappings and insert data
@@ -74,7 +75,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P2 High
-- **Status:** Blocked (waiting on PB-081)
+- **Status:** Ready (PB-081 completed)
 - **Problem / opportunity:** The Scrum Master wants an admin panel with user management. The User model exists in the database with roles (ADMIN, PLANNER, VIEWER) but no management UI exists.
 - **Why this matters now:** Direct SM directive (SMI-008). Required for multi-user operation.
 - **Scope notes:** Build a user list/management screen within the settings page (new "Gebruikers" tab). Show all users with name, email, role, last login. Allow admins to change user roles. Consider whether user deactivation is needed.

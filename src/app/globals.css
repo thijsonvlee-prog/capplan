@@ -597,3 +597,36 @@ body {
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--color-border-subtle);
 }
+
+/* ===================================================================
+   Login Provider Button
+   OAuth provider sign-in buttons for the login page.
+   =================================================================== */
+
+.login-provider-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  transition-property: border-color, box-shadow, background-color;
+  transition-duration: 150ms;
+  cursor: pointer;
+}
+
+.login-provider-btn:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-card);
+  background-color: var(--color-surface-secondary);
+}
+
+.login-provider-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

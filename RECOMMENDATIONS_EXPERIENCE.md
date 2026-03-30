@@ -3,26 +3,37 @@
 ## Summary
 
 **What was improved this cycle:**
-- PB-074: Added `.btn-danger` CSS class to `globals.css` and replaced inline button styles in `ConfirmDialog.tsx` and `documentatie/page.tsx`. The button system now has complete reusable coverage: `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-icon`, `.btn-icon-danger`.
+- PB-081: Built a complete login page and session UI. Login page (`/login`) uses a split-panel layout with a dark brand panel (left) and clean sign-in panel (right). Google and Microsoft provider buttons with loading states. NextAuth middleware protects all dashboard routes. Header now shows user avatar (or initials fallback), name, and logout button. All text in Dutch.
 
 **Current design alignment with DESIGN.md:**
-- Sidebar: well-aligned (section 7.8). Calm, dark, well-spaced, clear active states.
-- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Composed tabs, clear hierarchy. Connectiviteit tab follows the same pattern.
-- Typography: improved. Manrope on page titles creates editorial contrast per section 5.1/5.3.
-- Header: fully aligned. All three major pages show contextual subtitles per section 7.1.
-- Capacity page: well-aligned. Scenario toggle uses brand semantics.
-- Planning grid toolbar: well-aligned. Both rows use consistent `.control-group` pattern with labels.
-- Design tokens: warning scale matches the nuance of success and danger families.
-- Import source manager: well-aligned. Card-based layout, clear hierarchy, visual field mapping, composed empty state.
-- Button system: fully aligned. All button variants now use reusable CSS classes with design tokens. No remaining inline button styles.
+- Login page: well-aligned. Split-panel composition with strong brand presence, editorial typography, restrained surfaces, and intentional hierarchy. Follows sections 2.1 (product-grade), 2.4 (premium restraint), 2.5 (composed screens), 7.1 (page headers), and 7.7 (inputs). Provider buttons use a reusable `.login-provider-btn` CSS class with design tokens.
+- Header session indicator: well-aligned. Compact user presence with avatar, name, and ghost logout button. Does not compete with page title. Follows section 7.2 (toolbar grouping) and 2.4 (restraint).
+- Sidebar: well-aligned (section 7.8).
+- Settings page: well-aligned (sections 2.5, 7.1, 7.2).
+- Typography: improved. Manrope on page titles and login headline creates editorial contrast per section 5.1/5.3.
+- Capacity page: well-aligned.
+- Planning grid toolbar: well-aligned.
+- Import source manager: well-aligned.
+- Button system: fully aligned.
 - Planning grid matrix: partially aligned. Status chips and tonal row composition are good. Grid border structure and row composition have room for improvement.
-- Drivers page: partially aligned. Page header is composed with contextual subtitle. Table is still table-first with generic CRUD feel.
+- Drivers page: partially aligned. Page header is composed. Table is still table-first with generic CRUD feel.
 
 **Where design quality is still below target:**
 - The drivers table still reads as standard admin CRUD with alternating backgrounds, row borders, and table-first layout.
 - The planning grid matrix uses 1px row borders for structure. Pure tonal separation would be more aligned with DESIGN.md but risks reducing scanability in dense data.
 
 ## Recommended Next Improvements
+
+### EX-REC-044: Add user identity to sidebar bottom section
+
+- **Problem:** The sidebar bottom section currently shows only "v2.0". Now that users have sessions, the sidebar could display the logged-in user's name or email in the bottom section, consistent with DESIGN.md section 7.8 ("a composed relationship between logo, nav items, and user identity").
+- **Proposed improvement:** Replace or augment the version text in the sidebar bottom section with the session user's name/email and role badge. Keep the version text as secondary information.
+- **Expected user value:** Stronger identity presence in the primary navigation surface. More product-grade feel.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Dependencies:** PB-081 (completed).
+- **Suggested owner:** Experience Agent
+- **Why now:** Auth session is now available. The sidebar bottom section is underutilized and DESIGN.md specifically calls for user identity in the sidebar.
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
 
@@ -33,13 +44,13 @@
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent, but the drivers page is a high-frequency screen. The alternating backgrounds are easy to remove and the result would be cleaner.
+- **Why now:** Not urgent, but the drivers page is a high-frequency screen.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
-- **Problem:** Manrope is now applied to page titles but not to section titles (`.text-section-title`) or modal headers. The typographic contrast between Manrope page titles and Inter section titles is intentional, but modal headers and form section headers could benefit from Manrope to reinforce hierarchy within complex screens.
+- **Problem:** Manrope is now applied to page titles but not to section titles or modal headers. Modal headers and form section headers could benefit from Manrope to reinforce hierarchy within complex screens.
 - **Proposed improvement:** Evaluate applying `font-family: var(--font-display)` to modal headers and possibly `.settings-section-title`. Keep `.text-section-title` on Inter to maintain the intended contrast with page titles.
-- **Expected user value:** Stronger visual hierarchy within modals and settings sections. More cohesive editorial feel.
+- **Expected user value:** Stronger visual hierarchy within modals and settings sections.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Dependencies:** None.
@@ -48,48 +59,49 @@
 
 ### EX-REC-043: Import source manager — visual mapping builder enhancement
 
-- **Problem:** The field mapping editor uses a functional grid layout with text inputs and dropdowns. While clear and usable, it reads as a standard form rather than a visual configuration tool. DESIGN.md section 2.1 says screens should not feel like "lightly styled CRUD."
-- **Proposed improvement:** Consider a card-based mapping representation where each mapping is a distinct visual unit, or a drag-connect style interface. Also consider adding CSV file preview (upload a sample CSV to auto-detect column names) as a future enhancement.
-- **Expected user value:** More intuitive, visual configuration experience. Reduced manual typing errors for column names.
+- **Problem:** The field mapping editor uses a functional grid layout with text inputs and dropdowns. While clear and usable, it reads as a standard form rather than a visual configuration tool.
+- **Proposed improvement:** Consider a card-based mapping representation where each mapping is a distinct visual unit, or a drag-connect style interface.
+- **Expected user value:** More intuitive, visual configuration experience.
 - **Priority:** P4 Low
-- **Effort:** Medium (card layout) / Large (CSV preview)
-- **Dependencies:** PB-016 (completed).
+- **Effort:** Medium
+- **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent. The current editor is functional. This is a polish item for when the connectivity hub sees regular use.
+- **Why now:** Not urgent. The current editor is functional.
 
-### EX-REC-042: Deduplicate scenarios list fetch between PlanningGrid and ScenarioSelector
+### EX-REC-042: Deduplicate scenarios list fetch
 
-- **Problem:** PlanningGrid and ScenarioSelector both independently call `api.scenarios.list()`. While `useApiData` prevents redundant network requests within a single component lifecycle, the two components maintain separate state copies of the same data.
-- **Proposed improvement:** Lift the scenarios list fetch to a shared context or parent component, or accept the minor duplication as tolerable given the small payload size.
+- **Problem:** PlanningGrid and ScenarioSelector both independently call `api.scenarios.list()`.
+- **Proposed improvement:** Lift the scenarios list fetch to a shared context or parent component, or accept the minor duplication.
 - **Expected user value:** No direct user impact. Minor code hygiene.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Not urgent. The duplication is minimal and the scenarios list is small. Only worth addressing if PlanningGrid is refactored for other reasons.
+- **Why now:** Not urgent. Only worth addressing if PlanningGrid is refactored for other reasons.
 
 ## Risks / Watch-outs
 
-- **PlanningGrid.tsx complexity.** The file is ~685 lines. Any further changes to the planning toolbar or grid must be verified carefully against typecheck, lint, and visual behavior. The file has known exhaustive-deps warnings that are pre-existing and non-blocking.
-- **Manrope font weight on Vercel.** The font is loaded via `next/font/google` with `display: swap`. Verify on deployed build that Manrope renders correctly and does not cause layout shift.
-- **Consistency after partial typographic changes.** Manrope on page titles + Inter on section titles is the intended hierarchy. If Manrope is extended further (EX-REC-038), verify the contrast still reads well.
-- **Settings tab count growth.** The settings page now has 4 tabs. If more configuration categories are added, the tab bar may need responsive treatment or reorganization.
-- **Drivers table column density.** Removing alternating backgrounds (EX-REC-036) only helps if the remaining visual treatment (hover, spacing) provides enough row distinction at high driver counts.
-- **Planning grid No-Line Rule.** The grid's 1px row borders serve a functional purpose in dense data. Replacing them with pure tonal separation risks reducing scanability. Should be explored in a dedicated visual pass.
+- **NextAuth middleware route matching.** The middleware matches all dashboard routes. If new top-level routes are added outside the dashboard group, they must be added to the middleware matcher to be protected.
+- **External image domains.** `next.config.mjs` now allows `lh3.googleusercontent.com` and `*.live.com` for OAuth avatars. If additional OAuth providers are added, their image domains must be allowlisted.
+- **PlanningGrid.tsx complexity.** The file is ~685 lines. Any further changes to the planning toolbar or grid must be verified carefully.
+- **Settings tab count growth.** The settings page now has 4 tabs. If more configuration categories are added (e.g., "Gebruikers" for PB-079), the tab bar may need responsive treatment.
+- **Drivers table column density.** Removing alternating backgrounds (EX-REC-036) only helps if the remaining visual treatment provides enough row distinction at high driver counts.
+- **Planning grid No-Line Rule.** The grid's 1px row borders serve a functional purpose in dense data. Should be explored in a dedicated visual pass.
 
 ## Items Intentionally Not Recommended
 
 - **Dark mode support:** No user demand. Token system supports it structurally but effort is significant.
-- **Drag-and-drop reordering in tables:** Current sort/filter approach works well. Adds complexity without clear user value.
-- **Redesign of RosterProfileEditor grid interaction:** The click-to-cycle interaction is unconventional but functional and consistent.
+- **Drag-and-drop reordering in tables:** Current sort/filter approach works well.
+- **Redesign of RosterProfileEditor grid interaction:** The click-to-cycle interaction is unconventional but functional.
 - **Custom calendar popup replacement:** ESC-004 decided Option B (styled wrapper). Browser native is functional.
 - **Settings tab URL persistence:** Low-frequency page. Low impact.
 - **Driver detail page / route-based navigation:** Current inline edit pattern works for the data volume.
-- **Capacity page full redesign:** The page is functional and visually consistent with grouped toolbar. Not warranted.
+- **Capacity page full redesign:** The page is functional and visually consistent with grouped toolbar.
 - **Full sidebar redesign:** Already meets DESIGN.md section 7.8.
-- **Recharts tooltip/axis custom styling:** Would improve premium feel but effort is disproportionate to impact. Recharts customization is brittle.
-- **Planning grid No-Line Rule enforcement:** The grid's 1px row borders serve a functional purpose in dense data. This should be explored in a dedicated planning grid visual pass, not as a standalone change.
-- **Separate sidebar entry for Connectiviteit:** Configuration belongs under Instellingen. A separate nav entry is not warranted until the connectivity hub has its own execution/monitoring features.
+- **Recharts tooltip/axis custom styling:** Would improve premium feel but effort is disproportionate to impact.
+- **Planning grid No-Line Rule enforcement:** Should be explored in a dedicated planning grid visual pass.
+- **Separate sidebar entry for Connectiviteit:** Configuration belongs under Instellingen.
+- **Login page animation/transitions:** The current page is clean and fast. Animations would add complexity without clear user value.
 
 ## Recommendation Rules
 

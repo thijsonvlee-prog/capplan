@@ -6,7 +6,11 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Unreleased
 
-_No unreleased changes._
+### Inloggen en sessie-UI
+
+- **Inlogpagina:** Nieuwe inlogpagina (`/login`) met ondersteuning voor inloggen via Google en Microsoft. Samengesteld ontwerp met merkpaneel en inlogformulier. Alle tekst in het Nederlands.
+- **Sessie-indicator:** De koptekstbalk toont nu de ingelogde gebruiker met profielfoto (of initialen), naam en uitlogknop.
+- **Routebeveiliging:** Niet-ingelogde gebruikers worden automatisch doorgestuurd naar de inlogpagina.
 
 ## Release History
 
