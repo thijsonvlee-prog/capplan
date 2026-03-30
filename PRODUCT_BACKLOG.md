@@ -27,20 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-107: Prevent PrismaAdapter from auto-creating orphan User records
-
-
-- **ID:** PB-107
-- **Title:** Stop PrismaAdapter from creating User records for rejected sign-ins
-- **Problem / opportunity:** PrismaAdapter creates a User record before the `signIn` callback rejects unknown users (PB-102). This leaves orphan User rows in the database that appear in the admin panel's user list.
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Direct follow-up to the P1 login restriction. Orphan users in the admin panel are confusing and undermine the login restriction feature.
-- **Scope notes:** Override PrismaAdapter's `createUser` method to check if the user already exists before creating. Alternatively, prevent auto-creation entirely and rely on the existing admin-created user flow. Test carefully — PrismaAdapter internals vary between versions.
-- **Dependencies:** PB-102 (completed).
-- **Definition of done:** No new User records are created when an unknown Google account attempts to sign in. Existing orphan records are not automatically cleaned (separate concern). Verify passes.
-- **Source:** DE-REC-047.
+_No items ready._
 
 ---
 
@@ -69,6 +56,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-107: Prevent PrismaAdapter from auto-creating orphan User records
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-30
+- **Implementation note:** Overrode PrismaAdapter's `createUser` method with a custom adapter wrapper. The override checks if the email belongs to a pre-created admin user: if yes, returns the existing record (enabling account linking); if no, throws `CreateUserError` to block auto-creation. Login page now handles `OAuthCreateAccount` and `AccessDenied` error codes with Dutch messages, plus a fallback for unrecognized errors. Note: investigation of NextAuth v4 source confirmed the `signIn` callback (PB-102) already runs before `createUser` in the current version, making orphan creation unlikely in practice. The adapter override serves as defense-in-depth against future version changes.
 
 ### PB-106: Planning grid — server-side search for paginated mode
 

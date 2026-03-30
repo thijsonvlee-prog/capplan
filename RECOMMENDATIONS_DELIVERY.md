@@ -6,26 +6,24 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed three items: the P1 login restriction (PB-102), scenario duplication chunking (PB-098), and masterdata documentation (PB-101). All shipped clean (0 typecheck errors, 0 lint warnings).
+This cycle completed PB-107: the PrismaAdapter's `createUser` method is now overridden to prevent auto-creation of User records during OAuth sign-in. Investigation of the NextAuth v4 source code confirmed the `signIn` callback already runs before `createUser`, so orphan creation was unlikely in the current version — the override serves as defense-in-depth. Login error handling was improved with Dutch messages for all OAuth error types and a generic fallback.
 
-The login restriction closes the most critical security gap — unauthorized Google accounts can no longer auto-create users. Scenario duplication now handles up to 50K entries with constant memory. The masterdata documentation covers all 22 Prisma models.
-
-Fresh codebase scan confirms the codebase is in healthy shape. The remaining recommendations are maintenance-level improvements — no critical issues found.
+The codebase remains in healthy shape. No critical issues found. The remaining recommendations are maintenance-level and low-priority. DE-REC-047 is now completed (PB-107).
 
 ## Recommended Next Improvements
 
-### DE-REC-047: Prevent PrismaAdapter from auto-creating User records
+### DE-REC-048: First-login account linking for pre-created users
 
-- **Title:** Disable PrismaAdapter auto-creation of User records on first OAuth sign-in
-- **Problem:** The `signIn` callback (PB-102) correctly rejects unknown users, but PrismaAdapter still attempts to create a User record before the callback runs. This creates orphan User records for rejected sign-ins (the sign-in is rejected but the User row persists).
-- **Proposed improvement:** Override the PrismaAdapter's `createUser` method to check if the user already exists by email. If not, throw an error to prevent auto-creation. Alternatively, add a periodic cleanup of User records with no linked Account/Session.
-- **Expected product/technical value:** Clean user table — no orphan records from rejected sign-in attempts.
-- **Priority:** P2 High
+- **Title:** Ensure pre-created users can link their Google account on first sign-in
+- **Problem:** When an admin pre-creates a user and that user signs in via Google for the first time, NextAuth may throw `OAuthAccountNotLinked` if the user happens to have a different provider's account linked. The custom adapter's `createUser` override handles the case where `getUserByEmail` misses the user, but the `OAuthAccountNotLinked` error path is separate. Currently, pre-created users with no linked accounts sign in fine (tested flow), but the `OAuthAccountNotLinked` error code isn't handled on the login page.
+- **Proposed improvement:** Add `OAuthAccountNotLinked` to the login page error messages with a Dutch message like "Je account kan niet worden gekoppeld. Neem contact op met je beheerder."
+- **Expected product/technical value:** Better error UX for edge case where a user has multiple OAuth providers.
+- **Priority:** P3 Medium
 - **Effort:** Small
-- **Risk:** Medium — PrismaAdapter internals may vary between versions. Needs careful testing.
-- **Dependencies:** PB-102 (completed).
+- **Risk:** Low
+- **Dependencies:** None.
 - **Suggested owner:** Delivery Agent
-- **Why now:** Direct follow-up to PB-102. Orphan users may appear in the admin panel's user list.
+- **Why now:** Small fix, completes the login error handling story.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -81,11 +79,11 @@ Fresh codebase scan confirms the codebase is in healthy shape. The remaining rec
 
 ## Risks / Watch-outs
 
-- **PrismaAdapter orphan users:** With PB-102 in place, the PrismaAdapter may still create User records before the `signIn` callback rejects them. These orphan records appear in the admin panel user list. DE-REC-047 proposes a fix.
 - **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed to avoid maintaining dead/experimental code.
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials in Vercel environment. Without these, auth is inactive and role enforcement is skipped.
 - **Driver upsert without unique constraint:** Driver upsert matches on `employeeNumber` using `findFirst` (not a unique constraint). If multiple drivers share an `employeeNumber`, only the first is updated. Adding a unique constraint is a product decision.
-- **Import partial failure semantics:** With chunked transactions (PB-099), a mid-import failure means some chunks succeeded and some failed. The import log correctly reports partial results, but the user cannot "undo" a partially completed import.
+- **Import partial failure semantics:** With chunked transactions, a mid-import failure means some chunks succeeded and some failed. The import log correctly reports partial results, but the user cannot "undo" a partially completed import.
+- **ESC-008 user groups scope:** Still open — blocks PB-104. This is the largest upcoming feature and will touch data model, API routes, and UI.
 
 ## Items Intentionally Not Recommended
 
@@ -122,6 +120,7 @@ Fresh codebase scan confirms the codebase is in healthy shape. The remaining rec
 - **Add concurrent request deduplication in useApi:** Low-frequency issue; components share cache via 30s freshness window.
 - **Add progress tracking for long operations:** Would require streaming responses or a job queue — significant architectural change for an uncommon operation.
 - **Type-safe dynamic Prisma model access:** The `(prisma as any)[modelName]` pattern in import-sources is a pragmatic choice for entity-generic import logic. A typed wrapper adds complexity without functional benefit.
+- **Clean up orphan User records retroactively:** Requires manual identification. Separate concern from prevention (PB-107).
 
 ## Recommendation Rules
 

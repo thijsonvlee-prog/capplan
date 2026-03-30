@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-30 — Beveiliging OAuth-adapter
+
+#### Beveiliging
+
+- **Geen automatische gebruikersaanmaak bij OAuth-login:** De PrismaAdapter maakt niet langer automatisch nieuwe gebruikersrecords aan wanneer een onbekend Google-account inlogt. Alleen gebruikers die vooraf door een beheerder zijn aangemaakt kunnen een OAuth-account koppelen. Onbekende accounts worden direct geweigerd.
+- **Verbeterde foutmeldingen op inlogpagina:** De inlogpagina toont nu duidelijke Nederlandse foutmeldingen voor alle OAuth-fouttypen, inclusief een generieke fallback voor onverwachte fouten.
+
 ### 2026-03-30 — Server-side zoeken en volledige capaciteitstotalen
 
 #### UX / design verbeteringen

@@ -7,6 +7,8 @@ import { useSearchParams } from "next/navigation";
 const ERROR_MESSAGES: Record<string, string> = {
   NietGeautoriseerd: "Je account is niet geautoriseerd. Neem contact op met je beheerder.",
   GeenEmailAdres: "Er kon geen e-mailadres worden opgehaald. Probeer het opnieuw.",
+  OAuthCreateAccount: "Je account is niet geautoriseerd. Neem contact op met je beheerder.",
+  AccessDenied: "Toegang geweigerd. Neem contact op met je beheerder.",
 };
 
 export default function LoginPage() {
@@ -21,7 +23,9 @@ function LoginContent() {
   const [loading, setLoading] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
-  const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] : null;
+  const errorMessage = errorParam
+    ? (ERROR_MESSAGES[errorParam] ?? "Er is een fout opgetreden bij het inloggen. Probeer het opnieuw.")
+    : null;
 
   function handleSignIn(provider: string) {
     setLoading(provider);
