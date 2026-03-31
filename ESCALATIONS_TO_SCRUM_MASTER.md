@@ -22,7 +22,27 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-_No open escalations._
+### ESC-009: POC capaciteitssamenvatting in planningsrooster — behouden of verwijderen
+
+- **Status:** Open
+- **Date / run context:** 2026-03-31 — triggered by DE-REC-038
+- **Decision needed:** The planning grid contains a POC "capacity summary row" feature (`showCapacitySummary` toggle in PlanningGrid.tsx). This experimental code adds maintenance overhead — it must stay in sync with any grid changes. Should it be promoted to a real feature or removed?
+- **Why it matters:** The planning grid just received visual updates (PB-123, PB-124). Carrying unresolved POC code increases risk of regressions during future grid work. Deciding now prevents wasted effort.
+- **Recommendation from Product Owner Agent:** Option B (remove). The capacity page already serves the aggregation use case. Having a second capacity view embedded in the planning grid creates redundancy and maintenance cost.
+
+**Choose one option:**
+
+- ( ) **Option A — Promote:** Remove the POC label, ensure the summary row matches the new grid styling (tonal rows, no borders), and document it as a supported feature. Assign to Experience Agent (styling) + Delivery Agent (DE-REC-036 optimization).
+- ( ) **Option B — Remove (recommended):** Delete `CapacitySummaryRow.tsx` and all related code from PlanningGrid. The capacity page covers this need. Assign cleanup to Delivery Agent.
+- ( ) **Option C — Defer decision:** Keep the POC as-is for now. Accept the maintenance cost. Revisit after user feedback.
+
+**Trade-offs:**
+- Option A adds a feature but increases grid complexity permanently. Requires styling + optimization work.
+- Option B reduces code and maintenance. Loses the inline summary, but the separate capacity page is more comprehensive.
+- Option C avoids a decision but keeps dead-weight code in the most critical component.
+
+**What the Scrum Master must do:** Place `(X)` next to one option above.
+**Product Owner action after choice:** Create or update backlog item PB-129 with the chosen direction.
 
 ---
 
