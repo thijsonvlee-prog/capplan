@@ -23,6 +23,20 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (body.position && typeof body.position === "string" && body.position.length > 200) {
+      return NextResponse.json(
+        { error: "Functie mag maximaal 200 tekens bevatten" },
+        { status: 400 }
+      );
+    }
+
+    if (body.manager && typeof body.manager === "string" && body.manager.length > 200) {
+      return NextResponse.json(
+        { error: "Leidinggevende mag maximaal 200 tekens bevatten" },
+        { status: 400 }
+      );
+    }
+
     if (body.endDate && body.startDate && new Date(body.endDate) < new Date(body.startDate)) {
       return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
     }

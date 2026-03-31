@@ -67,6 +67,13 @@ export async function POST(
       );
     }
 
+    if (description && typeof description === "string" && description.length > 500) {
+      return NextResponse.json(
+        { error: "Omschrijving mag maximaal 500 tekens bevatten" },
+        { status: 400 }
+      );
+    }
+
     const record = await model.create({
       data: { code, description },
       select: { id: true, code: true, description: true },

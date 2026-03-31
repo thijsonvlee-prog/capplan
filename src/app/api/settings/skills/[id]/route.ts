@@ -23,6 +23,23 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (name.length > 200) {
+      return NextResponse.json(
+        { error: "Naam mag maximaal 200 tekens bevatten" },
+        { status: 400 }
+      );
+    }
+
+    const existing = await prisma.skill.findFirst({
+      where: { name: { equals: name, mode: "insensitive" }, id: { not: id } },
+    });
+    if (existing) {
+      return NextResponse.json(
+        { error: `Er bestaat al een competentie met de naam "${existing.name}"` },
+        { status: 409 }
+      );
+    }
+
     const skill = await prisma.skill.update({
       where: { id },
       data: { name },

@@ -46,6 +46,20 @@ export async function POST(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (position && typeof position === "string" && position.length > 200) {
+      return NextResponse.json(
+        { error: "Functie mag maximaal 200 tekens bevatten" },
+        { status: 400 }
+      );
+    }
+
+    if (manager && typeof manager === "string" && manager.length > 200) {
+      return NextResponse.json(
+        { error: "Leidinggevende mag maximaal 200 tekens bevatten" },
+        { status: 400 }
+      );
+    }
+
     if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
       return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
     }
