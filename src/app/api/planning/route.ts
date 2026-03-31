@@ -33,6 +33,12 @@ export const GET = withPerfLogging(
 
     if (dates) {
       const dateList = dates.split(",").map((d) => d.trim()).filter(Boolean);
+      if (dateList.length > 366) {
+        return NextResponse.json(
+          { error: "Maximaal 366 datums per verzoek" },
+          { status: 400 }
+        );
+      }
       const dateError = validateDateFormats(dateList);
       if (dateError) {
         return NextResponse.json({ error: dateError }, { status: 400 });
