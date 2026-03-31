@@ -22,7 +22,25 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-_No open escalations._
+### ESC-010: sickPercentage maximumwaarde — 99 of 100
+
+- **Status:** Open
+- **Date / run context:** 2026-03-31 — triggered by DE-REC-051
+- **Decision needed:** The `sickPercentage` field (attendance percentage when a driver has SICK status) has inconsistent max values: the API validates 0–100, the UI caps at 99, and the domain type comment says "0-99". What should the correct maximum be?
+- **Why it matters:** A planner can submit 100 via the API but only 99 via the UI. The field semantics are also unclear: if 100% means "fully present", that contradicts being on SICK status. Resolving this removes a data inconsistency and clarifies the domain model.
+- **Recommendation from Product Owner Agent:** Option A (max 99). If a driver is 100% present, they should not be on SICK status at all. The UI already enforces this. Aligning the API to match is the simplest fix.
+
+**Choose one option:**
+
+- ( ) **Option A — Max 99 (recommended):** Align the API to cap at 99, matching the current UI behavior. Rationale: 100% attendance means the driver is not sick. A planner should change the status instead.
+- ( ) **Option B — Max 100:** Align the UI to allow 100, matching the current API. Rationale: 100% could mean "registered as sick but fully operational" for administrative tracking purposes.
+
+**Trade-offs:**
+- Option A is simpler and matches existing UI behavior. Only requires changing one API validation line.
+- Option B allows more flexibility but the semantic meaning of "100% sick attendance" is confusing.
+
+**What the Scrum Master must do:** Place `(X)` next to one option above.
+**Product Owner action after choice:** Update PB-139 with the chosen max value and unblock for Delivery Agent execution.
 
 ---
 

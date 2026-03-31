@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major screens are at product-grade visual quality. Authorization model is complete. Per-user scenario state, error visibility, and input validation are shipped across all pages. The product is stable with no critical, high, or medium-priority work outstanding. All remaining items are P4 polish.
+**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization is complete. A department scope gap on planning write endpoints is the most important open item. After that, surfacing existing API error messages to users and input validation hardening are the next priorities. All remaining Experience Agent work is P4 polish.
 
 ## Status Definitions
 
@@ -27,13 +27,68 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-136: Enforce department scope on planning write endpoints
+
+- **ID:** PB-136
+- **Title:** Add user group department filter to POST `/api/planning` and POST `/api/planning/bulk`
+- **Problem / opportunity:** `GET /api/planning` validates that a `driverId` belongs to the caller's allowed departments. But both write endpoints skip this check. A planner with restricted department scope can write planning entries for any driver by POSTing directly, bypassing user group access control.
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** The read enforcement is already in place. The write gap is a real authorization inconsistency that undermines the user group access control model shipped in PB-109/110/111.
+- **Scope notes:** Copy the existing `getAllowedDepartmentIds` + `driverDepartmentFilter` validation pattern from the GET handler to both POST handlers. Return 403 with Dutch error message when a driver is outside the caller's scope.
+- **Dependencies:** None.
+- **Definition of done:** Both planning write endpoints reject mutations for drivers outside the caller's department scope. Existing behavior unchanged when auth is not configured.
+- **Implementation note:** Follow the pattern at `route.ts:44-58` in the planning GET handler.
+- **Source:** DE-REC-048.
+
+### PB-137: Surface API error messages in fetchJson
+
+- **ID:** PB-137
+- **Title:** Parse and display structured error messages from API responses
+- **Problem / opportunity:** `fetchJson` in `src/lib/api.ts` throws `new Error(\`API error: ${res.status}\`)`, discarding the response body. All 29 API route files return carefully crafted Dutch error messages in `{ error: "..." }` format, but these are never shown to users. Toasts display generic "Er ging iets mis" messages instead.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** All the error message work across API routes becomes user-visible with a small change in one file. High value-to-effort ratio.
+- **Scope notes:** Parse the JSON response body on error and include the `error` field in the thrown Error message. Keep the status code as fallback if body parsing fails.
+- **Dependencies:** None.
+- **Definition of done:** When an API route returns `{ error: "Chauffeur niet gevonden" }`, the user sees that message in the toast instead of a generic failure.
+- **Implementation note:** Change is in `src/lib/api.ts:24`. Must handle cases where response body is not JSON or lacks an `error` field.
+- **Source:** DE-REC-050.
+
+### PB-138: Add server-side length cap on planning notes field
+
+- **ID:** PB-138
+- **Title:** Cap `notes` field length on planning POST and bulk POST
+- **Problem / opportunity:** The `notes` field is an unbounded TEXT column. Neither write endpoint validates its length. Arbitrarily large strings can be submitted, compounding in bulk operations with 366 dates.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Quick defensive fix completing the input validation story on planning write endpoints. Natural companion to PB-136.
+- **Scope notes:** Add a 500-character cap with a Dutch error message. Apply to both single POST and bulk POST.
+- **Dependencies:** None.
+- **Definition of done:** Both planning write endpoints reject notes longer than 500 characters with a Dutch error message.
+- **Implementation note:** Follow the existing validation patterns in the planning route handlers.
+- **Source:** DE-REC-049.
 
 ---
 
 ## Blocked / Needs Decision
 
-_No items currently blocked._
+### PB-139: Resolve sickPercentage domain inconsistency
+
+- **ID:** PB-139
+- **Title:** Align sickPercentage max value between API, UI, and domain types
+- **Problem / opportunity:** API validates 0–100, UI caps at max 99, domain type comment says "0-99 attendance percentage". The field semantics are unclear: if 100% means "fully present", that contradicts being on SICK status.
+- **Owner:** Product Owner (decision) + Delivery Agent (implementation)
+- **Priority:** P3 Medium
+- **Status:** Blocked — awaiting Scrum Master decision (ESC-010)
+- **Why this matters now:** Easy to fix once the correct value is decided. Data inconsistency between API-submitted and UI-submitted values.
+- **Scope notes:** Once decided, enforce the chosen max consistently in API validation, UI input, and type documentation.
+- **Dependencies:** ESC-010 decision.
+- **Definition of done:** API, UI, and type documentation all use the same max value. Existing data outside range is unaffected (no migration needed).
+- **Source:** DE-REC-051.
 
 ---
 
@@ -71,28 +126,28 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** `useApiDataWithLoading` now returns `[data, loading, error]` where `error` is `string | null`. Backward-compatible — existing callers that destructure `[data, loading]` continue to work. DriverList shows a Dutch-language error state when the driver fetch fails. Error is cleared on successful fetch.
+- **Note:** `useApiDataWithLoading` now returns `[data, loading, error]` where `error` is `string | null`. Backward-compatible. DriverList shows a Dutch-language error state when the driver fetch fails.
 
 ### PB-129: POC capacity summary row — remove
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Per ESC-009 decision (Option B), deleted `CapacitySummaryRow.tsx` and removed all related code from PlanningGrid (import, state, fetch, toggle button, rendering). Removed associated CSS class `.grid-totals-row`. The capacity page serves the aggregation use case. PlanningGrid reduced by ~20 lines.
+- **Note:** Per ESC-009 decision (Option B), deleted `CapacitySummaryRow.tsx` and removed all related code from PlanningGrid.
 
 ### PB-130: Extend P2025 handling to remaining DELETE routes
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Added P2025 error detection to `roster-profiles/[id]`, `settings/[type]/[id]`, `settings/skills/[id]`, and `user-groups/[id]` DELETE routes. All now return 404 with Dutch "niet gevonden" messages for non-existent records. Also extended P2025 handling to PUT routes for settings and skills. Fixed empty department list bug in `getAllowedDepartmentIds` (groups with no departments now fall back to unrestricted access). Added missing `requireRole("ADMIN")` to import logs endpoint.
+- **Note:** All DELETE and PUT routes now return 404 for non-existent records. Fixed empty department list bug. Added missing `requireRole("ADMIN")` to import logs endpoint.
 
 ### PB-131: Capacity page — visual identity lift
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-31
-- **Note:** Added KPI summary module (5 metric cards: gem. beschikbaar, gem. totaal, gem. verlof, gem. ziek, bezettingsgraad). Toolbar moved into page header using control-group pattern. Chart/table wrapped in named sections with section titles. Removed outer borders from chart/table cards (No-Line Rule).
+- **Note:** Added KPI summary module, integrated toolbar, section headers, No-Line Rule applied.
 
 ---
 
@@ -135,7 +190,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low user impact. Covers DE-REC-014, DE-REC-030, and DE-REC-047. Includes hoisting COMPARE_COLORS to module scope and optionally moving to constants.ts with API limits. Schedule when capacity allows.
+- **Reason:** Low user impact. Covers DE-REC-014, DE-REC-030, DE-REC-047. Includes hoisting COMPARE_COLORS to module scope and optionally moving to constants.ts with API limits. Schedule when capacity allows.
 - **Source:** DE-REC-014, DE-REC-030, DE-REC-047.
 
 ### PB-061: Add PerformanceEvent table cleanup mechanism
