@@ -27,28 +27,26 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-149: Audit log viewer — UI in instellingen
+
+- **Owner:** Experience Agent (UI) + Delivery Agent (API endpoint)
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem:** Audit data wordt vastgelegd maar is niet zichtbaar voor beheerders.
+- **Scope notes:** Voeg een nieuw tabblad "Auditlog" toe aan de instellingenpagina (alleen ADMIN). Maak een API-endpoint `GET /api/audit-log` met paginering, filteren op tabel en datum. Toon een chronologisch overzicht met: tijdstip, gebruiker, tabel, actie, record-identificatie. Detailweergave met oude/nieuwe waarden in een modal of expandable row.
+- **Dependencies:** PB-148 (completed)
+- **Definition of done:** Beheerders kunnen het auditlogboek bekijken, filteren op tabel en datumbereik, en details van individuele entries inzien. `npm run verify` slaagt.
+- **Implementation note:** Delivery Agent bouwt eerst het API-endpoint (`GET /api/audit-log` met paginering, tabel/datum filters, ADMIN-only, gebruikersnaam/e-mail via User join — zie DE-REC-060). Experience Agent bouwt daarna de UI-component tegen die API. Coördineer de response-shape: Delivery Agent levert eerst, Experience Agent volgt.
 
 ---
 
 ## Upcoming (Sequenced)
 
-### PB-149: Audit log viewer — UI in instellingen
-
-- **Owner:** Experience Agent (UI) + Delivery Agent (API endpoint)
-- **Priority:** P2 High
-- **Status:** Ready (PB-148 completed)
-- **Problem:** Audit data wordt vastgelegd maar is niet zichtbaar voor beheerders.
-- **Scope notes:** Voeg een nieuw tabblad "Auditlog" toe aan de instellingenpagina (alleen ADMIN). Maak een API-endpoint `GET /api/audit-log` met paginering, filteren op tabel en datum. Toon een chronologisch overzicht met: tijdstip, gebruiker, tabel, actie, record-identificatie. Detailweergave met oude/nieuwe waarden in een modal of expandable row.
-- **Dependencies:** PB-148
-- **Definition of done:** Beheerders kunnen het auditlogboek bekijken, filteren op tabel en datumbereik, en details van individuele entries inzien. `npm run verify` slaagt.
-- **Implementation note:** Experience Agent bouwt de UI-component. Delivery Agent bouwt het API-endpoint. Coördineer de response-shape vooraf.
-
 ### PB-150: API-bron type — datamodel uitbreiding ImportSource
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked (on PB-146 — sequenced to start after audit trail Phase 1)
+- **Status:** Ready (sequenced after PB-149 for capacity reasons)
 - **Problem:** De connectiviteitshub ondersteunt alleen CSV-bronnen. De Scrum Master wil REST API-bronnen toevoegen (ESC-012, Option B).
 - **Scope notes:** Breid het ImportSource model uit met: `sourceType` (CSV | API enum), API-specifieke velden (`apiUrl`, `apiMethod`, `apiHeaders` als Json, `apiAuthType` als enum: NONE/BASIC/BEARER/API_KEY, `apiCredentials` als encrypted/Json). Maak de migratie. Bestaande bronnen krijgen `sourceType: CSV` als default. Pas de bestaande API-routes aan zodat ze `sourceType` meesturen.
 - **Dependencies:** PB-146 (sequencing only — no technical dependency)
@@ -124,56 +122,19 @@ _No items currently in progress._
 
 ## Completed Recently
 
-### PB-148: Audit logging — overige entiteiten
+### PB-146, PB-147, PB-148: Audittrail — datamodel, stamtabel-logging en alle overige entiteiten
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Implementation note:** `logAudit()` integrated in all POST/PUT/DELETE handlers for: `/api/drivers` (create, update, delete), `/api/roster-profiles` (create, update, delete), `/api/import-sources` (create, update, delete), `/api/scenarios` (create, delete, duplicate), `/api/user-groups` (create, update, delete), `/api/users` (role/group changes). Old values fetched before UPDATE/DELETE. UserId extracted from session via `getAuditUserId()`. All audit writes are fire-and-forget (non-blocking). Planning-entries excluded per scope. `npm run verify` passes.
+- **Summary:** Volledige audittrail geïmplementeerd. AuditLog model met JSONB old/new values, indexes, fire-and-forget `logAudit()` helper. Geïntegreerd in alle CRUD-routes: stamtabellen, competenties, chauffeurs, roosterprofielen, importbronnen, scenario's, gebruikersgroepen en gebruikers. Planning-entries uitgezonderd (hoog volume).
 
-### PB-146: AuditLog datamodel en migratie
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Implementation note:** AuditLog model added to Prisma schema with JSONB fields for old/new values, FK to User, indexes on (tableName, recordId), createdAt, and userId. Migration `20260331100000_add_audit_log` created. Helper `logAudit()` and `getAuditUserId()` exported from `src/lib/audit.ts`. Fire-and-forget pattern: audit failures are logged but never block mutations.
-
-### PB-147: Audit logging integreren in stamtabel API-routes
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Implementation note:** `logAudit()` integrated in all POST/PUT/DELETE handlers for stamtabel routes (`/api/settings/[type]`) and skill routes (`/api/settings/skills`, `/api/settings/skills/[id]`). Old values fetched before UPDATE/DELETE. UserId extracted from session via `getAuditUserId()`. Audit writes are fire-and-forget (non-blocking).
-
-### PB-139: Resolve sickPercentage domain inconsistency
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-143–PB-145: Input validation hardening (drivers, scenarios, import sources, roster profiles, user groups)
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-140–PB-142: Enum validation, text field limits, duplicate skill prevention
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-134–PB-138: Error state propagation, date cap, notes cap, error surfacing, department scope enforcement
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-129–PB-133: POC removal, P2025 handling, capacity visual lift, per-user scenario, error hooks
+### PB-129–PB-145: Validatie, foutafhandeling en visuele verbeteringen
 
 - **Status:** Completed
 - **Owner:** Delivery Agent / Experience Agent
 - **Completed:** 2026-03-31
+- **Summary:** Batch van 17 items: invoervalidatie op alle endpoints, enum-validatie, tekstveldlimieten, foutmeldingen, afdelingsfilter op schrijfroutes, per-gebruiker scenario, capaciteitspagina KPI's, planningsrooster werkbalkherstructurering, POC-verwijdering.
 
 ---
 
