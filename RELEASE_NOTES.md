@@ -6,173 +6,66 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-03-30 — Autorisatie individuele routes en capaciteitsoptimalisatie
+### 2026-03-30 — Gebruikersgroepen autorisatie compleet
 
 #### Beveiliging
 
-- **Gebruikersgroepen op individuele routes:** De endpoints `/api/drivers/[id]` GET en `/api/planning` GET (per chauffeur) passen nu dezelfde afdelingsfiltering toe als de lijstendpoints. Chauffeurs buiten de gebruikersgroep geven een 404-fout, zonder informatie te lekken over het bestaan van de chauffeur.
-
-#### Prestaties
-
-- **Capaciteitsendpoint geoptimaliseerd:** Het capaciteitsendpoint gebruikt nu een Prisma-relatiefilter in plaats van een aparte query om chauffeur-ID's op te halen. Dit vermindert het aantal queries en het geheugengebruik bij grote organisaties.
-
-### 2026-03-30 — Gebruikersgroepen autorisatie, voorkeuren per gebruiker en validatie
-
-#### Beveiliging
-
-- **Gebruikersgroepen autorisatie:** Gebruikers die aan een groep zijn toegewezen zien alleen chauffeurs, planning en capaciteit voor de afdelingen van hun groep. Gebruikers zonder groep zien alle gegevens (achterwaarts compatibel). Filtering wordt toegepast op `/api/drivers`, `/api/planning/for-range` en `/api/planning/capacity`.
-- **Voorkeuren per gebruiker:** Het voorkeuren-endpoint (`/api/preferences`) leest nu de gebruikers-ID uit de sessie in plaats van een gedeelde "default"-gebruiker. Niet-ingelogde gebruikers krijgen een 401-fout. Bij gebruik zonder authenticatie wordt automatisch teruggevallen op de standaardgebruiker.
-
-#### Betrouwbaarheid
-
-- **Statusvalidatie planningsendpoints:** De planning POST en bulk-endpoints valideren nu de status tegen de domein-enum (`PlanningStatus`). Ongeldige waarden worden afgewezen met een 400-fout en een lijst van geldige statussen.
-- **Ziektepercentage bereikvalidatie:** Het `sickPercentage`-veld wordt nu gevalideerd op het bereik 0–100 in zowel het planning POST als het bulk-endpoint.
-
-#### Prestaties
-
-- **Snellere stamtabel-import (upsert):** Stamtabel-import in upsert-modus gebruikt nu batch-lookups (`findMany`) en `createMany` in plaats van per-rij queries. Zelfde optimalisatiepatroon als chauffeur-import.
-
-### 2026-03-30 — Gebruikersgroepen admin-UI
+- **Gebruikersgroepen op alle routes:** Alle lees-endpoints (lijsten én individuele toegang) passen nu afdelingsfiltering toe op basis van gebruikersgroepen. Chauffeurs, planning en capaciteit buiten de toegewezen afdelingen zijn niet zichtbaar. Gebruikers zonder groep zien alle gegevens (achterwaarts compatibel).
+- **Individuele routes beveiligd:** `/api/drivers/[id]` en `/api/planning` (per chauffeur) geven 404 voor chauffeurs buiten de gebruikersgroep, zonder informatie te lekken.
+- **Voorkeuren per gebruiker:** Het voorkeuren-endpoint leest de gebruikers-ID uit de sessie. Niet-ingelogde gebruikers krijgen een 401-fout.
+- **Geen automatische gebruikersaanmaak:** Alleen vooraf aangemaakte gebruikers kunnen inloggen via OAuth.
+- **Rolhandhaving op alle schrijfroutes:** Settings/gebruikersbeheer = Admin. Chauffeurs/planning/scenario's = Planner.
 
 #### Functionele verbeteringen
 
-- **Gebruikersgroepen beheren:** Nieuw tabblad "Gebruikersgroepen" op de instellingenpagina (alleen voor beheerders). Groepen aanmaken, bewerken en verwijderen met afdelingskoppeling en ledenbeheer. Elke groep toont gekoppelde afdelingen en leden in een uitklapbaar detailpaneel. Gebruikers kunnen vanuit de groepseditor worden toegewezen of verwijderd.
-
-### 2026-03-30 — Gebruikersgroepen, importprestaties en validatie
-
-#### Functionele verbeteringen
-
-- **Gebruikersgroepen datamodel:** Nieuw datamodel voor gebruikersgroepen met afdelingsfilters. Gebruikers kunnen aan een groep worden gekoppeld die bepaalt welke afdelingen ze mogen zien. API-routes voor CRUD-beheer beschikbaar op `/api/user-groups`.
-
-#### Prestaties
-
-- **Snellere CSV-import chauffeurs:** Import van chauffeurs gebruikt nu batch-lookups en `createMany` in plaats van per-rij queries. Dit vermindert het aantal database-queries met ~90% bij grote imports.
-- **Planningsrooster scroll-prestaties:** De `groupDrivers`-berekening wordt nu gecached met `useMemo`, wat onnodige herberekeningen bij scrollen voorkomt.
-
-#### Betrouwbaarheid
-
-- **Capaciteitsendpoint validatie:** Het `/api/planning/capacity`-endpoint valideert nu datumformaten en beperkt het aantal datums tot 366 per verzoek.
-- **Inlogfoutmelding accountkoppeling:** De inlogpagina toont nu een duidelijke Nederlandse foutmelding wanneer een OAuth-account niet kan worden gekoppeld.
-
-### 2026-03-30 — Beveiliging OAuth-adapter en zoekverbeteringen
-
-#### Beveiliging
-
-- **Geen automatische gebruikersaanmaak bij OAuth-login:** De PrismaAdapter maakt niet langer automatisch nieuwe gebruikersrecords aan wanneer een onbekend Google-account inlogt. Alleen gebruikers die vooraf door een beheerder zijn aangemaakt kunnen een OAuth-account koppelen. Onbekende accounts worden direct geweigerd.
-- **Verbeterde foutmeldingen op inlogpagina:** De inlogpagina toont nu duidelijke Nederlandse foutmeldingen voor alle OAuth-fouttypen, inclusief een generieke fallback voor onverwachte fouten.
-- **Loginbeperking tot bekende gebruikers:** Alleen gebruikers die vooraf door een beheerder zijn aangemaakt in het admin-paneel kunnen inloggen via Google. Onbekende Google-accounts worden geweigerd met een duidelijke Nederlandse foutmelding.
-
-#### UX / design verbeteringen
-
-- **Server-side zoeken planningsrooster:** Het zoekfilter in het planningsrooster doorzoekt nu alle chauffeurs in de database, niet alleen de huidige pagina. Zoeken werkt op naam en personeelsnummer met vertraagd ophalen (300ms).
-- **Volledige capaciteitstotalen:** De totaalrij onderaan het planningsrooster toont nu capaciteitstotalen over alle chauffeurs, onafhankelijk van de huidige pagina of zoekopdracht.
-- **Alleen Google-login:** De inlogpagina toont nu alleen de Google-knop met een zichtbare melding "Deze applicatie is in ontwikkeling".
-
-#### Prestaties
-
-- **Paginering planningsrooster:** Het planningsrooster haalt chauffeurs nu op in pagina's van 100 met paginaknoppen.
-- **Scenario-duplicatie in chunks:** Het dupliceren van scenario's verwerkt planningitems nu in blokken van 5.000.
-
-#### Documentatie
-
-- **Masterdata-documentatie:** Nieuw `masterdata.md` document met volledige veldbeschrijvingen voor alle 22 databasemodellen.
-
-### 2026-03-30 — Virtual scrolling, paginering chauffeurs, import-betrouwbaarheid
-
-#### Prestaties
-
-- **Virtual scrolling planningsrooster:** Het planningsrooster rendert nu alleen de zichtbare rijen. Bij 1000+ chauffeurs blijft het scrollen soepel.
-
-#### UX / design verbeteringen
-
-- **Paginering chauffeurspagina:** Server-side paginering en zoeken met pagineringknoppen, paginagrootte-kiezer (25/50/100) en totaalteller.
-
-#### Betrouwbaarheid
-
-- **Import in chunks:** Grote CSV-imports worden nu in blokken van 500 rijen verwerkt om time-outs te voorkomen.
-- **Datumvalidatie planningsendpoints:** Alle planningsendpoints valideren nu het datumformaat (JJJJ-MM-DD).
-
-### 2026-03-30 — Schaalbaarheid: paginering en index-optimalisatie
-
-#### Prestaties
-
-- **Paginering planningsrooster-API:** `/api/planning/for-range` ondersteunt nu `page` en `pageSize` parameters.
-- **Paginering chauffeurs-API:** `/api/drivers` ondersteunt nu `page` en `pageSize` parameters met server-side zoeken.
-- **Capaciteitsindex:** Samengestelde index op `(scenarioId, date, status)` toegevoegd.
-
-#### Betrouwbaarheid
-
-- **CSV-import rijlimiet:** Importeren begrensd tot maximaal 10.000 rijen per import.
-
-### 2026-03-30 — Gebruikersidentiteit, upsert-import en sessie-optimalisatie
-
-#### Functionele verbeteringen
-
+- **Gebruikersgroepen beheer:** Nieuw tabblad "Gebruikersgroepen" op de instellingenpagina (alleen beheerders). Groepen aanmaken, bewerken en verwijderen met afdelingskoppeling en ledenbeheer.
+- **Gebruikersgroepen datamodel:** Gebruikers kunnen aan een groep worden gekoppeld die bepaalt welke afdelingen ze mogen zien. API-routes voor CRUD-beheer op `/api/user-groups`.
 - **CSV-import upsert modus:** Keuze tussen "Alleen aanmaken" en "Aanmaken of bijwerken" bij CSV-import.
-
-#### UX / design verbeteringen
-
-- **Gebruikersidentiteit in zijbalk:** Naam en rol van ingelogde gebruiker zichtbaar onderaan de zijbalk.
+- **Gebruikersbeheer:** Tabblad "Gebruikers" op instellingenpagina met roloverzicht en rolbeheer.
+- **Inlogpagina:** Google login met "onder constructie"-melding. Alleen bekende gebruikers kunnen inloggen.
 
 #### Prestaties
 
-- **Sessie-optimalisatie:** Gebruikersrol wordt direct uit het sessieobject gelezen zonder extra databasequery.
-
-### 2026-03-30 — Rolbewuste interface en betrouwbaarheid
-
-#### UX / design verbeteringen
-
-- **Rolbewuste interface:** De interface past zich aan op basis van de gebruikersrol.
-- **Instellingen-tabbladen op smal scherm:** Horizontaal scrollende tabbalk.
+- **Capaciteitsendpoint geoptimaliseerd:** Prisma-relatiefilter in plaats van aparte query voor chauffeur-ID's.
+- **Snellere CSV-import:** Batch-lookups en `createMany` in plaats van per-rij queries (~90% minder database-queries).
+- **Virtual scrolling planningsrooster:** Alleen zichtbare rijen worden gerenderd. Soepel scrollen bij 1000+ chauffeurs.
+- **Paginering:** Server-side paginering op planningsrooster en chauffeurspagina.
+- **Samengestelde index:** `(scenarioId, date, status)` index op planning-entries.
+- **Scenario-duplicatie in chunks:** Planningitems in blokken van 5.000 verwerkt.
 
 #### Betrouwbaarheid
 
-- **JSON-parseerbeveiliging:** Alle 23 POST/PUT API-routes gebruiken `parseJsonBody()` helper.
+- **Statusvalidatie:** Planning POST en bulk-endpoints valideren status tegen domein-enum.
+- **Ziektepercentage bereikvalidatie:** Veld gevalideerd op 0–100.
+- **Datumvalidatie:** Alle planningsendpoints valideren datumformaat (JJJJ-MM-DD).
+- **Capaciteitsendpoint:** Datumformaatvalidatie en limiet van 366 datums per verzoek.
+- **Import in chunks:** Grote CSV-imports in blokken van 500 rijen. Maximaal 10.000 rijen per import.
+- **JSON-parseerbeveiliging:** Alle POST/PUT API-routes gebruiken `parseJsonBody()` helper.
+- **Veldkoppelingsvalidatie:** Import-bronnen valideren veldkoppelingen.
+
+#### UX / design verbeteringen
+
+- **Rolbewuste interface:** Interface past zich aan op basis van gebruikersrol.
+- **Server-side zoeken planningsrooster:** Zoekfilter doorzoekt alle chauffeurs in de database.
+- **Volledige capaciteitstotalen:** Totaalrij toont capaciteit over alle chauffeurs.
+- **Gebruikersidentiteit in zijbalk:** Naam en rol van ingelogde gebruiker zichtbaar.
+- **Sessie-indicator:** Profielfoto en uitlogknop in koptekstbalk.
+- **Instellingen-tabbladen op smal scherm:** Horizontaal scrollende tabbalk.
+- **Paginering chauffeurspagina:** Pagineringknoppen, paginagrootte-kiezer (25/50/100) en totaalteller.
 
 #### Documentatie
 
-- **Authenticatie-setuphandleiding:** `AUTH_SETUP.md` met stapsgewijze configuratie-instructies.
+- **Masterdata-documentatie:** `masterdata.md` met veldbeschrijvingen voor alle 22 databasemodellen.
+- **Authenticatie-setuphandleiding:** `AUTH_SETUP.md` met configuratie-instructies.
 
-### 2026-03-30 — Bugfix: server error bij openen applicatie
-
-#### Bugfix
-
-- **Server error opgelost:** Middleware slaat authenticatie nu over wanneer `NEXTAUTH_SECRET` niet is ingesteld.
-
-### 2026-03-30 — Rolhandhaving en importvalidatie
-
-#### Beveiliging
-
-- **Rolhandhaving op API-routes:** Alle schrijfbewerkingen vereisen de juiste rol.
-- **Rechtenmatrix:** Settings/gebruikersbeheer/importbronnen/roosterprofielen = Admin. Chauffeurs/planning/scenario's = Planner.
-
-#### Betrouwbaarheid
-
-- **Veldkoppelingsvalidatie verbeterd:** Import-bronnen valideren veldkoppelingen.
-
-### 2026-03-30 — Gebruikersbeheer, inloggen, CSV-import en authenticatie
-
-#### Functionele verbeteringen
-
-- **Gebruikersbeheer:** Tabblad "Gebruikers" op instellingenpagina met roloverzicht en rolbeheer.
-- **Inlogpagina:** Google en Microsoft login-ondersteuning.
-- **Sessie-indicator:** Ingelogde gebruiker in koptekstbalk met profielfoto en uitlogknop.
-- **Routebeveiliging:** Automatische doorverwijzing naar inlogpagina.
-- **CSV-import uitvoeren:** Upload, validatie en import van CSV-bestanden.
-- **Importgeschiedenis:** Logboek per importbron.
-
-#### Interne kwaliteit
-
-- **CLAUDE.md herschreven.** CSV-parser geëxtraheerd. Map-memoization in DriverForm. Dode code verwijderd.
-
-### 2026-03-29 — Ontwerp, prestaties en betrouwbaarheid
+### 2026-03-29 — Ontwerp, connectiviteit en prestaties
 
 #### UX / design verbeteringen
 
-- **Koptekst met context:** Contextuele informatie per pagina.
 - **Planningsrooster herontwerp:** Tonale lagen, statuscellen met kleurindicatorstippen.
+- **Koptekst met context:** Contextuele informatie per pagina.
 - **Chauffeurspagina herontwerp:** Samengestelde paginakop met contextbeschrijving.
-- **Instellingenpagina herontwerp:** Tabnavigatie.
+- **Instellingenpagina herontwerp:** Tabnavigatie met secties.
 - **Capaciteitspagina:** Statuschips met kleurindicatorstippen.
 - **Datuminvoer:** Gestylede invoer met kalenderknop.
 - **Subtabellen:** Tonale rijscheidingen.
