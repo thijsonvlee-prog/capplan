@@ -6,50 +6,24 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-140 (employmentType enum validation), PB-141 (text field length caps on stamtabellen, functions, and skills), and PB-142 (duplicate skill name prevention on POST and PUT). All input validation hardening tasks from the previous backlog are now complete.
+This cycle completed PB-139 (sickPercentage max 99 alignment), PB-143 (driver field length validation), PB-144 (scenario and import source field length validation), and PB-145 (roster profile and user group name length validation). **The input validation hardening wave is now complete across all entities.** Every POST/PUT route in the application has length caps on text fields, enum validation where applicable, and foreign key validation.
 
-A fresh codebase scan reveals that length validation is still missing on several remaining entity name/description fields: drivers (firstName, lastName, employeeNumber), scenarios (name, description), import sources (name, description), roster profiles (name), and user groups (name). These are the natural next wave of the same defensive validation pattern.
+A fresh codebase scan confirms no remaining unbounded text fields on core entities. The only minor gap is the user preferences `value` field, which stores short system values (scenario IDs) and is low-risk. No new N+1 patterns, performance regressions, or TODO/FIXME items were found in source code.
 
 ## Recommended Next Improvements
 
-### DE-REC-055: Add length validation on driver name fields
+### DE-REC-058: Add length validation on user preference value field
 
-- **Title:** Cap `firstName`, `lastName`, and `employeeNumber` length on driver POST and PUT
-- **Problem:** The driver POST route (`/api/drivers/route.ts`) and PUT route (`/api/drivers/[id]/route.ts`) accept unbounded strings for `firstName`, `lastName`, and `employeeNumber`. No length validation exists on these fields.
-- **Proposed improvement:** Add length caps: 100 chars for `firstName`/`lastName`, 50 chars for `employeeNumber`. Dutch error messages.
-- **Expected product/technical value:** Completes defensive validation on the most frequently used entity. Prevents unbounded storage on core fields.
-- **Priority:** P3 Medium
-- **Effort:** Small
+- **Title:** Cap `value` length on preferences PUT route
+- **Problem:** The preferences PUT route (`/api/preferences/route.ts`) accepts an unbounded `value` string. While it currently stores short values (scenario IDs), it's the only remaining POST/PUT route without a text field length cap.
+- **Proposed improvement:** Add a 500-char cap on the `value` field with a Dutch error message.
+- **Expected product/technical value:** Completes the validation pattern across 100% of write endpoints.
+- **Priority:** P4 Low
+- **Effort:** Small (one check)
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Same validation pattern now applied to all other entities. Drivers are the most important entity — should not be the exception.
-
-### DE-REC-056: Add length validation on scenario and import source name/description fields
-
-- **Title:** Cap `name` and `description` length on scenario and import source routes
-- **Problem:** Scenario POST (`/api/scenarios/route.ts`) and import source POST/PUT (`/api/import-sources/`) accept unbounded `name` and `description` fields.
-- **Proposed improvement:** Add length caps: 200 chars for `name`, 500 chars for `description`. Dutch error messages. Apply to both POST and PUT on both entities.
-- **Expected product/technical value:** Consistent validation across all entity types. Prevents unbounded storage.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Natural completion of the validation hardening wave.
-
-### DE-REC-057: Add length validation on roster profile and user group name fields
-
-- **Title:** Cap `name` length on roster profile and user group routes
-- **Problem:** Roster profile POST/PUT (`/api/roster-profiles/`) and user group POST/PUT (`/api/user-groups/`) accept unbounded `name` fields.
-- **Proposed improvement:** Add 200-char cap on `name` for both entities. Dutch error messages.
-- **Expected product/technical value:** Consistent validation across all entities.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Same pattern, quick completion.
+- **Why now:** Trivial fix that completes full validation coverage.
 
 ### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
 
@@ -80,7 +54,7 @@ A fresh codebase scan reveals that length validation is still missing on several
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 500 (max notes), 90 (max range), 100 (max code length), 200 (max name length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs).
+- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 500 (max notes), 90 (max range), 100 (max code length), 200 (max name length), 50 (max employeeNumber length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs).
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
@@ -199,6 +173,7 @@ A fresh codebase scan reveals that length validation is still missing on several
 - **Employment record PUT findFirst/update not wrapped in transaction:** Theoretical race condition at current concurrency. Prisma FK constraint prevents orphan updates.
 - **Add database-level VarChar constraints:** Would require migrations for all text fields. Application-level validation is sufficient and already in place.
 - **Driver PUT missing required field validation:** Empty body silently succeeds as a no-op. Prisma doesn't update undefined fields. Harmless.
+- **Standardize driver POST validation to use validateRequired():** Driver POST uses inline checks instead of `validateRequired()`. Both approaches work correctly. Not worth changing for consistency alone.
 
 ## Recommendation Rules
 

@@ -6,6 +6,18 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Validatie afrondend: ziektepercentage, chauffeurs, scenario's, importbronnen, roosters en gebruikersgroepen
+
+#### Betrouwbaarheid
+
+- **Ziektepercentage maximaal 99:** API-validatie op planning POST en bulk-endpoints gewijzigd van 0–100 naar 0–99. Als een chauffeur 100% aanwezig is, hoort de status niet ZIEK te zijn. UI was al begrensd op 99.
+- **Chauffeursvelden begrensd:** Voornaam en achternaam zijn begrensd op 100 tekens, personeelsnummer op 50 tekens. Geldt voor zowel aanmaken als bewerken.
+- **Scenarionaam en -omschrijving begrensd:** Scenarionaam begrensd op 200 tekens, omschrijving op 500 tekens bij aanmaken.
+- **Importbronnaam en -omschrijving begrensd:** Naam begrensd op 200 tekens, omschrijving op 500 tekens bij aanmaken en bewerken.
+- **Roosterprofielnaam begrensd:** Naam begrensd op 200 tekens bij aanmaken en bewerken.
+- **Gebruikersgroepnaam begrensd:** Naam begrensd op 200 tekens bij aanmaken en bewerken.
+- **Invoervalidatie compleet:** Alle POST/PUT-endpoints hebben nu lengtebegrenzingen op tekstvelden, enum-validatie en referentievalidatie.
+
 ### 2026-03-31 — Invoervalidatie dienstverband, tekstvelden en competenties
 
 #### Betrouwbaarheid

@@ -30,7 +30,7 @@ _No open escalations._
 
 ### ESC-010: sickPercentage maximumwaarde — 99 of 100
 
-- **Status:** Planned
+- **Status:** Closed
 - **Date / run context:** 2026-03-31 — triggered by DE-REC-051
 - **Decision needed:** The `sickPercentage` field (attendance percentage when a driver has SICK status) has inconsistent max values: the API validates 0–100, the UI caps at 99, and the domain type comment says "0-99". What should the correct maximum be?
 - **Why it matters:** A planner can submit 100 via the API but only 99 via the UI. The field semantics are also unclear: if 100% means "fully present", that contradicts being on SICK status. Resolving this removes a data inconsistency and clarifies the domain model.

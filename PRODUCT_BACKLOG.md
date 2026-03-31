@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization is complete. Input validation hardening is well advanced — the final wave completes length validation on remaining entity fields (drivers, scenarios, import sources, roster profiles, user groups). The sickPercentage domain inconsistency is now resolved (ESC-010: max 99 chosen). All Experience Agent work remains P4 polish.
+**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization is complete. Input validation hardening is now complete across all entities — every POST/PUT route has length caps on text fields, enum validation, and FK validation. The sickPercentage domain inconsistency is resolved. All remaining backlog items are P4 polish/maintenance.
 
 ## Status Definitions
 
@@ -27,61 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-139: Resolve sickPercentage domain inconsistency
-
-- **ID:** PB-139
-- **Title:** Align sickPercentage max value to 99 across API, UI, and domain types
-- **Problem / opportunity:** API validates 0–100, UI caps at 99, domain type comment says "0-99". Scrum Master chose Option A (max 99) in ESC-010: if a driver is 100% present, they should not be on SICK status.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Decision made. Quick fix that resolves a data inconsistency between API-submitted and UI-submitted values.
-- **Scope notes:** Change API validation in planning POST and bulk routes from `sickPercentage > 100` to `sickPercentage > 99`. Update domain type comment to match. UI already caps at 99 — no UI change needed.
-- **Dependencies:** None (ESC-010 resolved).
-- **Definition of done:** API rejects sickPercentage > 99 with Dutch error message. Domain type comment says 0-99. UI unchanged. Verify passes.
-- **Source:** DE-REC-051, ESC-010.
-
-### PB-143: Add length validation on driver name fields
-
-- **ID:** PB-143
-- **Title:** Cap firstName, lastName, and employeeNumber length on driver POST and PUT
-- **Problem / opportunity:** Driver routes accept unbounded strings for firstName, lastName, and employeeNumber. Drivers are the most important entity and should not be the exception to the validation pattern now applied everywhere else.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Same validation pattern applied to all other entities. Natural completion of the hardening wave.
-- **Scope notes:** 100 chars for firstName/lastName, 50 chars for employeeNumber. Dutch error messages. Apply to both POST (`/api/drivers/route.ts`) and PUT (`/api/drivers/[id]/route.ts`).
-- **Dependencies:** None.
-- **Definition of done:** POST and PUT reject values exceeding the caps with Dutch error messages. Verify passes.
-- **Source:** DE-REC-055.
-
-### PB-144: Add length validation on scenario and import source name/description fields
-
-- **ID:** PB-144
-- **Title:** Cap name and description length on scenario and import source routes
-- **Problem / opportunity:** Scenario POST and import source POST/PUT accept unbounded name and description fields. Inconsistent with validated entities.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Natural completion of the validation hardening wave.
-- **Scope notes:** 200 chars for name, 500 chars for description. Dutch error messages. Apply to POST and PUT on both entities (scenario: `/api/scenarios/route.ts` + `/api/scenarios/[id]/route.ts`; import source: `/api/import-sources/route.ts` + `/api/import-sources/[id]/route.ts`).
-- **Dependencies:** None.
-- **Definition of done:** All affected POST and PUT routes reject values exceeding the caps with Dutch error messages. Verify passes.
-- **Source:** DE-REC-056.
-
-### PB-145: Add length validation on roster profile and user group name fields
-
-- **ID:** PB-145
-- **Title:** Cap name length on roster profile and user group routes
-- **Problem / opportunity:** Roster profile and user group POST/PUT accept unbounded name fields. Inconsistent with validated entities.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Same pattern, quick completion. Finishes the validation hardening wave across all entities.
-- **Scope notes:** 200 chars for name on both entities. Dutch error messages. Apply to POST and PUT on both (`/api/roster-profiles/` and `/api/user-groups/`).
-- **Dependencies:** None.
-- **Definition of done:** All affected POST and PUT routes reject values exceeding the cap with Dutch error messages. Verify passes.
-- **Source:** DE-REC-057.
+_No items ready for next cycle._
 
 ---
 
@@ -98,6 +44,34 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-139: Resolve sickPercentage domain inconsistency
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** Changed API validation from `> 100` to `> 99` in planning POST and bulk routes. Updated domain type comment. Error message updated to "0 en 99".
+
+### PB-143: Add length validation on driver name fields
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** Added 100-char cap on firstName/lastName, 50-char cap on employeeNumber. Applied to both POST and PUT routes with Dutch error messages.
+
+### PB-144: Add length validation on scenario and import source name/description fields
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** Added 200-char name cap and 500-char description cap on scenario POST, import source POST and PUT. Scenario has no PUT route for name/description — only POST needed. All Dutch error messages.
+
+### PB-145: Add length validation on roster profile and user group name fields
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** Added 200-char name cap on roster profile POST/PUT and user group POST/PUT. Dutch error messages.
 
 ### PB-140: Validate employmentType against domain enum
 
