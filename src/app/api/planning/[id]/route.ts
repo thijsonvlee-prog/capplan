@@ -18,6 +18,12 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof Error && "code" in error && (error as { code: string }).code === "P2025") {
+      return NextResponse.json(
+        { error: "Planningsitem niet gevonden" },
+        { status: 404 }
+      );
+    }
     console.error("Error deleting planning entry:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Kan planningsitem niet verwijderen" },

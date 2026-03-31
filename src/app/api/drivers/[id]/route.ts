@@ -109,6 +109,12 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof Error && "code" in error && (error as { code: string }).code === "P2025") {
+      return NextResponse.json(
+        { error: "Chauffeur niet gevonden" },
+        { status: 404 }
+      );
+    }
     console.error("Error deleting driver:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Kan chauffeur niet verwijderen" },

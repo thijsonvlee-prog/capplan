@@ -27,19 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-125: Add scenarioId to PlanningEntry domain type
-
-- **ID:** PB-125
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** `src/domain/types.ts` defines `PlanningEntry` without `scenarioId`, but `transformPlanningEntry` in `api-route-utils.ts` sets it and `PlanningGrid.tsx` uses it in optimistic updates. This creates a type gap that bypasses TypeScript safety.
-- **Why this matters now:** One-line fix that improves type correctness across the most critical component. No risk.
-- **Scope notes:** Add `scenarioId?: string` to the `PlanningEntry` type in `src/domain/types.ts`. Run verify.
-- **Dependencies:** None.
-- **Definition of done:** `scenarioId` field present on `PlanningEntry` type. `npm run verify` passes.
-- **Source:** DE-REC-039.
-
 ### PB-126: Move ScenarioSelector out of "Weergave" toolbar zone
 
 - **ID:** PB-126
@@ -66,18 +53,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** Drivers page table has card containment, improved hover treatment, and visual framing. Consistent with planning grid and settings styling. `npm run verify` passes.
 - **Source:** EX-REC-036.
 
-### PB-128: DELETE routes — return 404 instead of 500 for missing records
-
-- **ID:** PB-128
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** DELETE handlers in `drivers/[id]`, `planning/[id]`, and `scenarios/[id]` return 500 when the record doesn't exist (Prisma P2025 error). Users see a generic error instead of "niet gevonden".
-- **Why this matters now:** Small improvement to error handling correctness. Low effort, low risk.
-- **Scope notes:** Check for Prisma P2025 error code in catch blocks of the three DELETE routes. Return 404 with a Dutch "niet gevonden" message. Do not change other error handling.
-- **Dependencies:** None.
-- **Definition of done:** DELETE requests for non-existent records return 404 with Dutch message. `npm run verify` passes.
-- **Source:** DE-REC-040.
 
 ---
 
@@ -105,6 +80,20 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-125: Add scenarioId to PlanningEntry domain type
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Added `scenarioId?: string` to `PlanningEntry` type in `src/domain/types.ts`. Closes the type gap between `transformPlanningEntry` (which sets it) and `PlanningGrid.tsx` (which uses it in optimistic updates).
+
+### PB-128: DELETE routes — return 404 instead of 500 for missing records
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Added Prisma P2025 error detection in catch blocks of `drivers/[id]`, `planning/[id]`, and `scenarios/[id]` DELETE routes. Non-existent records now return 404 with Dutch "niet gevonden" messages instead of generic 500 errors.
 
 ### PB-126: Move ScenarioSelector out of "Weergave" toolbar zone
 

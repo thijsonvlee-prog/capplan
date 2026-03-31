@@ -6,26 +6,24 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle had no assigned backlog items. A fresh codebase scan was performed. The codebase is in good shape: no TODO/FIXME/HACK comments, no N+1 patterns, no large-array `.find()` in hot render paths, and no missing input validation on write routes.
+This cycle completed PB-125 (add `scenarioId` to `PlanningEntry` type) and PB-128 (404 instead of 500 for missing DELETE targets). A fresh codebase scan was performed. The codebase remains in good shape overall. Key new findings: four additional DELETE routes lack P2025 handling (consistency gap with the just-fixed routes), and several `any`-typed transform functions in `api-route-utils.ts` could benefit from proper typing.
 
-One bug was found and fixed: the planning grid's row striping pattern reset at each group boundary when groupBy was active, causing visual inconsistency. This was a side effect of using a per-group index instead of a global index for even/odd row styling.
-
-Remaining recommendations are low-priority maintainability items. No new critical or high-priority findings.
+No critical or high-priority findings. Remaining recommendations are medium and low priority maintainability items.
 
 ## Recommended Next Improvements
 
-### DE-REC-037: Planning grid — ScenarioSelector placement in toolbar
+### DE-REC-042: Extend P2025 handling to remaining DELETE routes
 
-- **Title:** Move ScenarioSelector out of "Weergave" control zone
-- **Problem:** `PlanningGrid.tsx:478` places the `ScenarioSelector` component inside the "Weergave" (View) control group. Scenario selection is conceptually a context/data control, not a view density/column control. The "Weergave" label is misleading for this slot.
-- **Proposed improvement:** Move ScenarioSelector into its own zone or into a "Context" zone alongside the period controls.
-- **Expected product/technical value:** Clearer toolbar semantics. Users can find scenario switching more intuitively.
-- **Priority:** P3 Medium
+- **Title:** Add 404 handling for missing records on remaining DELETE routes
+- **Problem:** Four DELETE routes still return 500 when the record doesn't exist: `roster-profiles/[id]`, `settings/[type]/[id]`, `settings/skills/[id]`, and `user-groups/[id]`. This is inconsistent with the just-fixed routes (PB-128).
+- **Proposed improvement:** Add the same P2025 error check pattern to these four routes.
+- **Expected product/technical value:** Consistent error handling across all DELETE endpoints. Users see "niet gevonden" instead of generic errors.
+- **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
-- **Suggested owner:** Experience Agent
-- **Why now:** The toolbar was just restructured (PB-123). This is a small follow-up to improve the zone semantics while the design is fresh.
+- **Suggested owner:** Delivery Agent
+- **Why now:** Pattern is fresh from PB-128. Quick consistency fix.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -36,54 +34,28 @@ Remaining recommendations are low-priority maintainability items. No new critica
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low. Same proven pattern.
-- **Dependencies:** Decision on whether CapacitySummaryRow POC should be promoted or removed.
+- **Dependencies:** Decision on whether CapacitySummaryRow POC should be promoted or removed (ESC-009).
 - **Suggested owner:** Delivery Agent
 - **Why now:** Small fix, but depends on the POC's future.
 
 ### DE-REC-038: POC capacity summary row — promote or remove
 
 - **Title:** Decide fate of POC capacity summary row in PlanningGrid
-- **Problem:** `PlanningGrid.tsx:86` has `showCapacitySummary` state marked as "POC: capacity summary row". This experimental feature adds maintenance cost — the CapacitySummaryRow component and its integration in PlanningGrid must be kept in sync with any grid changes. Either it should be promoted to a proper feature or removed.
+- **Problem:** `PlanningGrid.tsx` has `showCapacitySummary` state marked as "POC". This experimental feature adds maintenance cost. Either it should be promoted to a proper feature or removed.
 - **Proposed improvement:** Product decision: promote (remove POC label, add to documentation) or remove the code entirely.
-- **Expected product/technical value:** Reduces maintenance ambiguity. Either we support it properly or we don't carry the code.
+- **Expected product/technical value:** Reduces maintenance ambiguity.
 - **Priority:** P3 Medium
 - **Effort:** Small (either direction)
 - **Risk:** Low
-- **Dependencies:** Product Owner decision
+- **Dependencies:** Product Owner / Scrum Master decision (ESC-009)
 - **Suggested owner:** Product Owner
-- **Why now:** The planning grid just received visual updates (PB-123, PB-124). Good time to settle the POC's status before more grid changes.
-
-### DE-REC-039: PlanningEntry type missing scenarioId field
-
-- **Title:** Add `scenarioId` to the `PlanningEntry` domain type
-- **Problem:** `src/domain/types.ts:81` defines `PlanningEntry` without `scenarioId`, but `transformPlanningEntry` in `api-route-utils.ts:253` sets it, and `PlanningGrid.tsx:222` adds it in optimistic updates. This creates a type gap — code that uses `PlanningEntry` doesn't know `scenarioId` exists, leading to implicit `any` widening or manual casts.
-- **Proposed improvement:** Add `scenarioId?: string` to the `PlanningEntry` type.
-- **Expected product/technical value:** Type safety improvement. Prevents subtle bugs if anyone relies on the type definition.
-- **Priority:** P3 Medium
-- **Effort:** Small (one-line change + verify)
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Simple fix that improves type correctness across the most critical component.
-
-### DE-REC-040: DELETE handlers return 500 instead of 404 for missing records
-
-- **Title:** Handle Prisma P2025 errors as 404 in DELETE routes
-- **Problem:** DELETE handlers in `drivers/[id]`, `planning/[id]`, and `scenarios/[id]` call `prisma.model.delete()` without checking existence first. When the record doesn't exist, Prisma throws a P2025 error caught by the generic catch as a 500. Users see "Er is een fout opgetreden" instead of a meaningful "niet gevonden" message.
-- **Proposed improvement:** Check for P2025 error code in catch blocks and return 404 with a Dutch message.
-- **Expected product/technical value:** Better error reporting for edge cases (e.g., concurrent deletion). Correct HTTP semantics.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Small improvement to error handling quality.
+- **Why now:** Unresolved POC code in the most critical component adds regression risk during future grid work.
 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 
 - **Title:** Clean up dead type definitions in types.ts
-- **Problem:** `PlanningEntryOptions` (line 75) and `UserContext` (line 158) are defined but never imported anywhere. `ExternalSourceMetadata` and related `externalSource` fields on Driver/Skill/StamtabelRecord are "AFAS preparation" placeholders never used.
-- **Proposed improvement:** Remove `PlanningEntryOptions` and `UserContext`. Leave `ExternalSourceMetadata` with a note that it's preparatory (product decision whether to keep).
+- **Problem:** `PlanningEntryOptions` and `UserContext` are defined but never imported anywhere. `ExternalSourceMetadata` and related fields are unused preparation placeholders.
+- **Proposed improvement:** Remove `PlanningEntryOptions` and `UserContext`. Leave `ExternalSourceMetadata` with a note that it's preparatory.
 - **Expected product/technical value:** Reduces confusion for developers reading the types file.
 - **Priority:** P4 Low
 - **Effort:** Small
@@ -95,26 +67,26 @@ Remaining recommendations are low-priority maintainability items. No new critica
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Magic numbers scattered across API routes: 364 (roster generation days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (duplication chunk size), 366 (max bulk dates), 90 (max date range), 100 (max code length), 5MB (max file size), 10000 (max import rows), 500 (max page size/chunk size), 20 (max import logs).
+- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 90 (max range), 100 (max code length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs).
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
 - **Effort:** Small
-- **Risk:** Low.
-- **Dependencies:** None.
+- **Risk:** Low
+- **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Low-effort maintainability improvement.
 
 ### DE-REC-014: Move hardcoded comparison chart colors to constants
 
 - **Title:** Extract COMPARE_COLORS from CapacityChart to constants
-- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS` inline with hardcoded hex values (`#f97316`, `#06b6d4`, `#8b5cf6`).
+- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS` inline with hardcoded hex values.
 - **Proposed improvement:** Move to `src/domain/constants.ts` with comments referencing design token equivalents.
 - **Expected product/technical value:** Centralizes color definitions.
 - **Priority:** P4 Low
 - **Effort:** Small
-- **Risk:** Low.
-- **Dependencies:** None.
+- **Risk:** Low
+- **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Quick compliance fix.
 
@@ -126,31 +98,33 @@ Remaining recommendations are low-priority maintainability items. No new critica
 - **Expected product/technical value:** Prevents unbounded table growth.
 - **Priority:** P4 Low
 - **Effort:** Small
-- **Risk:** Low.
-- **Dependencies:** None.
+- **Risk:** Low
+- **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Low urgency but good hygiene.
 
 ## Risks / Watch-outs
 
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls. A failed save leaves the UI showing unsaved state. This is a known design choice.
-- **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed to avoid maintaining dead/experimental code.
+- **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed to avoid maintaining dead/experimental code (ESC-009 pending).
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
-- **Driver upsert without unique constraint:** Driver import upsert matches on `employeeNumber` using `findMany` (not a unique constraint). If multiple drivers share an `employeeNumber`, the batch lookup returns the first match. Adding a unique constraint is a product decision.
-- **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`. This means admin-only controls flash briefly on page load for non-admin users.
+- **Driver upsert without unique constraint:** Driver import upsert matches on `employeeNumber` using `findMany` (not a unique constraint). If multiple drivers share an `employeeNumber`, the batch lookup returns the first match.
+- **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`. Admin-only controls flash briefly on page load for non-admin users.
 
 ## Items Intentionally Not Recommended
 
 - **Migrate to a different ORM:** Prisma is well-integrated. Migration cost far outweighs any benefit.
 - **Add pagination to all list endpoints:** Settings/master data tables are small. Only planning and drivers needed pagination.
-- **Refactor PlanningGrid.tsx broadly:** The component is complex (~700 lines) but stable. Targeted fixes preferred.
-- **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer. Only planning endpoints warrant it because they accept comma-separated date lists.
+- **Refactor PlanningGrid.tsx broadly:** The component is complex (~800 lines) but stable. Targeted fixes preferred.
+- **Split ImportSourceManager.tsx (~838 lines):** Large but well-structured with distinct sections. Splitting would fragment the connectivity hub feature.
+- **Split UserGroupManager.tsx (~642 lines):** Well-structured with clear sections. Not justified.
+- **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer. Only planning endpoints warrant it.
 - **Add unique constraints on Driver/Scenario names:** Requires a product decision.
 - **Extend withPerfLogging to all routes:** Fix the analysis layer before expanding collection.
 - **Replace `any` types broadly:** ~27 instances are internal and well-contained. Fix opportunistically.
 - **Translate console.error messages:** Server-facing logging should remain in English.
 - **Split DriverForm.tsx (~475 lines):** Well-structured with tab-based organization.
-- **Other `.find()` calls in render paths:** ScenarioSelector, RosterAssigner, etc. operate on small arrays (<10 items).
+- **Other `.find()` calls in render paths:** ScenarioSelector, RosterAssigner, etc. operate on small arrays (<10 items). PlanningGrid scenario lookup is also small array.
 - **Wrap DELETE routes in transactions:** Theoretical race condition at current concurrency.
 - **Add React.memo to settings list items:** Small lists, infrequent renders.
 - **Add missing foreign key indexes:** Not bottlenecks at current data volumes.
@@ -170,22 +144,23 @@ Remaining recommendations are low-priority maintainability items. No new critica
 - **Add concurrent request deduplication in useApi:** Low-frequency issue.
 - **Add progress tracking for long operations:** Would require streaming responses or a job queue.
 - **Type-safe dynamic Prisma model access:** The `(prisma as any)[modelName]` pattern is pragmatic for entity-generic import logic.
-- **Clean up orphan User records retroactively:** Requires manual identification. Separate concern from prevention (PB-107).
+- **Clean up orphan User records retroactively:** Requires manual identification.
 - **Replace `useApi` cache key from `fetcher.toString()` to stable keys:** The current approach works because all fetch calls use named methods from `api.ts`.
 - **Add error handling to PlanningGrid optimistic updates:** Deliberate design choice documented in CLAUDE.md.
 - **Type the `parseJsonBody<T>` generic per route:** Would require ~25 request body interfaces.
-- **Add auth checks to GET endpoints:** CLAUDE.md states VIEWER = read-only on all GET endpoints. User group filtering handles data scoping without blocking reads.
-- **Add driverId FK validation on planning POST:** Prisma FK constraint catches invalid IDs. Adding a pre-check doubles the query count for the most common write operation.
+- **Add auth checks to GET endpoints:** CLAUDE.md states VIEWER = read-only on all GET endpoints. User group filtering handles data scoping.
+- **Add driverId FK validation on planning POST:** Prisma FK constraint catches invalid IDs.
 - **Refactor useApi global cache invalidation:** The broadcast approach works because cache entries have a 30s freshness window.
-- **autoCloseOpenRecords race condition:** Theoretical at current concurrency. Would require wrapping callers in transactions.
-- **Add user group filtering to write endpoints:** Write endpoints already require the user to know the driver ID. The read-level filtering (now complete via PB-121) prevents discovery of out-of-scope IDs.
-- **Split ImportSourceManager.tsx (~838 lines):** Large but well-structured with distinct sections. Splitting would fragment the connectivity hub feature across multiple files.
-- **Add cache eviction to useApi:** Module-level cache grows with unique fetch keys, but in practice the key space is bounded (named API methods with limited parameter variation). Add eviction only if memory profiling shows a real issue.
-- **Add parent driver existence checks in sub-record GET routes:** Returns empty array for non-existent driver ID. Correct behavior — not a data leak, and adding a pre-check doubles queries.
-- **Add date format validation on sub-record POST endpoints:** Employment/function/roster-assignment start dates are required but not format-validated. Prisma/PostgreSQL rejects invalid dates at the storage layer. Only planning endpoints warrant explicit validation because they accept comma-separated date lists.
-- **Validate roster profile entry dayOffset/status:** Entries are created from the UI's fixed 4-week grid, so invalid values can't arrive from the normal UI flow. Prisma schema constraints catch out-of-range values.
-- **Warning tokens unused in CSS classes:** `--color-warning-*` tokens are defined in globals.css but not used in CSS class definitions. They may be used via Tailwind utilities directly — this is acceptable.
-- **`--radius-xl` token unused:** Defined but not currently referenced. Keep for future use; removing saves nothing.
+- **autoCloseOpenRecords race condition:** Theoretical at current concurrency.
+- **Add user group filtering to write endpoints:** Write endpoints already require the user to know the driver ID.
+- **Add cache eviction to useApi:** Key space is bounded in practice.
+- **Add parent driver existence checks in sub-record GET routes:** Returns empty array for non-existent driver. Correct behavior.
+- **Add date format validation on sub-record POST endpoints:** Prisma/PostgreSQL rejects invalid dates at storage layer.
+- **Validate roster profile entry dayOffset/status:** Entries created from fixed UI grid; invalid values can't arrive normally.
+- **Warning tokens unused in CSS classes:** May be used via Tailwind utilities directly.
+- **`--radius-xl` token unused:** Keep for future use; removing saves nothing.
+- **Type `any` in transformDriver/transformProfile:** Internal helpers with well-understood input shapes. Typing improves correctness but is low-impact.
+- **Precompute DRIVER_COLUMNS as Map in PlanningGrid:** Small fixed-size array; `.find()` on 5-6 items is negligible.
 
 ## Recommendation Rules
 

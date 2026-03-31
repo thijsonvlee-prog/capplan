@@ -19,6 +19,11 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 - **Rijstreeppatroon bij groepering hersteld:** Bij gebruik van groepering (bijv. op afdeling) startte het even/oneven streeppatroon opnieuw bij elke groep, wat visuele inconsistentie veroorzaakte. Nu loopt het streeppatroon continu door over alle groepen.
 
+#### Technische verbeteringen
+
+- **Typecorrectie PlanningEntry:** `scenarioId` veld toegevoegd aan het `PlanningEntry` domeintype. Sluit de typekloof tussen API-transformatie en optimistische updates in het planningsrooster.
+- **Verbeterde foutafhandeling bij verwijderen:** Verwijderverzoeken voor niet-bestaande chauffeurs, planningsitems en scenario's geven nu een 404 "niet gevonden"-foutmelding in plaats van een generieke 500-fout.
+
 ### 2026-03-30 — Gebruikersgroepen autorisatie compleet
 
 #### Beveiliging

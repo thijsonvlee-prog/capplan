@@ -81,6 +81,7 @@ export type PlanningEntryOptions = {
 export type PlanningEntry = {
   id: string;
   driverId: string;
+  scenarioId?: string;
   date: string; // YYYY-MM-DD
   status: PlanningStatus;
   leaveTypeId?: string;
