@@ -6,6 +6,18 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Per-gebruiker scenario, foutmeldingen en opschoning
+
+#### Functionele verbeteringen
+
+- **Actief scenario per gebruiker:** Het actieve scenario wordt nu per ingelogde gebruiker opgeslagen. Gebruikers beïnvloeden elkaars scenariokeuze niet meer. Bij ontwikkelomgevingen zonder authenticatie wordt teruggevallen op een standaardwaarde.
+- **Foutmeldingen bij laden chauffeurs:** De chauffeurspagina toont nu een duidelijke foutmelding wanneer het ophalen van gegevens mislukt, in plaats van een leeg scherm.
+
+#### Technische verbeteringen
+
+- **Foutstatus in data-hooks:** `useApiDataWithLoading` geeft nu een `error`-veld terug (tekst of null). Bestaande componenten blijven ongewijzigd werken. Nieuwe componenten kunnen foutmeldingen tonen.
+- **POC capaciteitssamenvatting verwijderd:** De experimentele capaciteitssamenvatting in het planningsrooster is verwijderd (ESC-009 beslissing). De capaciteitspagina dekt deze functionaliteit. Het planningsrooster is hierdoor eenvoudiger en beter onderhoudbaar.
+
 ### 2026-03-31 — Planningsrooster visuele verbetering en bugfix
 
 #### UX / design verbeteringen

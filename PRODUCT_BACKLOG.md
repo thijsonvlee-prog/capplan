@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major screens are now at product-grade visual quality. Authorization model is complete. The active backlog focuses on production correctness fixes for multi-user deployments (per-user scenario state, error visibility) and one pending Scrum Master decision (ESC-009 POC). After these, the remaining backlog is P4 polish and deferred items.
+**Current direction:** All major screens are now at product-grade visual quality. Authorization model is complete. Per-user scenario state and error visibility are now shipped. ESC-009 (POC capacity summary row) is resolved — code removed. The active backlog is clear. Remaining items are P4 polish and deferred.
 
 ## Status Definitions
 
@@ -27,48 +27,13 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-132: Make active scenario selection per-user
-
-- **ID:** PB-132
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** `GET/PUT /api/scenarios/active` uses `userId = "default"` for all users. Changing the active scenario in one browser session affects all other users. The preferences API already supports per-user keys, so this is an inconsistency that causes cross-user interference in multi-user deployments.
-- **Why this matters now:** Multi-user auth is deployed and in use. This is a production correctness bug.
-- **Scope notes:** Use `getServerSession` to read the session user ID. Store/retrieve active scenario per user. Fall back to `"default"` when auth is not configured (`NEXTAUTH_SECRET` not set). Small, contained change in `src/app/api/scenarios/active/route.ts`.
-- **Dependencies:** None.
-- **Definition of done:** Active scenario is stored per authenticated user. Unauthenticated/dev mode falls back to `"default"`. `npm run verify` passes.
-- **Source:** DE-REC-043.
-
-### PB-133: Add error state to useApiData / useApiDataWithLoading hooks
-
-- **ID:** PB-133
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** Fetch errors are caught and logged to `console.error` only. No error state is returned to callers, so failed fetches are invisible in the UI — components silently show stale default data with no failure indication.
-- **Why this matters now:** All data access goes through these hooks. Silent failures are a reliability blind spot. Users may see stale data without knowing a fetch failed.
-- **Scope notes:** Add an `error` return field to both hooks. This is an additive change — existing callers can ignore the new field initially. Components can optionally show error states. Do not require all callers to handle errors in the same cycle.
-- **Dependencies:** None.
-- **Definition of done:** Both hooks return an `error` field. At least one high-value consumer (e.g., PlanningGrid or drivers page) shows an error state on fetch failure. `npm run verify` passes.
-- **Source:** DE-REC-044.
+_No items currently ready._
 
 ---
 
 ## Blocked / Needs Decision
 
-### PB-129: POC capacity summary row — promote or remove
-
-- **ID:** PB-129
-- **Owner:** Product Owner (pending Scrum Master decision)
-- **Priority:** P3 Medium
-- **Status:** Blocked (ESC-009)
-- **Problem / opportunity:** `PlanningGrid.tsx` has a `showCapacitySummary` state marked as "POC". The CapacitySummaryRow component and its integration add maintenance cost. Either it should be promoted to a proper feature or the code should be removed.
-- **Why this matters now:** The planning grid just received visual updates. Good time to settle the POC's status before further grid changes.
-- **Scope notes:** Depends on Scrum Master decision. If promote: remove POC label, ensure styling matches new grid design. If remove: delete CapacitySummaryRow component and related code from PlanningGrid.
-- **Dependencies:** ESC-009 decision.
-- **Definition of done:** POC label removed (promoted) or code deleted (removed). `npm run verify` passes.
-- **Source:** DE-REC-038.
+_No items currently blocked._
 
 ---
 
@@ -79,6 +44,27 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-132: Make active scenario selection per-user
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Active scenario preference now stored per authenticated user via `getServerSession`. Falls back to `"default"` when auth is not configured. Uses same `resolveUserId()` pattern as the preferences route. Eliminates cross-user interference in multi-user deployments.
+
+### PB-133: Add error state to useApiData / useApiDataWithLoading hooks
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** `useApiDataWithLoading` now returns `[data, loading, error]` where `error` is `string | null`. Backward-compatible — existing callers that destructure `[data, loading]` continue to work. DriverList shows a Dutch-language error state when the driver fetch fails. Error is cleared on successful fetch.
+
+### PB-129: POC capacity summary row — remove
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Per ESC-009 decision (Option B), deleted `CapacitySummaryRow.tsx` and removed all related code from PlanningGrid (import, state, fetch, toggle button, rendering). Removed associated CSS class `.grid-totals-row`. The capacity page serves the aggregation use case. PlanningGrid reduced by ~20 lines.
 
 ### PB-130: Extend P2025 handling to remaining DELETE routes
 
@@ -153,14 +139,6 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Table grows unbounded but traffic is low. Low urgency.
 - **Source:** DE-REC-031.
-
-### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Depends on POC decision (ESC-009/PB-129). Will be actionable after that decision.
-- **Source:** DE-REC-036.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 

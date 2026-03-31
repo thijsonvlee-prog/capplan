@@ -22,9 +22,15 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
+_No open escalations._
+
+---
+
+## Closed Escalations
+
 ### ESC-009: POC capaciteitssamenvatting in planningsrooster — behouden of verwijderen
 
-- **Status:** Open
+- **Status:** Closed
 - **Date / run context:** 2026-03-31 — triggered by DE-REC-038
 - **Decision needed:** The planning grid contains a POC "capacity summary row" feature (`showCapacitySummary` toggle in PlanningGrid.tsx). This experimental code adds maintenance overhead — it must stay in sync with any grid changes. Should it be promoted to a real feature or removed?
 - **Why it matters:** The planning grid just received visual updates (PB-123, PB-124). Carrying unresolved POC code increases risk of regressions during future grid work. Deciding now prevents wasted effort.
@@ -43,10 +49,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 **What the Scrum Master must do:** Place `(X)` next to one option above.
 **Product Owner action after choice:** Create or update backlog item PB-129 with the chosen direction.
-
----
-
-## Closed Escalations
+- **Resolution:** Option B chosen. CapacitySummaryRow.tsx deleted and all related code removed from PlanningGrid. Completed in PB-129 (2026-03-31).
 
 ### ESC-008: Gebruikersgroepen met autorisatiefilters — scope en fasering
 

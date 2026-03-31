@@ -36,7 +36,7 @@ export function DriverList() {
   const debouncedSearch = useDebounce(search, 300);
 
   // Paginated driver fetch with auto-invalidation
-  const [driversResult, driversLoading] = useApiDataWithLoading(
+  const [driversResult, driversLoading, driversError] = useApiDataWithLoading(
     () => api.drivers.listPaginated({
       search: debouncedSearch || undefined,
       page,
@@ -202,7 +202,14 @@ export function DriverList() {
               </tr>
             </thead>
             <tbody>
-              {driversLoading && drivers.length === 0 ? (
+              {driversError && drivers.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="text-center py-12 text-danger-600">
+                    <div className="text-sm font-medium">Fout bij ophalen chauffeurs</div>
+                    <div className="text-xs text-text-tertiary mt-1">{driversError}</div>
+                  </td>
+                </tr>
+              ) : driversLoading && drivers.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="text-center py-12 text-text-tertiary">
                     <div className="spinner mb-2 mx-auto" />

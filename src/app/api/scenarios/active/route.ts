@@ -1,15 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 
-const DEFAULT_USER_ID = "default";
 const PREFERENCE_KEY = "activeScenario";
+
+/**
+ * Resolve the userId from the session. When auth is not configured
+ * (no NEXTAUTH_SECRET), falls back to "default" for backward compatibility.
+ * Returns null if auth is configured but the user is not logged in.
+ */
+async function resolveUserId(): Promise<{ userId: string } | { error: NextResponse }> {
+  if (!process.env.NEXTAUTH_SECRET) {
+    return { userId: "default" };
+  }
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return {
+      error: NextResponse.json(
+        { error: "Niet ingelogd. Log in om het actieve scenario te beheren." },
+        { status: 401 }
+      ),
+    };
+  }
+  return { userId: session.user.id };
+}
 
 export async function GET() {
   try {
+    const resolved = await resolveUserId();
+    if ("error" in resolved) return resolved.error;
+    const { userId } = resolved;
+
     const pref = await prisma.userPreference.findFirst({
       where: {
-        userId: DEFAULT_USER_ID,
+        userId,
         key: PREFERENCE_KEY,
       },
     });
@@ -40,12 +66,16 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    const resolved = await resolveUserId();
+    if ("error" in resolved) return resolved.error;
+    const { userId } = resolved;
+
     const { activeId } = body;
 
     if (activeId === "default") {
       await prisma.userPreference.deleteMany({
         where: {
-          userId: DEFAULT_USER_ID,
+          userId,
           key: PREFERENCE_KEY,
         },
       });
@@ -53,13 +83,13 @@ export async function PUT(request: NextRequest) {
       await prisma.userPreference.upsert({
         where: {
           userId_key: {
-            userId: DEFAULT_USER_ID,
+            userId,
             key: PREFERENCE_KEY,
           },
         },
         update: { value: activeId },
         create: {
-          userId: DEFAULT_USER_ID,
+          userId,
           key: PREFERENCE_KEY,
           value: activeId,
         },

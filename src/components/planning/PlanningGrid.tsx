@@ -16,7 +16,6 @@ import { DayCell } from "./DayCell";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 import { RosterAssigner } from "./RosterAssigner";
-import { CapacitySummaryRow } from "./CapacitySummaryRow";
 import { CalendarCog, Columns3, ArrowUp, ArrowDown, Maximize2, Minus, AlignJustify, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import {
   getDateRange,
@@ -83,8 +82,6 @@ export function PlanningGrid() {
   const [extraColumns, setExtraColumns] = useState<DriverColumnKey[]>([]);
   const [showColumnPicker, setShowColumnPicker] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
-  const [showCapacitySummary, setShowCapacitySummary] = useState(true); // POC: capacity summary row
-
   // Search state (debounced for server-side search)
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -142,13 +139,6 @@ export function PlanningGrid() {
     () => allDates.length > 0 ? api.planning.getForRange(allDates, activeScenarioId, { page, pageSize }, debouncedSearch) : Promise.resolve(null),
     [allDates.length > 0 ? allDates[0] : "", allDates.length, activeScenarioId, page, pageSize, debouncedSearch],
     null as { drivers: DriverWithEntries[]; dates: string[]; total?: number; page?: number; pageSize?: number } | null
-  );
-
-  // Fetch full-dataset capacity totals (independent of pagination/search)
-  const capacityData = useApiData(
-    () => allDates.length > 0 ? api.planning.getCapacity(allDates, activeScenarioId) : Promise.resolve(null),
-    [allDates.length > 0 ? allDates[0] : "", allDates.length, activeScenarioId],
-    null as Record<string, Record<string, number>> | null
   );
 
   const totalDrivers = data?.total ?? data?.drivers.length ?? 0;
@@ -468,15 +458,6 @@ export function PlanningGrid() {
                 </>
               )}
             </div>
-            <button
-              onClick={() => setShowCapacitySummary((v) => !v)}
-              className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
-                showCapacitySummary ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-primary bg-surface-primary"
-              }`}
-              title="Capaciteitssamenvatting tonen/verbergen"
-            >
-              Totalen
-            </button>
           </div>
 
           {/* Status legend — pushed right */}
@@ -709,18 +690,6 @@ export function PlanningGrid() {
                     {debouncedSearch ? `Geen chauffeurs gevonden voor "${debouncedSearch}"` : "Geen chauffeurs beschikbaar. Voeg chauffeurs toe via het Chauffeurs-scherm."}
                   </td>
                 </tr>
-              )}
-              {/* Capacity summary row (full-dataset totals from API) */}
-              {showCapacitySummary && capacityData && (
-                <CapacitySummaryRow
-                  capacityData={capacityData}
-                  columnHeaders={columnHeaders}
-                  extraColumnCount={extraColumns.length}
-                  density={density}
-                  driverColWidth={driverColWidth}
-                  extraColWidth={extraColWidth}
-                  minCellWidth={dc.minW}
-                />
               )}
             </tbody>
           </table>

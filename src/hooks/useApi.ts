@@ -28,6 +28,7 @@ function cacheKey(fetcher: Function, deps: unknown[]): string {
  * - Skips refetch if cache is fresh (<30 s) — prevents visible shifting
  *   when navigating between pages.
  * - Still refetches on explicit `invalidate()` or when deps change.
+ * - Returns an `error` field (string | null) when a fetch fails.
  */
 export function useApiData<T>(
   fetcher: () => Promise<T>,
@@ -75,20 +76,23 @@ export function useApiData<T>(
 }
 
 /**
- * Same as useApiData but also returns a loading boolean.
- * Returns a tuple [data, loading] where loading is true during the initial fetch.
+ * Same as useApiData but also returns loading and error state.
+ * Returns a tuple [data, loading, error] where:
+ * - loading is true during the initial fetch
+ * - error is a string message when the most recent fetch failed, null otherwise
  */
 export function useApiDataWithLoading<T>(
   fetcher: () => Promise<T>,
   deps: unknown[] = [],
   defaultValue: T
-): [T, boolean] {
+): [T, boolean, string | null] {
   const key = cacheKey(fetcher, deps);
   const entry = cache.get(key);
   const [data, setData] = useState<T>(
     () => (entry ? (entry.data as T) : defaultValue)
   );
   const [loading, setLoading] = useState(() => !entry);
+  const [error, setError] = useState<string | null>(null);
   const fetcherRef = useRef(fetcher);
   const keyRef = useRef(key);
 
@@ -103,10 +107,12 @@ export function useApiDataWithLoading<T>(
       .then((result) => {
         cache.set(keyRef.current, { data: result, fetchedAt: Date.now() });
         setData(result);
+        setError(null);
         setLoading(false);
       })
       .catch((err) => {
         console.error(err);
+        setError(err instanceof Error ? err.message : "Onbekende fout bij ophalen gegevens");
         setLoading(false);
       });
   }, []);
@@ -123,7 +129,7 @@ export function useApiDataWithLoading<T>(
     };
   }, deps); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return [data, loading];
+  return [data, loading, error];
 }
 
 // Helper for mutations that auto-invalidates

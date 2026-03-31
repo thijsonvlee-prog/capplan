@@ -477,11 +477,6 @@ body {
   border-top: 1px solid var(--color-border-subtle);
 }
 
-/* Totals section: stronger surface contrast */
-.planning-grid .grid-totals-row {
-  border-top: 1px solid var(--color-border-default);
-}
-
 /* Sticky column right-edge shadow for scroll separation */
 .grid-sticky-edge {
   box-shadow: 2px 0 6px -2px rgb(0 0 0 / 0.06);

@@ -6,45 +6,32 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-130 (extend P2025 handling to remaining DELETE routes) plus three additional fixes discovered during a fresh codebase scan:
-- **Fixed high-severity bug:** `getAllowedDepartmentIds` returned `[]` for groups with no departments, silently hiding all data. Now falls back to unrestricted access.
-- **Fixed auth gap:** Added missing `requireRole("ADMIN")` to `/api/import-sources/[id]/logs`.
-- **Extended P2025 handling:** Added to PUT routes for settings and skills (not just DELETE).
+This cycle completed three backlog items:
+- **PB-132:** Active scenario selection is now per-user (production correctness fix for multi-user deployments).
+- **PB-133:** `useApiDataWithLoading` now exposes an `error` field. DriverList shows error state on fetch failure.
+- **PB-129:** POC capacity summary row removed from PlanningGrid per ESC-009 decision (Option B). Component, state, fetch, toggle button, and CSS class all deleted.
 
-A thorough scan revealed several new medium-priority findings: shared active scenario state across users, `useApiData` cache key fragility under minification, and no error state exposed from data fetching hooks. These are documented below as new recommendations.
+A fresh codebase scan confirms the codebase is in good shape: no N+1 patterns, no hot-path `.find()` issues, no dead imports, no console.log leaks. The remaining recommendations are P4 polish items that were already deferred.
 
 ## Recommended Next Improvements
 
-### DE-REC-043: Active scenario is shared globally instead of per-user
+### DE-REC-046: Propagate error state to more useApiDataWithLoading consumers
 
-- **Title:** Make active scenario selection per-user
-- **Problem:** `GET /api/scenarios/active` uses `userId = "default"` for all users. Changing the active scenario in one browser affects all other users simultaneously. The preferences API already supports per-user keys, so this is inconsistent.
-- **Proposed improvement:** Use the session user ID from `getServerSession` to store/retrieve active scenario per user. Fall back to "default" when auth is not configured.
-- **Expected product/technical value:** Prevents cross-user interference in multi-user deployments. Critical for production correctness.
+- **Title:** Show error states on settings, import, and roster profile pages
+- **Problem:** Only DriverList currently shows an error state on fetch failure. Other pages using `useApiDataWithLoading` (settings, import sources, roster profiles, user groups) still silently show empty data.
+- **Proposed improvement:** Destructure the third `error` return value in remaining `useApiDataWithLoading` callers and show a short error message.
+- **Expected product/technical value:** Consistent error visibility across all pages. Users always know when data loading failed.
 - **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low — per-user preference storage already exists.
-- **Dependencies:** None
+- **Effort:** Small (6-8 straightforward edits, pattern already established in DriverList)
+- **Risk:** Low — purely additive UI change.
+- **Dependencies:** PB-133 (completed)
 - **Suggested owner:** Delivery Agent
-- **Why now:** Multi-user auth is deployed. This is a correctness issue in production.
+- **Why now:** The hook now provides error state. Low effort to propagate.
 
-### DE-REC-044: useApiData does not expose error state to components
-
-- **Title:** Add error state to useApiData / useApiDataWithLoading hooks
-- **Problem:** Fetch errors are caught and logged to `console.error` only. No error state is returned to callers, so failed fetches are invisible in the UI — components silently show stale default data with no failure indication.
-- **Proposed improvement:** Add an `error` return field to both hooks. Components can then show error states.
-- **Expected product/technical value:** Users see when data fetching fails instead of staring at potentially stale data.
-- **Priority:** P3 Medium
-- **Effort:** Medium (hook change is small, but callers need to handle the new state)
-- **Risk:** Low — additive change, existing callers can ignore the new field.
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** All data access goes through these hooks. Silent failures are a reliability blind spot.
-
-### DE-REC-045: Planning endpoint has no upper bound on dates list length
+### DE-REC-045: Add length cap on planning dates parameter
 
 - **Title:** Add length cap on `?dates=` parameter in planning GET route
-- **Problem:** `GET /api/planning` accepts a comma-separated `dates` parameter with no length limit. The `/capacity` and `/for-range` routes cap at 366 and 90 respectively, but the base planning endpoint does not. An unbounded `IN` clause can degrade DB performance.
+- **Problem:** `GET /api/planning` accepts a comma-separated `dates` parameter with no length limit. The `/capacity` and `/for-range` routes cap at 366 and 90 respectively, but the base planning endpoint does not.
 - **Proposed improvement:** Add a limit (e.g. 366) matching the capacity endpoint's cap.
 - **Expected product/technical value:** Prevents accidental or malicious overload of the planning query.
 - **Priority:** P4 Low
@@ -54,37 +41,11 @@ A thorough scan revealed several new medium-priority findings: shared active sce
 - **Suggested owner:** Delivery Agent
 - **Why now:** Quick defensive fix.
 
-### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
-
-- **Title:** Replace `planningEntries.find()` with Map-based lookup in CapacitySummaryRow
-- **Problem:** `CapacitySummaryRow.tsx` uses `.find()` inside a nested loop over drivers x dates. Same hot-path pattern that was fixed in PlanningGrid (PB-066).
-- **Proposed improvement:** Build a local Map inside the component or pass `entryMaps` from PlanningGrid.
-- **Expected product/technical value:** Consistent O(1) lookup pattern. Performance improvement for large grids.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low. Same proven pattern.
-- **Dependencies:** Decision on whether CapacitySummaryRow POC should be promoted or removed (ESC-009).
-- **Suggested owner:** Delivery Agent
-- **Why now:** Small fix, but depends on the POC's future.
-
-### DE-REC-038: POC capacity summary row — promote or remove
-
-- **Title:** Decide fate of POC capacity summary row in PlanningGrid
-- **Problem:** `PlanningGrid.tsx` has `showCapacitySummary` state marked as "POC". This experimental feature adds maintenance cost. Either it should be promoted to a proper feature or removed.
-- **Proposed improvement:** Product decision: promote (remove POC label, add to documentation) or remove the code entirely.
-- **Expected product/technical value:** Reduces maintenance ambiguity.
-- **Priority:** P3 Medium
-- **Effort:** Small (either direction)
-- **Risk:** Low
-- **Dependencies:** Product Owner / Scrum Master decision (ESC-009)
-- **Suggested owner:** Product Owner
-- **Why now:** Unresolved POC code in the most critical component adds regression risk during future grid work.
-
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 
 - **Title:** Clean up dead type definitions in types.ts
-- **Problem:** `PlanningEntryOptions` and `UserContext` are defined but never imported anywhere. `ExternalSourceMetadata` and related fields are unused preparation placeholders.
-- **Proposed improvement:** Remove `PlanningEntryOptions` and `UserContext`. Leave `ExternalSourceMetadata` with a note that it's preparatory.
+- **Problem:** `PlanningEntryOptions` and `UserContext` are defined but never imported anywhere.
+- **Proposed improvement:** Remove unused types.
 - **Expected product/technical value:** Reduces confusion for developers reading the types file.
 - **Priority:** P4 Low
 - **Effort:** Small
@@ -135,7 +96,6 @@ A thorough scan revealed several new medium-priority findings: shared active sce
 ## Risks / Watch-outs
 
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls. A failed save leaves the UI showing unsaved state. This is a known design choice.
-- **POC capacity summary row:** `CapacitySummaryRow.tsx` and related code in PlanningGrid are marked as "POC EXPERIMENT". Should either be promoted or removed to avoid maintaining dead/experimental code (ESC-009 pending).
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
 - **Driver upsert without unique constraint:** Driver import upsert matches on `employeeNumber` using `findMany` (not a unique constraint). If multiple drivers share an `employeeNumber`, the batch lookup returns the first match.
 - **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`. Admin-only controls flash briefly on page load for non-admin users.
@@ -144,7 +104,7 @@ A thorough scan revealed several new medium-priority findings: shared active sce
 
 - **Migrate to a different ORM:** Prisma is well-integrated. Migration cost far outweighs any benefit.
 - **Add pagination to all list endpoints:** Settings/master data tables are small. Only planning and drivers needed pagination.
-- **Refactor PlanningGrid.tsx broadly:** The component is complex (~800 lines) but stable. Targeted fixes preferred.
+- **Refactor PlanningGrid.tsx broadly:** The component is complex but stable. Targeted fixes preferred.
 - **Split ImportSourceManager.tsx (~838 lines):** Large but well-structured with distinct sections. Splitting would fragment the connectivity hub feature.
 - **Split UserGroupManager.tsx (~642 lines):** Well-structured with clear sections. Not justified.
 - **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer. Only planning endpoints warrant it.
@@ -188,17 +148,19 @@ A thorough scan revealed several new medium-priority findings: shared active sce
 - **Validate roster profile entry dayOffset/status:** Entries created from fixed UI grid; invalid values can't arrive normally.
 - **Warning tokens unused in CSS classes:** May be used via Tailwind utilities directly.
 - **`--radius-xl` token unused:** Keep for future use; removing saves nothing.
-- **Type `any` in transformDriver/transformProfile:** Internal helpers with well-understood input shapes. Typing improves correctness but is low-impact.
+- **Type `any` in transformDriver/transformProfile:** Internal helpers with well-understood input shapes.
 - **Precompute DRIVER_COLUMNS as Map in PlanningGrid:** Small fixed-size array; `.find()` on 5-6 items is negligible.
-- **useApi cache key `fetcher.toString()` fragility:** Theoretically breaks under minification, but in practice all callers use named methods from `api.ts` and pass runtime values via `deps`. No reported issues. Monitor rather than rewrite.
-- **PlanningGrid `localData` double-render pattern:** Optimistic updates require shadow state. Refactoring to `useRef` would complicate the already-complex component for marginal benefit.
-- **PlanningGrid `resolveColumnValue` deps cause full re-sort:** Only triggers when lookup data changes (infrequent). Not a hot-path concern at current scale.
-- **csv-parser string copy for non-comma separators:** Only affects files near 5MB limit with non-comma separators. Rare in practice.
-- **autoCloseOpenRecords type signature doesn't enforce tx context:** Always called correctly in practice. Adding generics complicates the function for theoretical safety.
-- **Scenario duplicate partial-failure on crash:** Requires server process kill mid-operation. Extremely unlikely at current traffic.
-- **DayCell popup magic numbers:** Coupled to CSS but stable — popup width hasn't changed. Low risk.
-- **getAllowedDepartmentIds double session lookup:** Second `getServerSession` call is cheap (cached by NextAuth). Two DB queries per request is acceptable at current scale.
+- **useApi cache key `fetcher.toString()` fragility:** Theoretically breaks under minification, but in practice all callers use named methods from `api.ts` and pass runtime values via `deps`. No reported issues.
+- **PlanningGrid `localData` double-render pattern:** Optimistic updates require shadow state.
+- **PlanningGrid `resolveColumnValue` deps cause full re-sort:** Only triggers when lookup data changes (infrequent).
+- **csv-parser string copy for non-comma separators:** Only affects files near 5MB limit with non-comma separators.
+- **autoCloseOpenRecords type signature doesn't enforce tx context:** Always called correctly in practice.
+- **Scenario duplicate partial-failure on crash:** Requires server process kill mid-operation.
+- **DayCell popup magic numbers:** Coupled to CSS but stable.
+- **getAllowedDepartmentIds double session lookup:** Second `getServerSession` call is cheap (cached by NextAuth).
 - **autoCloseOpenRecords date math timezone:** Node.js defaults to UTC. Not a risk unless server timezone is changed.
+- **DE-REC-036 (CapacitySummaryRow optimization):** No longer applicable — component removed per ESC-009 decision.
+- **DE-REC-038 (POC promote/remove decision):** Resolved — ESC-009 chose removal.
 
 ## Recommendation Rules
 
