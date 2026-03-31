@@ -17,6 +17,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 - **Planningsrooster:** Werkbalk herstructurering naar vier zones (Periode, Filter, Weergave, Status). Tonale rijscheiding met hover-effect.
 - **Capaciteitspagina:** KPI-samenvattingsmodule met vijf kernmetrieken.
 - **Chauffeurspagina:** Geïntegreerde zoekbalk en tonale rijafwisseling.
+- **Mobiele navigatie:** Sidebar is nu verborgen op mobiele schermen (< 768px) en opent als slide-over paneel via een hamburger-menu in de header. Navigatie sluit automatisch na een paginawissel. Touch-vriendelijke tap targets en compactere padding op mobiel. Desktop-layout blijft ongewijzigd.
 
 #### Functionele verbeteringen
 

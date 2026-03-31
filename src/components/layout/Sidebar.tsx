@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { CalendarDays, BarChart3, Users, Settings, FileText, ShieldCheck, Shield, Eye } from "lucide-react";
+import { CalendarDays, BarChart3, Users, Settings, FileText, ShieldCheck, Shield, Eye, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 const navItems = [
   { href: "/planning", label: "Planning", icon: CalendarDays },
@@ -20,17 +21,38 @@ const SIDEBAR_ROLE_CONFIG: Record<string, { label: string; icon: typeof Shield }
   VIEWER: { label: "Kijker", icon: Eye },
 };
 
-export function Sidebar() {
+interface SidebarProps {
+  mobile?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ mobile, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
   const user = session?.user;
   const roleConfig = user?.role ? SIDEBAR_ROLE_CONFIG[user.role] ?? null : null;
 
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    if (mobile && onClose) {
+      onClose();
+    }
+    // Only trigger on pathname change for mobile
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
   return (
-    <aside className="w-60 bg-sidebar-bg text-sidebar-text min-h-screen flex flex-col">
+    <aside
+      className={cn(
+        "bg-sidebar-bg text-sidebar-text flex flex-col",
+        mobile
+          ? "mobile-nav-panel h-full"
+          : "w-60 min-h-screen hidden md:flex"
+      )}
+    >
       {/* Brand mark */}
-      <div className="px-5 pt-6 pb-8">
+      <div className="px-5 pt-6 pb-8 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
             <span className="text-white font-bold text-sm tracking-tight">CP</span>
@@ -40,6 +62,15 @@ export function Sidebar() {
             <p className="text-[0.6875rem] text-sidebar-text leading-tight">Chauffeurplanning</p>
           </div>
         </div>
+        {mobile && (
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md text-sidebar-text hover:text-white hover:bg-sidebar-hover transition-colors"
+            aria-label="Menu sluiten"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 px-3 space-y-0.5">
@@ -50,7 +81,8 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                "flex items-center gap-3 px-3 rounded-lg text-[0.8125rem] font-medium transition-colors",
+                mobile ? "py-2.5" : "py-2",
                 isActive
                   ? "bg-brand-600 text-white shadow-xs"
                   : "text-sidebar-text hover:bg-sidebar-hover hover:text-white"

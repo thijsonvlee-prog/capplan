@@ -2,15 +2,15 @@
 
 ## Summary
 
-**This cycle (2026-03-31, run 7):** Implemented PB-158 (API test connection button) and PB-153 (API response mapping). Added a "Verbinding testen" button to the API configuration form with inline success/error feedback, and a response structure preview that shows discovered JSON paths with sample values. Users can click paths to populate field mappings, and source column inputs offer autocomplete from discovered paths.
+**This cycle (2026-03-31, run 8):** Implemented PB-154 (Mobile layout shell and navigation). Added responsive layout shell with hamburger menu, slide-over sidebar panel with backdrop overlay, auto-close on navigation, touch-friendly tap targets, and compact mobile padding. Desktop layout is completely unchanged.
 
 **Current design alignment with DESIGN.md:**
-- Sidebar: fully aligned (section 7.8). Premium, calm, anchoring.
+- Sidebar: fully aligned (section 7.8). Premium, calm, anchoring. Now responsive — hidden on mobile, accessible via slide-over.
 - Settings page: well-aligned (sections 2.5, 7.1, 7.2). Strong hierarchy, tab navigation, composed zones. Now 7 tabs including Auditlog.
 - Import source manager (Connectiviteit tab): well-aligned. Source type selector, API configuration with surface layering, test connection with inline feedback, response structure preview with interactive path discovery, field mapping editor with autocomplete support.
 - Audit log viewer: well-aligned. Filter card, expandable rows, semantic badges, tonal row separation, pagination.
 - Login page: well-aligned. Clean, premium, brand-surface split.
-- Header: well-aligned. Minimal, composed, contextual subtitle support.
+- Header: well-aligned. Minimal, composed, contextual subtitle support. Now includes hamburger menu on mobile.
 - Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning.
 - Planning grid matrix: fully aligned (section 4.1). Tonal row separation, No-Line Rule respected.
 - Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search.
@@ -19,14 +19,27 @@
 - User manager: well-aligned. Avatar display, role badges, inline role editing.
 - Toast & ConfirmDialog: product-grade. Accessibility, focus trapping, semantic colors.
 - Button system: fully aligned. Clear hierarchy across primary/secondary/icon/danger.
+- Mobile layout shell: aligned. Slide-over sidebar, overlay backdrop, smooth animations, auto-close on navigate.
 
 **Where design quality is still below target:**
-- All major screens are aligned with DESIGN.md. Remaining opportunities are polish-level refinements, not structural gaps.
+- All major desktop screens are aligned with DESIGN.md. Remaining opportunities are polish-level refinements, not structural gaps.
+- Mobile content views (drivers, planning, capacity, settings) are not yet optimized for mobile viewports — they use desktop layouts on small screens. PB-155 and PB-156 address the most important mobile content screens.
 - The documentation page is minimal (single card with download button on a full page), but it is a low-traffic utility page and not a core product surface.
 - Recharts default tooltip/axis styling in the capacity chart is the most visible remaining integration gap.
 - Settings tab count is now 7. Horizontal scrolling tabs handle this adequately but the pattern may need revisiting if more tabs are added.
 
 ## Recommended Next Improvements
+
+### EX-REC-050: Mobile driver list — card-based layout
+
+- **Problem:** The drivers page uses a wide table that is unusable on mobile viewports. With the mobile layout shell (PB-154) now in place, users can navigate to the drivers page on mobile but the content is not optimized.
+- **Proposed improvement:** This is already scheduled as PB-155. Card-based driver list on mobile with search, showing name, personnel number, department, and status per card. Table on desktop.
+- **Expected user value:** Planners can look up driver information on their phone.
+- **Priority:** P3 Medium
+- **Effort:** Medium
+- **Dependencies:** PB-154 (completed)
+- **Suggested owner:** Experience Agent
+- **Why now:** Mobile layout shell is in place. This is the natural next step in the mobile sequence.
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -96,6 +109,7 @@
 
 ## Risks / Watch-outs
 
+- **Mobile content screens not yet optimized.** The mobile layout shell is in place, but content pages (planning grid, drivers table, capacity charts, settings forms) still render their desktop layouts on mobile viewports. Users can navigate on mobile but the content experience is suboptimal. PB-155 and PB-156 address the highest-priority screens.
 - **Planning grid toolbar wrap behavior.** The single-row toolbar with four zones may wrap on screens narrower than ~1200px. Current `flex-wrap` handles this, but the visual zone structure may degrade when wrapped. Monitor for user feedback. See EX-REC-048.
 - **Recharts default styling.** The capacity chart now lives within a product-grade page, but the chart's internal tooltip/axis styling is still Recharts default. See EX-REC-049.
 - **Settings tab count growth.** The settings page now has 7 tabs with horizontal scroll. Adding more tabs may need a different navigation pattern (e.g. vertical tabs or grouped sections).
@@ -122,6 +136,7 @@
 - **Capacity page structural redesign:** No longer needed. PB-131 brought the page to product-grade quality.
 - **Documentation page redesign:** Low-traffic utility page. A single card with a download button is adequate for its purpose.
 - **Broad StamtabelManager No-Line refactor:** Borders serve usability here. Tonal-only separation would reduce clarity for inline-editable list items.
+- **Full mobile-first redesign of all screens:** ESC-013 decided Option B (selective mobile views). Only key screens need mobile optimization.
 
 ## Recommendation Rules
 

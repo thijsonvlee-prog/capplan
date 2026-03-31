@@ -55,11 +55,13 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
+- **Status:** Completed
+- **Completed:** 2026-03-31
 - **Problem:** De applicatie heeft geen mobiele navigatie of responsive layout shell. De Scrum Master wil selectieve mobiele weergaven (ESC-013, Option B).
 - **Scope notes:** Maak een responsive layout variant voor schermen < 768px: hamburger-menu voor navigatie, compactere header, touch-vriendelijke tap targets. Sidebar wordt een slide-over panel op mobiel. Desktop layout blijft ongewijzigd. Gebruik Tailwind responsive utilities.
 - **Dependencies:** None
 - **Definition of done:** Op mobiele viewports: sidebar is verborgen achter hamburger-menu, header is compact, navigatie werkt via slide-over. Desktop is ongewijzigd. `npm run verify` slaagt.
+- **Implementation note:** Sidebar hidden on mobile (`hidden md:flex`), slide-over panel with backdrop overlay and close-on-navigate. Hamburger button in Header (md:hidden). Touch-friendly tap targets (py-2.5 on mobile nav items). Compact mobile padding (p-4 vs p-6). Animations: slide-in-left for panel, fade-in for overlay. Desktop completely unchanged.
 
 ---
 
@@ -69,7 +71,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked (on PB-154)
+- **Status:** Ready
 - **Problem:** De chauffeurspagina is niet bruikbaar op mobiel (brede tabel, kleine tekst).
 - **Scope notes:** Maak een mobiele variant van de chauffeurspagina: card-based layout in plaats van tabel, prominente zoekbalk, tap-to-open detail. Toon naam, personeelsnummer, afdeling en status per card. Gebruik responsive breakpoints: tabel op desktop, cards op mobiel.
 - **Dependencies:** PB-154

@@ -675,3 +675,57 @@ body {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* ===================================================================
+   Mobile Navigation
+   Slide-over sidebar and responsive layout utilities.
+   =================================================================== */
+
+/* Overlay backdrop */
+.mobile-nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background-color: rgb(0 0 0 / 0.4);
+  backdrop-filter: blur(2px);
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Slide-over sidebar panel */
+.mobile-nav-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 50;
+  width: 17rem;
+  animation: slide-in-left 0.25s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Hamburger button */
+.mobile-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  transition-property: color, background-color;
+  transition-duration: 150ms;
+}
+
+.mobile-menu-btn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-tertiary);
+}
