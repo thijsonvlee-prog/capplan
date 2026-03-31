@@ -404,24 +404,18 @@ export function validateDateFormats(dates: string[]): string | null {
  * Used by employment, function, and roster assignment routes.
  */
 export async function autoCloseOpenRecords(
-  model: { findMany: Function; updateMany: Function },
+  model: { updateMany: Function },
   driverId: string,
   newStartDate: string
 ) {
-  const openRecords = await model.findMany({
+  const dayBefore = new Date(newStartDate);
+  dayBefore.setDate(dayBefore.getDate() - 1);
+  const endDateStr = dayBefore.toISOString().split("T")[0];
+
+  await model.updateMany({
     where: { driverId, endDate: null },
+    data: { endDate: endDateStr },
   });
-
-  if (openRecords.length > 0) {
-    const dayBefore = new Date(newStartDate);
-    dayBefore.setDate(dayBefore.getDate() - 1);
-    const endDateStr = dayBefore.toISOString().split("T")[0];
-
-    await model.updateMany({
-      where: { driverId, endDate: null },
-      data: { endDate: endDateStr },
-    });
-  }
 }
 
 /**

@@ -27,26 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-150: API-bron type — datamodel uitbreiding ImportSource
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** De connectiviteitshub ondersteunt alleen CSV-bronnen. De Scrum Master wil REST API-bronnen toevoegen (ESC-012, Option B).
-- **Scope notes:** Breid het ImportSource model uit met: `sourceType` (CSV | API enum), API-specifieke velden (`apiUrl`, `apiMethod`, `apiHeaders` als Json, `apiAuthType` als enum: NONE/BASIC/BEARER/API_KEY, `apiCredentials` als encrypted/Json). Maak de migratie. Bestaande bronnen krijgen `sourceType: CSV` als default. Pas de bestaande API-routes aan zodat ze `sourceType` meesturen.
-- **Dependencies:** None
-- **Definition of done:** ImportSource model heeft API-velden, migratie is aangemaakt, bestaande CSV-bronnen blijven werken, `npm run verify` slaagt.
-
-### PB-157: Elimineer overbodige findMany in autoCloseOpenRecords
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** `autoCloseOpenRecords()` in `api-route-utils.ts` voert een onnodige `findMany()` uit als guard voor een `updateMany()`. De `updateMany` met nul resultaten is een no-op — de guard is overbodig en kost een extra database-roundtrip per sub-record aanmaak.
-- **Scope notes:** Verwijder de `findMany()` aanroep en voer `updateMany()` onvoorwaardelijk uit. Bespaart ~3 overbodige DB-calls per chauffeurbewerking op Neon serverless.
-- **Dependencies:** None
-- **Definition of done:** `autoCloseOpenRecords()` bevat geen `findMany()` meer. Bestaande functionaliteit ongewijzigd. `npm run verify` slaagt.
-- **Implementation note:** Source: DE-REC-061. Small change (~5 lines removed).
+_No items currently ready for next cycle._
 
 ---
 
@@ -56,20 +37,20 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked (on PB-150)
+- **Status:** Ready
 - **Problem:** Er is geen UI om API-bronnen te configureren.
 - **Scope notes:** Breid ImportSourceManager uit met een brontype-kiezer (CSV/API). Bij API-type: toon velden voor URL, HTTP-methode, headers (key-value editor), authenticatie-type en credentials. Hergebruik bestaande ImportSourceManager-patronen (modal editor, form layout). Verberg CSV-specifieke velden (separator, bestandsupload) bij API-type.
-- **Dependencies:** PB-150
+- **Dependencies:** PB-150 (completed)
 - **Definition of done:** Gebruikers kunnen een API-bron aanmaken en configureren in de UI. `npm run verify` slaagt.
 
 ### PB-152: API-bron uitvoering — GET-request en response-import
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked (on PB-150)
+- **Status:** Ready
 - **Problem:** API-bronnen kunnen geconfigureerd worden maar nog niet uitgevoerd.
 - **Scope notes:** Maak een execute-handler voor API-bronnen (naast de bestaande CSV-execute). Voer een server-side GET/POST-request uit naar de geconfigureerde URL met headers en authenticatie. Parse de JSON-response. Pas de bestaande veldmapping toe om data te importeren. Log het resultaat in ImportLog.
-- **Dependencies:** PB-150
+- **Dependencies:** PB-150 (completed)
 - **Definition of done:** Een API-bron kan worden uitgevoerd, data wordt opgehaald en geïmporteerd, resultaat is zichtbaar in importlogboek.
 
 ### PB-153: API-bron response mapping
@@ -121,6 +102,20 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-150: API-bron type — datamodel uitbreiding ImportSource
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Summary:** ImportSource model uitgebreid met API-specifieke velden: `apiUrl`, `apiMethod`, `apiHeaders` (JSONB), `apiAuthType` (NONE/BASIC/BEARER/API_KEY), `apiCredentials` (JSONB). Migratie aangemaakt. Domain enums (`SourceType`, `ApiAuthType`, `ApiMethod`) toegevoegd. POST/PUT API-routes valideren API-velden bij type=API. Bestaande CSV-bronnen ongewijzigd. Frontend fetch wrapper bijgewerkt.
+
+### PB-157: Elimineer overbodige findMany in autoCloseOpenRecords
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Summary:** Redundante `findMany()` guard verwijderd uit `autoCloseOpenRecords()`. Functie voert nu onvoorwaardelijk `updateMany()` uit. Bespaart ~3 DB-roundtrips per sub-record aanmaak op Neon serverless.
 
 ### PB-149: Audit log viewer — UI in instellingen
 

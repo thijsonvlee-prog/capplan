@@ -6,24 +6,11 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed the **Delivery Agent part of PB-149**: the `GET /api/audit-log` endpoint with pagination, filtering, ADMIN-only access, and user name/email via User join. Domain types (`AuditLogEntry`, `AuditLogPagination`) and frontend fetcher (`api.auditLog.list()`) are in place for the Experience Agent to build the viewer UI.
+This cycle delivered **PB-150** (API source data model extension) and **PB-157** (redundant findMany elimination). The ImportSource model now supports API-type sources with URL, method, headers, auth type, and credentials fields. PB-151 (API UI) and PB-152 (API execution) are unblocked.
 
-The codebase is stable. The fresh scan identified one new medium-priority issue (redundant DB query in `autoCloseOpenRecords`) and confirms all existing P4 recommendations remain valid. PB-150 (API source data model) is next in sequence for the Delivery Agent.
+The fresh codebase scan confirms the codebase is stable with no new critical issues. Existing P4 recommendations remain valid. One recommendation (DE-REC-061) was completed via PB-157.
 
 ## Recommended Next Improvements
-
-### DE-REC-061: Eliminate redundant findMany in autoCloseOpenRecords
-
-- **Title:** Remove unnecessary findMany check before updateMany in autoCloseOpenRecords
-- **Problem:** `autoCloseOpenRecords()` in `api-route-utils.ts` (lines 406-424) calls `findMany()` to check if records exist, then `updateMany()` on the same criteria. The `findMany` result is only used for a `.length > 0` guard, but `updateMany` with zero matches is a no-op — the guard is unnecessary.
-- **Proposed improvement:** Remove the `findMany` call and execute `updateMany` unconditionally. Saves one DB round-trip per employment/function/roster-assignment creation.
-- **Expected product/technical value:** Reduces latency on sub-record creation. Eliminates ~3 unnecessary DB calls per driver edit workflow on Neon serverless.
-- **Priority:** P3 Medium
-- **Effort:** Small (remove 5 lines)
-- **Risk:** Low (updateMany with zero matches returns `{ count: 0 }`)
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick win that reduces round-trip cost on every sub-record creation.
 
 ### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber in transactions
 
@@ -34,9 +21,9 @@ The codebase is stable. The fresh scan identified one new medium-priority issue 
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low (both are reads before the write)
-- **Dependencies:** DE-REC-061 (apply first for cleaner code)
+- **Dependencies:** None (DE-REC-061 is now completed)
 - **Suggested owner:** Delivery Agent
-- **Why now:** Minor optimization, apply together with DE-REC-061.
+- **Why now:** Minor optimization, now cleaner to apply after PB-157.
 
 ### DE-REC-063: Add weeklyHours range validation on roster assignment routes
 
@@ -51,19 +38,6 @@ The codebase is stable. The fresh scan identified one new medium-priority issue 
 - **Suggested owner:** Delivery Agent
 - **Why now:** Trivial validation gap.
 
-### DE-REC-059: Parallelize sequential DB calls in import-source execute route
-
-- **Title:** Use Promise.all for independent queries in import execute handler
-- **Problem:** `/api/import-sources/[id]/execute/route.ts` performs sequential `findUnique()` then `count()` calls that are independent and could run in parallel.
-- **Proposed improvement:** Wrap independent queries in `Promise.all()` to reduce round-trip latency on Neon serverless.
-- **Expected product/technical value:** Faster import execution start time. Consistent with parallel patterns used in drivers and planning routes.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick optimization during next cycle.
-
 ### DE-REC-058: Add length validation on user preference value field
 
 - **Title:** Cap `value` length on preferences PUT route
@@ -76,6 +50,19 @@ The codebase is stable. The fresh scan identified one new medium-priority issue 
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Trivial fix that completes full validation coverage.
+
+### DE-REC-059: Parallelize sequential DB calls in import-source execute route
+
+- **Title:** Use Promise.all for independent queries in import execute handler
+- **Problem:** `/api/import-sources/[id]/execute/route.ts` performs sequential `findUnique()` then `count()` calls that are independent and could run in parallel.
+- **Proposed improvement:** Wrap independent queries in `Promise.all()` to reduce round-trip latency on Neon serverless.
+- **Expected product/technical value:** Faster import execution start time. Consistent with parallel patterns used in drivers and planning routes.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Quick optimization during next cycle.
 
 ### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
 
@@ -93,7 +80,7 @@ The codebase is stable. The fresh scan identified one new medium-priority issue 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 
 - **Title:** Clean up dead type definitions in types.ts
-- **Problem:** `PlanningEntryOptions` and `UserContext` are defined but never imported anywhere.
+- **Problem:** `PlanningEntryOptions` is defined but never imported anywhere. `UserContext` is also unused.
 - **Proposed improvement:** Remove unused types.
 - **Expected product/technical value:** Reduces confusion for developers reading the types file.
 - **Priority:** P4 Low
@@ -144,12 +131,13 @@ The codebase is stable. The fresh scan identified one new medium-priority issue 
 
 ## Risks / Watch-outs
 
-- **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. If the database connection fails or the audit table has issues, mutations succeed but audit entries are silently dropped. Console errors are the only signal. This is by design (PB-146 scope note: audit failures must not block mutations), but operators should monitor console output for "Audit log write failed" messages.
-- **Audit log table growth:** With all entities now audited, the AuditLog table will grow faster. No cleanup mechanism exists yet. At current usage this is not urgent, but should be monitored.
-- **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls. A failed save leaves the UI showing unsaved state. This is a known design choice.
-- **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
-- **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`. Admin-only controls flash briefly on page load for non-admin users.
-- **No database-level length constraints:** All text field length validation is application-level only. The Prisma schema uses unbounded `String` types. Application validation is the only defense.
+- **API credentials storage is plaintext JSON:** The new `apiCredentials` field stores credentials as JSONB. This is adequate for Phase 1 but should be reviewed before production use with real API keys. Consider server-side encryption or environment variable references for sensitive credentials.
+- **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. If the database connection fails, audit entries are silently dropped. Console errors are the only signal. This is by design (PB-146 scope note: audit failures must not block mutations).
+- **Audit log table growth:** With all entities now audited, the AuditLog table will grow faster. No cleanup mechanism exists yet.
+- **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls.
+- **Auth env vars required for deployment:** Auth requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
+- **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`.
+- **No database-level length constraints:** All text field length validation is application-level only.
 
 ## Items Intentionally Not Recommended
 
@@ -186,9 +174,11 @@ The codebase is stable. The fresh scan identified one new medium-priority issue 
 - **for-range inline driverIncludeFields diverges from canonical driverInclude:** Intentional optimization.
 - **csv-parser escaped quote handling for non-comma separators:** Low risk for typical Dutch HR data exports.
 - **Audit planning entries:** High-volume writes (drag-select creates many entries). Would generate excessive audit data. Excluded by design in PB-148.
-- **P2025 error handling on sub-record DELETE routes:** Employment, function, and roster-assignment DELETE handlers return 500 instead of 404 for missing records. Low impact — sub-records are accessed via parent driver UI, so deleting non-existent records is rare.
-- **Scenario duplicate name detection:** No unique constraint check on scenario names. Requires product decision (some users may intentionally create same-named scenarios for comparison).
-- **handleUpdate not wrapped in useCallback in PlanningGrid:** Would break the existing exhaustive-deps warnings. The DayCell memo already works via entry-level comparison. Marginal improvement for significant refactoring risk.
+- **P2025 error handling on sub-record DELETE routes:** Employment, function, and roster-assignment DELETE handlers return 500 instead of 404 for missing records. Low impact.
+- **Scenario duplicate name detection:** No unique constraint check on scenario names. Requires product decision.
+- **handleUpdate not wrapped in useCallback in PlanningGrid:** Would break the existing exhaustive-deps warnings. Marginal improvement for significant refactoring risk.
+- **Encrypt apiCredentials at rest:** Phase 1 stores credentials as plaintext JSONB. Adequate for initial delivery; encryption should be addressed before production use with real API keys but is a product decision.
+- **Deduplicate validateApiFields between route.ts and [id]/route.ts:** Both import-sources route files define the same validation function. At 2 instances this is acceptable and avoids premature abstraction. Revisit if a third consumer appears.
 
 ## Recommendation Rules
 

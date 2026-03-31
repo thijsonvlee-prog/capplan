@@ -25,6 +25,26 @@ export const UserRole = {
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
+export const SourceType = {
+  CSV: "CSV",
+  API: "API",
+} as const;
+export type SourceType = (typeof SourceType)[keyof typeof SourceType];
+
+export const ApiAuthType = {
+  NONE: "NONE",
+  BASIC: "BASIC",
+  BEARER: "BEARER",
+  API_KEY: "API_KEY",
+} as const;
+export type ApiAuthType = (typeof ApiAuthType)[keyof typeof ApiAuthType];
+
+export const ApiMethod = {
+  GET: "GET",
+  POST: "POST",
+} as const;
+export type ApiMethod = (typeof ApiMethod)[keyof typeof ApiMethod];
+
 // === UI Enums ===
 
 export const ZoomLevel = {

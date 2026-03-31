@@ -1,4 +1,4 @@
-import type { PlanningStatus, EmploymentType, UserRole } from "./enums";
+import type { PlanningStatus, EmploymentType, UserRole, SourceType, ApiAuthType, ApiMethod } from "./enums";
 
 // === External Source Metadata (AFAS preparation) ===
 
@@ -166,10 +166,16 @@ export type UserContext = {
 export type ImportSource = {
   id: string;
   name: string;
-  type: string;
+  type: SourceType;
   targetEntity: string;
   fieldMappings: Record<string, string>;
   description?: string;
+  // API-specific fields (only present when type = "API")
+  apiUrl?: string;
+  apiMethod?: ApiMethod;
+  apiHeaders?: Record<string, string>;
+  apiAuthType?: ApiAuthType;
+  apiCredentials?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 };

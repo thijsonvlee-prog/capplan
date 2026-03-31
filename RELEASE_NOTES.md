@@ -6,6 +6,17 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — API-bronnen datamodel en prestatieverbetering
+
+#### Functionele verbeteringen
+
+- **API-bronnen datamodel:** Het ImportSource-model ondersteunt nu naast CSV ook API-bronnen. Nieuwe velden: URL, HTTP-methode, headers, authenticatietype (geen/basic/bearer/API-key) en credentials. Bestaande CSV-bronnen werken ongewijzigd. Migratie is aangemaakt.
+- **API-bron validatie:** POST- en PUT-routes voor importbronnen valideren API-specifieke velden (URL verplicht, methode, authenticatietype) wanneer het brontype API is.
+
+#### Prestaties
+
+- **Snellere sub-record aanmaak:** Overbodige database-query verwijderd uit `autoCloseOpenRecords()`. Bespaart ~3 roundtrips per dienstverband-, functie- of roosterwijziging op Neon serverless.
+
 ### 2026-03-31 — Audittrail, validatie en visuele verbeteringen
 
 #### UX / design verbeteringen

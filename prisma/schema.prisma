@@ -310,10 +310,16 @@ model RosterProfileDay {
 model ImportSource {
   id            String   @id @default(uuid())
   name          String
-  type          String   @default("CSV") // CSV (extensible to other types later)
+  type          String   @default("CSV") // CSV, API
   targetEntity  String   // Which entity to import: "drivers", "employers", "departments", "locations"
   fieldMappings Json     @db.JsonB // { sourceColumn: targetField } mapping
   description   String?
+  // API-specific fields (only used when type = "API")
+  apiUrl        String?
+  apiMethod     String?  @default("GET") // GET, POST
+  apiHeaders    Json?    @db.JsonB // { headerName: headerValue } key-value pairs
+  apiAuthType   String?  @default("NONE") // NONE, BASIC, BEARER, API_KEY
+  apiCredentials Json?   @db.JsonB // Encrypted/structured auth credentials
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

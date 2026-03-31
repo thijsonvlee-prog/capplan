@@ -460,11 +460,11 @@ const importSources = {
     return fetchJson<{ data: ImportSource }>(`/api/import-sources/${id}`).then(r => r.data);
   },
 
-  create(data: { name: string; targetEntity: string; fieldMappings: Record<string, string>; description?: string }): Promise<ImportSource> {
+  create(data: { name: string; type?: string; targetEntity: string; fieldMappings: Record<string, string>; description?: string; apiUrl?: string; apiMethod?: string; apiHeaders?: Record<string, string>; apiAuthType?: string; apiCredentials?: Record<string, unknown> }): Promise<ImportSource> {
     return fetchJson<{ data: ImportSource }>("/api/import-sources", jsonBody(data)).then(r => r.data);
   },
 
-  update(id: string, data: { name: string; targetEntity: string; fieldMappings: Record<string, string>; description?: string }): Promise<ImportSource> {
+  update(id: string, data: { name: string; type?: string; targetEntity: string; fieldMappings: Record<string, string>; description?: string; apiUrl?: string; apiMethod?: string; apiHeaders?: Record<string, string>; apiAuthType?: string; apiCredentials?: Record<string, unknown> }): Promise<ImportSource> {
     return fetchJson<{ data: ImportSource }>(`/api/import-sources/${id}`, putBody(data)).then(r => r.data);
   },
 
