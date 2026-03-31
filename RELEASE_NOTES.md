@@ -6,6 +6,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Audittrail: datamodel en stamtabel-logging
+
+#### Functionele verbeteringen
+
+- **Audittrail op stamtabellen:** Alle mutaties (aanmaken, bewerken, verwijderen) op werkgevers, afdelingen, locaties, verloftypes en competenties worden nu vastgelegd in een auditlogboek. Per mutatie wordt opgeslagen: tabel, record-ID, actie, oude waarden, nieuwe waarden, gebruiker en tijdstip.
+- **AuditLog datamodel:** Nieuw `AuditLog` model in de database met geoptimaliseerde indexes voor snel opvragen per tabel/record en op tijdstip.
+- **Audit-helper:** Herbruikbare `logAudit()` functie beschikbaar voor integratie in overige API-routes in volgende fases.
+
 ### 2026-03-31 — Validatie afrondend: ziektepercentage, chauffeurs, scenario's, importbronnen, roosters en gebruikersgroepen
 
 #### Betrouwbaarheid

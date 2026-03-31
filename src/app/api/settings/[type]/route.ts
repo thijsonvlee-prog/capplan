@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSettingsModel, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET(
   request: NextRequest,
@@ -78,6 +79,9 @@ export async function POST(
       data: { code, description },
       select: { id: true, code: true, description: true },
     });
+
+    const userId = await getAuditUserId();
+    logAudit(type, record.id, "CREATE", null, { code, description }, userId);
 
     return NextResponse.json(record, { status: 201 });
   } catch (error) {

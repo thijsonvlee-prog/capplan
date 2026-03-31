@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function PUT(
   request: NextRequest,
@@ -40,11 +41,19 @@ export async function PUT(
       );
     }
 
+    const oldSkill = await prisma.skill.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
     const skill = await prisma.skill.update({
       where: { id },
       data: { name },
       select: { id: true, name: true },
     });
+
+    const userId = await getAuditUserId();
+    logAudit("Skill", id, "UPDATE", oldSkill, { name }, userId);
 
     return NextResponse.json(skill);
   } catch (error) {
@@ -72,7 +81,15 @@ export async function DELETE(
 
     const { id } = await params;
 
+    const oldSkill = await prisma.skill.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
     await prisma.skill.delete({ where: { id } });
+
+    const userId = await getAuditUserId();
+    logAudit("Skill", id, "DELETE", oldSkill, null, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

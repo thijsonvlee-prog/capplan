@@ -27,27 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-146: AuditLog datamodel en migratie
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem:** Er is geen audittrail op stamdata-mutaties. Het is niet traceerbaar wie wat wanneer heeft gewijzigd. De Scrum Master heeft gekozen voor een aparte audit-logtabel (ESC-011, Option B).
-- **Scope notes:** Maak een `AuditLog` model in het Prisma-schema met velden: `id`, `tableName` (String), `recordId` (String), `action` (CREATE/UPDATE/DELETE enum of string), `oldValues` (Json, nullable), `newValues` (Json, nullable), `userId` (String, nullable — FK naar User), `createdAt` (DateTime). Maak de migratie. Voeg een index toe op `(tableName, recordId)` en op `createdAt`. Voeg een helper-functie toe in `src/lib/audit.ts` die een auditlog-entry schrijft (reusable door alle API-routes in volgende fases).
-- **Dependencies:** None
-- **Definition of done:** Prisma schema heeft AuditLog model, migratie is aangemaakt, `src/lib/audit.ts` exporteert een `logAudit()` helper, `npm run verify` slaagt.
-- **Implementation note:** Gebruik een eenvoudig Json-veld voor oude/nieuwe waarden (Prisma's `Json` type). Houd de helper simpel: `logAudit(tableName, recordId, action, oldValues, newValues, userId)`. De helper hoeft nog niet aangeroepen te worden vanuit routes — dat is Phase 2.
-
-### PB-147: Audit logging integreren in stamtabel API-routes
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready (after PB-146)
-- **Problem:** De AuditLog tabel bestaat (na PB-146) maar wordt nog niet gevuld. Stamtabellen (werkgevers, afdelingen, locaties, verloftypes, competenties) zijn de eerste kandidaten.
-- **Scope notes:** Integreer `logAudit()` in alle POST/PUT/DELETE handlers van stamtabel-routes (`/api/settings/[type]`), skill-routes (`/api/settings/skills`). Log de oude waarden bij UPDATE en DELETE, nieuwe waarden bij CREATE en UPDATE. Haal userId uit de sessie (via `getServerSession`). Bij ontbrekende sessie (dev-modus): gebruik `null` als userId.
-- **Dependencies:** PB-146
-- **Definition of done:** Alle stamtabel- en skill-mutaties schrijven een AuditLog entry. Handmatig verifieerbaar in de database. `npm run verify` slaagt.
-- **Implementation note:** Gebruik `prisma.$transaction` als de audit-write samen met de mutatie moet slagen. Houd het pragmatisch: als de audit-write faalt mag de mutatie niet falen (wrap in try/catch of gebruik een aparte write na de mutatie).
+_No items currently ready._
 
 ---
 
@@ -57,7 +37,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Delivery Agent
 - **Priority:** P2 High
-- **Status:** Blocked (on PB-147)
+- **Status:** Ready (PB-147 completed)
 - **Problem:** Na stamtabellen moeten ook chauffeurs, roosterprofielen, importbronnen, scenario's en gebruikersgroepen geauditeerd worden.
 - **Scope notes:** Integreer `logAudit()` in: `/api/drivers` (CRUD), `/api/roster-profiles` (CRUD), `/api/import-sources` (CRUD), `/api/scenarios` (CRUD + duplicate), `/api/user-groups` (CRUD), `/api/users` (role changes). Planning-entries zijn high-volume en worden in deze fase NIET geauditeerd.
 - **Dependencies:** PB-147
@@ -153,6 +133,20 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-146: AuditLog datamodel en migratie
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** AuditLog model added to Prisma schema with JSONB fields for old/new values, FK to User, indexes on (tableName, recordId), createdAt, and userId. Migration `20260331100000_add_audit_log` created. Helper `logAudit()` and `getAuditUserId()` exported from `src/lib/audit.ts`. Fire-and-forget pattern: audit failures are logged but never block mutations.
+
+### PB-147: Audit logging integreren in stamtabel API-routes
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** `logAudit()` integrated in all POST/PUT/DELETE handlers for stamtabel routes (`/api/settings/[type]`) and skill routes (`/api/settings/skills`, `/api/settings/skills/[id]`). Old values fetched before UPDATE/DELETE. UserId extracted from session via `getAuditUserId()`. Audit writes are fire-and-forget (non-blocking).
 
 ### PB-139: Resolve sickPercentage domain inconsistency
 

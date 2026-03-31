@@ -6,11 +6,24 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-139 (sickPercentage max 99 alignment), PB-143 (driver field length validation), PB-144 (scenario and import source field length validation), and PB-145 (roster profile and user group name length validation). **The input validation hardening wave is now complete across all entities.** Every POST/PUT route in the application has length caps on text fields, enum validation where applicable, and foreign key validation.
+This cycle completed **PB-146** (AuditLog datamodel + migration + helper) and **PB-147** (audit logging integrated in all stamtabel and skill API routes). The audit trail foundation is now in place: `AuditLog` model, migration, `logAudit()` helper, and `getAuditUserId()` session helper. All stamtabel and skill mutations (CREATE/UPDATE/DELETE) now write audit entries with old/new values and user attribution.
 
-A fresh codebase scan confirms no remaining unbounded text fields on core entities. The only minor gap is the user preferences `value` field, which stores short system values (scenario IDs) and is low-risk. No new N+1 patterns, performance regressions, or TODO/FIXME items were found in source code.
+**PB-148** (audit logging for remaining entities) is now unblocked and ready for the next cycle. The existing recommendations for P4 cleanup items remain valid. A fresh codebase scan found no new critical issues — the codebase is stable and well-validated.
 
 ## Recommended Next Improvements
+
+### DE-REC-059: Parallelize sequential DB calls in import-source execute route
+
+- **Title:** Use Promise.all for independent queries in import execute handler
+- **Problem:** `/api/import-sources/[id]/execute/route.ts` performs sequential `findUnique()` then `count()` calls that are independent and could run in parallel.
+- **Proposed improvement:** Wrap independent queries in `Promise.all()` to reduce round-trip latency on Neon serverless.
+- **Expected product/technical value:** Faster import execution start time. Consistent with parallel patterns used in drivers and planning routes.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Quick optimization during next cycle.
 
 ### DE-REC-058: Add length validation on user preference value field
 
@@ -54,9 +67,9 @@ A fresh codebase scan confirms no remaining unbounded text fields on core entiti
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 500 (max notes), 90 (max range), 100 (max code length), 200 (max name length), 50 (max employeeNumber length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs).
+- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 500 (max notes), 90 (max range), 100 (max code length), 200 (max name length), 50 (max employeeNumber length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs). Additionally, `MAX_FILE_SIZE` and `MAX_NOTES_LENGTH` are duplicated across multiple route files.
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
-- **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
+- **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits. Eliminates duplication.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
@@ -92,6 +105,7 @@ A fresh codebase scan confirms no remaining unbounded text fields on core entiti
 
 ## Risks / Watch-outs
 
+- **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. If the database connection fails or the audit table has issues, mutations succeed but audit entries are silently dropped. Console errors are the only signal. This is by design (PB-146 scope note: audit failures must not block mutations), but operators should monitor console output for "Audit log write failed" messages.
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls. A failed save leaves the UI showing unsaved state. This is a known design choice.
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
 - **Driver upsert without unique constraint:** Driver import upsert matches on `employeeNumber` using `findMany` (not a unique constraint). If multiple drivers share an `employeeNumber`, the batch lookup returns the first match.
@@ -111,7 +125,7 @@ A fresh codebase scan confirms no remaining unbounded text fields on core entiti
 - **Replace `any` types broadly:** ~27 instances are internal and well-contained. Fix opportunistically.
 - **Translate console.error messages:** Server-facing logging should remain in English.
 - **Split DriverForm.tsx (~475 lines):** Well-structured with tab-based organization.
-- **Other `.find()` calls in render paths:** ScenarioSelector, RosterAssigner, etc. operate on small arrays (<10 items). PlanningGrid scenario lookup is also small array.
+- **Other `.find()` calls in render paths:** ScenarioSelector, RosterAssigner, etc. operate on small arrays (<10 items).
 - **Wrap DELETE routes in transactions:** Theoretical race condition at current concurrency.
 - **Add React.memo to settings list items:** Small lists, infrequent renders.
 - **Add missing foreign key indexes:** Not bottlenecks at current data volumes.
@@ -119,61 +133,19 @@ A fresh codebase scan confirms no remaining unbounded text fields on core entiti
 - **Distinguish error types in catch blocks:** Significant refactoring across route files for minimal benefit.
 - **Add parent driver existence checks in sub-record routes:** Prisma FK constraints catch this.
 - **Use next-auth v5 (Auth.js):** v4 is proven and stable with Next.js 14. Migration to v5 can happen when upgrading to Next.js 15.
-- **Add file storage for uploaded CSVs:** Not needed — import re-uploads the file for execution.
-- **Add scheduled/automatic imports:** Requires external trigger mechanism. Out of scope for current MVP.
 - **Add React.memo to StatusBadge/StatusSelector:** Rendered within already-memoized DayCell; marginal improvement.
-- **Batch FK validation in driver POST route:** Current parallel Promise.all approach is already efficient.
-- **Add React.memo to GroupRows component:** Marginal improvement — PlanningGrid manages re-renders via entry maps.
-- **CSV injection sanitization:** CSV data is stored in database fields, not re-exported to spreadsheets.
 - **Standardize API response wrapping:** Some routes use `{ data }` wrapper, others return raw objects. Changing this is a breaking API contract change.
 - **Add composite (driverId, scenarioId, date) index:** The unique constraint already covers this query pattern.
-- **Add request rate limiting on imports:** No per-user tracking at current scale.
-- **Add concurrent request deduplication in useApi:** Low-frequency issue.
-- **Add progress tracking for long operations:** Would require streaming responses or a job queue.
 - **Type-safe dynamic Prisma model access:** The `(prisma as any)[modelName]` pattern is pragmatic for entity-generic import logic.
-- **Clean up orphan User records retroactively:** Requires manual identification.
-- **Replace `useApi` cache key from `fetcher.toString()` to stable keys:** The current approach works because all fetch calls use named methods from `api.ts`.
-- **Add error handling to PlanningGrid optimistic updates:** Deliberate design choice documented in CLAUDE.md.
-- **Type the `parseJsonBody<T>` generic per route:** Would require ~25 request body interfaces.
-- **Add auth checks to GET endpoints:** CLAUDE.md states VIEWER = read-only on all GET endpoints. User group filtering handles data scoping.
-- **Add driverId FK validation on planning POST:** Prisma FK constraint catches invalid IDs.
-- **Refactor useApi global cache invalidation:** The broadcast approach works because cache entries have a 30s freshness window.
-- **autoCloseOpenRecords race condition:** Theoretical at current concurrency.
-- **Add cache eviction to useApi:** Key space is bounded in practice.
-- **Add parent driver existence checks in sub-record GET routes:** Returns empty array for non-existent driver. Correct behavior.
-- **Add date format validation on sub-record POST endpoints:** Prisma/PostgreSQL rejects invalid dates at storage layer.
+- **Wrap audit writes in $transaction with mutations:** PB-146/147 design choice: audit failures must not block mutations. Fire-and-forget is correct.
+- **Add React.memo to Header/Sidebar/ZoomSelector:** These render infrequently and are not in hot paths.
+- **Add error tracking service for audit failures:** Requires external infrastructure. Console logging is sufficient at current scale.
 - **Validate roster profile entry dayOffset/status:** Entries created from fixed UI grid; invalid values can't arrive normally.
-- **Warning tokens unused in CSS classes:** May be used via Tailwind utilities directly.
-- **`--radius-xl` token unused:** Keep for future use; removing saves nothing.
-- **Type `any` in transformDriver/transformProfile:** Internal helpers with well-understood input shapes.
-- **Precompute DRIVER_COLUMNS as Map in PlanningGrid:** Small fixed-size array; `.find()` on 5-6 items is negligible.
-- **useApi cache key `fetcher.toString()` fragility:** Theoretically breaks under minification, but in practice all callers use named methods from `api.ts` and pass runtime values via `deps`. No reported issues.
-- **PlanningGrid `localData` double-render pattern:** Optimistic updates require shadow state.
-- **PlanningGrid `resolveColumnValue` deps cause full re-sort:** Only triggers when lookup data changes (infrequent).
-- **csv-parser string copy for non-comma separators:** Only affects files near 5MB limit with non-comma separators.
-- **autoCloseOpenRecords type signature doesn't enforce tx context:** Always called correctly in practice.
-- **Scenario duplicate partial-failure on crash:** Requires server process kill mid-operation.
-- **DayCell popup magic numbers:** Coupled to CSS but stable.
-- **getAllowedDepartmentIds double session lookup:** Second `getServerSession` call is cheap (cached by NextAuth).
-- **autoCloseOpenRecords date math timezone:** Node.js defaults to UTC. Not a risk unless server timezone is changed.
-- **DE-REC-036 (CapacitySummaryRow optimization):** No longer applicable — component removed per ESC-009 decision.
-- **DE-REC-038 (POC promote/remove decision):** Resolved — ESC-009 chose removal.
-- **Missing required field validation in PUT /api/users/[id]:** Empty body silently succeeds. Harmless no-op — not worth the complexity.
-- **Unsafe `context?: any` in roster-assignments and scenario duplicate routes:** Stylistic; Next.js 14 doesn't enforce typed params. Fix when upgrading to Next.js 15.
-- **useApi console.error logging:** Error is now captured and surfaced to consumers via error state (PB-133/PB-134). Console.error logging is intentional for debugging.
-- **Validate scenarioId as existing Scenario in planning POST:** Prisma FK constraint catches invalid IDs with a P2003 error. Adding explicit validation would improve the error message but is low-priority given planners select scenarios from a dropdown.
-- **Hoist getActiveRecord calls in PlanningGrid render loop:** `getActiveRecord` is called inline per virtualized row (line 565-566). Linear scan on small arrays (typically 1-3 records). Marginal improvement at current data volumes.
-- **Fix generateDailySummary upper time bound:** `perf.ts:323` has no `until` parameter, so summaries can include events beyond the target date. Only affects observability layer, not user-facing features.
-- **StatusSelector redundant useApiData for leave types:** Leave types are already fetched at PlanningGrid level. StatusSelector independently re-fetches. 30s cache prevents actual API calls but adds listener churn. Minor optimization.
-- **for-range route orderBy diverges from drivers route:** `for-range` orders by `lastName` only; `/api/drivers` orders by `[lastName, firstName]`. Non-deterministic for duplicate surnames. Minor inconsistency.
-- **csv-parser escaped quote handling for non-comma separators:** Quote toggle logic desyncs on escaped `""` pairs in semicolon/tab CSVs. Low risk for typical Dutch HR data exports.
-- **for-range inline driverIncludeFields diverges from canonical driverInclude:** Intentional optimization with explicit `select` but creates maintenance divergence if sub-record models gain new columns. Add a code comment noting the intentional divergence.
-- **Roster assignment without driver existence check:** The `driverId` comes from URL params and Prisma FK constraint catches invalid IDs. Explicit check would improve the error message but is low-priority.
-- **Duplicate skillIds silently deduplicated on driver create:** `createMany` with `skipDuplicates` silently drops duplicates. No user-facing impact since skill selection UI prevents duplicates.
-- **Employment record PUT findFirst/update not wrapped in transaction:** Theoretical race condition at current concurrency. Prisma FK constraint prevents orphan updates.
-- **Add database-level VarChar constraints:** Would require migrations for all text fields. Application-level validation is sufficient and already in place.
-- **Driver PUT missing required field validation:** Empty body silently succeeds as a no-op. Prisma doesn't update undefined fields. Harmless.
-- **Standardize driver POST validation to use validateRequired():** Driver POST uses inline checks instead of `validateRequired()`. Both approaches work correctly. Not worth changing for consistency alone.
+- **Unsafe `context?: any` in roster-assignments and scenario duplicate routes:** Stylistic; Next.js 14 doesn't enforce typed params.
+- **useApi console.error logging:** Intentional for debugging. Error state is surfaced to consumers.
+- **for-range route orderBy diverges from drivers route:** Minor inconsistency on duplicate surnames.
+- **for-range inline driverIncludeFields diverges from canonical driverInclude:** Intentional optimization.
+- **csv-parser escaped quote handling for non-comma separators:** Low risk for typical Dutch HR data exports.
 
 ## Recommendation Rules
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET() {
   try {
@@ -56,6 +57,9 @@ export async function POST(request: NextRequest) {
       data: { name },
       select: { id: true, name: true },
     });
+
+    const userId = await getAuditUserId();
+    logAudit("Skill", skill.id, "CREATE", null, { name }, userId);
 
     return NextResponse.json(skill, { status: 201 });
   } catch (error) {

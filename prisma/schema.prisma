@@ -24,6 +24,7 @@ model User {
   accounts    Account[]
   sessions    Session[]
   preferences UserPreference[]
+  auditLogs   AuditLog[]
 
   @@index([userGroupId])
 }
@@ -336,6 +337,25 @@ model ImportLog {
 
   @@index([importSourceId])
   @@index([executedAt])
+}
+
+// === Audit Trail ===
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  tableName String
+  recordId  String
+  action    String   // CREATE, UPDATE, DELETE
+  oldValues Json?    @db.JsonB
+  newValues Json?    @db.JsonB
+  userId    String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tableName, recordId])
+  @@index([createdAt])
+  @@index([userId])
 }
 
 // === Performance Observability ===

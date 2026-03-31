@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSettingsModel, validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function PUT(
   request: NextRequest,
@@ -45,11 +46,19 @@ export async function PUT(
       );
     }
 
+    const oldRecord = await model.findUnique({
+      where: { id },
+      select: { code: true, description: true },
+    });
+
     const record = await model.update({
       where: { id },
       data: { code, description },
       select: { id: true, code: true, description: true },
     });
+
+    const userId = await getAuditUserId();
+    logAudit(type, id, "UPDATE", oldRecord, { code, description }, userId);
 
     return NextResponse.json(record);
   } catch (error) {
@@ -85,9 +94,17 @@ export async function DELETE(
       );
     }
 
+    const oldRecord = await model.findUnique({
+      where: { id },
+      select: { code: true, description: true },
+    });
+
     await model.delete({
       where: { id },
     });
+
+    const userId = await getAuditUserId();
+    logAudit(type, id, "DELETE", oldRecord, null, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
