@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization is complete. The next priorities are input validation hardening: enum validation on employment type, length caps on remaining text fields, and duplicate skill prevention. One blocked item (sickPercentage domain inconsistency) awaits Scrum Master decision. All Experience Agent work is P4 polish.
+**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization is complete. Input validation hardening is well advanced — stamtabellen, functions, skills, employment type, and planning notes all have length/enum validation. The next wave completes validation on the remaining entity fields: driver names, scenarios, import sources, roster profiles, and user groups. One blocked item (sickPercentage domain inconsistency) awaits Scrum Master decision. All Experience Agent work is P4 polish.
 
 ## Status Definitions
 
@@ -27,7 +27,47 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-143: Add length validation on driver name fields
+
+- **ID:** PB-143
+- **Title:** Cap firstName, lastName, and employeeNumber length on driver POST and PUT
+- **Problem / opportunity:** Driver routes accept unbounded strings for firstName, lastName, and employeeNumber. Drivers are the most important entity and should not be the exception to the validation pattern now applied everywhere else.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Same validation pattern applied to all other entities. Natural completion of the hardening wave.
+- **Scope notes:** 100 chars for firstName/lastName, 50 chars for employeeNumber. Dutch error messages. Apply to both POST (`/api/drivers/route.ts`) and PUT (`/api/drivers/[id]/route.ts`).
+- **Dependencies:** None.
+- **Definition of done:** POST and PUT reject values exceeding the caps with Dutch error messages. Verify passes.
+- **Source:** DE-REC-055.
+
+### PB-144: Add length validation on scenario and import source name/description fields
+
+- **ID:** PB-144
+- **Title:** Cap name and description length on scenario and import source routes
+- **Problem / opportunity:** Scenario POST and import source POST/PUT accept unbounded name and description fields. Inconsistent with validated entities.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Natural completion of the validation hardening wave.
+- **Scope notes:** 200 chars for name, 500 chars for description. Dutch error messages. Apply to POST and PUT on both entities (scenario: `/api/scenarios/route.ts` + `/api/scenarios/[id]/route.ts`; import source: `/api/import-sources/route.ts` + `/api/import-sources/[id]/route.ts`).
+- **Dependencies:** None.
+- **Definition of done:** All affected POST and PUT routes reject values exceeding the caps with Dutch error messages. Verify passes.
+- **Source:** DE-REC-056.
+
+### PB-145: Add length validation on roster profile and user group name fields
+
+- **ID:** PB-145
+- **Title:** Cap name length on roster profile and user group routes
+- **Problem / opportunity:** Roster profile and user group POST/PUT accept unbounded name fields. Inconsistent with validated entities.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Same pattern, quick completion. Finishes the validation hardening wave across all entities.
+- **Scope notes:** 200 chars for name on both entities. Dutch error messages. Apply to POST and PUT on both (`/api/roster-profiles/` and `/api/user-groups/`).
+- **Dependencies:** None.
+- **Definition of done:** All affected POST and PUT routes reject values exceeding the cap with Dutch error messages. Verify passes.
+- **Source:** DE-REC-057.
 
 ---
 
@@ -62,56 +102,48 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Employment POST and PUT routes now validate `employmentType` against the `EmploymentType` enum (FULLTIME, PARTTIME, ONCALL, TEMPORARY, CHARTER). Invalid values return a Dutch error message listing valid options.
 
 ### PB-141: Add maxLength validation on description and text fields
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Added length caps: stamtabel `description` (500 chars) on POST/PUT, stamtabel `code` (100 chars) on PUT (matching POST), function `position`/`manager` (200 chars) on POST/PUT, skill `name` (200 chars) on POST/PUT. All return Dutch error messages.
 
 ### PB-142: Prevent duplicate skill names
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Skills POST and PUT now check for existing skill names (case-insensitive). Returns Dutch error message with the existing skill name if a duplicate is found. Uses HTTP 409 Conflict status.
 
 ### PB-136: Enforce department scope on planning write endpoints
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** POST `/api/planning` and POST `/api/planning/bulk` now check `getAllowedDepartmentIds` + `driverDepartmentFilter` before processing mutations. Returns 403 with Dutch error message when a driver is outside the caller's department scope.
 
 ### PB-137: Surface API error messages in fetchJson
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** `fetchJson` in `src/lib/api.ts` now parses the JSON response body on error and surfaces the server's `error` field in the thrown Error. All 29 route files' Dutch error messages are now user-visible in toasts.
 
 ### PB-138: Add server-side length cap on planning notes field
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Both `POST /api/planning` and `POST /api/planning/bulk` reject notes longer than 500 characters with Dutch error message.
 
 ### PB-135: Add length cap on planning dates parameter
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Added 366-date cap to `GET /api/planning` matching the existing caps on `/capacity` and `/bulk` routes.
 
 ### PB-134: Propagate error state to remaining useApiDataWithLoading consumers
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** All `useApiDataWithLoading` consumers now show Dutch-language error messages when data fetching fails.
 
 ### PB-132: Make active scenario selection per-user
 
