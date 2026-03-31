@@ -2,7 +2,7 @@
 
 ## Summary
 
-**This cycle:** No Experience Agent tasks were in Ready status. All assigned items are deferred at P4 Low. A fresh design scan was conducted across all major screens.
+**This cycle (2026-03-31, run 2):** No Experience Agent tasks were in Ready status. All assigned items remain deferred at P4 Low. A fresh design scan was conducted across all major screens, confirming the previous assessment.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8). Premium, calm, anchoring.
@@ -24,6 +24,7 @@
 - All major screens are aligned with DESIGN.md. Remaining opportunities are polish-level refinements, not structural gaps.
 - The documentation page is minimal (single card with download button on a full page), but it is a low-traffic utility page and not a core product surface.
 - Recharts default tooltip/axis styling in the capacity chart is the most visible remaining integration gap.
+- One hardcoded brand color usage in capacity page (comparison button: `bg-brand-50 text-brand-700` at line 134) — minor token consistency issue, not user-impacting.
 
 ## Recommended Next Improvements
 
