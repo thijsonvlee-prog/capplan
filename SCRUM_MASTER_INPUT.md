@@ -23,16 +23,32 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-Implementeer een audittrail op alle stamdata, wie heeft wat aangemaakt en gewijzijgd en wanneer
+### SMI-017: Audittrail op alle stamdata
 
-Implementeer API management:
-beheren welke api's er zijn
-get requests uitvoeren om gegevens uit andere applicaties op te halne
-credentials beheren voor externe applicaties en ook beheren welke api's zij kunnen aanroepen
+- **Type:** Initiative / new feature
+- **Status:** Escalated
+- **Input:** Implementeer een audittrail op alle stamdata — wie heeft wat aangemaakt en gewijzigd en wanneer.
+- **PO assessment:** Large initiative requiring database schema changes (audit fields or separate audit log table), API route changes to record mutations, and UI to display audit history. Multiple valid approaches with different trade-offs. Escalated for scope decision before planning.
+- **Escalation linkage:** ESC-011
+- **Backlog linkage:** Pending ESC-011 decision.
 
-Implementeer een mobiele versie
+### SMI-018: API management
 
-_No active inputs._
+- **Type:** Initiative / new feature
+- **Status:** Escalated
+- **Input:** Implementeer API management: beheren welke API's er zijn, GET-requests uitvoeren om gegevens uit andere applicaties op te halen, credentials beheren voor externe applicaties en ook beheren welke API's zij kunnen aanroepen.
+- **PO assessment:** Very large initiative covering: (1) API registry/catalog, (2) outbound data fetching from external systems, (3) credential/secret management, (4) inbound API access control. Each sub-area is a significant feature. Needs scope decision and phasing before any work begins. Escalated.
+- **Escalation linkage:** ESC-012
+- **Backlog linkage:** Pending ESC-012 decision.
+
+### SMI-019: Mobiele versie
+
+- **Type:** Initiative / new feature
+- **Status:** Escalated
+- **Input:** Implementeer een mobiele versie.
+- **PO assessment:** The current UI uses Tailwind CSS which supports responsive design, but the application is built as a desktop-first B2B planning tool. A mobile version requires significant UX rethinking — the planning grid, settings tabs, and data-heavy tables are not naturally mobile-friendly. Needs scope decision on target audience, target screens, and approach. Escalated.
+- **Escalation linkage:** ESC-013
+- **Backlog linkage:** Pending ESC-013 decision.
 
 ## Closed Inputs
 

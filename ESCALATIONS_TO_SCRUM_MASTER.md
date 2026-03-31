@@ -22,7 +22,78 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-_No open escalations._
+### ESC-011: Audittrail op stamdata — aanpak en scope
+
+- **Status:** Open
+- **Date / run context:** 2026-03-31 — triggered by SMI-017
+- **Decision needed:** De Scrum Master wil een audittrail op alle stamdata (wie heeft wat aangemaakt/gewijzigd en wanneer). Er zijn verschillende technische aanpakken met uiteenlopende complexiteit en functionaliteit. Welke aanpak past bij de huidige fase van het product?
+- **Why it matters:** Een audittrail raakt alle 22 databasemodellen en alle API-routes. De keuze bepaalt de omvang van het werk (van 1-2 cycli tot 5+ cycli) en of er schema-migraties nodig zijn.
+- **Recommendation from Product Owner Agent:** Option A. Voegt `createdBy`/`updatedBy`/`createdAt`/`updatedAt` velden toe aan stamtabellen. Dit is de eenvoudigste aanpak die de kernvraag beantwoordt ("wie heeft wat wanneer gedaan") zonder een volledig audit-logsysteem te bouwen. Kan in 2-3 cycli worden geleverd.
+
+**Choose one option:**
+
+- ( ) **Option A — Velden op bestaande tabellen (recommended):** Voeg `createdAt`, `updatedAt`, `createdBy`, `updatedBy` velden toe aan alle stamtabellen (werkgevers, afdelingen, locaties, verloftypes, competenties, roosterprofielen, importbronnen). Toon "Laatst gewijzigd door X op datum" in de UI. Bewaar alleen de laatste wijziging, niet de volledige historie. Scope: ~2-3 cycli (migratie + API + UI).
+- ( ) **Option B — Aparte audit-logtabel:** Maak een `AuditLog` tabel die elke mutatie vastlegt (tabel, record-ID, actie, oude/nieuwe waarden, gebruiker, tijdstip). Toon een doorzoekbaar auditlogboek in de instellingen. Bewaart volledige historie. Scope: ~4-5 cycli (migratie + middleware + API + UI).
+- ( ) **Option C — Alleen `createdAt`/`updatedAt` timestamps:** Voeg alleen automatische timestamps toe zonder gebruikerskoppeling. Geen UI-wijzigingen nodig. Prisma kan `@updatedAt` automatisch bijhouden. Scope: ~1 cyclus (migratie alleen). Beperkt: toont niet wie de wijziging deed.
+- ( ) **Option D — Uitstellen:** Parkeer dit initiatief tot een latere fase. Focus op andere initiatieven eerst.
+
+**Trade-offs:**
+- Option A is een goede balans: beantwoordt de kernvraag, beheersbare scope, maar bewaart geen historie.
+- Option B is het meest volledig, maar vereist significant meer werk en een audit-viewer UI.
+- Option C is het snelst, maar mist de "wie"-informatie die expliciet gevraagd is.
+- Option D geeft ruimte voor de andere twee initiatieven (API management, mobiel).
+
+**What the Scrum Master must do:** Place `(X)` next to exactly one option.
+
+---
+
+### ESC-012: API management — scope en fasering
+
+- **Status:** Open
+- **Date / run context:** 2026-03-31 — triggered by SMI-018
+- **Decision needed:** De Scrum Master wil API management: API-catalogus, uitgaande data-ophaling, credential-beheer, en inkomend toegangsbeheer. Dit zijn vier afzonderlijke grote functionaliteiten. Welk deel moet als eerste worden gebouwd, en hoe breed is de scope?
+- **Why it matters:** Dit is het grootste van de drie nieuwe initiatieven. Zonder fasering en scopeafbakening riskeert het wekenlang werk zonder bruikbaar tussenresultaat. De bestaande connectiviteitshub (CSV-import) biedt een basis, maar API-integratie is fundamenteel anders.
+- **Recommendation from Product Owner Agent:** Option B. Start met uitgaande API-connecties als uitbreiding van de bestaande connectiviteitshub. Dit levert als eerste waarde op (data ophalen uit externe systemen) en bouwt voort op bestaande ImportSource-infrastructuur.
+
+**Choose one option:**
+
+- ( ) **Option A — Volledig API management platform:** Bouw alle vier onderdelen in één initiatief: API-catalogus, uitgaande fetches, credential vault, inkomend toegangsbeheer. Scope: 8-12+ cycli.
+- ( ) **Option B — Fase 1: Uitgaande API-connecties (recommended):** Breid de connectiviteitshub uit met REST API-bronnen naast CSV. Configureer URL, headers, authenticatie per bron. Voer GET-requests uit en importeer de response. Credential-opslag per bron. Scope: ~4-5 cycli.
+- ( ) **Option C — Fase 1: API-catalogus en credential-beheer:** Begin met het registreren en beheren van externe API's en hun credentials, zonder nog data op te halen. Scope: ~2-3 cycli. Levert geen directe gebruikerswaarde tot fase 2.
+- ( ) **Option D — Uitstellen:** Dit initiatief is te groot voor de huidige fase. Focus op audittrail en/of mobiel eerst.
+
+**Trade-offs:**
+- Option A levert het volledige plaatje maar is zeer groot en risicovol als één geheel.
+- Option B levert snel waarde (data ophalen) en bouwt voort op bestaande connectiviteitsinfrastructuur.
+- Option C legt de basis maar levert pas waarde in combinatie met een volgende fase.
+- Option D vermijdt overbelasting als audittrail en/of mobiel prioriteit hebben.
+
+**What the Scrum Master must do:** Place `(X)` next to exactly one option.
+
+---
+
+### ESC-013: Mobiele versie — scope en aanpak
+
+- **Status:** Open
+- **Date / run context:** 2026-03-31 — triggered by SMI-019
+- **Decision needed:** De Scrum Master wil een mobiele versie. Het huidige product is een desktop-first B2B planningstool met datarijke schermen (planningsrooster, capaciteitsgrafieken, instellingen). Een volledige mobiele versie vereist fundamentele UX-keuzes. Wat is de gewenste scope?
+- **Why it matters:** "Mobiele versie" kan betekenen van responsive layout-aanpassingen tot een volledig aparte mobiele app. De planning grid met 30+ kolommen past niet op een telefoonscherm. De doelgroep en use case bepalen de aanpak.
+- **Recommendation from Product Owner Agent:** Option B. Maak een beperkt aantal schermen mobielvriendelijk voor de meest voorkomende mobiele use cases (snel inzien van planning, chauffeurgegevens opzoeken). Het volledige planningsrooster en instellingenbeheer blijven desktop-only.
+
+**Choose one option:**
+
+- ( ) **Option A — Volledig responsive redesign:** Maak alle schermen responsive voor mobiel. Inclusief een mobiele versie van het planningsrooster (bijv. dag-/weekweergave per chauffeur). Scope: 8-12+ cycli.
+- ( ) **Option B — Selectieve mobiele weergaven (recommended):** Maak 2-3 kernschermen mobielvriendelijk: chauffeurlijst met zoeken, individueel chauffeurprofiel, en dag-/weekplanning per chauffeur. Planningsrooster en instellingen blijven desktop-only. Scope: ~4-5 cycli.
+- ( ) **Option C — Alleen lezen, mobiele viewer:** Bouw een eenvoudige read-only mobiele weergave: "Mijn planning deze week" voor chauffeurs zelf. Geen bewerkfunctionaliteit. Scope: ~2-3 cycli.
+- ( ) **Option D — Uitstellen:** Focus eerst op audittrail en/of API management. Mobiel is een later initiatief.
+
+**Trade-offs:**
+- Option A is het meest ambitieus maar vereist fundamenteel herontwerp van het planningsrooster voor mobiel.
+- Option B levert nuttige mobiele toegang voor planners onderweg zonder het kernproduct te herstructureren.
+- Option C is het snelst en bedient mogelijk een andere doelgroep (chauffeurs zelf i.p.v. planners).
+- Option D voorkomt spreiding over te veel initiatieven tegelijk.
+
+**What the Scrum Master must do:** Place `(X)` next to exactly one option.
 
 ---
 
