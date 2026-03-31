@@ -227,6 +227,14 @@ _No items currently in progress._
 - **Reason:** No direct user impact. Minor code hygiene.
 - **Source:** EX-REC-042.
 
+### DE-REC-058: Cap value length on preferences PUT route
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** The only remaining POST/PUT route without a text field length cap. Stores short values (scenario IDs). Trivial fix but near-zero risk if left as-is.
+- **Source:** DE-REC-058.
+
 ---
 
 ## Backlog Hygiene Rules
