@@ -33,7 +33,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 **Choose one option:**
 
 - ( ) **Option A — Promote:** Remove the POC label, ensure the summary row matches the new grid styling (tonal rows, no borders), and document it as a supported feature. Assign to Experience Agent (styling) + Delivery Agent (DE-REC-036 optimization).
-- ( ) **Option B — Remove (recommended):** Delete `CapacitySummaryRow.tsx` and all related code from PlanningGrid. The capacity page covers this need. Assign cleanup to Delivery Agent.
+- ( ) **Option B — Remove (recommended):** (X) Delete `CapacitySummaryRow.tsx` and all related code from PlanningGrid. The capacity page covers this need. Assign cleanup to Delivery Agent.
 - ( ) **Option C — Defer decision:** Keep the POC as-is for now. Accept the maintenance cost. Revisit after user feedback.
 
 **Trade-offs:**
