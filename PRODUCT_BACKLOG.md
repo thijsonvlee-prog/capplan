@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization, input validation, and core features are complete. Three new strategic initiatives have been submitted by the Scrum Master (audit trail, API management, mobile version) — all are escalated for scope decisions before any work begins. Remaining backlog items are P4 polish/maintenance.
+**Current direction:** The Scrum Master has approved three strategic initiatives: audit trail (separate log table), outbound API connections, and selective mobile views. These are phased into concrete backlog items below. The audit trail is first priority, followed by API connections, then mobile. Each initiative is broken into 3-4 phases to deliver incremental value. Remaining P4 polish items stay deferred.
 
 ## Status Definitions
 
@@ -27,38 +27,122 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle. Three initiatives are blocked on Scrum Master scope decisions (see below)._
+### PB-146: AuditLog datamodel en migratie
+
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem:** Er is geen audittrail op stamdata-mutaties. Het is niet traceerbaar wie wat wanneer heeft gewijzigd. De Scrum Master heeft gekozen voor een aparte audit-logtabel (ESC-011, Option B).
+- **Scope notes:** Maak een `AuditLog` model in het Prisma-schema met velden: `id`, `tableName` (String), `recordId` (String), `action` (CREATE/UPDATE/DELETE enum of string), `oldValues` (Json, nullable), `newValues` (Json, nullable), `userId` (String, nullable — FK naar User), `createdAt` (DateTime). Maak de migratie. Voeg een index toe op `(tableName, recordId)` en op `createdAt`. Voeg een helper-functie toe in `src/lib/audit.ts` die een auditlog-entry schrijft (reusable door alle API-routes in volgende fases).
+- **Dependencies:** None
+- **Definition of done:** Prisma schema heeft AuditLog model, migratie is aangemaakt, `src/lib/audit.ts` exporteert een `logAudit()` helper, `npm run verify` slaagt.
+- **Implementation note:** Gebruik een eenvoudig Json-veld voor oude/nieuwe waarden (Prisma's `Json` type). Houd de helper simpel: `logAudit(tableName, recordId, action, oldValues, newValues, userId)`. De helper hoeft nog niet aangeroepen te worden vanuit routes — dat is Phase 2.
+
+### PB-147: Audit logging integreren in stamtabel API-routes
+
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready (after PB-146)
+- **Problem:** De AuditLog tabel bestaat (na PB-146) maar wordt nog niet gevuld. Stamtabellen (werkgevers, afdelingen, locaties, verloftypes, competenties) zijn de eerste kandidaten.
+- **Scope notes:** Integreer `logAudit()` in alle POST/PUT/DELETE handlers van stamtabel-routes (`/api/settings/[type]`), skill-routes (`/api/settings/skills`). Log de oude waarden bij UPDATE en DELETE, nieuwe waarden bij CREATE en UPDATE. Haal userId uit de sessie (via `getServerSession`). Bij ontbrekende sessie (dev-modus): gebruik `null` als userId.
+- **Dependencies:** PB-146
+- **Definition of done:** Alle stamtabel- en skill-mutaties schrijven een AuditLog entry. Handmatig verifieerbaar in de database. `npm run verify` slaagt.
+- **Implementation note:** Gebruik `prisma.$transaction` als de audit-write samen met de mutatie moet slagen. Houd het pragmatisch: als de audit-write faalt mag de mutatie niet falen (wrap in try/catch of gebruik een aparte write na de mutatie).
 
 ---
 
-## Blocked / Needs Decision
+## Upcoming (Sequenced)
 
-### SMI-017: Audittrail op stamdata
+### PB-148: Audit logging — overige entiteiten
 
-- **Owner:** TBD (pending scope decision)
-- **Priority:** TBD
-- **Status:** Blocked — awaiting ESC-011 decision
-- **Problem:** Scrum Master wil dat alle stamdata-mutaties traceerbaar zijn (wie, wat, wanneer).
-- **Scope notes:** Approach and phasing depend on ESC-011. Cannot plan backlog items until a scope option is chosen.
-- **Escalation:** ESC-011
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Blocked (on PB-147)
+- **Problem:** Na stamtabellen moeten ook chauffeurs, roosterprofielen, importbronnen, scenario's en gebruikersgroepen geauditeerd worden.
+- **Scope notes:** Integreer `logAudit()` in: `/api/drivers` (CRUD), `/api/roster-profiles` (CRUD), `/api/import-sources` (CRUD), `/api/scenarios` (CRUD + duplicate), `/api/user-groups` (CRUD), `/api/users` (role changes). Planning-entries zijn high-volume en worden in deze fase NIET geauditeerd.
+- **Dependencies:** PB-147
+- **Definition of done:** Alle genoemde routes schrijven audit entries. `npm run verify` slaagt.
 
-### SMI-018: API management
+### PB-149: Audit log viewer — UI in instellingen
 
-- **Owner:** TBD (pending scope decision)
-- **Priority:** TBD
-- **Status:** Blocked — awaiting ESC-012 decision
-- **Problem:** Scrum Master wil API-beheer: catalogus, uitgaande data-ophaling, credential-beheer, inkomend toegangsbeheer.
-- **Scope notes:** Very large initiative. Approach and phasing depend on ESC-012. Cannot plan backlog items until a scope option is chosen.
-- **Escalation:** ESC-012
+- **Owner:** Experience Agent (UI) + Delivery Agent (API endpoint)
+- **Priority:** P2 High
+- **Status:** Blocked (on PB-148)
+- **Problem:** Audit data wordt vastgelegd maar is niet zichtbaar voor beheerders.
+- **Scope notes:** Voeg een nieuw tabblad "Auditlog" toe aan de instellingenpagina (alleen ADMIN). Maak een API-endpoint `GET /api/audit-log` met paginering, filteren op tabel en datum. Toon een chronologisch overzicht met: tijdstip, gebruiker, tabel, actie, record-identificatie. Detailweergave met oude/nieuwe waarden in een modal of expandable row.
+- **Dependencies:** PB-148
+- **Definition of done:** Beheerders kunnen het auditlogboek bekijken, filteren op tabel en datumbereik, en details van individuele entries inzien. `npm run verify` slaagt.
+- **Implementation note:** Experience Agent bouwt de UI-component. Delivery Agent bouwt het API-endpoint. Coördineer de response-shape vooraf.
 
-### SMI-019: Mobiele versie
+### PB-150: API-bron type — datamodel uitbreiding ImportSource
 
-- **Owner:** TBD (pending scope decision)
-- **Priority:** TBD
-- **Status:** Blocked — awaiting ESC-013 decision
-- **Problem:** Scrum Master wil een mobiele versie van CapPlan.
-- **Scope notes:** Desktop-first B2B tool. Mobile requires fundamental UX decisions. Approach depends on ESC-013.
-- **Escalation:** ESC-013
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Blocked (on PB-146 — sequenced to start after audit trail Phase 1)
+- **Problem:** De connectiviteitshub ondersteunt alleen CSV-bronnen. De Scrum Master wil REST API-bronnen toevoegen (ESC-012, Option B).
+- **Scope notes:** Breid het ImportSource model uit met: `sourceType` (CSV | API enum), API-specifieke velden (`apiUrl`, `apiMethod`, `apiHeaders` als Json, `apiAuthType` als enum: NONE/BASIC/BEARER/API_KEY, `apiCredentials` als encrypted/Json). Maak de migratie. Bestaande bronnen krijgen `sourceType: CSV` als default. Pas de bestaande API-routes aan zodat ze `sourceType` meesturen.
+- **Dependencies:** PB-146 (sequencing only — no technical dependency)
+- **Definition of done:** ImportSource model heeft API-velden, migratie is aangemaakt, bestaande CSV-bronnen blijven werken, `npm run verify` slaagt.
+
+### PB-151: API-bron configuratie UI
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Blocked (on PB-150)
+- **Problem:** Er is geen UI om API-bronnen te configureren.
+- **Scope notes:** Breid ImportSourceManager uit met een brontype-kiezer (CSV/API). Bij API-type: toon velden voor URL, HTTP-methode, headers (key-value editor), authenticatie-type en credentials. Hergebruik bestaande ImportSourceManager-patronen (modal editor, form layout). Verberg CSV-specifieke velden (separator, bestandsupload) bij API-type.
+- **Dependencies:** PB-150
+- **Definition of done:** Gebruikers kunnen een API-bron aanmaken en configureren in de UI. `npm run verify` slaagt.
+
+### PB-152: API-bron uitvoering — GET-request en response-import
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Blocked (on PB-150)
+- **Problem:** API-bronnen kunnen geconfigureerd worden maar nog niet uitgevoerd.
+- **Scope notes:** Maak een execute-handler voor API-bronnen (naast de bestaande CSV-execute). Voer een server-side GET/POST-request uit naar de geconfigureerde URL met headers en authenticatie. Parse de JSON-response. Pas de bestaande veldmapping toe om data te importeren. Log het resultaat in ImportLog.
+- **Dependencies:** PB-150
+- **Definition of done:** Een API-bron kan worden uitgevoerd, data wordt opgehaald en geïmporteerd, resultaat is zichtbaar in importlogboek.
+
+### PB-153: API-bron response mapping
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Blocked (on PB-152)
+- **Problem:** JSON-responses hebben een andere structuur dan CSV-rijen. De veldmapping-editor moet JSON-paden ondersteunen.
+- **Scope notes:** Breid de veldmapping-editor uit voor API-bronnen. Bij het uitvoeren van een test-request: toon de response-structuur en laat de gebruiker JSON-paden koppelen aan doelvelden (vergelijkbaar met hoe CSV-kolommen nu gekoppeld worden). Ondersteun geneste objecten via dot-notatie (bijv. `employee.firstName`).
+- **Dependencies:** PB-152
+- **Definition of done:** Gebruikers kunnen JSON-response velden koppelen aan doelvelden. Test-request toont response-preview.
+
+### PB-154: Mobiele layout shell en navigatie
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Blocked (on PB-150 — sequenced to start after API connections Phase 1)
+- **Problem:** De applicatie heeft geen mobiele navigatie of responsive layout shell. De Scrum Master wil selectieve mobiele weergaven (ESC-013, Option B).
+- **Scope notes:** Maak een responsive layout variant voor schermen < 768px: hamburger-menu voor navigatie, compactere header, touch-vriendelijke tap targets. Sidebar wordt een slide-over panel op mobiel. Desktop layout blijft ongewijzigd. Gebruik Tailwind responsive utilities.
+- **Dependencies:** None (technical), but sequenced after API Phase 1 for capacity reasons
+- **Definition of done:** Op mobiele viewports: sidebar is verborgen achter hamburger-menu, header is compact, navigatie werkt via slide-over. Desktop is ongewijzigd. `npm run verify` slaagt.
+
+### PB-155: Mobiele chauffeurlijst en zoeken
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Blocked (on PB-154)
+- **Problem:** De chauffeurspagina is niet bruikbaar op mobiel (brede tabel, kleine tekst).
+- **Scope notes:** Maak een mobiele variant van de chauffeurspagina: card-based layout in plaats van tabel, prominente zoekbalk, tap-to-open detail. Toon naam, personeelsnummer, afdeling en status per card. Gebruik responsive breakpoints: tabel op desktop, cards op mobiel.
+- **Dependencies:** PB-154
+- **Definition of done:** Chauffeurlijst is bruikbaar op mobiel met card-layout en zoekfunctie.
+
+### PB-156: Mobiele dag-/weekplanning per chauffeur
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Blocked (on PB-155)
+- **Problem:** De planningsgrid is niet bruikbaar op mobiel (30+ kolommen).
+- **Scope notes:** Maak een mobiele planning-weergave: selecteer één chauffeur, toon dag- of weekweergave met statusblokken. Geen bewerkfunctionaliteit in eerste versie (read-only). Planners kunnen op mobiel de planning inzien maar bewerken op desktop.
+- **Dependencies:** PB-155
+- **Definition of done:** Planners kunnen op mobiel de planning van een individuele chauffeur bekijken per dag of week.
 
 ---
 
@@ -81,7 +165,6 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Completes full input validation coverage across all POST/PUT routes.
 
 ### PB-140–PB-142: Enum validation, text field limits, duplicate skill prevention
 
@@ -117,7 +200,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current flex-wrap handles basic cases. Only relevant if narrow viewport usage is reported.
+- **Reason:** Current flex-wrap handles basic cases. May become relevant when mobile work (PB-154) starts.
 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 
@@ -159,7 +242,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current field mapping editor is functional. Polish item.
+- **Reason:** Current field mapping editor is functional. May be revisited when API mapping work (PB-153) starts.
 
 ### EX-REC-042: Deduplicate scenarios list fetch
 
@@ -184,7 +267,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-146.
+- Backlog IDs are sequential and never reused. Next available: PB-157.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

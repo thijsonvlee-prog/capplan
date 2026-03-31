@@ -26,29 +26,29 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 ### SMI-017: Audittrail op alle stamdata
 
 - **Type:** Initiative / new feature
-- **Status:** Escalated
+- **Status:** Planned
 - **Input:** Implementeer een audittrail op alle stamdata — wie heeft wat aangemaakt en gewijzigd en wanneer.
-- **PO assessment:** Large initiative requiring database schema changes (audit fields or separate audit log table), API route changes to record mutations, and UI to display audit history. Multiple valid approaches with different trade-offs. Escalated for scope decision before planning.
-- **Escalation linkage:** ESC-011
-- **Backlog linkage:** Pending ESC-011 decision.
+- **PO assessment:** Scrum Master koos Option B (aparte audit-logtabel) via ESC-011. Opgebroken in 4 fasen: datamodel (PB-146), stamtabel-integratie (PB-147), overige entiteiten (PB-148), UI viewer (PB-149).
+- **Escalation linkage:** ESC-011 (decided — Option B)
+- **Backlog linkage:** PB-146, PB-147, PB-148, PB-149
 
 ### SMI-018: API management
 
 - **Type:** Initiative / new feature
-- **Status:** Escalated
+- **Status:** Planned
 - **Input:** Implementeer API management: beheren welke API's er zijn, GET-requests uitvoeren om gegevens uit andere applicaties op te halen, credentials beheren voor externe applicaties en ook beheren welke API's zij kunnen aanroepen.
-- **PO assessment:** Very large initiative covering: (1) API registry/catalog, (2) outbound data fetching from external systems, (3) credential/secret management, (4) inbound API access control. Each sub-area is a significant feature. Needs scope decision and phasing before any work begins. Escalated.
-- **Escalation linkage:** ESC-012
-- **Backlog linkage:** Pending ESC-012 decision.
+- **PO assessment:** Scrum Master koos Option B (Fase 1: uitgaande API-connecties) via ESC-012. Opgebroken in 4 fasen: datamodel uitbreiding (PB-150), configuratie UI (PB-151), uitvoering (PB-152), response mapping (PB-153). Bouwt voort op bestaande connectiviteitshub.
+- **Escalation linkage:** ESC-012 (decided — Option B)
+- **Backlog linkage:** PB-150, PB-151, PB-152, PB-153
 
 ### SMI-019: Mobiele versie
 
 - **Type:** Initiative / new feature
-- **Status:** Escalated
+- **Status:** Planned
 - **Input:** Implementeer een mobiele versie.
-- **PO assessment:** The current UI uses Tailwind CSS which supports responsive design, but the application is built as a desktop-first B2B planning tool. A mobile version requires significant UX rethinking — the planning grid, settings tabs, and data-heavy tables are not naturally mobile-friendly. Needs scope decision on target audience, target screens, and approach. Escalated.
-- **Escalation linkage:** ESC-013
-- **Backlog linkage:** Pending ESC-013 decision.
+- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). Planningsrooster en instellingen blijven desktop-only.
+- **Escalation linkage:** ESC-013 (decided — Option B)
+- **Backlog linkage:** PB-154, PB-155, PB-156
 
 ## Closed Inputs
 
