@@ -6,24 +6,11 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-125 (add `scenarioId` to `PlanningEntry` type) and PB-128 (404 instead of 500 for missing DELETE targets). A fresh codebase scan was performed. The codebase remains in good shape overall. Key new findings: four additional DELETE routes lack P2025 handling (consistency gap with the just-fixed routes), and several `any`-typed transform functions in `api-route-utils.ts` could benefit from proper typing.
+This cycle completed PB-130 (extend P2025 handling to remaining DELETE routes). All DELETE endpoints now consistently return 404 for non-existent records. Combined with PB-128, every DELETE route in the application has proper P2025 error handling.
 
-No critical or high-priority findings. Remaining recommendations are medium and low priority maintainability items.
+The codebase is in good shape. No critical or high-priority findings remain. The active backlog is light — only deferred P4 items and the blocked ESC-009 POC decision. Remaining recommendations are medium and low priority maintainability items.
 
 ## Recommended Next Improvements
-
-### DE-REC-042: Extend P2025 handling to remaining DELETE routes
-
-- **Title:** Add 404 handling for missing records on remaining DELETE routes
-- **Problem:** Four DELETE routes still return 500 when the record doesn't exist: `roster-profiles/[id]`, `settings/[type]/[id]`, `settings/skills/[id]`, and `user-groups/[id]`. This is inconsistent with the just-fixed routes (PB-128).
-- **Proposed improvement:** Add the same P2025 error check pattern to these four routes.
-- **Expected product/technical value:** Consistent error handling across all DELETE endpoints. Users see "niet gevonden" instead of generic errors.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Pattern is fresh from PB-128. Quick consistency fix.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 

@@ -27,18 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-130: Extend P2025 handling to remaining DELETE routes
-
-- **ID:** PB-130
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** Four DELETE routes still return 500 when the record doesn't exist: `roster-profiles/[id]`, `settings/[type]/[id]`, `settings/skills/[id]`, and `user-groups/[id]`. This is inconsistent with the just-fixed routes (PB-128).
-- **Why this matters now:** Pattern is fresh from PB-128. Quick consistency fix across all DELETE endpoints.
-- **Scope notes:** Add the same P2025 error check pattern to these four routes. Return 404 with Dutch "niet gevonden" messages.
-- **Dependencies:** None.
-- **Definition of done:** All four DELETE routes return 404 for non-existent records instead of 500. `npm run verify` passes.
-- **Source:** DE-REC-042.
+_No items ready for next cycle._
 
 ---
 
@@ -66,6 +55,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-130: Extend P2025 handling to remaining DELETE routes
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Added P2025 error detection to `roster-profiles/[id]`, `settings/[type]/[id]`, `settings/skills/[id]`, and `user-groups/[id]` DELETE routes. All now return 404 with Dutch "niet gevonden" messages for non-existent records.
 
 ### PB-131: Capacity page — visual identity lift
 

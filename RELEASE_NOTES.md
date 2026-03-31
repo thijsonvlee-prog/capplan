@@ -24,6 +24,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 - **Typecorrectie PlanningEntry:** `scenarioId` veld toegevoegd aan het `PlanningEntry` domeintype. Sluit de typekloof tussen API-transformatie en optimistische updates in het planningsrooster.
 - **Verbeterde foutafhandeling bij verwijderen:** Verwijderverzoeken voor niet-bestaande chauffeurs, planningsitems en scenario's geven nu een 404 "niet gevonden"-foutmelding in plaats van een generieke 500-fout.
+- **Foutafhandeling verwijderen uitgebreid:** Alle overige verwijderroutes (roosterprofielen, instellingen, competenties, gebruikersgroepen) geven nu ook een 404 bij niet-bestaande records. Alle DELETE-endpoints zijn nu consistent.
 
 ### 2026-03-30 — Gebruikersgroepen autorisatie compleet
 
