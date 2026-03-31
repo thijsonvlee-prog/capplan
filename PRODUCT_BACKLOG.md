@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major screens are now at product-grade visual quality. Authorization model is complete. Per-user scenario state and error visibility are fully shipped across all pages. ESC-009 (POC capacity summary row) is resolved — code removed. All active backlog items are completed. Remaining items are P4 polish and deferred.
+**Current direction:** All major screens are at product-grade visual quality. Authorization model is complete. Per-user scenario state and error visibility are shipped across all pages. The product is stable with no critical or high-priority work outstanding. One medium-priority defensive hardening item (dates parameter cap) is ready. Remaining items are P4 polish.
 
 ## Status Definitions
 
@@ -27,7 +27,20 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-135: Add length cap on planning dates parameter
+
+- **ID:** PB-135
+- **Title:** Add length cap on `?dates=` parameter in `GET /api/planning`
+- **Problem / opportunity:** The base planning endpoint accepts a comma-separated `dates` parameter with no length limit. The `/capacity` and `/for-range` routes already cap at 366 and 90 respectively. This is the only planning endpoint without a defensive cap.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Quick defensive fix that completes the input validation story across all planning endpoints. Low risk, small effort.
+- **Scope notes:** Add a limit (e.g. 366) matching the capacity endpoint's cap. Return a Dutch error message when exceeded.
+- **Dependencies:** None
+- **Definition of done:** `GET /api/planning` rejects requests with more than 366 dates and returns a Dutch error message. Verify passes.
+- **Implementation note:** See DE-REC-045. Match the pattern used in `/capacity` and `/for-range` routes.
+- **Source:** DE-REC-045.
 
 ---
 
@@ -91,14 +104,6 @@ _No items currently in progress._
 
 ## Deferred
 
-### DE-REC-045: Add length cap on planning dates parameter
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Quick defensive fix but low urgency. The `/capacity` and `/for-range` routes already cap at 366/90. The base planning endpoint is only called with grid-visible dates (max ~90). Defer until capacity allows.
-- **Source:** DE-REC-045.
-
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
 - **Owner:** Experience Agent
@@ -136,8 +141,8 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low user impact. Covers DE-REC-014 and DE-REC-030. Schedule when capacity allows.
-- **Source:** DE-REC-014, DE-REC-030.
+- **Reason:** Low user impact. Covers DE-REC-014, DE-REC-030, and DE-REC-047. Includes hoisting COMPARE_COLORS to module scope and optionally moving to constants.ts with API limits. Schedule when capacity allows.
+- **Source:** DE-REC-014, DE-REC-030, DE-REC-047.
 
 ### PB-061: Add PerformanceEvent table cleanup mechanism
 
