@@ -6,50 +6,48 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle delivered **PB-152** (API source execution). API-type import sources can now be executed: the server makes an HTTP request to the configured URL with authentication, parses the JSON response, applies dot-notation field mappings, and imports data using the existing driver/stamtabel import logic. Results are logged in ImportLog and displayed in the UI.
-
-The codebase remains stable. All existing P4 recommendations remain valid. No new critical issues discovered. PB-158 (test connection) and PB-153 (response mapping) are now unblocked.
+No active backlog items were assigned to Delivery Agent this cycle — all previous items are either completed or deferred P4. A fresh codebase scan was performed. The codebase is stable with clean verify output (typecheck + lint pass). The main new finding is that API Phase 1 delivery introduced duplicated helper functions across two route files that should be consolidated. All existing P4 recommendations remain valid. A new concern is audit log table growth now that all entities are audited.
 
 ## Recommended Next Improvements
 
-### DE-REC-064: API-bron test-verbinding endpoint (backend deel van PB-158)
+### DE-REC-066: Extract shared API import helpers to lib module
 
-- **Title:** Lightweight test endpoint for API source connections
-- **Problem:** PB-158 requires a server-side test endpoint. The execute handler now contains the `buildApiHeaders()` logic that can be reused.
-- **Proposed improvement:** Add a `POST /api/import-sources/[id]/test` endpoint that makes a lightweight request (HEAD or limited GET) to the configured URL, returns connection status and response metadata (status code, content type, estimated row count) without importing data.
-- **Expected product/technical value:** Enables users to verify API connections before running a full import. Reuses existing auth/header building logic from execute handler.
+- **Title:** Deduplicate `buildApiHeaders`, `extractDataArray`, `resolveJsonPath` into `src/lib/api-import-helpers.ts`
+- **Problem:** Three functions are fully duplicated between `src/app/api/import-sources/[id]/execute/route.ts` and `src/app/api/import-sources/test/route.ts`. The `test/route.ts` file also duplicates `discoverPaths`. If one copy is updated (e.g., to support a new auth type or fix a path resolution bug), the other must be manually kept in sync. This is a maintenance hazard.
+- **Proposed improvement:** Extract `buildApiHeaders()`, `extractDataArray()`, `resolveJsonPath()`, and `discoverPaths()` into a shared `src/lib/api-import-helpers.ts` module. Both route files import from there.
+- **Expected product/technical value:** Eliminates ~80 lines of duplicated code. Ensures consistent behavior between test and execute flows. Reduces future maintenance risk.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low (pure refactoring, no behavior change)
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** The duplication was created during API Phase 1 delivery. Consolidating now prevents divergence before more consumers appear.
+
+### DE-REC-067: Audit log table cleanup mechanism
+
+- **Title:** Add TTL-based cleanup for AuditLog table
+- **Problem:** With audit logging now active on all entities (PB-146–149), the AuditLog table grows unbounded. At current usage patterns, this is not yet a problem, but it will become one over time. Unlike PerformanceEvent, audit data has actual business value, so cleanup should be retention-based (e.g., keep 90 days).
+- **Proposed improvement:** Add a `cleanupOldAuditLogs(retentionDays: number)` function in `src/lib/audit.ts`. Call it periodically (e.g., at the end of import execution, or via a scheduled API call). Default retention: 90 days.
+- **Expected product/technical value:** Prevents unbounded table growth. Maintains query performance on the audit log viewer.
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low
-- **Dependencies:** PB-152 (completed)
+- **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Direct dependency for PB-158 which is next in sequence.
-
-### DE-REC-065: API response data path configuration
-
-- **Title:** Allow users to specify the JSON path to the data array in API responses
-- **Problem:** The current API execute handler uses a hardcoded list of wrapper keys (`data`, `results`, `items`, `rows`, `records`) to find the data array in JSON responses. Some APIs use non-standard paths (e.g., `response.employees.list`).
-- **Proposed improvement:** Add an optional `apiDataPath` field to ImportSource that specifies the dot-notation path to the data array. Fall back to current auto-detection when not set.
-- **Expected product/technical value:** Supports a wider range of APIs without code changes.
-- **Priority:** P4 Low
-- **Effort:** Small (schema field + one resolveJsonPath call in execute handler)
-- **Risk:** Low
-- **Dependencies:** PB-152 (completed)
-- **Suggested owner:** Delivery Agent
-- **Why now:** Natural follow-up to PB-152 that could be bundled with PB-153 (response mapping).
+- **Why now:** Audit logging is now fully active. The table will grow faster than PerformanceEvent because it covers all entity mutations.
 
 ### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber in transactions
 
 - **Title:** Use Promise.all for independent operations inside sub-record creation transactions
 - **Problem:** Employment, function, and roster-assignment POST handlers await `autoCloseOpenRecords()` then `getNextSequenceNumber()` sequentially inside `$transaction`. These two operations are independent (different tables/queries).
 - **Proposed improvement:** Wrap both calls in `Promise.all()` within the transaction.
-- **Expected product/technical value:** Saves one sequential DB round-trip per sub-record creation.
+- **Expected product/technical value:** Saves one sequential DB round-trip per sub-record creation (~50-100ms on Neon serverless).
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low (both are reads before the write)
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Minor optimization, now cleaner to apply after PB-157.
+- **Why now:** Minor optimization, cleanly applicable.
 
 ### DE-REC-063: Add weeklyHours range validation on roster assignment routes
 
@@ -80,20 +78,20 @@ The codebase remains stable. All existing P4 recommendations remain valid. No ne
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route
 
 - **Title:** Use Promise.all for independent queries in import execute handler
-- **Problem:** `/api/import-sources/[id]/execute/route.ts` performs sequential `findUnique()` then `count()` calls that are independent and could run in parallel.
+- **Problem:** `/api/import-sources/[id]/execute/route.ts` performs sequential `findUnique()` then validation calls that could run in parallel.
 - **Proposed improvement:** Wrap independent queries in `Promise.all()` to reduce round-trip latency on Neon serverless.
-- **Expected product/technical value:** Faster import execution start time. Consistent with parallel patterns used in drivers and planning routes.
+- **Expected product/technical value:** Faster import execution start time.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Quick optimization during next cycle.
+- **Why now:** Quick optimization.
 
 ### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
 
 - **Title:** Hoist COMPARE_COLORS array to module scope in CapacityChart
-- **Problem:** `COMPARE_COLORS` is defined inside the `CapacityChart` component function, creating a new array reference on every render. This breaks referential stability for child `<Area>` components.
+- **Problem:** `COMPARE_COLORS` is defined inside the `CapacityChart` component function (line 54), creating a new array reference on every render. This breaks referential stability for child `<Area>` components.
 - **Proposed improvement:** Move `const COMPARE_COLORS = [...]` outside the component function to module scope.
 - **Expected product/technical value:** Minor render optimization; follows established pattern (other constants like STATUS_COLORS are module-scoped).
 - **Priority:** P4 Low
@@ -101,12 +99,12 @@ The codebase remains stable. All existing P4 recommendations remain valid. No ne
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Trivial fix during next cycle.
+- **Why now:** Trivial fix.
 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 
 - **Title:** Clean up dead type definitions in types.ts
-- **Problem:** `PlanningEntryOptions` is defined but never imported anywhere. `UserContext` is also unused.
+- **Problem:** `PlanningEntryOptions` and `UserContext` are defined but never imported anywhere.
 - **Proposed improvement:** Remove unused types.
 - **Expected product/technical value:** Reduces confusion for developers reading the types file.
 - **Priority:** P4 Low
@@ -119,7 +117,7 @@ The codebase remains stable. All existing P4 recommendations remain valid. No ne
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 500 (max notes), 90 (max range), 100 (max code length), 200 (max name length), 50 (max employeeNumber length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs). Additionally, `MAX_FILE_SIZE` and `MAX_NOTES_LENGTH` are duplicated across multiple route files.
+- **Problem:** Magic numbers scattered across API routes. `MAX_FILE_SIZE` duplicated between execute and upload routes. `MAX_NOTES_LENGTH` duplicated between planning route and bulk route. Other magic numbers (364, 28, 10000, 500, 90, 100, 200, 50) appear in various routes.
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits. Eliminates duplication.
 - **Priority:** P4 Low
@@ -128,6 +126,19 @@ The codebase remains stable. All existing P4 recommendations remain valid. No ne
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Low-effort maintainability improvement.
+
+### DE-REC-065: API response data path configuration
+
+- **Title:** Allow users to specify the JSON path to the data array in API responses
+- **Problem:** The current API execute handler uses a hardcoded list of wrapper keys (`data`, `results`, `items`, `rows`, `records`) to find the data array in JSON responses. Some APIs use non-standard paths (e.g., `response.employees.list`).
+- **Proposed improvement:** Add an optional `apiDataPath` field to ImportSource that specifies the dot-notation path to the data array. Fall back to current auto-detection when not set.
+- **Expected product/technical value:** Supports a wider range of APIs without code changes.
+- **Priority:** P4 Low
+- **Effort:** Small (schema field + one resolveJsonPath call in execute handler)
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Natural follow-up to API Phase 1 for better API compatibility.
 
 ### DE-REC-014: Move hardcoded comparison chart colors to constants
 
@@ -138,7 +149,7 @@ The codebase remains stable. All existing P4 recommendations remain valid. No ne
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
-- **Dependencies:** None
+- **Dependencies:** Can be combined with DE-REC-047
 - **Suggested owner:** Delivery Agent
 - **Why now:** Quick compliance fix.
 
@@ -158,8 +169,9 @@ The codebase remains stable. All existing P4 recommendations remain valid. No ne
 ## Risks / Watch-outs
 
 - **API credentials storage is plaintext JSON:** The `apiCredentials` field stores credentials as JSONB. This is adequate for Phase 1 but should be reviewed before production use with real API keys. Consider server-side encryption or environment variable references for sensitive credentials.
+- **Audit log + PerformanceEvent table growth:** Both tables grow unbounded. AuditLog will grow faster now that all entities are audited. No cleanup mechanism exists for either.
+- **API helper function duplication:** Three functions (`buildApiHeaders`, `extractDataArray`, `resolveJsonPath`) are duplicated across test and execute routes. A bug fix in one copy could be missed in the other.
 - **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. If the database connection fails, audit entries are silently dropped. This is by design (PB-146 scope note: audit failures must not block mutations).
-- **Audit log table growth:** With all entities now audited, the AuditLog table will grow faster. No cleanup mechanism exists yet.
 - **API import timeout:** The 30-second timeout on external API requests may be insufficient for slow APIs returning large datasets. Vercel serverless function timeout (default 10s on Hobby, 60s on Pro) is the binding constraint.
 - **API response size unbounded:** No limit on response body size from external APIs. A malicious or misconfigured API could return extremely large responses. The MAX_ROW_COUNT check only applies after parsing.
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls.
@@ -171,8 +183,8 @@ The codebase remains stable. All existing P4 recommendations remain valid. No ne
 
 - **Migrate to a different ORM:** Prisma is well-integrated. Migration cost far outweighs any benefit.
 - **Add pagination to all list endpoints:** Settings/master data tables are small. Only planning and drivers needed pagination.
-- **Refactor PlanningGrid.tsx broadly:** The component is complex but stable. Targeted fixes preferred.
-- **Split ImportSourceManager.tsx (~1500 lines):** Large but well-structured with distinct sections (CSV flow, API flow, form, list). Splitting would fragment the connectivity hub feature.
+- **Refactor PlanningGrid.tsx broadly:** The component is complex but stable (~774 lines). Targeted fixes preferred.
+- **Split ImportSourceManager.tsx (~1477 lines):** Large but well-structured with distinct sections (CSV flow, API flow, form, list). Splitting would fragment the connectivity hub feature.
 - **Split UserGroupManager.tsx (~642 lines):** Well-structured with clear sections. Not justified.
 - **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer. Only planning endpoints warrant it.
 - **Add unique constraints on Driver/Scenario names:** Requires a product decision.
@@ -206,7 +218,7 @@ The codebase remains stable. All existing P4 recommendations remain valid. No ne
 - **Scenario duplicate name detection:** No unique constraint check on scenario names. Requires product decision.
 - **handleUpdate not wrapped in useCallback in PlanningGrid:** Would break the existing exhaustive-deps warnings. Marginal improvement for significant refactoring risk.
 - **Encrypt apiCredentials at rest:** Phase 1 stores credentials as plaintext JSONB. Adequate for initial delivery; encryption should be addressed before production use with real API keys but is a product decision.
-- **Deduplicate validateApiFields between route.ts and [id]/route.ts:** Both import-sources route files define the same validation function. At 2 instances this is acceptable and avoids premature abstraction. Revisit if a third consumer appears.
+- **Deduplicate validateApiFields between route.ts and [id]/route.ts:** Both import-sources route files define the same validation function. At 2 instances this is acceptable and avoids premature abstraction. Superseded by DE-REC-066 which covers the larger duplication.
 - **Limit API response body size:** Could add a streaming size check, but MAX_ROW_COUNT provides sufficient protection after parsing. Adding a byte-level limit would add complexity for marginal benefit.
 - **Extract execute result UI into shared component:** The CSV and API execute result displays are similar but not identical. Extracting a shared component adds indirection for only 2 consumers.
 
