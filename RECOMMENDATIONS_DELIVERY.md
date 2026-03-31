@@ -6,24 +6,11 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-134 (error state propagation). All `useApiDataWithLoading` consumers now show Dutch-language error messages on fetch failure. The error visibility story is complete across the entire product.
+This cycle completed PB-135 (dates parameter cap on GET /api/planning). All planning endpoints now have consistent input length validation. The input validation story is complete across the product.
 
-A fresh codebase scan confirms the codebase is in good shape. No new critical issues found. The remaining recommendations are the same P4 items already deferred in the backlog, plus one medium-priority item (COMPARE_COLORS array allocation in CapacityChart). The most actionable quick win remains DE-REC-045 (dates parameter cap on GET /api/planning).
+A fresh codebase scan confirms the codebase is in good shape. No critical or high-priority issues found. All remaining recommendations are P4 items already deferred in the backlog. The codebase is stable and well-maintained.
 
 ## Recommended Next Improvements
-
-### DE-REC-045: Add length cap on planning dates parameter
-
-- **Title:** Add length cap on `?dates=` parameter in planning GET route
-- **Problem:** `GET /api/planning` accepts a comma-separated `dates` parameter with no length limit. The `/capacity` and `/for-range` routes cap at 366 and 90 respectively, but the base planning endpoint does not.
-- **Proposed improvement:** Add a limit (e.g. 366) matching the capacity endpoint's cap.
-- **Expected product/technical value:** Prevents accidental or malicious overload of the planning query.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick defensive fix. All other planning endpoints already have caps.
 
 ### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
 

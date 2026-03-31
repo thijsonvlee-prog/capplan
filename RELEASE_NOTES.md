@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Invoervalidatie planning-endpoint
+
+#### Betrouwbaarheid
+
+- **Datumslimiet op planning-endpoint:** `GET /api/planning` beperkt het aantal datums per verzoek nu tot maximaal 366, in lijn met de capaciteits- en bulkendpoints. Voorheen was dit onbeperkt.
+
 ### 2026-03-31 — Per-gebruiker scenario, foutmeldingen en opschoning
 
 #### Functionele verbeteringen

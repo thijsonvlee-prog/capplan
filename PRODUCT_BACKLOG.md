@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major screens are at product-grade visual quality. Authorization model is complete. Per-user scenario state and error visibility are shipped across all pages. The product is stable with no critical or high-priority work outstanding. One medium-priority defensive hardening item (dates parameter cap) is ready. Remaining items are P4 polish.
+**Current direction:** All major screens are at product-grade visual quality. Authorization model is complete. Per-user scenario state, error visibility, and input validation are shipped across all pages. The product is stable with no critical, high, or medium-priority work outstanding. All remaining items are P4 polish.
 
 ## Status Definitions
 
@@ -27,20 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-135: Add length cap on planning dates parameter
-
-- **ID:** PB-135
-- **Title:** Add length cap on `?dates=` parameter in `GET /api/planning`
-- **Problem / opportunity:** The base planning endpoint accepts a comma-separated `dates` parameter with no length limit. The `/capacity` and `/for-range` routes already cap at 366 and 90 respectively. This is the only planning endpoint without a defensive cap.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Quick defensive fix that completes the input validation story across all planning endpoints. Low risk, small effort.
-- **Scope notes:** Add a limit (e.g. 366) matching the capacity endpoint's cap. Return a Dutch error message when exceeded.
-- **Dependencies:** None
-- **Definition of done:** `GET /api/planning` rejects requests with more than 366 dates and returns a Dutch error message. Verify passes.
-- **Implementation note:** See DE-REC-045. Match the pattern used in `/capacity` and `/for-range` routes.
-- **Source:** DE-REC-045.
+_No items ready for next cycle._
 
 ---
 
@@ -57,6 +44,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-135: Add length cap on planning dates parameter
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Added 366-date cap to `GET /api/planning` matching the existing caps on `/capacity` and `/bulk` routes. Returns Dutch error message "Maximaal 366 datums per verzoek" when exceeded. All planning endpoints now have consistent input length validation.
 
 ### PB-134: Propagate error state to remaining useApiDataWithLoading consumers
 
