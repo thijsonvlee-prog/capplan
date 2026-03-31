@@ -2,17 +2,17 @@
 
 ## Summary
 
-**This cycle (2026-03-31, run 2):** No Experience Agent tasks were in Ready status. All assigned items remain deferred at P4 Low. A fresh design scan was conducted across all major screens, confirming the previous assessment.
+**This cycle (2026-03-31, run 3):** No Experience Agent tasks were in Ready status. All assigned items remain deferred at P4 Low. A fresh design scan was conducted across all major screens, confirming the previous assessment.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8). Premium, calm, anchoring.
 - Settings page: well-aligned (sections 2.5, 7.1, 7.2). Strong hierarchy, tab navigation, composed zones.
 - Login page: well-aligned. Clean, premium, brand-surface split.
 - Header: well-aligned. Minimal, composed, contextual subtitle support.
-- Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning with correct zone semantics.
+- Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning with correct zone semantics (Periode, Filter, Weergave, Status).
 - Planning grid matrix: fully aligned (section 4.1). Tonal row separation, No-Line Rule respected.
 - Planning grid cells (DayCell/StatusBadge): well-designed. Density-responsive, status gradients.
-- Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search toolbar, brand hover.
+- Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search toolbar, brand hover, composed page header with context description.
 - Capacity page: fully aligned (sections 7.1, 7.3, 8.3). KPI summary module, section headers, composed toolbar, No-Line Rule applied.
 - CapacityKPIs: product-grade cards with icon, label, value. Uses design tokens. No extraneous borders.
 - User group manager: well-aligned. Card-based layout, expandable details, modal editor.
@@ -24,7 +24,6 @@
 - All major screens are aligned with DESIGN.md. Remaining opportunities are polish-level refinements, not structural gaps.
 - The documentation page is minimal (single card with download button on a full page), but it is a low-traffic utility page and not a core product surface.
 - Recharts default tooltip/axis styling in the capacity chart is the most visible remaining integration gap.
-- One hardcoded brand color usage in capacity page (comparison button: `bg-brand-50 text-brand-700` at line 134) — minor token consistency issue, not user-impacting.
 
 ## Recommended Next Improvements
 
