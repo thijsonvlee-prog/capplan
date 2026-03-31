@@ -33,7 +33,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 **Choose one option:**
 
 - ( ) **Option A — Velden op bestaande tabellen (recommended):** Voeg `createdAt`, `updatedAt`, `createdBy`, `updatedBy` velden toe aan alle stamtabellen (werkgevers, afdelingen, locaties, verloftypes, competenties, roosterprofielen, importbronnen). Toon "Laatst gewijzigd door X op datum" in de UI. Bewaar alleen de laatste wijziging, niet de volledige historie. Scope: ~2-3 cycli (migratie + API + UI).
-- ( ) **Option B — Aparte audit-logtabel:** Maak een `AuditLog` tabel die elke mutatie vastlegt (tabel, record-ID, actie, oude/nieuwe waarden, gebruiker, tijdstip). Toon een doorzoekbaar auditlogboek in de instellingen. Bewaart volledige historie. Scope: ~4-5 cycli (migratie + middleware + API + UI).
+- ( ) **Option B — Aparte audit-logtabel:** (X) Maak een `AuditLog` tabel die elke mutatie vastlegt (tabel, record-ID, actie, oude/nieuwe waarden, gebruiker, tijdstip). Toon een doorzoekbaar auditlogboek in de instellingen. Bewaart volledige historie. Scope: ~4-5 cycli (migratie + middleware + API + UI).
 - ( ) **Option C — Alleen `createdAt`/`updatedAt` timestamps:** Voeg alleen automatische timestamps toe zonder gebruikerskoppeling. Geen UI-wijzigingen nodig. Prisma kan `@updatedAt` automatisch bijhouden. Scope: ~1 cyclus (migratie alleen). Beperkt: toont niet wie de wijziging deed.
 - ( ) **Option D — Uitstellen:** Parkeer dit initiatief tot een latere fase. Focus op andere initiatieven eerst.
 
@@ -58,7 +58,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 **Choose one option:**
 
 - ( ) **Option A — Volledig API management platform:** Bouw alle vier onderdelen in één initiatief: API-catalogus, uitgaande fetches, credential vault, inkomend toegangsbeheer. Scope: 8-12+ cycli.
-- ( ) **Option B — Fase 1: Uitgaande API-connecties (recommended):** Breid de connectiviteitshub uit met REST API-bronnen naast CSV. Configureer URL, headers, authenticatie per bron. Voer GET-requests uit en importeer de response. Credential-opslag per bron. Scope: ~4-5 cycli.
+- ( ) **Option B — Fase 1: Uitgaande API-connecties (recommended):** (X) Breid de connectiviteitshub uit met REST API-bronnen naast CSV. Configureer URL, headers, authenticatie per bron. Voer GET-requests uit en importeer de response. Credential-opslag per bron. Scope: ~4-5 cycli.
 - ( ) **Option C — Fase 1: API-catalogus en credential-beheer:** Begin met het registreren en beheren van externe API's en hun credentials, zonder nog data op te halen. Scope: ~2-3 cycli. Levert geen directe gebruikerswaarde tot fase 2.
 - ( ) **Option D — Uitstellen:** Dit initiatief is te groot voor de huidige fase. Focus op audittrail en/of mobiel eerst.
 
@@ -83,7 +83,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 **Choose one option:**
 
 - ( ) **Option A — Volledig responsive redesign:** Maak alle schermen responsive voor mobiel. Inclusief een mobiele versie van het planningsrooster (bijv. dag-/weekweergave per chauffeur). Scope: 8-12+ cycli.
-- ( ) **Option B — Selectieve mobiele weergaven (recommended):** Maak 2-3 kernschermen mobielvriendelijk: chauffeurlijst met zoeken, individueel chauffeurprofiel, en dag-/weekplanning per chauffeur. Planningsrooster en instellingen blijven desktop-only. Scope: ~4-5 cycli.
+- ( ) **Option B — Selectieve mobiele weergaven (recommended):** (X)Maak 2-3 kernschermen mobielvriendelijk: chauffeurlijst met zoeken, individueel chauffeurprofiel, en dag-/weekplanning per chauffeur. Planningsrooster en instellingen blijven desktop-only. Scope: ~4-5 cycli.
 - ( ) **Option C — Alleen lezen, mobiele viewer:** Bouw een eenvoudige read-only mobiele weergave: "Mijn planning deze week" voor chauffeurs zelf. Geen bewerkfunctionaliteit. Scope: ~2-3 cycli.
 - ( ) **Option D — Uitstellen:** Focus eerst op audittrail en/of API management. Mobiel is een later initiatief.
 
