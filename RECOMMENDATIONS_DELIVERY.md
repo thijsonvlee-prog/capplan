@@ -6,11 +6,63 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-135 (dates parameter cap on GET /api/planning). All planning endpoints now have consistent input length validation. The input validation story is complete across the product.
+This cycle completed PB-135 (dates parameter cap on GET /api/planning). All planning endpoints now have consistent input length validation.
 
-A fresh codebase scan confirms the codebase is in good shape. No critical or high-priority issues found. All remaining recommendations are P4 items already deferred in the backlog. The codebase is stable and well-maintained.
+A fresh codebase scan uncovered a meaningful authorization inconsistency: `GET /api/planning` validates `driverId` against the user's department scope, but `POST /api/planning` and `POST /api/planning/bulk` do not. This means a planner in a restricted user group can write planning entries for drivers outside their assigned departments. This is the most important open item. Additionally found: `notes` field has no server-side length cap, `fetchJson` discards structured API error messages, and `sickPercentage` has inconsistent max values between API (100) and UI (99).
 
 ## Recommended Next Improvements
+
+### DE-REC-048: Add department scope validation to planning write endpoints
+
+- **Title:** Enforce user group department filter on POST `/api/planning` and POST `/api/planning/bulk`
+- **Problem:** `GET /api/planning` validates that a `driverId` belongs to the caller's allowed departments (via `getAllowedDepartmentIds` + `driverDepartmentFilter`). But `POST /api/planning` and `POST /api/planning/bulk` skip this check entirely. A planner with a restricted department scope can write planning entries for any driver by POSTing directly, bypassing the user group access control.
+- **Proposed improvement:** Add the same `getAllowedDepartmentIds` + `driverDepartmentFilter` check to both write handlers before processing the mutation, matching the GET handler pattern at `route.ts:44-58`.
+- **Expected product/technical value:** Closes the authorization gap between read and write operations. Ensures department scoping is consistent across the entire planning API surface.
+- **Priority:** P2 High
+- **Effort:** Small (copy existing validation pattern from GET handler)
+- **Risk:** Low (well-established pattern, no schema changes)
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** The read enforcement is already in place. The write gap is a real inconsistency that undermines the user group access control model.
+
+### DE-REC-049: Add server-side length cap on planning notes field
+
+- **Title:** Cap `notes` field length on planning POST and bulk POST
+- **Problem:** The `notes` field on `PlanningEntry` is an unbounded Postgres `TEXT` column. Neither the single-entry POST nor bulk POST validates its length. A caller can send arbitrarily large strings. In a bulk operation with 366 dates this compounds.
+- **Proposed improvement:** Add a server-side cap (e.g. 500 characters) with a Dutch error message when exceeded.
+- **Expected product/technical value:** Prevents abuse and excessive storage. Completes the defensive validation story on planning write endpoints.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Quick defensive fix matching the dates cap pattern.
+
+### DE-REC-050: Surface API error messages in fetchJson
+
+- **Title:** Parse and surface structured error messages from API responses in `fetchJson`
+- **Problem:** `fetchJson` in `src/lib/api.ts:24` throws `new Error(\`API error: ${res.status}\`)`, discarding the response body. All API routes return carefully crafted Dutch error messages in `{ error: "..." }` format, but these are never shown to users — toasts display generic "Er ging iets mis" messages instead.
+- **Proposed improvement:** Parse the JSON response body on error and include the `error` field in the thrown Error message.
+- **Expected product/technical value:** Users see meaningful Dutch error messages (e.g. "Chauffeur niet gevonden") instead of generic failures. Leverages all the error message work already done across 29 route files.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low (error messages are already validated to be Dutch and user-friendly)
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** All API routes already return good error messages. This is the missing link between server-side validation and user-visible feedback.
+
+### DE-REC-051: Resolve sickPercentage domain inconsistency
+
+- **Title:** Align `sickPercentage` max value between API, UI, and domain types
+- **Problem:** The API validates `sickPercentage` at 0–100, the UI (`StatusSelector.tsx:139`) caps at `max={99}` with `Math.min(99, ...)`, and the domain type comment says "0-99 attendance percentage". The field semantics are unclear: if 100% means "fully present", that contradicts being on the SICK status.
+- **Proposed improvement:** Decide on the correct domain range and enforce consistently across API validation, UI input, and type documentation.
+- **Expected product/technical value:** Eliminates a data inconsistency between API-submitted and UI-submitted values.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** Needs a product decision: should the max be 99 (current UI) or 100 (current API)?
+- **Suggested owner:** Product Owner (decision) + Delivery Agent (implementation)
+- **Why now:** Easy to fix once the correct value is decided.
 
 ### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
 
@@ -125,7 +177,7 @@ A fresh codebase scan confirms the codebase is in good shape. No critical or hig
 - **Add driverId FK validation on planning POST:** Prisma FK constraint catches invalid IDs.
 - **Refactor useApi global cache invalidation:** The broadcast approach works because cache entries have a 30s freshness window.
 - **autoCloseOpenRecords race condition:** Theoretical at current concurrency.
-- **Add user group filtering to write endpoints:** Write endpoints already require the user to know the driver ID.
+- **Add user group filtering to write endpoints:** Previously dismissed — now promoted to DE-REC-048. The GET handler does enforce department scope, making the write gap a real inconsistency.
 - **Add cache eviction to useApi:** Key space is bounded in practice.
 - **Add parent driver existence checks in sub-record GET routes:** Returns empty array for non-existent driver. Correct behavior.
 - **Add date format validation on sub-record POST endpoints:** Prisma/PostgreSQL rejects invalid dates at storage layer.
@@ -148,6 +200,13 @@ A fresh codebase scan confirms the codebase is in good shape. No critical or hig
 - **Missing required field validation in PUT /api/users/[id]:** Empty body silently succeeds. Harmless no-op — not worth the complexity.
 - **Unsafe `context?: any` in roster-assignments and scenario duplicate routes:** Stylistic; Next.js 14 doesn't enforce typed params. Fix when upgrading to Next.js 15.
 - **useApi console.error logging:** Error is now captured and surfaced to consumers via error state (PB-133/PB-134). Console.error logging is intentional for debugging.
+- **Validate scenarioId as existing Scenario in planning POST:** Prisma FK constraint catches invalid IDs with a P2003 error. Adding explicit validation would improve the error message but is low-priority given planners select scenarios from a dropdown.
+- **Hoist getActiveRecord calls in PlanningGrid render loop:** `getActiveRecord` is called inline per virtualized row (line 565-566). Linear scan on small arrays (typically 1-3 records). Marginal improvement at current data volumes.
+- **Fix generateDailySummary upper time bound:** `perf.ts:323` has no `until` parameter, so summaries can include events beyond the target date. Only affects observability layer, not user-facing features.
+- **StatusSelector redundant useApiData for leave types:** Leave types are already fetched at PlanningGrid level. StatusSelector independently re-fetches. 30s cache prevents actual API calls but adds listener churn. Minor optimization.
+- **for-range route orderBy diverges from drivers route:** `for-range` orders by `lastName` only; `/api/drivers` orders by `[lastName, firstName]`. Non-deterministic for duplicate surnames. Minor inconsistency.
+- **csv-parser escaped quote handling for non-comma separators:** Quote toggle logic desyncs on escaped `""` pairs in semicolon/tab CSVs. Low risk for typical Dutch HR data exports.
+- **for-range inline driverIncludeFields diverges from canonical driverInclude:** Intentional optimization with explicit `select` but creates maintenance divergence if sub-record models gain new columns. Add a code comment noting the intentional divergence.
 
 ## Recommendation Rules
 
