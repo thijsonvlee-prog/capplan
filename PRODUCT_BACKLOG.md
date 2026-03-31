@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Planning grid and drivers page are now at product-grade visual quality. Authorization model complete. The active backlog is light — remaining work is polish and consistency items. Next focus: capacity page visual lift (last screen below standard), small technical consistency fixes, and resolving the ESC-009 POC decision.
+**Current direction:** All major screens are now at product-grade visual quality. Authorization model is complete. The active backlog focuses on production correctness fixes for multi-user deployments (per-user scenario state, error visibility) and one pending Scrum Master decision (ESC-009 POC). After these, the remaining backlog is P4 polish and deferred items.
 
 ## Status Definitions
 
@@ -27,7 +27,31 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-132: Make active scenario selection per-user
+
+- **ID:** PB-132
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** `GET/PUT /api/scenarios/active` uses `userId = "default"` for all users. Changing the active scenario in one browser session affects all other users. The preferences API already supports per-user keys, so this is an inconsistency that causes cross-user interference in multi-user deployments.
+- **Why this matters now:** Multi-user auth is deployed and in use. This is a production correctness bug.
+- **Scope notes:** Use `getServerSession` to read the session user ID. Store/retrieve active scenario per user. Fall back to `"default"` when auth is not configured (`NEXTAUTH_SECRET` not set). Small, contained change in `src/app/api/scenarios/active/route.ts`.
+- **Dependencies:** None.
+- **Definition of done:** Active scenario is stored per authenticated user. Unauthenticated/dev mode falls back to `"default"`. `npm run verify` passes.
+- **Source:** DE-REC-043.
+
+### PB-133: Add error state to useApiData / useApiDataWithLoading hooks
+
+- **ID:** PB-133
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** Fetch errors are caught and logged to `console.error` only. No error state is returned to callers, so failed fetches are invisible in the UI — components silently show stale default data with no failure indication.
+- **Why this matters now:** All data access goes through these hooks. Silent failures are a reliability blind spot. Users may see stale data without knowing a fetch failed.
+- **Scope notes:** Add an `error` return field to both hooks. This is an additive change — existing callers can ignore the new field initially. Components can optionally show error states. Do not require all callers to handle errors in the same cycle.
+- **Dependencies:** None.
+- **Definition of done:** Both hooks return an `error` field. At least one high-value consumer (e.g., PlanningGrid or drivers page) shows an error state on fetch failure. `npm run verify` passes.
+- **Source:** DE-REC-044.
 
 ---
 
@@ -70,44 +94,25 @@ _No items currently in progress._
 - **Completed:** 2026-03-31
 - **Note:** Added KPI summary module (5 metric cards: gem. beschikbaar, gem. totaal, gem. verlof, gem. ziek, bezettingsgraad). Toolbar moved into page header using control-group pattern. Chart/table wrapped in named sections with section titles. Removed outer borders from chart/table cards (No-Line Rule).
 
-### PB-125: Add scenarioId to PlanningEntry domain type
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Note:** Added `scenarioId?: string` to `PlanningEntry` type in `src/domain/types.ts`.
-
-### PB-128: DELETE routes — return 404 instead of 500 for missing records
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Note:** Added P2025 error detection for `drivers/[id]`, `planning/[id]`, and `scenarios/[id]` DELETE routes.
-
-### PB-126: Move ScenarioSelector out of "Weergave" toolbar zone
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-- **Note:** ScenarioSelector moved from "Weergave" to "Periode" zone.
-
-### PB-127: Drivers page — visual quality lift
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-- **Note:** Tonal row alternation, brand hover, integrated search toolbar, pagination footer styling.
-
-### Delivery Agent bugfix: Row striping pattern at group boundaries
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Note:** Fixed continuous global index for row striping across groups.
-
 ---
 
 ## Deferred
+
+### DE-REC-045: Add length cap on planning dates parameter
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Quick defensive fix but low urgency. The `/capacity` and `/for-range` routes already cap at 366/90. The base planning endpoint is only called with grid-visible dates (max ~90). Defer until capacity allows.
+- **Source:** DE-REC-045.
+
+### EX-REC-049: Capacity chart — custom tooltip and axis styling
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Low-risk polish. Capacity page is now structurally aligned. Custom tooltip would complete the integration but is cosmetic.
+- **Source:** EX-REC-049.
 
 ### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
