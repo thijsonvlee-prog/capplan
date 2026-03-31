@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/api-route-utils";
+import { requireRole, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 
 export async function DELETE(
   request: NextRequest,
@@ -11,6 +11,31 @@ export async function DELETE(
     if (authError) return authError;
 
     const { id } = await params;
+
+    // Verify the entry exists and the driver is within scope
+    const entry = await prisma.planningEntry.findUnique({
+      where: { id },
+      select: { driverId: true },
+    });
+    if (!entry) {
+      return NextResponse.json(
+        { error: "Planningsitem niet gevonden" },
+        { status: 404 }
+      );
+    }
+
+    const allowedDepts = await getAllowedDepartmentIds();
+    if (allowedDepts !== null) {
+      const driverInScope = await prisma.driver.count({
+        where: { id: entry.driverId, ...driverDepartmentFilter(allowedDepts) },
+      });
+      if (driverInScope === 0) {
+        return NextResponse.json(
+          { error: "Geen toegang tot deze chauffeur" },
+          { status: 403 }
+        );
+      }
+    }
 
     await prisma.planningEntry.delete({
       where: { id },
