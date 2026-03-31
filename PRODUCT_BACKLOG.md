@@ -106,6 +106,20 @@ _No items currently in progress._
 
 ## Completed Recently
 
+### PB-126: Move ScenarioSelector out of "Weergave" toolbar zone
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
+- **Note:** Moved ScenarioSelector from the "Weergave" (view settings) control group into the "Periode" zone alongside date range and zoom controls. Scenario selection is a data/context control, not a view setting. Toolbar remains single-row with four zones.
+
+### PB-127: Drivers page — visual quality lift
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
+- **Note:** Three improvements: (1) Replaced `border-b` row separators with tonal row alternation (`bg-surface-secondary` on odd rows, transparent on even) matching the planning grid pattern. (2) Upgraded row hover from `bg-surface-secondary` to `bg-brand-50` for clear row identification. (3) Integrated search bar into the card surface as a toolbar zone with result count, creating a composed data surface instead of a disconnected search + table layout. Pagination footer updated to `bg-surface-tertiary/50` for visual consistency.
+
 ### PB-123: Planning grid toolbar — composed control zones
 
 - **Status:** Completed

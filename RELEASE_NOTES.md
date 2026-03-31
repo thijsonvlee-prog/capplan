@@ -12,6 +12,8 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 - **Planningsrooster werkbalk herstructurering:** Werkbalk samengevoegd van twee losse rijen naar één samengestelde balk met vier duidelijke zones: Periode, Filter, Weergave en Status. Zones gescheiden door verticale dividers voor snellere visuele oriëntatie.
 - **Tonale rijscheiding in planningsrooster:** 1px-randen tussen datarijen vervangen door afwisselende achtergrondtinten (wit/lichtgrijs). Rij-hover toont zachte merkkleur. Koprij-rand versoepeld. Planningsrooster oogt nu als productoppervlak in plaats van spreadsheet.
+- **Scenariokiezer verplaatst:** Scenariokiezer verplaatst van de "Weergave"-zone naar de "Periode"-zone in de planningswerkbalk. Scenario is een datacontext, geen weergave-instelling.
+- **Chauffeurspagina visuele verbetering:** Tabel ingepakt in samengesteld dataoppervlak met geïntegreerde zoekbalk. 1px-rijranden vervangen door tonale rijafwisseling (overeenkomstig planningsrooster). Rij-hover toont zachte merkkleur voor duidelijke rij-identificatie.
 
 #### Bugfix
 

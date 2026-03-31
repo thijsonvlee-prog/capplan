@@ -3,40 +3,28 @@
 ## Summary
 
 **What was improved this cycle:**
-- **Planning grid toolbar (PB-123):** Restructured from two loose rows of controls into a single composed toolbar surface with four clearly separated zones (Periode, Filter, Weergave, Status). Uses `.planning-toolbar` container with surface/shadow treatment and vertical dividers between zones.
-- **Planning grid tonal rows (PB-124):** Removed 1px border-bottom from all data rows. Replaced with alternating tonal backgrounds (transparent / `surface-secondary`). Hover now uses `brand-50` for clear row identification. Header edge softened. Group and totals rows use minimal structural borders only where needed.
+- **PB-126 — ScenarioSelector zone correction:** Moved ScenarioSelector from the "Weergave" (view settings) zone to the "Periode" (period/data context) zone in the planning toolbar. Scenario selection determines which data is shown, not how it is displayed.
+- **PB-127 — Drivers page visual quality lift:** Replaced border-based row separation with tonal alternation (matching the planning grid). Upgraded hover to `brand-50`. Integrated the search bar into the card surface as a toolbar zone, creating a composed data surface instead of a disconnected layout.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8). Premium, calm, anchoring.
 - Settings page: well-aligned (sections 2.5, 7.1, 7.2). Strong hierarchy, tab navigation, composed zones.
 - Login page: well-aligned. Clean, premium, brand-surface split.
 - Header: well-aligned. Minimal, composed, contextual subtitle support.
-- Planning grid toolbar: **now aligned** (section 7.2). Controls grouped by meaning in contained zones with visible boundaries.
-- Planning grid matrix: **now aligned** (section 4.1). Tonal row separation replaces 1px borders. No-Line Rule respected.
+- Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning with correct zone semantics.
+- Planning grid matrix: fully aligned (section 4.1). Tonal row separation, No-Line Rule respected.
 - Planning grid cells (DayCell/StatusBadge): well-designed. Density-responsive, status gradients.
+- Drivers page: **now aligned** (sections 3.2, 7.3). Card containment, tonal rows, integrated search toolbar, brand hover. Consistent with planning grid patterns.
 - User group manager: well-aligned. Card-based layout, expandable details, modal editor.
 - User manager: well-aligned. Avatar display, role badges, inline role editing.
 - Toast & ConfirmDialog: product-grade. Accessibility, focus trapping, semantic colors.
 - Button system: fully aligned. Clear hierarchy across primary/secondary/icon/danger.
 - Capacity page: partially aligned. Clean but not distinctly product-focused. Reads as standard analytics.
-- Drivers page: below standard. Table-first layout, generic admin CRUD feel.
 
 **Where design quality is still below target:**
-- The drivers page still reads as standard admin CRUD with a table-first layout, weak hierarchy, and no composed zones beyond the page header.
 - The capacity page is functional and clean but lacks the visual distinctiveness expected of a product-grade analytics surface (DESIGN.md section 8.3 — KPIs as first-class information).
 
 ## Recommended Next Improvements
-
-### EX-REC-036: Drivers table — reduce generic admin feel
-
-- **Problem:** The drivers table uses a flat table-first layout. Per DESIGN.md section 3.2, "table-first UI where the table dominates everything else" and "flat screens with weak hierarchy" are anti-patterns. The page has a good header zone but the data area below is unframed.
-- **Proposed improvement:** Wrap the table in a card container with subtle shadow. Improve row hover treatment. Consider column grouping or denser badge treatment for license/skill columns. Add visual framing around the data zone.
-- **Expected user value:** Drivers page feels intentional and composed rather than a default CRUD list.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** The drivers page is a high-frequency screen. The gap between this page and the settings/planning pages (which are now product-grade) creates visible inconsistency.
 
 ### EX-REC-047: Capacity page — visual identity lift
 
@@ -47,7 +35,7 @@
 - **Effort:** Medium
 - **Dependencies:** Capacity data aggregation already exists in `src/lib/aggregation.ts`.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent. The page works well functionally. Recommend after drivers page improvement.
+- **Why now:** Not urgent. The page works well functionally. Now that the drivers page and planning grid are aligned, the capacity page is the last remaining screen below target.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
@@ -62,7 +50,7 @@
 
 ### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
-- **Problem:** The new single-row composed toolbar works well on wide screens, but may overflow or wrap awkwardly on narrow viewports (< 1200px). The `flex-wrap` behavior handles this gracefully at a basic level, but the zone structure could break visually when wrapped.
+- **Problem:** The single-row composed toolbar works well on wide screens, but may overflow or wrap awkwardly on narrow viewports (< 1200px). The `flex-wrap` behavior handles this gracefully at a basic level, but the zone structure could break visually when wrapped.
 - **Proposed improvement:** Add responsive breakpoint behavior: on narrow screens, stack the toolbar into two rows (Period + Filter on top, View + Status below) while maintaining zone containment.
 - **Expected user value:** Consistent toolbar experience across screen sizes.
 - **Priority:** P4 Low
@@ -106,10 +94,10 @@
 
 ## Risks / Watch-outs
 
-- **Planning grid toolbar wrap behavior.** The single-row toolbar with four zones may wrap on screens narrower than ~1200px. Current `flex-wrap` handles this, but the visual zone structure may degrade when wrapped. Monitor for user feedback. See EX-REC-048.
-- **Tonal row separation at extreme density.** In compact density with 100+ rows, the tonal alternation between transparent and `surface-secondary` provides sufficient contrast for scanability. If users report difficulty distinguishing rows, the `surface-secondary` tone could be strengthened.
+- **Planning grid toolbar wrap behavior.** The single-row toolbar with four zones (now including ScenarioSelector in the Periode zone) may wrap on screens narrower than ~1200px. Current `flex-wrap` handles this, but the visual zone structure may degrade when wrapped. Monitor for user feedback. See EX-REC-048.
+- **Tonal row separation at extreme density.** In compact density with 100+ rows, the tonal alternation between transparent and `surface-secondary` provides sufficient contrast for scanability. If users report difficulty distinguishing rows, the `surface-secondary` tone could be strengthened. This now applies to both planning grid and drivers table.
 - **Settings tab count growth.** The settings page now has 6 tabs with horizontal scroll. More tabs may need a different navigation pattern (vertical tabs or sub-navigation).
-- **Inconsistency between planning and drivers screens.** Planning grid and settings are now product-grade while the drivers table is below standard. This gap is more visible after the planning improvements. Recommend prioritizing EX-REC-036 next.
+- **Capacity page is the last screen below standard.** Now that planning, drivers, and settings are aligned with DESIGN.md, the capacity page is the most visible remaining gap. Recommend addressing EX-REC-047 in a future cycle.
 
 ## Items Intentionally Not Recommended
 

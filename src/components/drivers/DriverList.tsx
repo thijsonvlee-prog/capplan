@@ -155,34 +155,38 @@ export function DriverList() {
         </div>
       )}
 
-      {/* Search bar */}
-      {!isFormOpen && (
-        <div className="mb-4">
-          <div className="relative w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Zoek op naam of personeelsnummer..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="input-field w-full pl-9"
-            />
-            {search && (
-              <button
-                onClick={() => { setSearch(""); setPage(1); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary"
-                aria-label="Zoekopdracht wissen"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Drivers table */}
+      {/* Drivers data surface */}
       {!isFormOpen && (
         <div className="bg-surface-primary rounded-lg shadow-card overflow-hidden">
+          {/* Search toolbar */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle bg-surface-primary">
+            <div className="relative w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Zoek op naam of personeelsnummer..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="input-field w-full pl-9"
+              />
+              {search && (
+                <button
+                  onClick={() => { setSearch(""); setPage(1); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary"
+                  aria-label="Zoekopdracht wissen"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            {total > 0 && (
+              <span className="text-sm text-text-tertiary">
+                {Math.min((page - 1) * pageSize + 1, total)}–{Math.min(page * pageSize, total)} van {total}
+              </span>
+            )}
+          </div>
+
+          {/* Table */}
           <table className="w-full">
             <thead>
               <tr className="bg-surface-tertiary">
@@ -212,8 +216,8 @@ export function DriverList() {
                     return (
                       <tr
                         key={d.id}
-                        className={`border-b border-border-subtle hover:bg-surface-secondary transition-colors ${
-                          idx % 2 === 1 ? "bg-surface-secondary/50" : ""
+                        className={`hover:bg-brand-50 transition-colors ${
+                          idx % 2 === 1 ? "bg-surface-secondary" : ""
                         }`}
                       >
                         <td className="p-3 text-sm">
@@ -282,11 +286,8 @@ export function DriverList() {
 
           {/* Pagination controls */}
           {total > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-border-subtle bg-surface-secondary/50">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border-subtle bg-surface-tertiary/50">
               <div className="flex items-center gap-3">
-                <span className="text-sm text-text-secondary">
-                  {Math.min((page - 1) * pageSize + 1, total)}–{Math.min(page * pageSize, total)} van {total}
-                </span>
                 <div className="flex items-center gap-1.5">
                   <label className="text-caption whitespace-nowrap">Per pagina:</label>
                   <select

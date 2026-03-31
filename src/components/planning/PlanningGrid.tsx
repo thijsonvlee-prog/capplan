@@ -393,11 +393,12 @@ export function PlanningGrid() {
       {/* Composed toolbar */}
       <div className="planning-toolbar flex-shrink-0">
         <div className="planning-toolbar-row">
-          {/* Period zone */}
+          {/* Period & scenario zone */}
           <div className="control-group">
             <span className="control-group-label">Periode</span>
             <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
             <ZoomSelector value={aggregation} onChange={setAggregation} />
+            <ScenarioSelector />
           </div>
 
           <div className="planning-toolbar-divider" />
@@ -476,7 +477,6 @@ export function PlanningGrid() {
             >
               Totalen
             </button>
-            <ScenarioSelector />
           </div>
 
           {/* Status legend — pushed right */}
