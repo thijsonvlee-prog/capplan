@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization is complete. Input validation hardening is well advanced — stamtabellen, functions, skills, employment type, and planning notes all have length/enum validation. The next wave completes validation on the remaining entity fields: driver names, scenarios, import sources, roster profiles, and user groups. One blocked item (sickPercentage domain inconsistency) awaits Scrum Master decision. All Experience Agent work is P4 polish.
+**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization is complete. Input validation hardening is well advanced — the final wave completes length validation on remaining entity fields (drivers, scenarios, import sources, roster profiles, user groups). The sickPercentage domain inconsistency is now resolved (ESC-010: max 99 chosen). All Experience Agent work remains P4 polish.
 
 ## Status Definitions
 
@@ -26,6 +26,20 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
+
+### PB-139: Resolve sickPercentage domain inconsistency
+
+- **ID:** PB-139
+- **Title:** Align sickPercentage max value to 99 across API, UI, and domain types
+- **Problem / opportunity:** API validates 0–100, UI caps at 99, domain type comment says "0-99". Scrum Master chose Option A (max 99) in ESC-010: if a driver is 100% present, they should not be on SICK status.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Decision made. Quick fix that resolves a data inconsistency between API-submitted and UI-submitted values.
+- **Scope notes:** Change API validation in planning POST and bulk routes from `sickPercentage > 100` to `sickPercentage > 99`. Update domain type comment to match. UI already caps at 99 — no UI change needed.
+- **Dependencies:** None (ESC-010 resolved).
+- **Definition of done:** API rejects sickPercentage > 99 with Dutch error message. Domain type comment says 0-99. UI unchanged. Verify passes.
+- **Source:** DE-REC-051, ESC-010.
 
 ### PB-143: Add length validation on driver name fields
 
@@ -73,19 +87,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Blocked / Needs Decision
 
-### PB-139: Resolve sickPercentage domain inconsistency
-
-- **ID:** PB-139
-- **Title:** Align sickPercentage max value between API, UI, and domain types
-- **Problem / opportunity:** API validates 0–100, UI caps at max 99, domain type comment says "0-99 attendance percentage". The field semantics are unclear: if 100% means "fully present", that contradicts being on SICK status.
-- **Owner:** Product Owner (decision) + Delivery Agent (implementation)
-- **Priority:** P3 Medium
-- **Status:** Blocked — awaiting Scrum Master decision (ESC-010)
-- **Why this matters now:** Easy to fix once the correct value is decided. Data inconsistency between API-submitted and UI-submitted values.
-- **Scope notes:** Once decided, enforce the chosen max consistently in API validation, UI input, and type documentation.
-- **Dependencies:** ESC-010 decision.
-- **Definition of done:** API, UI, and type documentation all use the same max value. Existing data outside range is unaffected (no migration needed).
-- **Source:** DE-REC-051.
+_No blocked items._
 
 ---
 

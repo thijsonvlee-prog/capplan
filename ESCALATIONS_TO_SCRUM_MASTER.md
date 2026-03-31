@@ -22,9 +22,15 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
+_No open escalations._
+
+---
+
+## Closed Escalations
+
 ### ESC-010: sickPercentage maximumwaarde — 99 of 100
 
-- **Status:** Open
+- **Status:** Planned
 - **Date / run context:** 2026-03-31 — triggered by DE-REC-051
 - **Decision needed:** The `sickPercentage` field (attendance percentage when a driver has SICK status) has inconsistent max values: the API validates 0–100, the UI caps at 99, and the domain type comment says "0-99". What should the correct maximum be?
 - **Why it matters:** A planner can submit 100 via the API but only 99 via the UI. The field semantics are also unclear: if 100% means "fully present", that contradicts being on SICK status. Resolving this removes a data inconsistency and clarifies the domain model.
@@ -32,19 +38,16 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 **Choose one option:**
 
-- ( ) **Option A — Max 99 (recommended):** (X) Align the API to cap at 99, matching the current UI behavior. Rationale: 100% attendance means the driver is not sick. A planner should change the status instead.
+- (X) **Option A — Max 99 (recommended):** Align the API to cap at 99, matching the current UI behavior. Rationale: 100% attendance means the driver is not sick. A planner should change the status instead.
 - ( ) **Option B — Max 100:** Align the UI to allow 100, matching the current API. Rationale: 100% could mean "registered as sick but fully operational" for administrative tracking purposes.
 
 **Trade-offs:**
 - Option A is simpler and matches existing UI behavior. Only requires changing one API validation line.
 - Option B allows more flexibility but the semantic meaning of "100% sick attendance" is confusing.
 
-**What the Scrum Master must do:** Place `(X)` next to one option above.
-**Product Owner action after choice:** Update PB-139 with the chosen max value and unblock for Delivery Agent execution.
+- **Resolution:** Option A chosen by Scrum Master. PB-139 unblocked and moved to Ready with max 99 scope. Backlog updated 2026-03-31.
 
 ---
-
-## Closed Escalations
 
 ### ESC-009: POC capaciteitssamenvatting in planningsrooster — behouden of verwijderen
 
@@ -57,7 +60,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 **Choose one option:**
 
 - ( ) **Option A — Promote:** Remove the POC label, ensure the summary row matches the new grid styling (tonal rows, no borders), and document it as a supported feature. Assign to Experience Agent (styling) + Delivery Agent (DE-REC-036 optimization).
-- ( ) **Option B — Remove (recommended):** (X) Delete `CapacitySummaryRow.tsx` and all related code from PlanningGrid. The capacity page covers this need. Assign cleanup to Delivery Agent.
+- (X) **Option B — Remove (recommended):** Delete `CapacitySummaryRow.tsx` and all related code from PlanningGrid. The capacity page covers this need. Assign cleanup to Delivery Agent.
 - ( ) **Option C — Defer decision:** Keep the POC as-is for now. Accept the maintenance cost. Revisit after user feedback.
 
 **Trade-offs:**
@@ -65,8 +68,6 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 - Option B reduces code and maintenance. Loses the inline summary, but the separate capacity page is more comprehensive.
 - Option C avoids a decision but keeps dead-weight code in the most critical component.
 
-**What the Scrum Master must do:** Place `(X)` next to one option above.
-**Product Owner action after choice:** Create or update backlog item PB-129 with the chosen direction.
 - **Resolution:** Option B chosen. CapacitySummaryRow.tsx deleted and all related code removed from PlanningGrid. Completed in PB-129 (2026-03-31).
 
 ### ESC-008: Gebruikersgroepen met autorisatiefilters — scope en fasering
