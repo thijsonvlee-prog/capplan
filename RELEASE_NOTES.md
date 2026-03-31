@@ -6,6 +6,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Invoervalidatie dienstverband, tekstvelden en competenties
+
+#### Betrouwbaarheid
+
+- **Dienstverband type-validatie:** POST en PUT op dienstverbandrecords valideren nu het type (FULLTIME, PARTTIME, ONCALL, TEMPORARY, CHARTER) tegen het domein-enum. Ongeldige waarden worden afgewezen met een foutmelding die de geldige opties toont.
+- **Tekstveldlimieten uitgebreid:** Omschrijvingsvelden op stamtabellen (werkgevers, afdelingen, locaties, verloftypes) zijn begrensd op 500 tekens. Functie- en leidinggevendevelden zijn begrensd op 200 tekens. Competentienamen zijn begrensd op 200 tekens. Code-veldlimiet (100 tekens) nu ook op PUT-routes.
+- **Dubbele competentienamen voorkomen:** Het aanmaken of hernoemen van een competentie naar een bestaande naam (hoofdletterongevoelig) wordt nu afgewezen met een foutmelding die de bestaande naam toont.
+
 ### 2026-03-31 — Autorisatie planning-schrijfroutes, foutmeldingen en invoervalidatie
 
 #### Beveiliging

@@ -27,47 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-140: Validate employmentType against domain enum
-
-- **ID:** PB-140
-- **Title:** Add employmentType enum validation to employment POST and PUT routes
-- **Problem / opportunity:** Employment routes accept any string for `employmentType` without validating against the `EmploymentType` enum (PERMANENT, TEMPORARY, CHARTER). Invalid values can be stored, breaking downstream logic like charter detection in PlanningGrid and capacity calculations.
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Same defensive validation pattern already applied to planning status. Quick fix that prevents data corruption.
-- **Scope notes:** Add `Object.values(EmploymentType)` check in both POST and PUT handlers for `/api/drivers/[id]/employment`. Return Dutch error message for invalid values.
-- **Dependencies:** None.
-- **Definition of done:** POST and PUT reject invalid employmentType values with a Dutch error message. Valid values (PERMANENT, TEMPORARY, CHARTER) continue to work.
-- **Source:** DE-REC-052.
-
-### PB-141: Add maxLength validation on description and text fields
-
-- **ID:** PB-141
-- **Title:** Cap description field length on stamtabel routes and text fields on driver sub-records
-- **Problem / opportunity:** Stamtabel `description` fields, function `position`/`manager` fields, and employment `notes` have no length validation. Unbounded TEXT columns.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Natural follow-up to PB-138 (notes cap). Same validation pattern applied more broadly.
-- **Scope notes:** 500 chars for `description`, 200 chars for `position`/`manager`. Dutch error messages. Apply to all stamtabel POST/PUT routes and driver sub-record routes.
-- **Dependencies:** None.
-- **Definition of done:** All targeted text fields reject values exceeding the cap with a Dutch error message. Existing data is unaffected.
-- **Source:** DE-REC-053.
-
-### PB-142: Prevent duplicate skill names
-
-- **ID:** PB-142
-- **Title:** Check for existing skill name before creating in POST `/api/settings/skills`
-- **Problem / opportunity:** Skills POST endpoint doesn't check for existing names. Duplicate skill names can be created, leading to redundant entries in driver form skill selectors.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Quick defensive fix. Skill list is user-facing in driver forms.
-- **Scope notes:** Add `findFirst` by name before creating. Return Dutch error message if duplicate. Case-insensitive check preferred.
-- **Dependencies:** None.
-- **Definition of done:** Creating a skill with a name that already exists returns a Dutch error message. Existing duplicates are not retroactively cleaned up.
-- **Source:** DE-REC-054.
+_No items currently ready._
 
 ---
 
@@ -96,6 +56,27 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-140: Validate employmentType against domain enum
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Employment POST and PUT routes now validate `employmentType` against the `EmploymentType` enum (FULLTIME, PARTTIME, ONCALL, TEMPORARY, CHARTER). Invalid values return a Dutch error message listing valid options.
+
+### PB-141: Add maxLength validation on description and text fields
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Added length caps: stamtabel `description` (500 chars) on POST/PUT, stamtabel `code` (100 chars) on PUT (matching POST), function `position`/`manager` (200 chars) on POST/PUT, skill `name` (200 chars) on POST/PUT. All return Dutch error messages.
+
+### PB-142: Prevent duplicate skill names
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Skills POST and PUT now check for existing skill names (case-insensitive). Returns Dutch error message with the existing skill name if a duplicate is found. Uses HTTP 409 Conflict status.
 
 ### PB-136: Enforce department scope on planning write endpoints
 

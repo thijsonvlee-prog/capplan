@@ -6,50 +6,50 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-136 (department scope on planning writes), PB-137 (surface API error messages), and PB-138 (notes length cap). The authorization model is now consistent across read and write planning endpoints. Users see meaningful Dutch error messages instead of generic failures.
+This cycle completed PB-140 (employmentType enum validation), PB-141 (text field length caps on stamtabellen, functions, and skills), and PB-142 (duplicate skill name prevention on POST and PUT). All input validation hardening tasks from the previous backlog are now complete.
 
-A fresh codebase scan uncovered two high-priority gaps: missing `employmentType` enum validation on employment record endpoints (invalid values can be stored), and missing `maxLength` validation on several text fields across settings and driver sub-record routes. Additionally, duplicate skill names can be created without warning.
+A fresh codebase scan reveals that length validation is still missing on several remaining entity name/description fields: drivers (firstName, lastName, employeeNumber), scenarios (name, description), import sources (name, description), roster profiles (name), and user groups (name). These are the natural next wave of the same defensive validation pattern.
 
 ## Recommended Next Improvements
 
-### DE-REC-052: Add employmentType enum validation to employment routes
+### DE-REC-055: Add length validation on driver name fields
 
-- **Title:** Validate `employmentType` against domain enum on employment POST and PUT
-- **Problem:** The employment POST route (`/api/drivers/[id]/employment/route.ts`) and PUT route (`/api/drivers/[id]/employment/[recordId]/route.ts`) accept any string for `employmentType` without validating against the `EmploymentType` enum (PERMANENT, TEMPORARY, CHARTER). Invalid values pass through to the database, which may break downstream logic that checks employment type strings (e.g., PlanningGrid charter detection).
-- **Proposed improvement:** Add validation against `Object.values(EmploymentType)` in both POST and PUT handlers, returning a Dutch error message for invalid values.
-- **Expected product/technical value:** Prevents invalid employment types from being stored. Ensures downstream logic (charter detection, capacity calculations) operates on valid data.
-- **Priority:** P2 High
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Same pattern as the status validation already on planning endpoints. Quick defensive fix.
-
-### DE-REC-053: Add maxLength validation on description and text fields
-
-- **Title:** Cap `description` field length on stamtabel routes and text fields on driver sub-records
-- **Problem:** The stamtabel `description` field (settings routes) has no length validation — only `code` is capped at 100 chars. Similarly, `position` and `manager` fields on function records, and `notes` on employment records have no length caps. These are all unbounded TEXT columns.
-- **Proposed improvement:** Add consistent length caps: 500 chars for `description`, 200 chars for `position`/`manager`, matching the notes cap pattern.
-- **Expected product/technical value:** Completes the defensive validation story across all write endpoints. Prevents unbounded storage.
+- **Title:** Cap `firstName`, `lastName`, and `employeeNumber` length on driver POST and PUT
+- **Problem:** The driver POST route (`/api/drivers/route.ts`) and PUT route (`/api/drivers/[id]/route.ts`) accept unbounded strings for `firstName`, `lastName`, and `employeeNumber`. No length validation exists on these fields.
+- **Proposed improvement:** Add length caps: 100 chars for `firstName`/`lastName`, 50 chars for `employeeNumber`. Dutch error messages.
+- **Expected product/technical value:** Completes defensive validation on the most frequently used entity. Prevents unbounded storage on core fields.
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Natural follow-up to PB-138. Same validation pattern applied more broadly.
+- **Why now:** Same validation pattern now applied to all other entities. Drivers are the most important entity — should not be the exception.
 
-### DE-REC-054: Prevent duplicate skill names
+### DE-REC-056: Add length validation on scenario and import source name/description fields
 
-- **Title:** Check for existing skill name before creating in POST `/api/settings/skills`
-- **Problem:** The skills POST endpoint doesn't check if a skill with the same name already exists. Unlike stamtabellen (where `code` uniqueness is enforced by the database), skills can have duplicate names, leading to redundant competencies in selectors.
-- **Proposed improvement:** Add a `findFirst` check by name before creating. Return a Dutch error message if a skill with the same name exists.
-- **Expected product/technical value:** Prevents data quality issues in skill assignment. Users won't see duplicate competencies in dropdowns.
+- **Title:** Cap `name` and `description` length on scenario and import source routes
+- **Problem:** Scenario POST (`/api/scenarios/route.ts`) and import source POST/PUT (`/api/import-sources/`) accept unbounded `name` and `description` fields.
+- **Proposed improvement:** Add length caps: 200 chars for `name`, 500 chars for `description`. Dutch error messages. Apply to both POST and PUT on both entities.
+- **Expected product/technical value:** Consistent validation across all entity types. Prevents unbounded storage.
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Quick defensive fix. Skill list is user-facing in driver forms.
+- **Why now:** Natural completion of the validation hardening wave.
+
+### DE-REC-057: Add length validation on roster profile and user group name fields
+
+- **Title:** Cap `name` length on roster profile and user group routes
+- **Problem:** Roster profile POST/PUT (`/api/roster-profiles/`) and user group POST/PUT (`/api/user-groups/`) accept unbounded `name` fields.
+- **Proposed improvement:** Add 200-char cap on `name` for both entities. Dutch error messages.
+- **Expected product/technical value:** Consistent validation across all entities.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Same pattern, quick completion.
 
 ### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
 
@@ -80,7 +80,7 @@ A fresh codebase scan uncovered two high-priority gaps: missing `employmentType`
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 500 (max notes), 90 (max range), 100 (max code length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs).
+- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 500 (max notes), 90 (max range), 100 (max code length), 200 (max name length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs).
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
@@ -122,6 +122,7 @@ A fresh codebase scan uncovered two high-priority gaps: missing `employmentType`
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
 - **Driver upsert without unique constraint:** Driver import upsert matches on `employeeNumber` using `findMany` (not a unique constraint). If multiple drivers share an `employeeNumber`, the batch lookup returns the first match.
 - **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`. Admin-only controls flash briefly on page load for non-admin users.
+- **No database-level length constraints:** All text field length validation is application-level only. The Prisma schema uses unbounded `String` types. Application validation is the only defense.
 
 ## Items Intentionally Not Recommended
 
@@ -196,6 +197,8 @@ A fresh codebase scan uncovered two high-priority gaps: missing `employmentType`
 - **Roster assignment without driver existence check:** The `driverId` comes from URL params and Prisma FK constraint catches invalid IDs. Explicit check would improve the error message but is low-priority.
 - **Duplicate skillIds silently deduplicated on driver create:** `createMany` with `skipDuplicates` silently drops duplicates. No user-facing impact since skill selection UI prevents duplicates.
 - **Employment record PUT findFirst/update not wrapped in transaction:** Theoretical race condition at current concurrency. Prisma FK constraint prevents orphan updates.
+- **Add database-level VarChar constraints:** Would require migrations for all text fields. Application-level validation is sufficient and already in place.
+- **Driver PUT missing required field validation:** Empty body silently succeeds as a no-op. Prisma doesn't update undefined fields. Harmless.
 
 ## Recommendation Rules
 
