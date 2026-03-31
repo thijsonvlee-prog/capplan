@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All major screens are now at product-grade visual quality. Authorization model is complete. Per-user scenario state and error visibility are now shipped. ESC-009 (POC capacity summary row) is resolved — code removed. The active backlog is clear. Remaining items are P4 polish and deferred.
+**Current direction:** All major screens are now at product-grade visual quality. Authorization model is complete. Per-user scenario state and error visibility are now shipped. ESC-009 (POC capacity summary row) is resolved — code removed. Next priority: propagate error state consistency across remaining pages (PB-134). Remaining items are P4 polish and deferred.
 
 ## Status Definitions
 
@@ -27,7 +27,20 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-134: Propagate error state to remaining useApiDataWithLoading consumers
+
+- **ID:** PB-134
+- **Title:** Show error states on settings, import, roster profile, and user group pages
+- **Problem / opportunity:** Only DriverList currently shows an error state when data fetching fails (delivered in PB-133). Other pages using `useApiDataWithLoading` (settings, import sources, roster profiles, user groups) silently show empty data on fetch failure. This is inconsistent and confusing for users.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** PB-133 established the pattern and the hook now returns error state. Propagating it is low-effort (6-8 straightforward edits) and completes the error visibility story across the product.
+- **Scope notes:** Destructure the third `error` return value in each remaining `useApiDataWithLoading` caller. Show a short Dutch-language error message using the same pattern as DriverList. No new components or patterns needed.
+- **Dependencies:** PB-133 (completed)
+- **Definition of done:** All pages using `useApiDataWithLoading` show a visible Dutch error message when data fetch fails. `npm run verify` passes.
+- **Implementation note:** Follow the DriverList pattern exactly. Do not introduce new error UI components or abstractions.
+- **Source:** DE-REC-046
 
 ---
 
