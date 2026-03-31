@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** API Phase 1 is fully complete. Deduplication and audit cleanup done. Mobile views in progress (PB-154 ✓, PB-155 ✓, PB-156 ready). Next priorities: consolidate remaining duplicated helpers (DE-REC-068, DE-REC-069), then P4 cleanup items.
+**Current direction:** Mobile initiative (SMI-019 / ESC-013) is 2/3 complete (PB-154 ✓, PB-155 ✓). Next priorities: PB-156 (mobile planning view) for Experience Agent, PB-163 and PB-164 (deduplication consolidation) for Delivery Agent. After that, only P4 polish/cleanup items remain.
 
 ## Status Definitions
 
@@ -27,45 +27,41 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
-
-### PB-154: Mobiele layout shell en navigatie
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Completed
-- **Completed:** 2026-03-31
-- **Problem:** De applicatie heeft geen mobiele navigatie of responsive layout shell. De Scrum Master wil selectieve mobiele weergaven (ESC-013, Option B).
-- **Scope notes:** Maak een responsive layout variant voor schermen < 768px: hamburger-menu voor navigatie, compactere header, touch-vriendelijke tap targets. Sidebar wordt een slide-over panel op mobiel. Desktop layout blijft ongewijzigd. Gebruik Tailwind responsive utilities.
-- **Dependencies:** None
-- **Definition of done:** Op mobiele viewports: sidebar is verborgen achter hamburger-menu, header is compact, navigatie werkt via slide-over. Desktop is ongewijzigd. `npm run verify` slaagt.
-- **Implementation note:** Sidebar hidden on mobile (`hidden md:flex`), slide-over panel with backdrop overlay and close-on-navigate. Hamburger button in Header (md:hidden). Touch-friendly tap targets (py-2.5 on mobile nav items). Compact mobile padding (p-4 vs p-6). Animations: slide-in-left for panel, fade-in for overlay. Desktop completely unchanged.
-
----
-
-## Upcoming (Sequenced)
-
-### PB-155: Mobiele chauffeurlijst en zoeken
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Completed
-- **Completed:** 2026-03-31
-- **Problem:** De chauffeurspagina is niet bruikbaar op mobiel (brede tabel, kleine tekst).
-- **Scope notes:** Maak een mobiele variant van de chauffeurspagina: card-based layout in plaats van tabel, prominente zoekbalk, tap-to-open detail. Toon naam, personeelsnummer, afdeling en status per card. Gebruik responsive breakpoints: tabel op desktop, cards op mobiel.
-- **Dependencies:** PB-154
-- **Definition of done:** Chauffeurlijst is bruikbaar op mobiel met card-layout en zoekfunctie.
-- **Implementation note:** Mobile card layout below md breakpoint using `.driver-card` CSS class. Each card shows name, employee number, department, employment type badge, location, licenses, and skills. Full-width search bar on mobile. Tap-to-edit with chevron indicator. Simplified mobile pagination (prev/next only). Page description hidden on mobile, add button icon-only on small screens. Desktop table completely unchanged.
-
 ### PB-156: Mobiele dag-/weekplanning per chauffeur
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Ready
-- **Problem:** De planningsgrid is niet bruikbaar op mobiel (30+ kolommen).
+- **Problem:** De planningsgrid is niet bruikbaar op mobiel (30+ kolommen). De mobiele navigatie (PB-154) en chauffeurlijst (PB-155) zijn klaar — planners kunnen op hun telefoon navigeren en chauffeurs opzoeken, maar kunnen geen roosters inzien.
 - **Scope notes:** Maak een mobiele planning-weergave: selecteer één chauffeur, toon dag- of weekweergave met statusblokken. Geen bewerkfunctionaliteit in eerste versie (read-only). Planners kunnen op mobiel de planning inzien maar bewerken op desktop.
-- **Dependencies:** PB-155
-- **Definition of done:** Planners kunnen op mobiel de planning van een individuele chauffeur bekijken per dag of week.
+- **Dependencies:** PB-155 (completed)
+- **Definition of done:** Planners kunnen op mobiel de planning van een individuele chauffeur bekijken per dag of week. Statusblokken met semantische kleuren. Desktop planning grid is ongewijzigd. `npm run verify` slaagt.
+- **Implementation note:** Read-only view. Single driver selection. Day/week toggle. Use existing status colors from STATUS_COLORS. Reuse data from planning API. No edit capability in v1. This completes the mobile read-only flow defined in ESC-013 Option B.
+- **Source:** EX-REC-051, ESC-013
+
+### PB-163: Deduplicate resolveUserId naar gedeelde module
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem:** `resolveUserId()` is volledig gedupliceerd tussen `src/app/api/preferences/route.ts` en `src/app/api/scenarios/active/route.ts`. Beide resolven de huidige gebruiker uit de sessie met fallback naar "default".
+- **Scope notes:** Extraheer naar `src/lib/api-route-utils.ts` naast de andere gedeelde route helpers. Beide routes importeren van daar. ~15 regels duplicatie geëlimineerd.
+- **Dependencies:** None
+- **Definition of done:** `resolveUserId()` staat in `api-route-utils.ts`. Beide routes importeren van daar. Functionaliteit ongewijzigd. `npm run verify` slaagt.
+- **Implementation note:** Volgt hetzelfde extractiepatroon als PB-160.
+- **Source:** DE-REC-068
+
+### PB-164: Deduplicate validateApiFields naar gedeelde module
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem:** `validateApiFields()` en bijbehorende validatieconstanten (`VALID_TARGET_ENTITIES`, `VALID_SOURCE_TYPES`, `VALID_API_METHODS`, `VALID_API_AUTH_TYPES`) zijn volledig gedupliceerd tussen `src/app/api/import-sources/route.ts` en `src/app/api/import-sources/[id]/route.ts`. ~70 regels duplicatie.
+- **Scope notes:** Verplaats `validateApiFields()` en de validatieconstanten naar `src/lib/api-import-helpers.ts` (bestaat al na PB-160). Beide routes importeren van daar.
+- **Dependencies:** None
+- **Definition of done:** `validateApiFields()` en constanten staan in `api-import-helpers.ts`. Beide routes importeren van daar. Functionaliteit ongewijzigd. `npm run verify` slaagt.
+- **Implementation note:** `api-import-helpers.ts` is de natuurlijke locatie — bevat al de andere gedeelde import-source logica.
+- **Source:** DE-REC-069
 
 ---
 
@@ -75,75 +71,42 @@ _No items currently in progress._
 
 ---
 
+## Blocked / Needs Decision
+
+_No blocked items._
+
+---
+
 ## Completed Recently
+
+### PB-155: Mobiele chauffeurlijst en zoeken
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
+
+### PB-154: Mobiele layout shell en navigatie
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
 
 ### PB-162: Importbron GET-lijst endpoint beveiligd met ADMIN-rol
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Implementation note:** Added `requireRole("ADMIN")` to the GET handler in `/api/import-sources/route.ts`. The list endpoint returned all fields including `apiCredentials` without any role check. The individual GET (`/api/import-sources/[id]`) was already fixed in PB-159, but the list endpoint was overlooked. Same class of security gap.
 
 ### PB-160: Deduplicate API import helpers naar gedeelde module
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Implementation note:** Extracted `buildApiHeaders()`, `extractDataArray()`, `resolveJsonPath()`, and `discoverPaths()` to `src/lib/api-import-helpers.ts`. Both test and execute routes now import from the shared module. ~80 lines of duplication eliminated. Minor inconsistency fixed: execute route used raw `value` in header loop; shared version uses `String(value)` for safety.
 
 ### PB-161: Audit log cleanup mechanisme
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Implementation note:** Added `cleanupOldAuditLogs(retentionDays = 90)` to `src/lib/audit.ts`. Fire-and-forget call at the end of import execution in the execute route. Uses `deleteMany` with date filter. Failures are logged but never block the import.
-
-### PB-159: Fix authorization bypass op planning DELETE en import-source GET
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-158: API-bron test-verbinding knop
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-153: API-bron response mapping
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-152: API-bron uitvoering — GET-request en response-import
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-151: API-bron configuratie UI
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-150: API-bron type — datamodel uitbreiding ImportSource
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-157: Elimineer overbodige findMany in autoCloseOpenRecords
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-146–PB-149: Audittrail — volledig
-
-- **Status:** Completed
-- **Owner:** Delivery Agent + Experience Agent
 - **Completed:** 2026-03-31
 
 ---
@@ -162,7 +125,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current flex-wrap handles basic cases. May become relevant when mobile work (PB-154) starts.
+- **Reason:** Current flex-wrap handles basic cases. May become relevant after mobile work completes.
 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 
@@ -246,8 +209,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Natural Phase 1 follow-up but not blocking. Current auto-detection handles common patterns. Promote if users report incompatible APIs.
-- **Source:** DE-REC-065
+- **Reason:** Natural Phase 1 follow-up but not blocking. Current auto-detection handles common patterns.
 
 ---
 
@@ -258,7 +220,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-163.
+- Backlog IDs are sequential and never reused. Next available: PB-165.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

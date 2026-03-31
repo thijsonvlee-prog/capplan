@@ -34,7 +34,7 @@ _No open escalations._
 - **Date / run context:** 2026-03-31 — triggered by SMI-019
 - **Chosen option:** Option B — Selectieve mobiele weergaven. Maak 2-3 kernschermen mobielvriendelijk: chauffeurlijst met zoeken, individueel chauffeurprofiel, en dag-/weekplanning per chauffeur. Planningsrooster en instellingen blijven desktop-only.
 - **Backlog linkage:** PB-154, PB-155, PB-156
-- **Product Owner action:** Broken into 3 phased backlog items. PB-154 now ready (API Phase 1 complete).
+- **Product Owner action:** Broken into 3 phased backlog items. PB-154 ✓, PB-155 ✓ completed. PB-156 ready for next cycle (final phase).
 
 ---
 

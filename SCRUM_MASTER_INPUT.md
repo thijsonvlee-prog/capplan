@@ -28,7 +28,7 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Type:** Initiative / new feature
 - **Status:** Planned
 - **Input:** Implementeer een mobiele versie.
-- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). PB-154 is nu klaar voor de volgende cyclus nu API Phase 1 volledig is afgerond.
+- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154 ✓), chauffeurlijst (PB-155 ✓), planning per chauffeur (PB-156 ready). Twee van drie fasen zijn afgerond. PB-156 staat klaar voor de volgende cyclus.
 - **Escalation linkage:** ESC-013 (decided — Option B)
 - **Backlog linkage:** PB-154, PB-155, PB-156
 
