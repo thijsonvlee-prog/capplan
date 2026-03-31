@@ -4,6 +4,8 @@ import { withPerfLogging } from "@/lib/perf";
 import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, parseJsonBody, validateDateFormat, validateDateFormats, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { PlanningStatus } from "@/domain/enums";
 
+const MAX_NOTES_LENGTH = 500;
+
 const VALID_STATUSES = Object.values(PlanningStatus);
 
 export const GET = withPerfLogging(
@@ -109,9 +111,30 @@ export const POST = withPerfLogging(
       );
     }
 
+    if (notes && typeof notes === "string" && notes.length > MAX_NOTES_LENGTH) {
+      return NextResponse.json(
+        { error: `Notitie mag maximaal ${MAX_NOTES_LENGTH} tekens bevatten` },
+        { status: 400 }
+      );
+    }
+
     const dateError = validateDateFormat(String(date));
     if (dateError) {
       return NextResponse.json({ error: dateError }, { status: 400 });
+    }
+
+    // Verify the driver is within the user's allowed departments
+    const allowedDepts = await getAllowedDepartmentIds();
+    if (allowedDepts !== null) {
+      const driverInScope = await prisma.driver.count({
+        where: { id: driverId, ...driverDepartmentFilter(allowedDepts) },
+      });
+      if (driverInScope === 0) {
+        return NextResponse.json(
+          { error: "Chauffeur niet gevonden of buiten uw afdelingsbereik" },
+          { status: 403 }
+        );
+      }
     }
 
     const resolvedScenarioId = resolveScenarioId(scenarioId);

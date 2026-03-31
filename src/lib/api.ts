@@ -22,7 +22,18 @@ import type {
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  if (!res.ok) {
+    let message = `API error: ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body && typeof body.error === "string") {
+        message = body.error;
+      }
+    } catch {
+      // Response body is not JSON — use status-based fallback
+    }
+    throw new Error(message);
+  }
   return res.json();
 }
 
