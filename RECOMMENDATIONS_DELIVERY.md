@@ -53,6 +53,45 @@ Remaining recommendations are low-priority maintainability items. No new critica
 - **Suggested owner:** Product Owner
 - **Why now:** The planning grid just received visual updates (PB-123, PB-124). Good time to settle the POC's status before more grid changes.
 
+### DE-REC-039: PlanningEntry type missing scenarioId field
+
+- **Title:** Add `scenarioId` to the `PlanningEntry` domain type
+- **Problem:** `src/domain/types.ts:81` defines `PlanningEntry` without `scenarioId`, but `transformPlanningEntry` in `api-route-utils.ts:253` sets it, and `PlanningGrid.tsx:222` adds it in optimistic updates. This creates a type gap — code that uses `PlanningEntry` doesn't know `scenarioId` exists, leading to implicit `any` widening or manual casts.
+- **Proposed improvement:** Add `scenarioId?: string` to the `PlanningEntry` type.
+- **Expected product/technical value:** Type safety improvement. Prevents subtle bugs if anyone relies on the type definition.
+- **Priority:** P3 Medium
+- **Effort:** Small (one-line change + verify)
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Simple fix that improves type correctness across the most critical component.
+
+### DE-REC-040: DELETE handlers return 500 instead of 404 for missing records
+
+- **Title:** Handle Prisma P2025 errors as 404 in DELETE routes
+- **Problem:** DELETE handlers in `drivers/[id]`, `planning/[id]`, and `scenarios/[id]` call `prisma.model.delete()` without checking existence first. When the record doesn't exist, Prisma throws a P2025 error caught by the generic catch as a 500. Users see "Er is een fout opgetreden" instead of a meaningful "niet gevonden" message.
+- **Proposed improvement:** Check for P2025 error code in catch blocks and return 404 with a Dutch message.
+- **Expected product/technical value:** Better error reporting for edge cases (e.g., concurrent deletion). Correct HTTP semantics.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Small improvement to error handling quality.
+
+### DE-REC-041: Remove unused type exports from domain/types.ts
+
+- **Title:** Clean up dead type definitions in types.ts
+- **Problem:** `PlanningEntryOptions` (line 75) and `UserContext` (line 158) are defined but never imported anywhere. `ExternalSourceMetadata` and related `externalSource` fields on Driver/Skill/StamtabelRecord are "AFAS preparation" placeholders never used.
+- **Proposed improvement:** Remove `PlanningEntryOptions` and `UserContext`. Leave `ExternalSourceMetadata` with a note that it's preparatory (product decision whether to keep).
+- **Expected product/technical value:** Reduces confusion for developers reading the types file.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Quick cleanup.
+
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
@@ -140,6 +179,11 @@ Remaining recommendations are low-priority maintainability items. No new critica
 - **Refactor useApi global cache invalidation:** The broadcast approach works because cache entries have a 30s freshness window.
 - **autoCloseOpenRecords race condition:** Theoretical at current concurrency. Would require wrapping callers in transactions.
 - **Add user group filtering to write endpoints:** Write endpoints already require the user to know the driver ID. The read-level filtering (now complete via PB-121) prevents discovery of out-of-scope IDs.
+- **Split ImportSourceManager.tsx (~838 lines):** Large but well-structured with distinct sections. Splitting would fragment the connectivity hub feature across multiple files.
+- **Add cache eviction to useApi:** Module-level cache grows with unique fetch keys, but in practice the key space is bounded (named API methods with limited parameter variation). Add eviction only if memory profiling shows a real issue.
+- **Add parent driver existence checks in sub-record GET routes:** Returns empty array for non-existent driver ID. Correct behavior — not a data leak, and adding a pre-check doubles queries.
+- **Add date format validation on sub-record POST endpoints:** Employment/function/roster-assignment start dates are required but not format-validated. Prisma/PostgreSQL rejects invalid dates at the storage layer. Only planning endpoints warrant explicit validation because they accept comma-separated date lists.
+- **Validate roster profile entry dayOffset/status:** Entries are created from the UI's fixed 4-week grid, so invalid values can't arrive from the normal UI flow. Prisma schema constraints catch out-of-range values.
 - **Warning tokens unused in CSS classes:** `--color-warning-*` tokens are defined in globals.css but not used in CSS class definitions. They may be used via Tailwind utilities directly — this is acceptable.
 - **`--radius-xl` token unused:** Defined but not currently referenced. Keep for future use; removing saves nothing.
 
