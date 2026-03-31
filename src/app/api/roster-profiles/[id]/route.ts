@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { transformProfile, validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET(
   request: NextRequest,
@@ -56,6 +57,11 @@ export async function PUT(
       return NextResponse.json({ error: "Naam mag maximaal 200 tekens bevatten" }, { status: 400 });
     }
 
+    const oldProfile = await prisma.rosterProfile.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
     const profile = await prisma.$transaction(async (tx) => {
       // Update profile name
       await tx.rosterProfile.update({
@@ -86,6 +92,9 @@ export async function PUT(
       });
     });
 
+    const userId = await getAuditUserId();
+    logAudit("RosterProfile", id, "UPDATE", oldProfile, { name }, userId);
+
     return NextResponse.json(transformProfile(profile));
   } catch (error) {
     console.error("Error updating roster profile:", error instanceof Error ? error.message : "Unknown error");
@@ -106,9 +115,17 @@ export async function DELETE(
 
     const { id } = await params;
 
+    const oldProfile = await prisma.rosterProfile.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
     await prisma.rosterProfile.delete({
       where: { id },
     });
+
+    const userId = await getAuditUserId();
+    logAudit("RosterProfile", id, "DELETE", oldProfile, null, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

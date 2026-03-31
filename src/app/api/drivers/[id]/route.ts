@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { transformDriver, driverInclude, validateForeignKeys, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET(
   request: NextRequest,
@@ -59,6 +60,11 @@ export async function PUT(
       return NextResponse.json({ error: "Personeelsnummer mag maximaal 50 tekens bevatten" }, { status: 400 });
     }
 
+    const oldDriver = await prisma.driver.findUnique({
+      where: { id },
+      select: { firstName: true, lastName: true, employeeNumber: true, licenseTypes: true },
+    });
+
     const updateData: any = {};
     if (driverData.firstName !== undefined)
       updateData.firstName = driverData.firstName;
@@ -95,6 +101,9 @@ export async function PUT(
       });
     });
 
+    const userId = await getAuditUserId();
+    logAudit("Driver", id, "UPDATE", oldDriver, updateData, userId);
+
     return NextResponse.json(transformDriver(driver));
   } catch (error) {
     console.error("Error updating driver:", error instanceof Error ? error.message : "Unknown error");
@@ -115,7 +124,15 @@ export async function DELETE(
 
     const { id } = await params;
 
+    const oldDriver = await prisma.driver.findUnique({
+      where: { id },
+      select: { firstName: true, lastName: true, employeeNumber: true },
+    });
+
     await prisma.driver.delete({ where: { id } });
+
+    const userId = await getAuditUserId();
+    logAudit("Driver", id, "DELETE", oldDriver, null, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

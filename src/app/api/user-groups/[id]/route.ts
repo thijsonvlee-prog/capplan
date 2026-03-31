@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole, validateRequired, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 /**
  * GET /api/user-groups/[id]
@@ -81,10 +82,10 @@ export async function PUT(
       return NextResponse.json({ error: "Naam mag maximaal 200 tekens bevatten" }, { status: 400 });
     }
 
-    // Verify group exists
+    // Verify group exists and fetch old values for audit
     const existing = await prisma.userGroup.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, name: true, departments: { select: { departmentId: true } } },
     });
     if (!existing) {
       return NextResponse.json(
@@ -135,6 +136,9 @@ export async function PUT(
       });
     });
 
+    const userId = await getAuditUserId();
+    logAudit("UserGroup", id, "UPDATE", { name: existing.name, departmentIds: existing.departments.map((d) => d.departmentId) }, { name: body.name.trim(), departmentIds }, userId);
+
     return NextResponse.json({
       data: {
         id: group.id,
@@ -168,12 +172,12 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Verify group exists
-    const existing = await prisma.userGroup.findUnique({
+    // Verify group exists and fetch old values for audit
+    const existingDel = await prisma.userGroup.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, name: true },
     });
-    if (!existing) {
+    if (!existingDel) {
       return NextResponse.json(
         { error: "Gebruikersgroep niet gevonden" },
         { status: 404 }
@@ -183,6 +187,9 @@ export async function DELETE(
     await prisma.userGroup.delete({
       where: { id },
     });
+
+    const userId = await getAuditUserId();
+    logAudit("UserGroup", id, "DELETE", { name: existingDel.name }, null, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

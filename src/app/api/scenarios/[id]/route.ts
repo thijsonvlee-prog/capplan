@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function DELETE(
   request: NextRequest,
@@ -11,6 +12,11 @@ export async function DELETE(
     if (authError) return authError;
 
     const { id } = await params;
+
+    const oldScenario = await prisma.scenario.findUnique({
+      where: { id },
+      select: { name: true, description: true },
+    });
 
     await prisma.$transaction(async (tx) => {
       await tx.scenario.delete({
@@ -32,6 +38,9 @@ export async function DELETE(
         });
       }
     });
+
+    const userId = await getAuditUserId();
+    logAudit("Scenario", id, "DELETE", oldScenario, null, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateRequired, requireRole, validateFieldMappings, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
 
@@ -75,6 +76,9 @@ export async function POST(request: NextRequest) {
         description: description || null,
       },
     });
+
+    const userId = await getAuditUserId();
+    logAudit("ImportSource", source.id, "CREATE", null, { name, targetEntity, description: description || null }, userId);
 
     return NextResponse.json({ data: source }, { status: 201 });
   } catch (error) {

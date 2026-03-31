@@ -6,11 +6,24 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed **PB-146** (AuditLog datamodel + migration + helper) and **PB-147** (audit logging integrated in all stamtabel and skill API routes). The audit trail foundation is now in place: `AuditLog` model, migration, `logAudit()` helper, and `getAuditUserId()` session helper. All stamtabel and skill mutations (CREATE/UPDATE/DELETE) now write audit entries with old/new values and user attribution.
+This cycle completed **PB-148** (audit logging on all remaining entities). `logAudit()` is now integrated in all CRUD routes for drivers, roster profiles, import sources, scenarios (including duplicate), user groups, and users (role/group changes). The audit trail is now comprehensive across all entities except high-volume planning entries (excluded by design).
 
-**PB-148** (audit logging for remaining entities) is now unblocked and ready for the next cycle. The existing recommendations for P4 cleanup items remain valid. A fresh codebase scan found no new critical issues — the codebase is stable and well-validated.
+**PB-149** (audit log viewer) is now unblocked. The Delivery Agent's part is the API endpoint (`GET /api/audit-log`). The codebase is stable — no new critical issues found. Existing P4 recommendations remain valid.
 
 ## Recommended Next Improvements
+
+### DE-REC-060: Build GET /api/audit-log endpoint for PB-149
+
+- **Title:** Audit log viewer API endpoint with pagination and filtering
+- **Problem:** PB-149 requires a `GET /api/audit-log` endpoint for the Experience Agent to build the viewer UI against. This is the Delivery Agent's part of PB-149.
+- **Proposed improvement:** Create `GET /api/audit-log` with: pagination (`page`, `pageSize`), filter by `tableName`, filter by date range (`from`, `to`), ADMIN-only access via `requireRole`. Return chronological entries with user name/email joined from User table.
+- **Expected product/technical value:** Enables audit log viewer UI. Completes the audit trail feature.
+- **Priority:** P2 High (part of PB-149)
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** PB-148 (completed)
+- **Suggested owner:** Delivery Agent
+- **Why now:** PB-149 is unblocked and next in the backlog sequence.
 
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route
 
@@ -106,9 +119,9 @@ This cycle completed **PB-146** (AuditLog datamodel + migration + helper) and **
 ## Risks / Watch-outs
 
 - **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. If the database connection fails or the audit table has issues, mutations succeed but audit entries are silently dropped. Console errors are the only signal. This is by design (PB-146 scope note: audit failures must not block mutations), but operators should monitor console output for "Audit log write failed" messages.
+- **Audit log table growth:** With all entities now audited, the AuditLog table will grow faster. No cleanup mechanism exists yet. At current usage this is not urgent, but should be monitored.
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls. A failed save leaves the UI showing unsaved state. This is a known design choice.
 - **Auth env vars required for deployment:** Auth infrastructure requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
-- **Driver upsert without unique constraint:** Driver import upsert matches on `employeeNumber` using `findMany` (not a unique constraint). If multiple drivers share an `employeeNumber`, the batch lookup returns the first match.
 - **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`. Admin-only controls flash briefly on page load for non-admin users.
 - **No database-level length constraints:** All text field length validation is application-level only. The Prisma schema uses unbounded `String` types. Application validation is the only defense.
 
@@ -146,6 +159,7 @@ This cycle completed **PB-146** (AuditLog datamodel + migration + helper) and **
 - **for-range route orderBy diverges from drivers route:** Minor inconsistency on duplicate surnames.
 - **for-range inline driverIncludeFields diverges from canonical driverInclude:** Intentional optimization.
 - **csv-parser escaped quote handling for non-comma separators:** Low risk for typical Dutch HR data exports.
+- **Audit planning entries:** High-volume writes (drag-select creates many entries). Would generate excessive audit data. Excluded by design in PB-148.
 
 ## Recommendation Rules
 

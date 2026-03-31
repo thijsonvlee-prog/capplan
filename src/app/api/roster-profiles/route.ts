@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { transformProfile, validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET() {
   try {
@@ -53,6 +54,9 @@ export async function POST(request: NextRequest) {
       },
       include: { days: { orderBy: { dayOffset: "asc" } } },
     });
+
+    const userId = await getAuditUserId();
+    logAudit("RosterProfile", profile.id, "CREATE", null, { name }, userId);
 
     return NextResponse.json(transformProfile(profile), { status: 201 });
   } catch (error) {

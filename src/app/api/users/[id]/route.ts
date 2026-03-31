@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 const VALID_ROLES = ["ADMIN", "PLANNER", "VIEWER"];
 
@@ -65,6 +66,13 @@ export async function PUT(
         updatedAt: true,
       },
     });
+
+    const auditUserId = await getAuditUserId();
+    const auditOld: Record<string, string | null> = {};
+    const auditNew: Record<string, string | null> = {};
+    if (role !== undefined) { auditOld.role = existing.role; auditNew.role = role; }
+    if (userGroupId !== undefined) { auditOld.userGroupId = existing.userGroupId; auditNew.userGroupId = userGroupId; }
+    logAudit("User", id, "UPDATE", auditOld, auditNew, auditUserId);
 
     return NextResponse.json({
       data: {

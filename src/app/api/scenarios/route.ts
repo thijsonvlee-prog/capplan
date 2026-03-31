@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET() {
   try {
@@ -48,6 +49,9 @@ export async function POST(request: NextRequest) {
         description: description || null,
       },
     });
+
+    const userId = await getAuditUserId();
+    logAudit("Scenario", scenario.id, "CREATE", null, { name, description: description || null }, userId);
 
     return NextResponse.json(scenario, { status: 201 });
   } catch (error) {

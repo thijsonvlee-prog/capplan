@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
 import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateOptionalForeignKey, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export const GET = withPerfLogging(
   "GET /api/drivers",
@@ -189,6 +190,9 @@ export const POST = withPerfLogging(
       },
       include: driverInclude,
     });
+
+    const userId = await getAuditUserId();
+    logAudit("Driver", driver.id, "CREATE", null, { firstName, lastName, employeeNumber: employeeNumber || null }, userId);
 
     return NextResponse.json(transformDriver(driver), { status: 201 });
   } catch (error) {

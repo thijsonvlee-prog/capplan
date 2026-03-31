@@ -33,21 +33,11 @@ _No items currently ready._
 
 ## Upcoming (Sequenced)
 
-### PB-148: Audit logging — overige entiteiten
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready (PB-147 completed)
-- **Problem:** Na stamtabellen moeten ook chauffeurs, roosterprofielen, importbronnen, scenario's en gebruikersgroepen geauditeerd worden.
-- **Scope notes:** Integreer `logAudit()` in: `/api/drivers` (CRUD), `/api/roster-profiles` (CRUD), `/api/import-sources` (CRUD), `/api/scenarios` (CRUD + duplicate), `/api/user-groups` (CRUD), `/api/users` (role changes). Planning-entries zijn high-volume en worden in deze fase NIET geauditeerd.
-- **Dependencies:** PB-147
-- **Definition of done:** Alle genoemde routes schrijven audit entries. `npm run verify` slaagt.
-
 ### PB-149: Audit log viewer — UI in instellingen
 
 - **Owner:** Experience Agent (UI) + Delivery Agent (API endpoint)
 - **Priority:** P2 High
-- **Status:** Blocked (on PB-148)
+- **Status:** Ready (PB-148 completed)
 - **Problem:** Audit data wordt vastgelegd maar is niet zichtbaar voor beheerders.
 - **Scope notes:** Voeg een nieuw tabblad "Auditlog" toe aan de instellingenpagina (alleen ADMIN). Maak een API-endpoint `GET /api/audit-log` met paginering, filteren op tabel en datum. Toon een chronologisch overzicht met: tijdstip, gebruiker, tabel, actie, record-identificatie. Detailweergave met oude/nieuwe waarden in een modal of expandable row.
 - **Dependencies:** PB-148
@@ -133,6 +123,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-148: Audit logging — overige entiteiten
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** `logAudit()` integrated in all POST/PUT/DELETE handlers for: `/api/drivers` (create, update, delete), `/api/roster-profiles` (create, update, delete), `/api/import-sources` (create, update, delete), `/api/scenarios` (create, delete, duplicate), `/api/user-groups` (create, update, delete), `/api/users` (role/group changes). Old values fetched before UPDATE/DELETE. UserId extracted from session via `getAuditUserId()`. All audit writes are fire-and-forget (non-blocking). Planning-entries excluded per scope. `npm run verify` passes.
 
 ### PB-146: AuditLog datamodel en migratie
 

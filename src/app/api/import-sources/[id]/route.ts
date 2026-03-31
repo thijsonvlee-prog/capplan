@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateRequired, requireRole, validateFieldMappings, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
 
@@ -90,6 +91,9 @@ export async function PUT(
       },
     });
 
+    const userId = await getAuditUserId();
+    logAudit("ImportSource", id, "UPDATE", { name: existing.name, targetEntity: existing.targetEntity, description: existing.description }, { name, targetEntity, description: description || null }, userId);
+
     return NextResponse.json({ data: source });
   } catch (error) {
     console.error("Error updating import source:", error instanceof Error ? error.message : "Unknown error");
@@ -119,6 +123,9 @@ export async function DELETE(
     }
 
     await prisma.importSource.delete({ where: { id } });
+
+    const userId = await getAuditUserId();
+    logAudit("ImportSource", id, "DELETE", { name: existing.name, targetEntity: existing.targetEntity }, null, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

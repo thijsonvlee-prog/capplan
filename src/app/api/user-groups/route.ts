@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole, validateRequired, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 /**
  * GET /api/user-groups
@@ -97,6 +98,9 @@ export async function POST(request: NextRequest) {
         _count: { select: { users: true } },
       },
     });
+
+    const userId = await getAuditUserId();
+    logAudit("UserGroup", group.id, "CREATE", null, { name: body.name.trim(), departmentIds }, userId);
 
     return NextResponse.json({
       data: {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
 import { requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export const POST = withPerfLogging(
   "POST /api/scenarios/duplicate",
@@ -100,6 +101,9 @@ export const POST = withPerfLogging(
         await prisma.scenario.delete({ where: { id: newScenario.id } }).catch(() => {});
         throw copyError;
       }
+
+      const userId = await getAuditUserId();
+      logAudit("Scenario", newScenario.id, "CREATE", null, { name: name.trim(), duplicatedFrom: sourceId }, userId);
 
       return NextResponse.json(newScenario, { status: 201 });
     } catch (error) {
