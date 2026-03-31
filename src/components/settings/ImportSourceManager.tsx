@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, X, ArrowRight, FileSpreadsheet, Upload, CheckCircle2, AlertCircle, Play, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ArrowRight, FileSpreadsheet, Upload, CheckCircle2, AlertCircle, Play, Clock, ChevronDown, ChevronUp, Globe, Key, Eye, EyeOff } from "lucide-react";
 import type { ImportSource, CsvUploadResult, ImportExecuteResult, ImportLog } from "@/domain/types";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
@@ -37,19 +37,40 @@ const TARGET_FIELDS: Record<string, { value: string; label: string }[]> = {
 };
 
 type FieldMapping = { sourceColumn: string; targetField: string };
+type HeaderEntry = { key: string; value: string };
+
+const AUTH_TYPE_LABELS: Record<string, string> = {
+  NONE: "Geen",
+  BASIC: "Basic (gebruikersnaam/wachtwoord)",
+  BEARER: "Bearer token",
+  API_KEY: "API-sleutel",
+};
 
 type FormState = {
   name: string;
   description: string;
+  sourceType: string;
   targetEntity: string;
   mappings: FieldMapping[];
+  // API-specific
+  apiUrl: string;
+  apiMethod: string;
+  apiHeaders: HeaderEntry[];
+  apiAuthType: string;
+  apiCredentials: Record<string, string>;
 };
 
 const EMPTY_FORM: FormState = {
   name: "",
   description: "",
+  sourceType: "CSV",
   targetEntity: "",
   mappings: [{ sourceColumn: "", targetField: "" }],
+  apiUrl: "",
+  apiMethod: "GET",
+  apiHeaders: [{ key: "", value: "" }],
+  apiAuthType: "NONE",
+  apiCredentials: {},
 };
 
 function mappingsToRecord(mappings: FieldMapping[]): Record<string, string> {
@@ -67,6 +88,19 @@ function recordToMappings(record: Record<string, string>): FieldMapping[] {
   return entries.length > 0
     ? entries.map(([sourceColumn, targetField]) => ({ sourceColumn, targetField }))
     : [{ sourceColumn: "", targetField: "" }];
+}
+
+function headersToEntries(headers?: Record<string, string> | null): HeaderEntry[] {
+  if (!headers || Object.keys(headers).length === 0) return [{ key: "", value: "" }];
+  return Object.entries(headers).map(([key, value]) => ({ key, value }));
+}
+
+function entriesToHeaders(entries: HeaderEntry[]): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const e of entries) {
+    if (e.key.trim()) result[e.key.trim()] = e.value;
+  }
+  return result;
 }
 
 function formatDateTime(iso: string): string {
@@ -99,6 +133,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
   const [logs, setLogs] = useState<ImportLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [showCredentials, setShowCredentials] = useState(false);
 
   function openCreateForm() {
     setEditingId(null);
@@ -112,8 +147,14 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
     setForm({
       name: source.name,
       description: source.description || "",
+      sourceType: source.type || "CSV",
       targetEntity: source.targetEntity,
       mappings: recordToMappings(source.fieldMappings),
+      apiUrl: source.apiUrl || "",
+      apiMethod: source.apiMethod || "GET",
+      apiHeaders: headersToEntries(source.apiHeaders),
+      apiAuthType: source.apiAuthType || "NONE",
+      apiCredentials: (source.apiCredentials as Record<string, string>) || {},
     });
     setShowValidation(false);
     setShowForm(true);
@@ -149,10 +190,42 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
     }));
   }
 
+  function addHeaderRow() {
+    setForm(prev => ({
+      ...prev,
+      apiHeaders: [...prev.apiHeaders, { key: "", value: "" }],
+    }));
+  }
+
+  function removeHeaderRow(index: number) {
+    setForm(prev => ({
+      ...prev,
+      apiHeaders: prev.apiHeaders.length > 1
+        ? prev.apiHeaders.filter((_, i) => i !== index)
+        : prev.apiHeaders,
+    }));
+  }
+
+  function updateHeader(index: number, field: "key" | "value", value: string) {
+    setForm(prev => ({
+      ...prev,
+      apiHeaders: prev.apiHeaders.map((h, i) => i === index ? { ...h, [field]: value } : h),
+    }));
+  }
+
+  function updateCredential(key: string, value: string) {
+    setForm(prev => ({
+      ...prev,
+      apiCredentials: { ...prev.apiCredentials, [key]: value },
+    }));
+  }
+
   function isFormValid(): boolean {
     if (!form.name.trim() || !form.targetEntity) return false;
     const validMappings = form.mappings.filter(m => m.sourceColumn.trim() && m.targetField);
-    return validMappings.length > 0;
+    if (validMappings.length === 0) return false;
+    if (form.sourceType === "API" && !form.apiUrl.trim()) return false;
+    return true;
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -163,19 +236,30 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
     }
     setShowValidation(false);
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       name: form.name.trim(),
+      type: form.sourceType,
       targetEntity: form.targetEntity,
       fieldMappings: mappingsToRecord(form.mappings),
       description: form.description.trim() || undefined,
     };
 
+    if (form.sourceType === "API") {
+      payload.apiUrl = form.apiUrl.trim();
+      payload.apiMethod = form.apiMethod;
+      payload.apiAuthType = form.apiAuthType;
+      const headers = entriesToHeaders(form.apiHeaders);
+      if (Object.keys(headers).length > 0) payload.apiHeaders = headers;
+      if (form.apiAuthType !== "NONE") payload.apiCredentials = form.apiCredentials;
+    }
+
+    const typedPayload = payload as Parameters<typeof api.importSources.create>[0];
     if (editingId) {
-      mutate(() => api.importSources.update(editingId, payload))
+      mutate(() => api.importSources.update(editingId, typedPayload))
         .then(() => { showToast("Importbron bijgewerkt"); closeForm(); })
         .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     } else {
-      mutate(() => api.importSources.create(payload))
+      mutate(() => api.importSources.create(typedPayload))
         .then(() => { showToast("Importbron aangemaakt"); closeForm(); })
         .catch(() => showToast("Er ging iets mis. Probeer het opnieuw.", "error"));
     }
@@ -292,7 +376,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
         <div className="p-4 flex items-center justify-between border-b border-border-subtle">
           <div>
             <h3 className="text-section-title">Importbronnen</h3>
-            <p className="text-caption mt-1">CSV-bronnen met veldkoppelingen voor het importeren van gegevens.</p>
+            <p className="text-caption mt-1">CSV- en API-bronnen met veldkoppelingen voor het importeren van gegevens.</p>
           </div>
           {!readOnly && (
             <button onClick={openCreateForm} className="btn-primary" disabled={showForm}>
@@ -321,7 +405,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
               <FileSpreadsheet className="w-6 h-6 text-text-tertiary" />
             </div>
             <p className="text-sm text-text-secondary">Nog geen importbronnen geconfigureerd.</p>
-            <p className="text-xs text-text-tertiary mt-1">Klik op &quot;Nieuwe bron&quot; om een CSV-importconfiguratie aan te maken.</p>
+            <p className="text-xs text-text-tertiary mt-1">Klik op &quot;Nieuwe bron&quot; om een import­configuratie aan te maken.</p>
           </div>
         )}
 
@@ -334,7 +418,12 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2.5">
                         <span className="text-sm font-medium text-text-primary">{source.name}</span>
-                        <span className="bg-surface-tertiary px-2 py-0.5 rounded text-xs font-mono text-text-secondary">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                          source.type === "API"
+                            ? "bg-brand-50 text-brand-700"
+                            : "bg-surface-tertiary text-text-secondary"
+                        }`}>
+                          {source.type === "API" ? <Globe className="w-3 h-3" /> : <FileSpreadsheet className="w-3 h-3" />}
                           {source.type}
                         </span>
                       </div>
@@ -346,6 +435,17 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                           {Object.keys(source.fieldMappings).length} veldkoppeling{Object.keys(source.fieldMappings).length !== 1 ? "en" : ""}
                         </span>
                       </div>
+                      {source.type === "API" && source.apiUrl && (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-xs text-text-tertiary font-mono truncate max-w-md">{source.apiMethod || "GET"} {source.apiUrl}</span>
+                          {source.apiAuthType && source.apiAuthType !== "NONE" && (
+                            <span className="inline-flex items-center gap-0.5 text-xs text-text-tertiary">
+                              <Key className="w-3 h-3" />
+                              {AUTH_TYPE_LABELS[source.apiAuthType] || source.apiAuthType}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       {source.description && (
                         <p className="text-xs text-text-tertiary mt-1">{source.description}</p>
                       )}
@@ -366,9 +466,11 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                       </button>
                       {!readOnly && (
                         <>
-                          <button onClick={() => openUpload(source.id)} className="btn-icon" aria-label="CSV uploaden">
-                            <Upload className="w-4 h-4" />
-                          </button>
+                          {source.type !== "API" && (
+                            <button onClick={() => openUpload(source.id)} className="btn-icon" aria-label="CSV uploaden">
+                              <Upload className="w-4 h-4" />
+                            </button>
+                          )}
                           <button onClick={() => openEditForm(source)} className="btn-icon" aria-label="Bewerken">
                             <Pencil className="w-4 h-4" />
                           </button>
@@ -497,6 +599,37 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
               </div>
             </div>
 
+            {/* Source type selector */}
+            <div>
+              <label className="form-label">Brontype <span className="text-danger-600">*</span></label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setForm(prev => ({ ...prev, sourceType: "CSV" }))}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border ${
+                    form.sourceType === "CSV"
+                      ? "bg-brand-50 border-brand-300 text-brand-700"
+                      : "bg-surface-secondary border-border-subtle text-text-secondary hover:bg-surface-tertiary"
+                  }`}
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  CSV-bestand
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(prev => ({ ...prev, sourceType: "API" }))}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border ${
+                    form.sourceType === "API"
+                      ? "bg-brand-50 border-brand-300 text-brand-700"
+                      : "bg-surface-secondary border-border-subtle text-text-secondary hover:bg-surface-tertiary"
+                  }`}
+                >
+                  <Globe className="w-4 h-4" />
+                  API-verbinding
+                </button>
+              </div>
+            </div>
+
             {/* Description */}
             <div>
               <label className="form-label">Omschrijving</label>
@@ -508,6 +641,200 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                 className="input-field w-full"
               />
             </div>
+
+            {/* API configuration */}
+            {form.sourceType === "API" && (
+              <div className="space-y-4 p-4 bg-surface-secondary rounded-lg">
+                <h4 className="text-label flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-text-tertiary" />
+                  API-configuratie
+                </h4>
+
+                {/* URL and Method */}
+                <div className="grid grid-cols-[1fr_auto] gap-3">
+                  <div>
+                    <label className="form-label">URL <span className="text-danger-600">*</span></label>
+                    <input
+                      type="text"
+                      value={form.apiUrl}
+                      onChange={e => setForm(prev => ({ ...prev, apiUrl: e.target.value }))}
+                      placeholder="https://api.voorbeeld.nl/v1/chauffeurs"
+                      className="input-field w-full"
+                    />
+                    {showValidation && form.sourceType === "API" && !form.apiUrl.trim() && (
+                      <p className="text-xs text-danger-600 mt-1">URL is verplicht voor API-bronnen.</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="form-label">Methode</label>
+                    <select
+                      value={form.apiMethod}
+                      onChange={e => setForm(prev => ({ ...prev, apiMethod: e.target.value }))}
+                      className="input-field"
+                    >
+                      <option value="GET">GET</option>
+                      <option value="POST">POST</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Headers */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="form-label !mb-0">Headers</label>
+                    <button
+                      type="button"
+                      onClick={addHeaderRow}
+                      className="btn-secondary text-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Header toevoegen
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {form.apiHeaders.map((header, index) => (
+                      <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+                        <input
+                          type="text"
+                          value={header.key}
+                          onChange={e => updateHeader(index, "key", e.target.value)}
+                          placeholder="Header-naam"
+                          className="input-field"
+                        />
+                        <input
+                          type="text"
+                          value={header.value}
+                          onChange={e => updateHeader(index, "value", e.target.value)}
+                          placeholder="Waarde"
+                          className="input-field"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeHeaderRow(index)}
+                          className="btn-icon"
+                          aria-label="Header verwijderen"
+                          disabled={form.apiHeaders.length <= 1}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Authentication */}
+                <div>
+                  <label className="form-label">Authenticatie</label>
+                  <select
+                    value={form.apiAuthType}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      apiAuthType: e.target.value,
+                      apiCredentials: {},
+                    }))}
+                    className="input-field w-full"
+                  >
+                    {Object.entries(AUTH_TYPE_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Credentials based on auth type */}
+                {form.apiAuthType === "BASIC" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="form-label">Gebruikersnaam</label>
+                      <input
+                        type="text"
+                        value={form.apiCredentials.username || ""}
+                        onChange={e => updateCredential("username", e.target.value)}
+                        placeholder="Gebruikersnaam"
+                        className="input-field w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Wachtwoord</label>
+                      <div className="relative">
+                        <input
+                          type={showCredentials ? "text" : "password"}
+                          value={form.apiCredentials.password || ""}
+                          onChange={e => updateCredential("password", e.target.value)}
+                          placeholder="Wachtwoord"
+                          className="input-field w-full pr-9"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCredentials(!showCredentials)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary"
+                          aria-label={showCredentials ? "Verbergen" : "Tonen"}
+                        >
+                          {showCredentials ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {form.apiAuthType === "BEARER" && (
+                  <div>
+                    <label className="form-label">Bearer token</label>
+                    <div className="relative">
+                      <input
+                        type={showCredentials ? "text" : "password"}
+                        value={form.apiCredentials.token || ""}
+                        onChange={e => updateCredential("token", e.target.value)}
+                        placeholder="Token"
+                        className="input-field w-full pr-9"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCredentials(!showCredentials)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary"
+                        aria-label={showCredentials ? "Verbergen" : "Tonen"}
+                      >
+                        {showCredentials ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {form.apiAuthType === "API_KEY" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="form-label">Header-naam</label>
+                      <input
+                        type="text"
+                        value={form.apiCredentials.headerName || ""}
+                        onChange={e => updateCredential("headerName", e.target.value)}
+                        placeholder="Bijv. X-Api-Key"
+                        className="input-field w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">API-sleutel</label>
+                      <div className="relative">
+                        <input
+                          type={showCredentials ? "text" : "password"}
+                          value={form.apiCredentials.apiKey || ""}
+                          onChange={e => updateCredential("apiKey", e.target.value)}
+                          placeholder="Sleutel"
+                          className="input-field w-full pr-9"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCredentials(!showCredentials)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary"
+                          aria-label={showCredentials ? "Verbergen" : "Tonen"}
+                        >
+                          {showCredentials ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Field mappings */}
             <div>
@@ -532,7 +859,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                 <div className="space-y-2">
                   {/* Column headers */}
                   <div className="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
-                    <span className="text-xs text-text-tertiary font-medium">Bronkolom (CSV)</span>
+                    <span className="text-xs text-text-tertiary font-medium">{form.sourceType === "API" ? "Bronveld (JSON-pad)" : "Bronkolom (CSV)"}</span>
                     <span className="w-5" />
                     <span className="text-xs text-text-tertiary font-medium">Doelveld</span>
                     <span className="w-7" />
@@ -543,7 +870,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                         type="text"
                         value={mapping.sourceColumn}
                         onChange={e => updateMapping(index, "sourceColumn", e.target.value)}
-                        placeholder="Kolomnaam in CSV"
+                        placeholder={form.sourceType === "API" ? "Bijv. employee.firstName" : "Kolomnaam in CSV"}
                         className="input-field"
                       />
                       <ArrowRight className="w-4 h-4 text-text-tertiary flex-shrink-0" />

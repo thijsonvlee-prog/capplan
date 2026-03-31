@@ -2,15 +2,16 @@
 
 ## Summary
 
-**This cycle (2026-03-31, run 5):** Implemented PB-149 — the audit log viewer UI as a new "Auditlog" tab on the settings page (ADMIN-only). The component features: filter card with table/action/date-range filters, chronological entry list with expandable detail rows, semantic action badges, tonal row separation, and pagination. Uses existing design tokens, component CSS classes, and interaction patterns (DateInput, btn-icon, input-field, spinner).
+**This cycle (2026-03-31, run 6):** Implemented PB-151 — API-bron configuratie UI. Extended ImportSourceManager with a source type selector (CSV/API), API-specific fields (URL, HTTP method, headers key-value editor, authentication type with credential fields), and updated the source list display to differentiate CSV from API sources.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8). Premium, calm, anchoring.
 - Settings page: well-aligned (sections 2.5, 7.1, 7.2). Strong hierarchy, tab navigation, composed zones. Now 7 tabs including Auditlog.
-- Audit log viewer: well-aligned. Filter card uses surface layering (surface-primary card on surface-secondary background). Tonal row separation. Expandable detail rows. Semantic action badges. No unnecessary borders. Pagination follows existing DriverList pattern.
+- Import source manager (Connectiviteit tab): well-aligned. Source type selector uses toggle-button pattern with visual feedback (brand-50 highlight for active type). API configuration section uses surface layering (surface-secondary card within the form). Headers use key-value editor pattern consistent with field mappings. Credential fields use show/hide toggle for sensitive data. Source list shows type-differentiated badges with icons and contextual API metadata.
+- Audit log viewer: well-aligned. Filter card, expandable rows, semantic badges, tonal row separation, pagination.
 - Login page: well-aligned. Clean, premium, brand-surface split.
 - Header: well-aligned. Minimal, composed, contextual subtitle support.
-- Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning with correct zone semantics.
+- Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning.
 - Planning grid matrix: fully aligned (section 4.1). Tonal row separation, No-Line Rule respected.
 - Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search.
 - Capacity page: fully aligned (sections 7.1, 7.3, 8.3). KPI summary module, section headers.
@@ -37,6 +38,17 @@
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-risk polish. The capacity page is structurally aligned. Custom tooltip would complete the integration. This is the most visible remaining integration gap.
+
+### EX-REC-050: API-bron test-verbinding knop
+
+- **Problem:** Gebruikers configureren een API-bron maar kunnen niet verifiëren of de verbinding werkt voordat ze de bron opslaan. Ze ontdekken fouten pas bij het uitvoeren van de import.
+- **Proposed improvement:** Voeg een "Verbinding testen" knop toe aan het API-configuratieformulier. Bij klik: voer een lichtgewicht request uit naar de URL met de geconfigureerde headers en authenticatie. Toon succes/fout-status inline.
+- **Expected user value:** Gebruikers ontdekken configuratiefouten direct bij het aanmaken, niet pas bij de eerste importpoging.
+- **Priority:** P3 Medium
+- **Effort:** Small (UI) + Small (API endpoint)
+- **Dependencies:** PB-152 (API execute handler moet bestaan voor server-side request).
+- **Suggested owner:** Experience Agent (UI) + Delivery Agent (test endpoint)
+- **Why now:** Natural follow-up to PB-151 and PB-152. Reduces friction in the API source setup flow.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
@@ -69,7 +81,7 @@
 - **Effort:** Medium
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent. The current editor is functional.
+- **Why now:** Not urgent. The current editor is functional. May be revisited when API mapping work (PB-153) starts.
 
 ### EX-REC-044: User group member assignment — batch API
 
@@ -97,8 +109,9 @@
 
 - **Planning grid toolbar wrap behavior.** The single-row toolbar with four zones may wrap on screens narrower than ~1200px. Current `flex-wrap` handles this, but the visual zone structure may degrade when wrapped. Monitor for user feedback. See EX-REC-048.
 - **Recharts default styling.** The capacity chart now lives within a product-grade page, but the chart's internal tooltip/axis styling is still Recharts default. See EX-REC-049.
-- **Settings tab count growth.** The settings page now has 6 tabs with horizontal scroll. Adding more tabs may need a different navigation pattern (e.g. vertical tabs or grouped sections).
+- **Settings tab count growth.** The settings page now has 7 tabs with horizontal scroll. Adding more tabs may need a different navigation pattern (e.g. vertical tabs or grouped sections).
 - **StamtabelManager border usage.** The StamtabelManager component uses `border border-border-subtle` on the outer card and `border-b` between sections. This is a minor tension with the No-Line Rule from DESIGN.md, but the borders serve a structural role here since these are inline-editable list items where clear row separation aids usability. Not a priority to change.
+- **API credential storage.** API credentials (passwords, tokens, API keys) are stored in the database as JSONB. The UI masks them appropriately, but the API returns them in full. If this application becomes multi-tenant or externally accessible, credential values should be redacted from GET responses.
 
 ## Items Intentionally Not Recommended
 

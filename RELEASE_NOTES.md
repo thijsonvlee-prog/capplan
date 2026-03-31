@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — API-bron configuratie UI
+
+#### UX / design verbeteringen
+
+- **API-bron configuratie in connectiviteitshub:** Importbronnen ondersteunen nu naast CSV ook API-verbindingen. Brontype-kiezer (CSV/API) in het aanmaak- en bewerkformulier. Bij API-type: URL en HTTP-methode (GET/POST), headers key-value editor, authenticatietype (geen, basic, bearer token, API-sleutel) met bijbehorende credential-velden. Wachtwoorden en tokens zijn standaard verborgen met een toon/verberg-knop. CSV-uploadknop is verborgen voor API-bronnen. De bronnenlijst toont type-badge met icoon, API-URL en authenticatie-informatie.
+
 ### 2026-03-31 — API-bronnen datamodel en prestatieverbetering
 
 #### Functionele verbeteringen

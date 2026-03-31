@@ -33,16 +33,6 @@ _No items currently ready for next cycle._
 
 ## Upcoming (Sequenced)
 
-### PB-151: API-bron configuratie UI
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** Er is geen UI om API-bronnen te configureren.
-- **Scope notes:** Breid ImportSourceManager uit met een brontype-kiezer (CSV/API). Bij API-type: toon velden voor URL, HTTP-methode, headers (key-value editor), authenticatie-type en credentials. Hergebruik bestaande ImportSourceManager-patronen (modal editor, form layout). Verberg CSV-specifieke velden (separator, bestandsupload) bij API-type.
-- **Dependencies:** PB-150 (completed)
-- **Definition of done:** Gebruikers kunnen een API-bron aanmaken en configureren in de UI. `npm run verify` slaagt.
-
 ### PB-152: API-bron uitvoering — GET-request en response-import
 
 - **Owner:** Delivery Agent
@@ -102,6 +92,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-151: API-bron configuratie UI
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
+- **Summary:** ImportSourceManager uitgebreid met brontype-kiezer (CSV/API). API-modus toont URL, HTTP-methode, headers key-value editor, authenticatietype (Geen/Basic/Bearer/API-sleutel) met credential-velden. CSV-upload verborgen bij API-type. Bronnenlijst toont type-badge met icoon en API-details.
 
 ### PB-150: API-bron type — datamodel uitbreiding ImportSource
 
