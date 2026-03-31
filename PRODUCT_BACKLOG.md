@@ -49,17 +49,19 @@ _No items ready for next cycle._
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
+- **Status:** Completed
+- **Completed:** 2026-03-31
 - **Problem:** De chauffeurspagina is niet bruikbaar op mobiel (brede tabel, kleine tekst).
 - **Scope notes:** Maak een mobiele variant van de chauffeurspagina: card-based layout in plaats van tabel, prominente zoekbalk, tap-to-open detail. Toon naam, personeelsnummer, afdeling en status per card. Gebruik responsive breakpoints: tabel op desktop, cards op mobiel.
 - **Dependencies:** PB-154
 - **Definition of done:** Chauffeurlijst is bruikbaar op mobiel met card-layout en zoekfunctie.
+- **Implementation note:** Mobile card layout below md breakpoint using `.driver-card` CSS class. Each card shows name, employee number, department, employment type badge, location, licenses, and skills. Full-width search bar on mobile. Tap-to-edit with chevron indicator. Simplified mobile pagination (prev/next only). Page description hidden on mobile, add button icon-only on small screens. Desktop table completely unchanged.
 
 ### PB-156: Mobiele dag-/weekplanning per chauffeur
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked (on PB-155)
+- **Status:** Ready
 - **Problem:** De planningsgrid is niet bruikbaar op mobiel (30+ kolommen).
 - **Scope notes:** Maak een mobiele planning-weergave: selecteer één chauffeur, toon dag- of weekweergave met statusblokken. Geen bewerkfunctionaliteit in eerste versie (read-only). Planners kunnen op mobiel de planning inzien maar bewerken op desktop.
 - **Dependencies:** PB-155

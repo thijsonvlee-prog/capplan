@@ -25,6 +25,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 - **Capaciteitspagina:** KPI-samenvattingsmodule met vijf kernmetrieken.
 - **Chauffeurspagina:** Geïntegreerde zoekbalk en tonale rijafwisseling.
 - **Mobiele navigatie:** Sidebar is nu verborgen op mobiele schermen (< 768px) en opent als slide-over paneel via een hamburger-menu in de header. Navigatie sluit automatisch na een paginawissel. Touch-vriendelijke tap targets en compactere padding op mobiel. Desktop-layout blijft ongewijzigd.
+- **Mobiele chauffeurlijst:** Op mobiele schermen wordt de chauffeurstabel vervangen door een kaartweergave. Elke kaart toont naam, personeelsnummer, afdeling, dienstverband, standplaats, rijbewijzen en vaardigheden. Zoekbalk is volledig breed. Tik op een kaart om te bewerken. Vereenvoudigde paginering (vorige/volgende). Desktop-weergave is ongewijzigd.
 
 #### Functionele verbeteringen
 

@@ -712,6 +712,29 @@ body {
   to { transform: translateX(0); }
 }
 
+/* ===================================================================
+   Driver Cards (Mobile)
+   Touch-friendly card layout for the mobile driver list.
+   =================================================================== */
+
+.driver-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem;
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  transition-property: box-shadow, background-color;
+  transition-duration: 150ms;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.driver-card:active {
+  background-color: var(--color-surface-secondary);
+}
+
 /* Hamburger button */
 .mobile-menu-btn {
   display: flex;

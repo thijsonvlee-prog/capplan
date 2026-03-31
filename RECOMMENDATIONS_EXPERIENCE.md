@@ -2,7 +2,7 @@
 
 ## Summary
 
-**This cycle (2026-03-31, run 8):** Implemented PB-154 (Mobile layout shell and navigation). Added responsive layout shell with hamburger menu, slide-over sidebar panel with backdrop overlay, auto-close on navigation, touch-friendly tap targets, and compact mobile padding. Desktop layout is completely unchanged.
+**This cycle (2026-03-31, run 9):** Implemented PB-155 (Mobile driver list with card-based layout and search). Table replaced by touch-friendly cards on mobile showing name, employee number, department, employment type, location, licenses, and skills. Full-width search bar, simplified pagination, tap-to-edit with chevron indicator. Desktop table completely unchanged.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8). Premium, calm, anchoring. Now responsive — hidden on mobile, accessible via slide-over.
@@ -13,7 +13,7 @@
 - Header: well-aligned. Minimal, composed, contextual subtitle support. Now includes hamburger menu on mobile.
 - Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning.
 - Planning grid matrix: fully aligned (section 4.1). Tonal row separation, No-Line Rule respected.
-- Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search.
+- Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search. Now mobile-optimized with card layout.
 - Capacity page: fully aligned (sections 7.1, 7.3, 8.3). KPI summary module, section headers.
 - User group manager: well-aligned. Card-based layout, expandable details, modal editor.
 - User manager: well-aligned. Avatar display, role badges, inline role editing.
@@ -23,23 +23,23 @@
 
 **Where design quality is still below target:**
 - All major desktop screens are aligned with DESIGN.md. Remaining opportunities are polish-level refinements, not structural gaps.
-- Mobile content views (drivers, planning, capacity, settings) are not yet optimized for mobile viewports — they use desktop layouts on small screens. PB-155 and PB-156 address the most important mobile content screens.
+- Mobile content views (planning, capacity, settings) are not yet optimized for mobile viewports — they use desktop layouts on small screens. PB-156 addresses the next priority mobile screen (planning). Drivers page is now mobile-optimized.
 - The documentation page is minimal (single card with download button on a full page), but it is a low-traffic utility page and not a core product surface.
 - Recharts default tooltip/axis styling in the capacity chart is the most visible remaining integration gap.
 - Settings tab count is now 7. Horizontal scrolling tabs handle this adequately but the pattern may need revisiting if more tabs are added.
 
 ## Recommended Next Improvements
 
-### EX-REC-050: Mobile driver list — card-based layout
+### EX-REC-051: Mobile planning view — read-only day/week per driver
 
-- **Problem:** The drivers page uses a wide table that is unusable on mobile viewports. With the mobile layout shell (PB-154) now in place, users can navigate to the drivers page on mobile but the content is not optimized.
-- **Proposed improvement:** This is already scheduled as PB-155. Card-based driver list on mobile with search, showing name, personnel number, department, and status per card. Table on desktop.
-- **Expected user value:** Planners can look up driver information on their phone.
+- **Problem:** The planning grid is unusable on mobile (30+ columns). With PB-154 and PB-155 done, mobile navigation and driver lookup work, but planners cannot view schedules on the go.
+- **Proposed improvement:** This is already scheduled as PB-156. Read-only day/week view for a single driver. Status blocks with semantic colors. No edit capability in first version.
+- **Expected user value:** Planners can check individual driver schedules on their phone while on-site or in transit.
 - **Priority:** P3 Medium
 - **Effort:** Medium
-- **Dependencies:** PB-154 (completed)
+- **Dependencies:** PB-155 (completed)
 - **Suggested owner:** Experience Agent
-- **Why now:** Mobile layout shell is in place. This is the natural next step in the mobile sequence.
+- **Why now:** Mobile layout shell and driver list are in place. This completes the core mobile read-only flow.
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -109,7 +109,7 @@
 
 ## Risks / Watch-outs
 
-- **Mobile content screens not yet optimized.** The mobile layout shell is in place, but content pages (planning grid, drivers table, capacity charts, settings forms) still render their desktop layouts on mobile viewports. Users can navigate on mobile but the content experience is suboptimal. PB-155 and PB-156 address the highest-priority screens.
+- **Mobile content screens partially optimized.** The mobile layout shell and driver list are mobile-optimized. Planning grid, capacity charts, and settings forms still render desktop layouts on mobile viewports. PB-156 addresses the planning view next.
 - **Planning grid toolbar wrap behavior.** The single-row toolbar with four zones may wrap on screens narrower than ~1200px. Current `flex-wrap` handles this, but the visual zone structure may degrade when wrapped. Monitor for user feedback. See EX-REC-048.
 - **Recharts default styling.** The capacity chart now lives within a product-grade page, but the chart's internal tooltip/axis styling is still Recharts default. See EX-REC-049.
 - **Settings tab count growth.** The settings page now has 7 tabs with horizontal scroll. Adding more tabs may need a different navigation pattern (e.g. vertical tabs or grouped sections).
