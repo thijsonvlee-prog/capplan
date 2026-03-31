@@ -40,19 +40,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** All four DELETE routes return 404 for non-existent records instead of 500. `npm run verify` passes.
 - **Source:** DE-REC-042.
 
-### PB-131: Capacity page — visual identity lift
-
-- **ID:** PB-131
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The capacity page is functionally correct and clean, but reads as a standard analytics dashboard rather than a product-grade analysis surface. Per DESIGN.md section 8.3, KPIs should be treated as first-class information. Now that planning, drivers, and settings screens are aligned, this is the last remaining screen below target.
-- **Why this matters now:** PB-127 (drivers page lift) is complete. The capacity page is the most visible remaining design gap.
-- **Scope notes:** Add a summary module above the chart showing key capacity KPIs (total available, total on leave, total sick, utilization %). Improve chart/table visual framing. Consider stronger section headers between chart and table zones. Use existing aggregation logic from `src/lib/aggregation.ts`.
-- **Dependencies:** None.
-- **Definition of done:** Capacity page has a KPI summary module, improved visual framing, and feels product-grade rather than generic. `npm run verify` passes.
-- **Source:** EX-REC-047.
-
 ---
 
 ## Blocked / Needs Decision
@@ -79,6 +66,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-131: Capacity page — visual identity lift
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
+- **Note:** Added KPI summary module (5 metric cards: gem. beschikbaar, gem. totaal, gem. verlof, gem. ziek, bezettingsgraad). Toolbar moved into page header using control-group pattern. Chart/table wrapped in named sections with section titles. Removed outer borders from chart/table cards (No-Line Rule).
 
 ### PB-125: Add scenarioId to PlanningEntry domain type
 

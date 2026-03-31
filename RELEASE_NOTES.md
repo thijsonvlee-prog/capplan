@@ -14,6 +14,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 - **Tonale rijscheiding in planningsrooster:** 1px-randen tussen datarijen vervangen door afwisselende achtergrondtinten (wit/lichtgrijs). Rij-hover toont zachte merkkleur. Koprij-rand versoepeld. Planningsrooster oogt nu als productoppervlak in plaats van spreadsheet.
 - **Scenariokiezer verplaatst:** Scenariokiezer verplaatst van de "Weergave"-zone naar de "Periode"-zone in de planningswerkbalk. Scenario is een datacontext, geen weergave-instelling.
 - **Chauffeurspagina visuele verbetering:** Tabel ingepakt in samengesteld dataoppervlak met geïntegreerde zoekbalk. 1px-rijranden vervangen door tonale rijafwisseling (overeenkomstig planningsrooster). Rij-hover toont zachte merkkleur voor duidelijke rij-identificatie.
+- **Capaciteitspagina visuele verbetering:** KPI-samenvattingsmodule toegevoegd boven de grafiek met vijf kernmetrieken: gemiddeld beschikbaar, gemiddeld totaal, gemiddeld verlof, gemiddeld ziek en bezettingsgraad. Werkbalk geïntegreerd in paginakop met control-group-patroon. Grafiek en tabel voorzien van sectiekoppen. Buitenranden verwijderd conform het No-Line-principe.
 
 #### Bugfix
 

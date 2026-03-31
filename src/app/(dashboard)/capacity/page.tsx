@@ -7,6 +7,7 @@ import { useApiData } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { CapacityTable } from "@/components/capacity/CapacityTable";
 import { CapacityChart } from "@/components/capacity/CapacityChart";
+import { CapacityKPIs } from "@/components/capacity/CapacityKPIs";
 import { PeriodSelector } from "@/components/planning/WeekSelector";
 import { ZoomSelector } from "@/components/planning/ZoomSelector";
 import { DEFAULT_PERIOD_DAYS } from "@/domain/constants";
@@ -100,6 +101,7 @@ export default function CapacityPage() {
 
   return (
     <div>
+      {/* Page header with integrated toolbar */}
       <div className="page-header">
         <div className="page-header-row">
           <div className="page-header-context">
@@ -109,36 +111,37 @@ export default function CapacityPage() {
             )}
           </div>
         </div>
-      </div>
-
-      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-        <div className="flex items-center gap-1.5 bg-surface-tertiary rounded-lg px-2 py-1.5">
-          <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
-          <div className="w-px h-5 bg-border-subtle mx-1" />
-          <ZoomSelector value={aggregation} onChange={setAggregation} />
-        </div>
-
-        {scenarios.length > 0 && (
-          <div className="flex items-center gap-2 bg-surface-tertiary rounded-lg px-3 py-1.5">
-            <span className="text-caption text-text-tertiary font-medium uppercase tracking-wide">Vergelijk</span>
+        <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+          <div className="control-group">
+            <span className="control-group-label">Periode</span>
             <div className="w-px h-4 bg-border-subtle" />
-            <div className="flex items-center gap-1.5">
-              {scenarios.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => toggleCompare(s.id)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                    compareIds.includes(s.id)
-                      ? "bg-brand-50 text-brand-700 shadow-sm"
-                      : "bg-surface-primary text-text-secondary hover:bg-surface-secondary shadow-sm"
-                  }`}
-                >
-                  {s.name}
-                </button>
-              ))}
-            </div>
+            <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
+            <div className="w-px h-4 bg-border-subtle" />
+            <ZoomSelector value={aggregation} onChange={setAggregation} />
           </div>
-        )}
+
+          {scenarios.length > 0 && (
+            <div className="control-group">
+              <span className="control-group-label">Vergelijk</span>
+              <div className="w-px h-4 bg-border-subtle" />
+              <div className="flex items-center gap-1.5">
+                {scenarios.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => toggleCompare(s.id)}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                      compareIds.includes(s.id)
+                        ? "bg-brand-50 text-brand-700 shadow-xs"
+                        : "bg-surface-primary text-text-secondary hover:bg-surface-secondary shadow-xs"
+                    }`}
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {columnHeaders.length === 0 ? (
@@ -147,20 +150,29 @@ export default function CapacityPage() {
           <div className="text-sm">Capaciteitsgegevens laden...</div>
         </div>
       ) : (
-        <>
-          <div className="mb-6">
+        <div className="flex flex-col gap-6">
+          {/* KPI Summary Module */}
+          <CapacityKPIs capacityData={displayData} />
+
+          {/* Chart section */}
+          <section>
+            <h2 className="text-section-title mb-3">Capaciteitsverloop</h2>
             <CapacityChart
               capacityData={displayData}
               columnHeaders={columnHeaders}
               compareData={compareCapacities.length > 0 ? compareCapacities : undefined}
             />
-          </div>
+          </section>
 
-          <CapacityTable
-            capacityData={displayData}
-            columnHeaders={columnHeaders}
-          />
-        </>
+          {/* Table section */}
+          <section>
+            <h2 className="text-section-title mb-3">Details per periode</h2>
+            <CapacityTable
+              capacityData={displayData}
+              columnHeaders={columnHeaders}
+            />
+          </section>
+        </div>
       )}
     </div>
   );
