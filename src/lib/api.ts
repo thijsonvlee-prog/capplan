@@ -491,6 +491,13 @@ const importSources = {
     }).then(r => r.data);
   },
 
+  executeApi(id: string, mode: "create" | "upsert" = "create"): Promise<ImportExecuteResult> {
+    return fetchJson<{ data: ImportExecuteResult }>(
+      `/api/import-sources/${id}/execute`,
+      jsonBody({ mode })
+    ).then(r => r.data);
+  },
+
   getLogs(id: string): Promise<ImportLog[]> {
     return fetchJson<{ data: ImportLog[] }>(`/api/import-sources/${id}/logs`).then(r => r.data);
   },

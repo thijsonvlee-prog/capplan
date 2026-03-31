@@ -6,6 +6,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — API-bronnen uitvoering
+
+#### Functionele verbeteringen
+
+- **API-bron uitvoering:** API-importbronnen kunnen nu worden uitgevoerd. De server haalt data op van de geconfigureerde URL met de ingestelde HTTP-methode, headers en authenticatie (Basic, Bearer, API-sleutel). De JSON-response wordt automatisch geparseerd en via dot-notatie veldmappings (bijv. `employee.firstName`) worden gegevens geëxtraheerd en geïmporteerd. Resultaten zijn zichtbaar in het importlogboek met dezelfde detailinformatie als CSV-imports.
+- **Uitvoerknop voor API-bronnen:** In de bronnenlijst verschijnt een uitvoerknop voor API-type bronnen. Klik om een importpaneel te openen met moduskeuze (aanmaken of bijwerken) en directe uitvoering.
+- **Automatische data-array detectie:** JSON-responses worden automatisch doorzocht op data-arrays in veelgebruikte wrapper-structuren (`data`, `results`, `items`, `rows`, `records`).
+
 ### 2026-03-31 — API-bronnen, audittrail en validatie
 
 #### UX / design verbeteringen

@@ -6,11 +6,37 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle delivered **PB-150** (API source data model extension) and **PB-157** (redundant findMany elimination). The ImportSource model now supports API-type sources with URL, method, headers, auth type, and credentials fields. PB-151 (API UI) and PB-152 (API execution) are unblocked.
+This cycle delivered **PB-152** (API source execution). API-type import sources can now be executed: the server makes an HTTP request to the configured URL with authentication, parses the JSON response, applies dot-notation field mappings, and imports data using the existing driver/stamtabel import logic. Results are logged in ImportLog and displayed in the UI.
 
-The fresh codebase scan confirms the codebase is stable with no new critical issues. Existing P4 recommendations remain valid. One recommendation (DE-REC-061) was completed via PB-157.
+The codebase remains stable. All existing P4 recommendations remain valid. No new critical issues discovered. PB-158 (test connection) and PB-153 (response mapping) are now unblocked.
 
 ## Recommended Next Improvements
+
+### DE-REC-064: API-bron test-verbinding endpoint (backend deel van PB-158)
+
+- **Title:** Lightweight test endpoint for API source connections
+- **Problem:** PB-158 requires a server-side test endpoint. The execute handler now contains the `buildApiHeaders()` logic that can be reused.
+- **Proposed improvement:** Add a `POST /api/import-sources/[id]/test` endpoint that makes a lightweight request (HEAD or limited GET) to the configured URL, returns connection status and response metadata (status code, content type, estimated row count) without importing data.
+- **Expected product/technical value:** Enables users to verify API connections before running a full import. Reuses existing auth/header building logic from execute handler.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** PB-152 (completed)
+- **Suggested owner:** Delivery Agent
+- **Why now:** Direct dependency for PB-158 which is next in sequence.
+
+### DE-REC-065: API response data path configuration
+
+- **Title:** Allow users to specify the JSON path to the data array in API responses
+- **Problem:** The current API execute handler uses a hardcoded list of wrapper keys (`data`, `results`, `items`, `rows`, `records`) to find the data array in JSON responses. Some APIs use non-standard paths (e.g., `response.employees.list`).
+- **Proposed improvement:** Add an optional `apiDataPath` field to ImportSource that specifies the dot-notation path to the data array. Fall back to current auto-detection when not set.
+- **Expected product/technical value:** Supports a wider range of APIs without code changes.
+- **Priority:** P4 Low
+- **Effort:** Small (schema field + one resolveJsonPath call in execute handler)
+- **Risk:** Low
+- **Dependencies:** PB-152 (completed)
+- **Suggested owner:** Delivery Agent
+- **Why now:** Natural follow-up to PB-152 that could be bundled with PB-153 (response mapping).
 
 ### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber in transactions
 
@@ -21,7 +47,7 @@ The fresh codebase scan confirms the codebase is stable with no new critical iss
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low (both are reads before the write)
-- **Dependencies:** None (DE-REC-061 is now completed)
+- **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Minor optimization, now cleaner to apply after PB-157.
 
@@ -131,9 +157,11 @@ The fresh codebase scan confirms the codebase is stable with no new critical iss
 
 ## Risks / Watch-outs
 
-- **API credentials storage is plaintext JSON:** The new `apiCredentials` field stores credentials as JSONB. This is adequate for Phase 1 but should be reviewed before production use with real API keys. Consider server-side encryption or environment variable references for sensitive credentials.
-- **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. If the database connection fails, audit entries are silently dropped. Console errors are the only signal. This is by design (PB-146 scope note: audit failures must not block mutations).
+- **API credentials storage is plaintext JSON:** The `apiCredentials` field stores credentials as JSONB. This is adequate for Phase 1 but should be reviewed before production use with real API keys. Consider server-side encryption or environment variable references for sensitive credentials.
+- **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. If the database connection fails, audit entries are silently dropped. This is by design (PB-146 scope note: audit failures must not block mutations).
 - **Audit log table growth:** With all entities now audited, the AuditLog table will grow faster. No cleanup mechanism exists yet.
+- **API import timeout:** The 30-second timeout on external API requests may be insufficient for slow APIs returning large datasets. Vercel serverless function timeout (default 10s on Hobby, 60s on Pro) is the binding constraint.
+- **API response size unbounded:** No limit on response body size from external APIs. A malicious or misconfigured API could return extremely large responses. The MAX_ROW_COUNT check only applies after parsing.
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls.
 - **Auth env vars required for deployment:** Auth requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
 - **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`.
@@ -144,7 +172,7 @@ The fresh codebase scan confirms the codebase is stable with no new critical iss
 - **Migrate to a different ORM:** Prisma is well-integrated. Migration cost far outweighs any benefit.
 - **Add pagination to all list endpoints:** Settings/master data tables are small. Only planning and drivers needed pagination.
 - **Refactor PlanningGrid.tsx broadly:** The component is complex but stable. Targeted fixes preferred.
-- **Split ImportSourceManager.tsx (~838 lines):** Large but well-structured with distinct sections. Splitting would fragment the connectivity hub feature.
+- **Split ImportSourceManager.tsx (~1500 lines):** Large but well-structured with distinct sections (CSV flow, API flow, form, list). Splitting would fragment the connectivity hub feature.
 - **Split UserGroupManager.tsx (~642 lines):** Well-structured with clear sections. Not justified.
 - **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer. Only planning endpoints warrant it.
 - **Add unique constraints on Driver/Scenario names:** Requires a product decision.
@@ -179,6 +207,8 @@ The fresh codebase scan confirms the codebase is stable with no new critical iss
 - **handleUpdate not wrapped in useCallback in PlanningGrid:** Would break the existing exhaustive-deps warnings. Marginal improvement for significant refactoring risk.
 - **Encrypt apiCredentials at rest:** Phase 1 stores credentials as plaintext JSONB. Adequate for initial delivery; encryption should be addressed before production use with real API keys but is a product decision.
 - **Deduplicate validateApiFields between route.ts and [id]/route.ts:** Both import-sources route files define the same validation function. At 2 instances this is acceptable and avoids premature abstraction. Revisit if a third consumer appears.
+- **Limit API response body size:** Could add a streaming size check, but MAX_ROW_COUNT provides sufficient protection after parsing. Adding a byte-level limit would add complexity for marginal benefit.
+- **Extract execute result UI into shared component:** The CSV and API execute result displays are similar but not identical. Extracting a shared component adds indirection for only 2 consumers.
 
 ## Recommendation Rules
 

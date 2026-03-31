@@ -27,15 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-152: API-bron uitvoering — GET-request en response-import
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** API-bronnen kunnen geconfigureerd worden maar nog niet uitgevoerd.
-- **Scope notes:** Maak een execute-handler voor API-bronnen (naast de bestaande CSV-execute). Voer een server-side GET/POST-request uit naar de geconfigureerde URL met headers en authenticatie. Parse de JSON-response. Pas de bestaande veldmapping toe om data te importeren. Log het resultaat in ImportLog.
-- **Dependencies:** PB-150 (completed), PB-151 (completed)
-- **Definition of done:** Een API-bron kan worden uitgevoerd, data wordt opgehaald en geïmporteerd, resultaat is zichtbaar in importlogboek.
+_No items currently ready._
 
 ---
 
@@ -45,7 +37,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent (UI) + Delivery Agent (test endpoint)
 - **Priority:** P3 Medium
-- **Status:** Blocked (on PB-152)
+- **Status:** Ready
 - **Problem:** Gebruikers configureren een API-bron maar kunnen niet verifiëren of de verbinding werkt voordat ze de bron opslaan. Ze ontdekken fouten pas bij het uitvoeren van de import.
 - **Scope notes:** Voeg een "Verbinding testen" knop toe aan het API-configuratieformulier. Bij klik: voer een lichtgewicht request uit naar de URL met de geconfigureerde headers en authenticatie. Toon succes/fout-status inline. Vereist een lichtgewicht test-endpoint aan de server-side (kan hergebruik maken van de execute-handler logica uit PB-152).
 - **Dependencies:** PB-152
@@ -56,7 +48,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked (on PB-152)
+- **Status:** Ready
 - **Problem:** JSON-responses hebben een andere structuur dan CSV-rijen. De veldmapping-editor moet JSON-paden ondersteunen.
 - **Scope notes:** Breid de veldmapping-editor uit voor API-bronnen. Bij het uitvoeren van een test-request: toon de response-structuur en laat de gebruiker JSON-paden koppelen aan doelvelden (vergelijkbaar met hoe CSV-kolommen nu gekoppeld worden). Ondersteun geneste objecten via dot-notatie (bijv. `employee.firstName`).
 - **Dependencies:** PB-152
@@ -101,6 +93,14 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-152: API-bron uitvoering — GET-request en response-import
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Summary:** Execute-handler uitgebreid voor API-bronnen. Server-side HTTP-request naar geconfigureerde URL met headers en authenticatie (Basic, Bearer, API-sleutel). JSON-response wordt geparseerd en via dot-notatie veldmapping geïmporteerd. Ondersteunt geneste objecten (bijv. `employee.firstName`). Zoekt automatisch data-arrays in response (root array of `data`/`results`/`items`/`rows`/`records` wrapper). UI met uitvoerknop, moduskeuze en resultaatweergave. Resultaat zichtbaar in importlogboek.
+- **Implementation note:** Reuses existing importDrivers/importStamtabel functions. API-specific: 30s timeout, auth header building, JSON path resolution, data array extraction. Frontend: `executeApi()` method and dedicated API execute panel in ImportSourceManager.
 
 ### PB-151: API-bron configuratie UI
 

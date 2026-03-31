@@ -6,6 +6,7 @@ import type { ImportRowError } from "@/domain/types";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const MAX_ROW_COUNT = 10_000;
+const API_TIMEOUT_MS = 30_000; // 30 seconds
 
 const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
 
@@ -24,14 +25,97 @@ const REQUIRED_FIELD_LABELS: Record<string, string> = {
 
 type ImportMode = "create" | "upsert";
 
+// --- JSON path helpers for API response mapping ---
+
+/**
+ * Resolve a dot-notation path (e.g. "employee.firstName") against a JSON object.
+ * Returns the value as a string, or undefined if the path does not resolve.
+ */
+function resolveJsonPath(obj: unknown, path: string): string | undefined {
+  const segments = path.split(".");
+  let current: unknown = obj;
+  for (const seg of segments) {
+    if (current == null || typeof current !== "object") return undefined;
+    current = (current as Record<string, unknown>)[seg];
+  }
+  if (current == null) return undefined;
+  if (Array.isArray(current)) return current.join(", ");
+  return String(current);
+}
+
+/**
+ * Find the data array in a JSON API response. Tries common wrapper keys,
+ * falls back to the root if it is already an array.
+ */
+function extractDataArray(body: unknown): unknown[] | null {
+  if (Array.isArray(body)) return body;
+  if (body != null && typeof body === "object") {
+    const obj = body as Record<string, unknown>;
+    for (const key of ["data", "results", "items", "rows", "records"]) {
+      if (Array.isArray(obj[key])) return obj[key] as unknown[];
+    }
+  }
+  return null;
+}
+
+/**
+ * Build request headers including authentication for an API source.
+ */
+function buildApiHeaders(
+  apiHeaders: Record<string, string> | null,
+  apiAuthType: string | null,
+  apiCredentials: Record<string, unknown> | null
+): Record<string, string> {
+  const headers: Record<string, string> = {};
+
+  // Custom headers from source config
+  if (apiHeaders && typeof apiHeaders === "object") {
+    for (const [key, value] of Object.entries(apiHeaders)) {
+      if (key.trim()) headers[key.trim()] = value;
+    }
+  }
+
+  // Auth headers
+  if (apiAuthType && apiCredentials) {
+    switch (apiAuthType) {
+      case "BASIC": {
+        const username = String(apiCredentials.username || "");
+        const password = String(apiCredentials.password || "");
+        headers["Authorization"] = `Basic ${btoa(`${username}:${password}`)}`;
+        break;
+      }
+      case "BEARER": {
+        const token = String(apiCredentials.token || "");
+        headers["Authorization"] = `Bearer ${token}`;
+        break;
+      }
+      case "API_KEY": {
+        const headerName = String(apiCredentials.headerName || "X-API-Key");
+        const apiKey = String(apiCredentials.apiKey || "");
+        headers[headerName] = apiKey;
+        break;
+      }
+    }
+  }
+
+  // Default Accept header if not set
+  if (!Object.keys(headers).some((k) => k.toLowerCase() === "accept")) {
+    headers["Accept"] = "application/json";
+  }
+
+  return headers;
+}
+
 /**
  * POST /api/import-sources/[id]/execute
- * Execute a CSV import: parse the file, apply field mappings, validate rows,
- * and insert/upsert data into the target entity table.
  *
- * Accepts an optional "mode" form field: "create" (default) or "upsert".
- * In upsert mode, existing records are matched by unique key (code for
- * stamtabellen, employeeNumber for drivers) and updated.
+ * For CSV sources: parse the uploaded file, apply field mappings, validate rows,
+ * and insert/upsert data into the target entity table. Accepts multipart form data
+ * with a "file" field and optional "mode" field.
+ *
+ * For API sources: execute a server-side HTTP request to the configured URL,
+ * parse the JSON response, apply field mappings, and import the data.
+ * Accepts a JSON body with an optional "mode" field.
  */
 export async function POST(
   request: NextRequest,
@@ -59,174 +143,11 @@ export async function POST(
       );
     }
 
-    // Parse multipart form data
-    const formData = await request.formData();
-    const file = formData.get("file");
-    const modeParam = formData.get("mode");
-
-    // Validate mode
-    const mode: ImportMode = modeParam === "upsert" ? "upsert" : "create";
-
-    if (!file || !(file instanceof File)) {
-      return NextResponse.json(
-        { error: "Geen bestand ontvangen. Upload een CSV-bestand." },
-        { status: 400 }
-      );
+    // Route to CSV or API handler based on source type
+    if (source.type === "API") {
+      return await executeApiImport(request, id, source);
     }
-
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: `Bestand is te groot. Maximaal ${MAX_FILE_SIZE / 1024 / 1024} MB toegestaan.` },
-        { status: 400 }
-      );
-    }
-
-    const fileName = file.name || "";
-    if (!fileName.toLowerCase().endsWith(".csv") && !fileName.toLowerCase().endsWith(".txt")) {
-      return NextResponse.json(
-        { error: "Ongeldig bestandstype. Upload een CSV-bestand (.csv of .txt)." },
-        { status: 400 }
-      );
-    }
-
-    const text = await file.text();
-    if (!text.trim()) {
-      return NextResponse.json(
-        { error: "Het bestand is leeg." },
-        { status: 400 }
-      );
-    }
-
-    // Parse CSV
-    const { headers, rows } = parseCSVToRows(text);
-
-    if (headers.length === 0) {
-      return NextResponse.json(
-        { error: "Kan geen kolomnamen detecteren in de eerste rij." },
-        { status: 400 }
-      );
-    }
-
-    if (rows.length === 0) {
-      return NextResponse.json(
-        { error: "Het bestand bevat geen gegevensrijen." },
-        { status: 400 }
-      );
-    }
-
-    if (rows.length > MAX_ROW_COUNT) {
-      return NextResponse.json(
-        { error: `Het bestand bevat ${rows.length} rijen. Maximaal ${MAX_ROW_COUNT.toLocaleString("nl-NL")} rijen per import toegestaan.` },
-        { status: 400 }
-      );
-    }
-
-    const fieldMappings = source.fieldMappings as Record<string, string>;
-
-    // Verify that all required target fields have a mapping with a detected column
-    const requiredFields = REQUIRED_FIELDS[source.targetEntity] || [];
-    const mappedTargetFields = new Map<string, string>(); // targetField -> sourceColumn
-    for (const [sourceCol, targetField] of Object.entries(fieldMappings)) {
-      if (headers.includes(sourceCol)) {
-        mappedTargetFields.set(targetField, sourceCol);
-      }
-    }
-
-    const missingRequired = requiredFields.filter((f) => !mappedTargetFields.has(f));
-    if (missingRequired.length > 0) {
-      const labels = missingRequired.map((f) => REQUIRED_FIELD_LABELS[f] || f).join(", ");
-      return NextResponse.json(
-        { error: `Verplichte velden niet gekoppeld of kolomnamen niet gevonden in CSV: ${labels}` },
-        { status: 400 }
-      );
-    }
-
-    // Build a reverse map: targetField -> sourceColumn (for all mapped + detected columns)
-    const targetToSource = new Map<string, string>();
-    for (const [sourceCol, targetField] of Object.entries(fieldMappings)) {
-      if (headers.includes(sourceCol)) {
-        targetToSource.set(targetField, sourceCol);
-      }
-    }
-
-    // Validate all rows first, then insert
-    const errors: ImportRowError[] = [];
-    const validRows: Record<string, string>[] = [];
-
-    for (let i = 0; i < rows.length; i++) {
-      const rowNum = i + 2; // +2 because row 1 is headers, data starts at row 2
-      const row = rows[i];
-      const rowErrors: ImportRowError[] = [];
-
-      // Check required fields
-      for (const reqField of requiredFields) {
-        const sourceCol = targetToSource.get(reqField);
-        if (!sourceCol) continue; // Already validated above
-        const value = row[sourceCol]?.trim();
-        if (!value) {
-          rowErrors.push({
-            row: rowNum,
-            field: REQUIRED_FIELD_LABELS[reqField] || reqField,
-            message: `${REQUIRED_FIELD_LABELS[reqField] || reqField} is leeg`,
-          });
-        }
-      }
-
-      if (rowErrors.length > 0) {
-        errors.push(...rowErrors);
-      } else {
-        validRows.push(row);
-      }
-    }
-
-    // Execute the import
-    let importedCount = 0;
-    let updatedCount = 0;
-    const insertErrors: ImportRowError[] = [];
-
-    if (validRows.length > 0) {
-      if (source.targetEntity === "drivers") {
-        const result = await importDrivers(validRows, targetToSource, insertErrors, mode);
-        importedCount = result.created;
-        updatedCount = result.updated;
-      } else {
-        const result = await importStamtabel(
-          source.targetEntity,
-          validRows,
-          targetToSource,
-          insertErrors,
-          mode
-        );
-        importedCount = result.created;
-        updatedCount = result.updated;
-      }
-    }
-
-    const allErrors = [...errors, ...insertErrors];
-    const skippedRows = rows.length - importedCount - updatedCount;
-
-    // Log the import
-    await prisma.importLog.create({
-      data: {
-        importSourceId: id,
-        fileName: file.name,
-        totalRows: rows.length,
-        importedRows: importedCount,
-        updatedRows: updatedCount,
-        skippedRows,
-        errors: allErrors.length > 0 ? allErrors : undefined,
-      },
-    });
-
-    return NextResponse.json({
-      data: {
-        totalRows: rows.length,
-        importedRows: importedCount,
-        updatedRows: updatedCount,
-        skippedRows,
-        errors: allErrors,
-      },
-    });
+    return await executeCsvImport(request, id, source);
   } catch (error) {
     console.error(
       "Error executing import:",
@@ -237,6 +158,402 @@ export async function POST(
       { status: 500 }
     );
   }
+}
+
+// Type for the source record from Prisma
+type SourceRecord = {
+  id: string;
+  type: string;
+  targetEntity: string;
+  fieldMappings: unknown;
+  apiUrl: string | null;
+  apiMethod: string | null;
+  apiHeaders: unknown;
+  apiAuthType: string | null;
+  apiCredentials: unknown;
+};
+
+/**
+ * Execute an API import: fetch data from configured URL, parse JSON, apply
+ * field mappings, and import into the target entity.
+ */
+async function executeApiImport(
+  request: NextRequest,
+  sourceId: string,
+  source: SourceRecord
+) {
+  // Validate API configuration
+  if (!source.apiUrl) {
+    return NextResponse.json(
+      { error: "API-URL is niet geconfigureerd voor deze bron." },
+      { status: 400 }
+    );
+  }
+
+  // Parse mode from JSON body
+  let mode: ImportMode = "create";
+  try {
+    const body = await request.json();
+    if (body.mode === "upsert") mode = "upsert";
+  } catch {
+    // No body or invalid JSON — use default mode
+  }
+
+  const fieldMappings = source.fieldMappings as Record<string, string>;
+  const requiredFields = REQUIRED_FIELDS[source.targetEntity] || [];
+
+  // Verify required target fields have mappings
+  const mappedTargetFields = new Set(Object.values(fieldMappings));
+  const missingRequired = requiredFields.filter((f) => !mappedTargetFields.has(f));
+  if (missingRequired.length > 0) {
+    const labels = missingRequired.map((f) => REQUIRED_FIELD_LABELS[f] || f).join(", ");
+    return NextResponse.json(
+      { error: `Verplichte velden niet gekoppeld in de bronconfiguratie: ${labels}` },
+      { status: 400 }
+    );
+  }
+
+  // Build request
+  const headers = buildApiHeaders(
+    source.apiHeaders as Record<string, string> | null,
+    source.apiAuthType,
+    source.apiCredentials as Record<string, unknown> | null
+  );
+  const method = source.apiMethod || "GET";
+
+  // Execute HTTP request with timeout
+  let response: Response;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+    response = await fetch(source.apiUrl, {
+      method,
+      headers,
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+  } catch (err) {
+    const message = err instanceof Error && err.name === "AbortError"
+      ? "API-verzoek duurde te lang (timeout na 30 seconden)."
+      : `Kan geen verbinding maken met de API: ${err instanceof Error ? err.message : "onbekende fout"}`;
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
+
+  if (!response.ok) {
+    return NextResponse.json(
+      { error: `API gaf foutcode ${response.status}: ${response.statusText}` },
+      { status: 502 }
+    );
+  }
+
+  // Parse JSON response
+  let responseBody: unknown;
+  try {
+    responseBody = await response.json();
+  } catch {
+    return NextResponse.json(
+      { error: "API-response is geen geldig JSON." },
+      { status: 502 }
+    );
+  }
+
+  // Extract data array from response
+  const dataArray = extractDataArray(responseBody);
+  if (!dataArray || dataArray.length === 0) {
+    // Log empty result
+    await prisma.importLog.create({
+      data: {
+        importSourceId: sourceId,
+        fileName: `API: ${source.apiUrl}`,
+        totalRows: 0,
+        importedRows: 0,
+        updatedRows: 0,
+        skippedRows: 0,
+      },
+    });
+    return NextResponse.json({
+      data: { totalRows: 0, importedRows: 0, updatedRows: 0, skippedRows: 0, errors: [] },
+    });
+  }
+
+  if (dataArray.length > MAX_ROW_COUNT) {
+    return NextResponse.json(
+      { error: `API-response bevat ${dataArray.length} rijen. Maximaal ${MAX_ROW_COUNT.toLocaleString("nl-NL")} rijen per import toegestaan.` },
+      { status: 400 }
+    );
+  }
+
+  // Build targetField -> sourceJsonPath map and apply field mappings to each row
+  const targetToSource = new Map<string, string>();
+  for (const [sourcePath, targetField] of Object.entries(fieldMappings)) {
+    if (sourcePath.trim()) {
+      targetToSource.set(targetField, sourcePath.trim());
+    }
+  }
+
+  // Convert JSON objects to flat string records using field mappings
+  const errors: ImportRowError[] = [];
+  const validRows: Record<string, string>[] = [];
+
+  for (let i = 0; i < dataArray.length; i++) {
+    const rowNum = i + 1;
+    const item = dataArray[i];
+    const row: Record<string, string> = {};
+    const rowErrors: ImportRowError[] = [];
+
+    // Resolve each mapped field
+    targetToSource.forEach((sourcePath) => {
+      const value = resolveJsonPath(item, sourcePath);
+      row[sourcePath] = value !== undefined ? value : "";
+    });
+
+    // Check required fields
+    for (const reqField of requiredFields) {
+      const sourcePath = targetToSource.get(reqField);
+      if (!sourcePath) continue;
+      const value = row[sourcePath]?.trim();
+      if (!value) {
+        rowErrors.push({
+          row: rowNum,
+          field: REQUIRED_FIELD_LABELS[reqField] || reqField,
+          message: `${REQUIRED_FIELD_LABELS[reqField] || reqField} is leeg`,
+        });
+      }
+    }
+
+    if (rowErrors.length > 0) {
+      errors.push(...rowErrors);
+    } else {
+      validRows.push(row);
+    }
+  }
+
+  // Execute the import using the same import functions as CSV
+  let importedCount = 0;
+  let updatedCount = 0;
+  const insertErrors: ImportRowError[] = [];
+
+  if (validRows.length > 0) {
+    if (source.targetEntity === "drivers") {
+      const result = await importDrivers(validRows, targetToSource, insertErrors, mode);
+      importedCount = result.created;
+      updatedCount = result.updated;
+    } else {
+      const result = await importStamtabel(
+        source.targetEntity,
+        validRows,
+        targetToSource,
+        insertErrors,
+        mode
+      );
+      importedCount = result.created;
+      updatedCount = result.updated;
+    }
+  }
+
+  const allErrors = [...errors, ...insertErrors];
+  const skippedRows = dataArray.length - importedCount - updatedCount;
+
+  // Log the import
+  await prisma.importLog.create({
+    data: {
+      importSourceId: sourceId,
+      fileName: `API: ${source.apiUrl}`,
+      totalRows: dataArray.length,
+      importedRows: importedCount,
+      updatedRows: updatedCount,
+      skippedRows,
+      errors: allErrors.length > 0 ? allErrors : undefined,
+    },
+  });
+
+  return NextResponse.json({
+    data: {
+      totalRows: dataArray.length,
+      importedRows: importedCount,
+      updatedRows: updatedCount,
+      skippedRows,
+      errors: allErrors,
+    },
+  });
+}
+
+/**
+ * Execute a CSV import from an uploaded file.
+ */
+async function executeCsvImport(
+  request: NextRequest,
+  sourceId: string,
+  source: SourceRecord
+) {
+  // Parse multipart form data
+  const formData = await request.formData();
+  const file = formData.get("file");
+  const modeParam = formData.get("mode");
+
+  // Validate mode
+  const mode: ImportMode = modeParam === "upsert" ? "upsert" : "create";
+
+  if (!file || !(file instanceof File)) {
+    return NextResponse.json(
+      { error: "Geen bestand ontvangen. Upload een CSV-bestand." },
+      { status: 400 }
+    );
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return NextResponse.json(
+      { error: `Bestand is te groot. Maximaal ${MAX_FILE_SIZE / 1024 / 1024} MB toegestaan.` },
+      { status: 400 }
+    );
+  }
+
+  const fileName = file.name || "";
+  if (!fileName.toLowerCase().endsWith(".csv") && !fileName.toLowerCase().endsWith(".txt")) {
+    return NextResponse.json(
+      { error: "Ongeldig bestandstype. Upload een CSV-bestand (.csv of .txt)." },
+      { status: 400 }
+    );
+  }
+
+  const text = await file.text();
+  if (!text.trim()) {
+    return NextResponse.json(
+      { error: "Het bestand is leeg." },
+      { status: 400 }
+    );
+  }
+
+  // Parse CSV
+  const { headers, rows } = parseCSVToRows(text);
+
+  if (headers.length === 0) {
+    return NextResponse.json(
+      { error: "Kan geen kolomnamen detecteren in de eerste rij." },
+      { status: 400 }
+    );
+  }
+
+  if (rows.length === 0) {
+    return NextResponse.json(
+      { error: "Het bestand bevat geen gegevensrijen." },
+      { status: 400 }
+    );
+  }
+
+  if (rows.length > MAX_ROW_COUNT) {
+    return NextResponse.json(
+      { error: `Het bestand bevat ${rows.length} rijen. Maximaal ${MAX_ROW_COUNT.toLocaleString("nl-NL")} rijen per import toegestaan.` },
+      { status: 400 }
+    );
+  }
+
+  const fieldMappings = source.fieldMappings as Record<string, string>;
+
+  // Verify that all required target fields have a mapping with a detected column
+  const requiredFields = REQUIRED_FIELDS[source.targetEntity] || [];
+  const mappedTargetFields = new Map<string, string>(); // targetField -> sourceColumn
+  for (const [sourceCol, targetField] of Object.entries(fieldMappings)) {
+    if (headers.includes(sourceCol)) {
+      mappedTargetFields.set(targetField, sourceCol);
+    }
+  }
+
+  const missingRequired = requiredFields.filter((f) => !mappedTargetFields.has(f));
+  if (missingRequired.length > 0) {
+    const labels = missingRequired.map((f) => REQUIRED_FIELD_LABELS[f] || f).join(", ");
+    return NextResponse.json(
+      { error: `Verplichte velden niet gekoppeld of kolomnamen niet gevonden in CSV: ${labels}` },
+      { status: 400 }
+    );
+  }
+
+  // Build a reverse map: targetField -> sourceColumn (for all mapped + detected columns)
+  const targetToSource = new Map<string, string>();
+  for (const [sourceCol, targetField] of Object.entries(fieldMappings)) {
+    if (headers.includes(sourceCol)) {
+      targetToSource.set(targetField, sourceCol);
+    }
+  }
+
+  // Validate all rows first, then insert
+  const errors: ImportRowError[] = [];
+  const validRows: Record<string, string>[] = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const rowNum = i + 2; // +2 because row 1 is headers, data starts at row 2
+    const row = rows[i];
+    const rowErrors: ImportRowError[] = [];
+
+    // Check required fields
+    for (const reqField of requiredFields) {
+      const sourceCol = targetToSource.get(reqField);
+      if (!sourceCol) continue; // Already validated above
+      const value = row[sourceCol]?.trim();
+      if (!value) {
+        rowErrors.push({
+          row: rowNum,
+          field: REQUIRED_FIELD_LABELS[reqField] || reqField,
+          message: `${REQUIRED_FIELD_LABELS[reqField] || reqField} is leeg`,
+        });
+      }
+    }
+
+    if (rowErrors.length > 0) {
+      errors.push(...rowErrors);
+    } else {
+      validRows.push(row);
+    }
+  }
+
+  // Execute the import
+  let importedCount = 0;
+  let updatedCount = 0;
+  const insertErrors: ImportRowError[] = [];
+
+  if (validRows.length > 0) {
+    if (source.targetEntity === "drivers") {
+      const result = await importDrivers(validRows, targetToSource, insertErrors, mode);
+      importedCount = result.created;
+      updatedCount = result.updated;
+    } else {
+      const result = await importStamtabel(
+        source.targetEntity,
+        validRows,
+        targetToSource,
+        insertErrors,
+        mode
+      );
+      importedCount = result.created;
+      updatedCount = result.updated;
+    }
+  }
+
+  const allErrors = [...errors, ...insertErrors];
+  const skippedRows = rows.length - importedCount - updatedCount;
+
+  // Log the import
+  await prisma.importLog.create({
+    data: {
+      importSourceId: sourceId,
+      fileName: file.name,
+      totalRows: rows.length,
+      importedRows: importedCount,
+      updatedRows: updatedCount,
+      skippedRows,
+      errors: allErrors.length > 0 ? allErrors : undefined,
+    },
+  });
+
+  return NextResponse.json({
+    data: {
+      totalRows: rows.length,
+      importedRows: importedCount,
+      updatedRows: updatedCount,
+      skippedRows,
+      errors: allErrors,
+    },
+  });
 }
 
 type ImportResult = { created: number; updated: number };

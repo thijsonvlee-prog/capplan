@@ -134,6 +134,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
   const [logsLoading, setLogsLoading] = useState(false);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [showCredentials, setShowCredentials] = useState(false);
+  const [apiExecuteSourceId, setApiExecuteSourceId] = useState<string | null>(null);
 
   function openCreateForm() {
     setEditingId(null);
@@ -338,6 +339,43 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
       });
   }
 
+  function openApiExecute(sourceId: string) {
+    setApiExecuteSourceId(sourceId);
+    setExecuteResult(null);
+    setExecuting(false);
+    setImportMode("create");
+  }
+
+  function closeApiExecute() {
+    setApiExecuteSourceId(null);
+    setExecuteResult(null);
+  }
+
+  function handleApiExecute() {
+    if (!apiExecuteSourceId) return;
+    setExecuting(true);
+
+    api.importSources.executeApi(apiExecuteSourceId, importMode)
+      .then((result) => {
+        setExecuteResult(result);
+        setExecuting(false);
+        if (result.importedRows > 0 || result.updatedRows > 0) {
+          const parts: string[] = [];
+          if (result.importedRows > 0) parts.push(`${result.importedRows} aangemaakt`);
+          if (result.updatedRows > 0) parts.push(`${result.updatedRows} bijgewerkt`);
+          showToast(parts.join(", "));
+          mutate(() => Promise.resolve());
+        }
+        if (result.importedRows === 0 && result.updatedRows === 0 && result.skippedRows > 0) {
+          showToast("Geen rijen geïmporteerd — controleer de fouten.", "error");
+        }
+      })
+      .catch((err) => {
+        setExecuting(false);
+        showToast(err instanceof Error ? err.message : "API-import mislukt.", "error");
+      });
+  }
+
   function toggleLogs(sourceId: string) {
     if (logsSourceId === sourceId) {
       setLogsSourceId(null);
@@ -466,7 +504,11 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                       </button>
                       {!readOnly && (
                         <>
-                          {source.type !== "API" && (
+                          {source.type === "API" ? (
+                            <button onClick={() => openApiExecute(source.id)} className="btn-icon" aria-label="API uitvoeren">
+                              <Play className="w-4 h-4" />
+                            </button>
+                          ) : (
                             <button onClick={() => openUpload(source.id)} className="btn-icon" aria-label="CSV uploaden">
                               <Upload className="w-4 h-4" />
                             </button>
@@ -1133,6 +1175,146 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                 </div>
 
                 {/* Error details */}
+                {executeResult.errors.length > 0 && (
+                  <div className="bg-danger-50 rounded-md border border-danger-200 p-3">
+                    <h4 className="text-label text-danger-700 mb-2">
+                      Fouten ({executeResult.errors.length})
+                    </h4>
+                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                      {executeResult.errors.map((err, i) => (
+                        <p key={i} className="text-xs text-danger-700">
+                          {err.row > 0 ? `Rij ${err.row}: ` : ""}{err.message}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* API execute panel */}
+      {apiExecuteSourceId && !readOnly && (
+        <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle">
+          <div className="p-4 border-b border-border-subtle flex items-center justify-between">
+            <h3 className="text-section-title">API-import uitvoeren</h3>
+            <button onClick={closeApiExecute} className="btn-icon" aria-label="Sluiten">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="p-4 space-y-4">
+            {/* Source info */}
+            {(() => {
+              const src = sources.find((s) => s.id === apiExecuteSourceId);
+              return src ? (
+                <div className="flex items-center gap-3 text-sm text-text-secondary">
+                  <Globe className="w-4 h-4 text-text-tertiary flex-shrink-0" />
+                  <span className="font-medium text-text-primary">{src.name}</span>
+                  <span className="text-xs font-mono truncate">{src.apiUrl}</span>
+                </div>
+              ) : null;
+            })()}
+
+            {!executeResult && (
+              <div className="space-y-3">
+                {/* Import mode */}
+                <div className="flex items-center gap-3">
+                  <span className="text-label">Modus:</span>
+                  <label className="flex items-center gap-1.5 text-sm text-text-secondary cursor-pointer">
+                    <input
+                      type="radio"
+                      name="apiImportMode"
+                      value="create"
+                      checked={importMode === "create"}
+                      onChange={() => setImportMode("create")}
+                      className="accent-brand-600"
+                    />
+                    Alleen aanmaken
+                  </label>
+                  <label className="flex items-center gap-1.5 text-sm text-text-secondary cursor-pointer">
+                    <input
+                      type="radio"
+                      name="apiImportMode"
+                      value="upsert"
+                      checked={importMode === "upsert"}
+                      onChange={() => setImportMode("upsert")}
+                      className="accent-brand-600"
+                    />
+                    Aanmaken of bijwerken
+                  </label>
+                </div>
+
+                {/* Execute button */}
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-text-tertiary">
+                    {importMode === "upsert"
+                      ? "Data wordt opgehaald van de API. Bestaande records worden bijgewerkt."
+                      : "Data wordt opgehaald van de API en als nieuwe records aangemaakt."
+                    }
+                  </div>
+                  <button
+                    onClick={handleApiExecute}
+                    disabled={executing}
+                    className="btn-primary"
+                  >
+                    {executing ? (
+                      <>
+                        <div className="spinner !w-4 !h-4" />
+                        Ophalen…
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        Uitvoeren
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Execute result — shared display */}
+            {executeResult && (
+              <div className="space-y-3">
+                <div className={`p-4 rounded-md border ${
+                  (executeResult.importedRows > 0 || executeResult.updatedRows > 0)
+                    ? "bg-success-50 border-success-200"
+                    : "bg-danger-50 border-danger-200"
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    {(executeResult.importedRows > 0 || executeResult.updatedRows > 0) ? (
+                      <CheckCircle2 className="w-5 h-5 text-success-600" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-danger-600" />
+                    )}
+                    <span className={`text-sm font-medium ${
+                      (executeResult.importedRows > 0 || executeResult.updatedRows > 0) ? "text-success-700" : "text-danger-700"
+                    }`}>
+                      Import {(executeResult.importedRows > 0 || executeResult.updatedRows > 0) ? "voltooid" : "mislukt"}
+                    </span>
+                  </div>
+                  <div className="flex gap-4 text-sm">
+                    <span className="text-text-secondary">
+                      Totaal: <span className="font-medium text-text-primary">{executeResult.totalRows}</span> rijen
+                    </span>
+                    <span className="text-success-700">
+                      Aangemaakt: <span className="font-medium">{executeResult.importedRows}</span>
+                    </span>
+                    {executeResult.updatedRows > 0 && (
+                      <span className="text-brand-700">
+                        Bijgewerkt: <span className="font-medium">{executeResult.updatedRows}</span>
+                      </span>
+                    )}
+                    {executeResult.skippedRows > 0 && (
+                      <span className="text-warning-700">
+                        Overgeslagen: <span className="font-medium">{executeResult.skippedRows}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
                 {executeResult.errors.length > 0 && (
                   <div className="bg-danger-50 rounded-md border border-danger-200 p-3">
                     <h4 className="text-label text-danger-700 mb-2">
