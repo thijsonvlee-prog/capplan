@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — API-import helpers, audit cleanup, mobiele navigatie
+
+#### Onderhoud
+
+- **API-import helpers geconsolideerd:** De vier gedeelde functies (`buildApiHeaders`, `extractDataArray`, `resolveJsonPath`, `discoverPaths`) zijn geëxtraheerd naar `src/lib/api-import-helpers.ts`. Test-verbinding en uitvoerroutes importeren nu van dezelfde module. Elimineert ~80 regels duplicatie.
+- **Audit log opschoning:** Nieuwe `cleanupOldAuditLogs()` functie in `src/lib/audit.ts` verwijdert automatisch audit-entries ouder dan 90 dagen. Wordt fire-and-forget aangeroepen na elke import-uitvoering.
+
 ### 2026-03-31 — API-connecties, audittrail en beveiligingsfixes
 
 #### UX / design verbeteringen

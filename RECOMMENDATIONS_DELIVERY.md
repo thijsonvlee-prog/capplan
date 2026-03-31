@@ -6,35 +6,35 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-No active backlog items were assigned to Delivery Agent this cycle — all previous items are either completed or deferred P4. A fresh codebase scan was performed. The codebase is stable with clean verify output (typecheck + lint pass). The main new finding is that API Phase 1 delivery introduced duplicated helper functions across two route files that should be consolidated. All existing P4 recommendations remain valid. A new concern is audit log table growth now that all entities are audited.
+PB-160 (API import helper deduplication) and PB-161 (audit log cleanup) are now completed. The codebase is stable with clean verify output. A fresh scan identified two new consolidation opportunities: duplicated `resolveUserId()` across two routes, and duplicated `validateApiFields()` across two import-source routes (previously noted as acceptable, but now that DE-REC-066 established the extraction pattern, it's cleaner to follow through). All existing P4 recommendations remain valid. No new critical or high-priority items discovered.
 
 ## Recommended Next Improvements
 
-### DE-REC-066: Extract shared API import helpers to lib module
+### DE-REC-068: Extract duplicated resolveUserId to shared module
 
-- **Title:** Deduplicate `buildApiHeaders`, `extractDataArray`, `resolveJsonPath` into `src/lib/api-import-helpers.ts`
-- **Problem:** Three functions are fully duplicated between `src/app/api/import-sources/[id]/execute/route.ts` and `src/app/api/import-sources/test/route.ts`. The `test/route.ts` file also duplicates `discoverPaths`. If one copy is updated (e.g., to support a new auth type or fix a path resolution bug), the other must be manually kept in sync. This is a maintenance hazard.
-- **Proposed improvement:** Extract `buildApiHeaders()`, `extractDataArray()`, `resolveJsonPath()`, and `discoverPaths()` into a shared `src/lib/api-import-helpers.ts` module. Both route files import from there.
-- **Expected product/technical value:** Eliminates ~80 lines of duplicated code. Ensures consistent behavior between test and execute flows. Reduces future maintenance risk.
+- **Title:** Deduplicate `resolveUserId()` between preferences and scenarios/active routes
+- **Problem:** `resolveUserId()` is fully duplicated between `src/app/api/preferences/route.ts` (line 12) and `src/app/api/scenarios/active/route.ts` (line 14). Both resolve the current user from session with fallback to "default" when auth is not configured.
+- **Proposed improvement:** Extract to `src/lib/api-route-utils.ts` alongside other shared route helpers. Both routes import from there.
+- **Expected product/technical value:** Eliminates ~15 lines of duplication. Ensures consistent behavior if fallback logic changes.
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low (pure refactoring, no behavior change)
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** The duplication was created during API Phase 1 delivery. Consolidating now prevents divergence before more consumers appear.
+- **Why now:** Follows the same extraction pattern just applied in PB-160. Small, safe consolidation.
 
-### DE-REC-067: Audit log table cleanup mechanism
+### DE-REC-069: Extract duplicated validateApiFields to shared module
 
-- **Title:** Add TTL-based cleanup for AuditLog table
-- **Problem:** With audit logging now active on all entities (PB-146–149), the AuditLog table grows unbounded. At current usage patterns, this is not yet a problem, but it will become one over time. Unlike PerformanceEvent, audit data has actual business value, so cleanup should be retention-based (e.g., keep 90 days).
-- **Proposed improvement:** Add a `cleanupOldAuditLogs(retentionDays: number)` function in `src/lib/audit.ts`. Call it periodically (e.g., at the end of import execution, or via a scheduled API call). Default retention: 90 days.
-- **Expected product/technical value:** Prevents unbounded table growth. Maintains query performance on the audit log viewer.
+- **Title:** Deduplicate `validateApiFields()` between import-sources route.ts and [id]/route.ts
+- **Problem:** `validateApiFields()` is fully duplicated between `src/app/api/import-sources/route.ts` (line 11) and `src/app/api/import-sources/[id]/route.ts` (line 11). Both validate API source fields identically. Previously noted as acceptable at 2 instances, but now that `api-import-helpers.ts` exists as a shared module for import-source logic, this duplication can be cleanly consolidated.
+- **Proposed improvement:** Move `validateApiFields()` to `src/lib/api-import-helpers.ts`. Both routes import from there.
+- **Expected product/technical value:** Eliminates ~30 lines of duplication. Prevents divergence if validation rules change (e.g., new auth type).
 - **Priority:** P3 Medium
 - **Effort:** Small
-- **Risk:** Low
+- **Risk:** Low (pure refactoring, no behavior change)
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Audit logging is now fully active. The table will grow faster than PerformanceEvent because it covers all entity mutations.
+- **Why now:** `api-import-helpers.ts` now exists as the natural home for shared import-source logic.
 
 ### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber in transactions
 
@@ -169,15 +169,14 @@ No active backlog items were assigned to Delivery Agent this cycle — all previ
 ## Risks / Watch-outs
 
 - **API credentials storage is plaintext JSON:** The `apiCredentials` field stores credentials as JSONB. This is adequate for Phase 1 but should be reviewed before production use with real API keys. Consider server-side encryption or environment variable references for sensitive credentials.
-- **Audit log + PerformanceEvent table growth:** Both tables grow unbounded. AuditLog will grow faster now that all entities are audited. No cleanup mechanism exists for either.
-- **API helper function duplication:** Three functions (`buildApiHeaders`, `extractDataArray`, `resolveJsonPath`) are duplicated across test and execute routes. A bug fix in one copy could be missed in the other.
-- **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. If the database connection fails, audit entries are silently dropped. This is by design (PB-146 scope note: audit failures must not block mutations).
+- **PerformanceEvent table growth:** Table grows unbounded. `cleanupOldEvents()` exists but is never called.
 - **API import timeout:** The 30-second timeout on external API requests may be insufficient for slow APIs returning large datasets. Vercel serverless function timeout (default 10s on Hobby, 60s on Pro) is the binding constraint.
 - **API response size unbounded:** No limit on response body size from external APIs. A malicious or misconfigured API could return extremely large responses. The MAX_ROW_COUNT check only applies after parsing.
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` and `handleBulkSelect` apply optimistic UI updates but don't handle failed API calls.
 - **Auth env vars required for deployment:** Auth requires `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, and provider credentials. Without these, auth is inactive and role enforcement is skipped silently.
 - **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`.
 - **No database-level length constraints:** All text field length validation is application-level only.
+- **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. If the database connection fails, audit entries are silently dropped. This is by design (PB-146 scope note: audit failures must not block mutations).
 
 ## Items Intentionally Not Recommended
 
@@ -218,9 +217,12 @@ No active backlog items were assigned to Delivery Agent this cycle — all previ
 - **Scenario duplicate name detection:** No unique constraint check on scenario names. Requires product decision.
 - **handleUpdate not wrapped in useCallback in PlanningGrid:** Would break the existing exhaustive-deps warnings. Marginal improvement for significant refactoring risk.
 - **Encrypt apiCredentials at rest:** Phase 1 stores credentials as plaintext JSONB. Adequate for initial delivery; encryption should be addressed before production use with real API keys but is a product decision.
-- **Deduplicate validateApiFields between route.ts and [id]/route.ts:** Both import-sources route files define the same validation function. At 2 instances this is acceptable and avoids premature abstraction. Superseded by DE-REC-066 which covers the larger duplication.
 - **Limit API response body size:** Could add a streaming size check, but MAX_ROW_COUNT provides sufficient protection after parsing. Adding a byte-level limit would add complexity for marginal benefit.
 - **Extract execute result UI into shared component:** The CSV and API execute result displays are similar but not identical. Extracting a shared component adds indirection for only 2 consumers.
+- **Add React.memo to CapacityTable/CapacityKPIs:** These components render infrequently (only on data or filter changes). Internal `useMemo` provides sufficient optimization.
+- **Extract SortIcon from PlanningGrid:** Tiny inline function. Moving outside component provides negligible benefit and reduces locality.
+- **Centralize Map construction across components:** Each component constructs Maps from its own fetched data. A shared hook would add coupling without clear benefit.
+- **Scoped cache invalidation in useApi:** Current global invalidation is simple and reliable. Scoped invalidation adds complexity without clear performance benefit at current data volumes.
 
 ## Recommendation Rules
 

@@ -43,6 +43,36 @@ export async function logAudit(
   }
 }
 
+const DEFAULT_RETENTION_DAYS = 90;
+
+/**
+ * Delete audit log entries older than the specified retention period.
+ *
+ * This is fire-and-forget: cleanup failures are logged but never
+ * prevent the calling operation from succeeding.
+ *
+ * @param retentionDays  Number of days to keep (default 90)
+ * @returns Number of deleted entries, or 0 on failure
+ */
+export async function cleanupOldAuditLogs(
+  retentionDays = DEFAULT_RETENTION_DAYS
+): Promise<number> {
+  try {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - retentionDays);
+    const result = await prisma.auditLog.deleteMany({
+      where: { createdAt: { lt: cutoff } },
+    });
+    return result.count;
+  } catch (error) {
+    console.error(
+      "Audit log cleanup failed:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    return 0;
+  }
+}
+
 /**
  * Get the current user ID from the session.
  * Returns null when auth is not configured or no session exists.

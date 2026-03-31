@@ -27,29 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-160: Deduplicate API import helpers naar gedeelde module
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** `buildApiHeaders()`, `extractDataArray()`, `resolveJsonPath()` en `discoverPaths()` zijn volledig gedupliceerd tussen de execute-route en test-route. Als één kopie wordt gewijzigd (bijv. nieuw auth-type), moet de andere handmatig worden bijgewerkt.
-- **Scope notes:** Extract de vier functies naar `src/lib/api-import-helpers.ts`. Beide route-bestanden importeren van daar. Geen gedragswijziging — puur refactoring. Elimineert ~80 regels duplicatie.
-- **Dependencies:** None
-- **Definition of done:** Vier functies in `src/lib/api-import-helpers.ts`. Beide routes importeren van de gedeelde module. `npm run verify` slaagt. Test-verbinding en execute-flow werken ongewijzigd.
-- **Why this matters now:** Duplication was created during API Phase 1. Consolidating now prevents divergence.
-- **Source:** DE-REC-066
-
-### PB-161: Audit log cleanup mechanisme
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** Met auditlogging actief op alle entiteiten (PB-146–149) groeit de AuditLog-tabel onbegrensd. Bij groeiend gebruik wordt dit een performance-probleem voor de auditlog-viewer.
-- **Scope notes:** Voeg een `cleanupOldAuditLogs(retentionDays: number)` functie toe in `src/lib/audit.ts`. Standaard retentie: 90 dagen. Roep aan aan het einde van import-uitvoering of als periodieke opschoning. Geen schema-wijziging nodig — gebruik `deleteMany` met datumfilter.
-- **Dependencies:** None
-- **Definition of done:** Cleanup-functie bestaat en wordt ergens periodiek aangeroepen. Oude audit-entries (> 90 dagen) worden opgeruimd. `npm run verify` slaagt.
-- **Why this matters now:** Audit logging is nu volledig actief. Tabel groeit sneller dan PerformanceEvent.
-- **Source:** DE-REC-067
+_No items ready for next cycle._
 
 ### PB-154: Mobiele layout shell en navigatie
 
@@ -96,6 +74,20 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-160: Deduplicate API import helpers naar gedeelde module
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** Extracted `buildApiHeaders()`, `extractDataArray()`, `resolveJsonPath()`, and `discoverPaths()` to `src/lib/api-import-helpers.ts`. Both test and execute routes now import from the shared module. ~80 lines of duplication eliminated. Minor inconsistency fixed: execute route used raw `value` in header loop; shared version uses `String(value)` for safety.
+
+### PB-161: Audit log cleanup mechanisme
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** Added `cleanupOldAuditLogs(retentionDays = 90)` to `src/lib/audit.ts`. Fire-and-forget call at the end of import execution in the execute route. Uses `deleteMany` with date filter. Failures are logged but never block the import.
 
 ### PB-159: Fix authorization bypass op planning DELETE en import-source GET
 

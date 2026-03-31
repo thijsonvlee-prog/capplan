@@ -1,86 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import {
+  buildApiHeaders,
+  extractDataArray,
+  resolveJsonPath,
+  discoverPaths,
+} from "@/lib/api-import-helpers";
 
 const API_TEST_TIMEOUT_MS = 15_000;
-
-function buildApiHeaders(
-  apiHeaders: Record<string, string> | null,
-  apiAuthType: string | null,
-  apiCredentials: Record<string, unknown> | null
-): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  if (apiHeaders && typeof apiHeaders === "object") {
-    for (const [key, value] of Object.entries(apiHeaders)) {
-      if (key.trim()) headers[key.trim()] = String(value);
-    }
-  }
-
-  if (apiAuthType && apiCredentials) {
-    switch (apiAuthType) {
-      case "BASIC": {
-        const username = String(apiCredentials.username || "");
-        const password = String(apiCredentials.password || "");
-        headers["Authorization"] = `Basic ${btoa(`${username}:${password}`)}`;
-        break;
-      }
-      case "BEARER": {
-        const token = String(apiCredentials.token || "");
-        headers["Authorization"] = `Bearer ${token}`;
-        break;
-      }
-      case "API_KEY": {
-        const headerName = String(apiCredentials.headerName || "X-API-Key");
-        const apiKey = String(apiCredentials.apiKey || "");
-        headers[headerName] = apiKey;
-        break;
-      }
-    }
-  }
-
-  if (!Object.keys(headers).some((k) => k.toLowerCase() === "accept")) {
-    headers["Accept"] = "application/json";
-  }
-
-  return headers;
-}
-
-function extractDataArray(body: unknown): unknown[] | null {
-  if (Array.isArray(body)) return body;
-  if (body != null && typeof body === "object") {
-    const obj = body as Record<string, unknown>;
-    for (const key of ["data", "results", "items", "rows", "records"]) {
-      if (Array.isArray(obj[key])) return obj[key] as unknown[];
-    }
-  }
-  return null;
-}
-
-function resolveJsonPath(obj: unknown, path: string): string | undefined {
-  const segments = path.split(".");
-  let current: unknown = obj;
-  for (const seg of segments) {
-    if (current == null || typeof current !== "object") return undefined;
-    current = (current as Record<string, unknown>)[seg];
-  }
-  if (current == null) return undefined;
-  if (Array.isArray(current)) return current.join(", ");
-  return String(current);
-}
-
-function discoverPaths(obj: unknown, prefix = ""): string[] {
-  const paths: string[] = [];
-  if (obj == null || typeof obj !== "object" || Array.isArray(obj)) return paths;
-  for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
-    const fullPath = prefix ? `${prefix}.${key}` : key;
-    if (value != null && typeof value === "object" && !Array.isArray(value)) {
-      paths.push(...discoverPaths(value, fullPath));
-    } else {
-      paths.push(fullPath);
-    }
-  }
-  return paths;
-}
 
 /**
  * POST /api/import-sources/test

@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseCSVToRows } from "@/lib/csv-parser";
 import { requireRole } from "@/lib/api-route-utils";
+import {
+  buildApiHeaders,
+  extractDataArray,
+  resolveJsonPath,
+} from "@/lib/api-import-helpers";
+import { cleanupOldAuditLogs } from "@/lib/audit";
 import type { ImportRowError } from "@/domain/types";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -24,87 +30,6 @@ const REQUIRED_FIELD_LABELS: Record<string, string> = {
 };
 
 type ImportMode = "create" | "upsert";
-
-// --- JSON path helpers for API response mapping ---
-
-/**
- * Resolve a dot-notation path (e.g. "employee.firstName") against a JSON object.
- * Returns the value as a string, or undefined if the path does not resolve.
- */
-function resolveJsonPath(obj: unknown, path: string): string | undefined {
-  const segments = path.split(".");
-  let current: unknown = obj;
-  for (const seg of segments) {
-    if (current == null || typeof current !== "object") return undefined;
-    current = (current as Record<string, unknown>)[seg];
-  }
-  if (current == null) return undefined;
-  if (Array.isArray(current)) return current.join(", ");
-  return String(current);
-}
-
-/**
- * Find the data array in a JSON API response. Tries common wrapper keys,
- * falls back to the root if it is already an array.
- */
-function extractDataArray(body: unknown): unknown[] | null {
-  if (Array.isArray(body)) return body;
-  if (body != null && typeof body === "object") {
-    const obj = body as Record<string, unknown>;
-    for (const key of ["data", "results", "items", "rows", "records"]) {
-      if (Array.isArray(obj[key])) return obj[key] as unknown[];
-    }
-  }
-  return null;
-}
-
-/**
- * Build request headers including authentication for an API source.
- */
-function buildApiHeaders(
-  apiHeaders: Record<string, string> | null,
-  apiAuthType: string | null,
-  apiCredentials: Record<string, unknown> | null
-): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  // Custom headers from source config
-  if (apiHeaders && typeof apiHeaders === "object") {
-    for (const [key, value] of Object.entries(apiHeaders)) {
-      if (key.trim()) headers[key.trim()] = value;
-    }
-  }
-
-  // Auth headers
-  if (apiAuthType && apiCredentials) {
-    switch (apiAuthType) {
-      case "BASIC": {
-        const username = String(apiCredentials.username || "");
-        const password = String(apiCredentials.password || "");
-        headers["Authorization"] = `Basic ${btoa(`${username}:${password}`)}`;
-        break;
-      }
-      case "BEARER": {
-        const token = String(apiCredentials.token || "");
-        headers["Authorization"] = `Bearer ${token}`;
-        break;
-      }
-      case "API_KEY": {
-        const headerName = String(apiCredentials.headerName || "X-API-Key");
-        const apiKey = String(apiCredentials.apiKey || "");
-        headers[headerName] = apiKey;
-        break;
-      }
-    }
-  }
-
-  // Default Accept header if not set
-  if (!Object.keys(headers).some((k) => k.toLowerCase() === "accept")) {
-    headers["Accept"] = "application/json";
-  }
-
-  return headers;
-}
 
 /**
  * POST /api/import-sources/[id]/execute
@@ -144,10 +69,14 @@ export async function POST(
     }
 
     // Route to CSV or API handler based on source type
-    if (source.type === "API") {
-      return await executeApiImport(request, id, source);
-    }
-    return await executeCsvImport(request, id, source);
+    const result = source.type === "API"
+      ? await executeApiImport(request, id, source)
+      : await executeCsvImport(request, id, source);
+
+    // Fire-and-forget: clean up old audit log entries after import
+    cleanupOldAuditLogs().catch(() => {});
+
+    return result;
   } catch (error) {
     console.error(
       "Error executing import:",
