@@ -84,6 +84,10 @@ export async function getAllowedDepartmentIds(): Promise<string[] | null> {
     select: { departmentId: true },
   });
 
+  // If the group has no departments configured, treat as unrestricted
+  // to prevent silently hiding all data for misconfigured groups
+  if (groupDepts.length === 0) return null;
+
   return groupDepts.map((gd) => gd.departmentId);
 }
 

@@ -39,6 +39,12 @@ export async function PUT(
 
     return NextResponse.json(record);
   } catch (error) {
+    if (error instanceof Error && "code" in error && (error as { code: string }).code === "P2025") {
+      return NextResponse.json(
+        { error: "Instellingenrecord niet gevonden" },
+        { status: 404 }
+      );
+    }
     console.error("Error updating settings record:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Kan instellingenrecord niet bijwerken" },

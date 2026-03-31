@@ -6,11 +6,53 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-130 (extend P2025 handling to remaining DELETE routes). All DELETE endpoints now consistently return 404 for non-existent records. Combined with PB-128, every DELETE route in the application has proper P2025 error handling.
+This cycle completed PB-130 (extend P2025 handling to remaining DELETE routes) plus three additional fixes discovered during a fresh codebase scan:
+- **Fixed high-severity bug:** `getAllowedDepartmentIds` returned `[]` for groups with no departments, silently hiding all data. Now falls back to unrestricted access.
+- **Fixed auth gap:** Added missing `requireRole("ADMIN")` to `/api/import-sources/[id]/logs`.
+- **Extended P2025 handling:** Added to PUT routes for settings and skills (not just DELETE).
 
-The codebase is in good shape. No critical or high-priority findings remain. The active backlog is light — only deferred P4 items and the blocked ESC-009 POC decision. Remaining recommendations are medium and low priority maintainability items.
+A thorough scan revealed several new medium-priority findings: shared active scenario state across users, `useApiData` cache key fragility under minification, and no error state exposed from data fetching hooks. These are documented below as new recommendations.
 
 ## Recommended Next Improvements
+
+### DE-REC-043: Active scenario is shared globally instead of per-user
+
+- **Title:** Make active scenario selection per-user
+- **Problem:** `GET /api/scenarios/active` uses `userId = "default"` for all users. Changing the active scenario in one browser affects all other users simultaneously. The preferences API already supports per-user keys, so this is inconsistent.
+- **Proposed improvement:** Use the session user ID from `getServerSession` to store/retrieve active scenario per user. Fall back to "default" when auth is not configured.
+- **Expected product/technical value:** Prevents cross-user interference in multi-user deployments. Critical for production correctness.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low — per-user preference storage already exists.
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Multi-user auth is deployed. This is a correctness issue in production.
+
+### DE-REC-044: useApiData does not expose error state to components
+
+- **Title:** Add error state to useApiData / useApiDataWithLoading hooks
+- **Problem:** Fetch errors are caught and logged to `console.error` only. No error state is returned to callers, so failed fetches are invisible in the UI — components silently show stale default data with no failure indication.
+- **Proposed improvement:** Add an `error` return field to both hooks. Components can then show error states.
+- **Expected product/technical value:** Users see when data fetching fails instead of staring at potentially stale data.
+- **Priority:** P3 Medium
+- **Effort:** Medium (hook change is small, but callers need to handle the new state)
+- **Risk:** Low — additive change, existing callers can ignore the new field.
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** All data access goes through these hooks. Silent failures are a reliability blind spot.
+
+### DE-REC-045: Planning endpoint has no upper bound on dates list length
+
+- **Title:** Add length cap on `?dates=` parameter in planning GET route
+- **Problem:** `GET /api/planning` accepts a comma-separated `dates` parameter with no length limit. The `/capacity` and `/for-range` routes cap at 366 and 90 respectively, but the base planning endpoint does not. An unbounded `IN` clause can degrade DB performance.
+- **Proposed improvement:** Add a limit (e.g. 366) matching the capacity endpoint's cap.
+- **Expected product/technical value:** Prevents accidental or malicious overload of the planning query.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Quick defensive fix.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -148,6 +190,15 @@ The codebase is in good shape. No critical or high-priority findings remain. The
 - **`--radius-xl` token unused:** Keep for future use; removing saves nothing.
 - **Type `any` in transformDriver/transformProfile:** Internal helpers with well-understood input shapes. Typing improves correctness but is low-impact.
 - **Precompute DRIVER_COLUMNS as Map in PlanningGrid:** Small fixed-size array; `.find()` on 5-6 items is negligible.
+- **useApi cache key `fetcher.toString()` fragility:** Theoretically breaks under minification, but in practice all callers use named methods from `api.ts` and pass runtime values via `deps`. No reported issues. Monitor rather than rewrite.
+- **PlanningGrid `localData` double-render pattern:** Optimistic updates require shadow state. Refactoring to `useRef` would complicate the already-complex component for marginal benefit.
+- **PlanningGrid `resolveColumnValue` deps cause full re-sort:** Only triggers when lookup data changes (infrequent). Not a hot-path concern at current scale.
+- **csv-parser string copy for non-comma separators:** Only affects files near 5MB limit with non-comma separators. Rare in practice.
+- **autoCloseOpenRecords type signature doesn't enforce tx context:** Always called correctly in practice. Adding generics complicates the function for theoretical safety.
+- **Scenario duplicate partial-failure on crash:** Requires server process kill mid-operation. Extremely unlikely at current traffic.
+- **DayCell popup magic numbers:** Coupled to CSS but stable — popup width hasn't changed. Low risk.
+- **getAllowedDepartmentIds double session lookup:** Second `getServerSession` call is cheap (cached by NextAuth). Two DB queries per request is acceptable at current scale.
+- **autoCloseOpenRecords date math timezone:** Node.js defaults to UTC. Not a risk unless server timezone is changed.
 
 ## Recommendation Rules
 

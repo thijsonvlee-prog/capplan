@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/api-route-utils";
 
 /**
  * GET /api/import-sources/[id]/logs
@@ -10,6 +11,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const { id } = await params;
 
     // Verify import source exists

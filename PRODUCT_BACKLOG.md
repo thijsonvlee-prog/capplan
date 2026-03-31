@@ -61,7 +61,7 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Added P2025 error detection to `roster-profiles/[id]`, `settings/[type]/[id]`, `settings/skills/[id]`, and `user-groups/[id]` DELETE routes. All now return 404 with Dutch "niet gevonden" messages for non-existent records.
+- **Note:** Added P2025 error detection to `roster-profiles/[id]`, `settings/[type]/[id]`, `settings/skills/[id]`, and `user-groups/[id]` DELETE routes. All now return 404 with Dutch "niet gevonden" messages for non-existent records. Also extended P2025 handling to PUT routes for settings and skills. Fixed empty department list bug in `getAllowedDepartmentIds` (groups with no departments now fall back to unrestricted access). Added missing `requireRole("ADMIN")` to import logs endpoint.
 
 ### PB-131: Capacity page — visual identity lift
 

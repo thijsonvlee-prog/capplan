@@ -31,6 +31,12 @@ export async function PUT(
 
     return NextResponse.json(skill);
   } catch (error) {
+    if (error instanceof Error && "code" in error && (error as { code: string }).code === "P2025") {
+      return NextResponse.json(
+        { error: "Competentie niet gevonden" },
+        { status: 404 }
+      );
+    }
     console.error("Error updating skill:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Kan competentie niet bijwerken" },
