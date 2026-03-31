@@ -23,25 +23,24 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-### SMI-018: API management
-
-- **Type:** Initiative / new feature
-- **Status:** Planned
-- **Input:** Implementeer API management: beheren welke API's er zijn, GET-requests uitvoeren om gegevens uit andere applicaties op te halen, credentials beheren voor externe applicaties en ook beheren welke API's zij kunnen aanroepen.
-- **PO assessment:** Scrum Master koos Option B (Fase 1: uitgaande API-connecties) via ESC-012. Opgebroken in 4 fasen: datamodel uitbreiding (PB-150 ✓), configuratie UI (PB-151 ✓), uitvoering (PB-152), response mapping (PB-153). Fase 1 is halverwege: PB-150 en PB-151 zijn afgerond. PB-152 staat klaar voor de volgende cyclus. Aanvullend item PB-158 (test-verbinding knop) gepland na PB-152.
-- **Escalation linkage:** ESC-012 (decided — Option B)
-- **Backlog linkage:** PB-150, PB-151, PB-152, PB-153
-
 ### SMI-019: Mobiele versie
 
 - **Type:** Initiative / new feature
 - **Status:** Planned
 - **Input:** Implementeer een mobiele versie.
-- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). Gepland na API connections Phase 1.
+- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). PB-154 is nu klaar voor de volgende cyclus nu API Phase 1 volledig is afgerond.
 - **Escalation linkage:** ESC-013 (decided — Option B)
 - **Backlog linkage:** PB-154, PB-155, PB-156
 
 ## Closed Inputs
+
+### SMI-018: API management
+
+- **Type:** Initiative / new feature
+- **Status:** Closed
+- **Closed reason:** Phase 1 (uitgaande API-connecties) fully delivered 2026-03-31. All 5 backlog items completed: datamodel (PB-150), configuratie UI (PB-151), uitvoering (PB-152), response mapping (PB-153), test-verbinding (PB-158). Security fix on import-source GET (PB-159) also delivered.
+- **Escalation linkage:** ESC-012 (closed)
+- **Backlog linkage:** PB-150, PB-151, PB-152, PB-153, PB-158, PB-159 (all completed)
 
 ### SMI-017: Audittrail op alle stamdata
 

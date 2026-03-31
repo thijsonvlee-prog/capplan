@@ -28,27 +28,25 @@ _No open escalations._
 
 ## Planned Escalations
 
-### ESC-012: API management — scope en fasering
-
-- **Status:** Planned
-- **Date / run context:** 2026-03-31 — triggered by SMI-018
-- **Chosen option:** Option B — Fase 1: Uitgaande API-connecties. Breid de connectiviteitshub uit met REST API-bronnen naast CSV. Configureer URL, headers, authenticatie per bron. Voer GET-requests uit en importeer de response. Credential-opslag per bron.
-- **Backlog linkage:** PB-150, PB-151, PB-152, PB-153
-- **Product Owner action:** Broken into 4 phased backlog items. PB-150 is now ready for next cycle.
-
----
-
 ### ESC-013: Mobiele versie — scope en aanpak
 
 - **Status:** Planned
 - **Date / run context:** 2026-03-31 — triggered by SMI-019
 - **Chosen option:** Option B — Selectieve mobiele weergaven. Maak 2-3 kernschermen mobielvriendelijk: chauffeurlijst met zoeken, individueel chauffeurprofiel, en dag-/weekplanning per chauffeur. Planningsrooster en instellingen blijven desktop-only.
 - **Backlog linkage:** PB-154, PB-155, PB-156
-- **Product Owner action:** Broken into 3 phased backlog items. Sequenced after API connections Phase 1.
+- **Product Owner action:** Broken into 3 phased backlog items. PB-154 now ready (API Phase 1 complete).
 
 ---
 
 ## Closed Escalations
+
+### ESC-012: API management — scope en fasering
+
+- **Status:** Closed
+- **Date / run context:** 2026-03-31 — triggered by SMI-018
+- **Chosen option:** Option B — Fase 1: Uitgaande API-connecties.
+- **Backlog linkage:** PB-150, PB-151, PB-152, PB-153, PB-158, PB-159 (all completed 2026-03-31)
+- **Resolution:** All Phase 1 items delivered and deployed. SMI-018 closed.
 
 ### ESC-011: Audittrail op stamdata — aanpak en scope
 

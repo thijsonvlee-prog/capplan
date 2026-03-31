@@ -6,50 +6,30 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-03-31 — Beveiligingsfixes autorisatie
-
-#### Beveiliging
-
-- **Afdelingsfilter op planning-verwijderroute:** Planners met beperkte afdelingstoegang konden eerder planningsitems verwijderen voor chauffeurs buiten hun scope. De DELETE-route past nu dezelfde afdelingscontrole toe als de POST-routes.
-- **Importbron GET-endpoint beveiligd:** Het ophalen van een individuele importbron (inclusief API-credentials) vereist nu de ADMIN-rol, consistent met alle andere importbron-endpoints.
-
-### 2026-03-31 — API-bronnen test en response mapping
+### 2026-03-31 — API-connecties, audittrail en beveiligingsfixes
 
 #### UX / design verbeteringen
 
-- **Verbinding testen voor API-bronnen:** Nieuwe "Verbinding testen" knop in het API-configuratieformulier. Test de geconfigureerde URL, headers en authenticatie met inline feedback (succes/fout). Werkt ook voor nog niet opgeslagen bronnen.
-- **Response-structuur ontdekking:** Na een succesvolle verbindingstest worden de ontdekte JSON-paden en voorbeeldwaarden uit de API-response getoond. Klik op een pad om het direct als bronveld in de veldkoppeling over te nemen.
-- **Autocomplete op bronvelden:** Bij API-bronnen biedt het bronveld-invoerveld autocomplete-suggesties op basis van ontdekte JSON-paden uit de laatste verbindingstest.
-
-### 2026-03-31 — API-bronnen uitvoering
-
-#### Functionele verbeteringen
-
-- **API-bron uitvoering:** API-importbronnen kunnen nu worden uitgevoerd. De server haalt data op van de geconfigureerde URL met de ingestelde HTTP-methode, headers en authenticatie (Basic, Bearer, API-sleutel). De JSON-response wordt automatisch geparseerd en via dot-notatie veldmappings (bijv. `employee.firstName`) worden gegevens geëxtraheerd en geïmporteerd. Resultaten zijn zichtbaar in het importlogboek met dezelfde detailinformatie als CSV-imports.
-- **Uitvoerknop voor API-bronnen:** In de bronnenlijst verschijnt een uitvoerknop voor API-type bronnen. Klik om een importpaneel te openen met moduskeuze (aanmaken of bijwerken) en directe uitvoering.
-- **Automatische data-array detectie:** JSON-responses worden automatisch doorzocht op data-arrays in veelgebruikte wrapper-structuren (`data`, `results`, `items`, `rows`, `records`).
-
-### 2026-03-31 — API-bronnen, audittrail en validatie
-
-#### UX / design verbeteringen
-
-- **API-bron configuratie in connectiviteitshub:** Importbronnen ondersteunen nu naast CSV ook API-verbindingen. Brontype-kiezer (CSV/API) in het aanmaak- en bewerkformulier. Bij API-type: URL en HTTP-methode (GET/POST), headers key-value editor, authenticatietype (geen, basic, bearer token, API-sleutel) met bijbehorende credential-velden. Wachtwoorden en tokens zijn standaard verborgen met een toon/verberg-knop. De bronnenlijst toont type-badge met icoon, API-URL en authenticatie-informatie.
-- **Auditlog viewer in instellingen:** Nieuw tabblad "Auditlog" op de instellingenpagina, alleen zichtbaar voor beheerders. Chronologisch overzicht met filter op tabel, actie en datumbereik. Expandeerbare rijen tonen oude en nieuwe waarden. Paginering met 25 items per pagina.
-- **Planningsrooster werkbalk herstructurering:** Twee losse werkbalkrijen samengevoegd tot één balk met vier zones: Periode, Filter, Weergave en Status.
-- **Tonale rijscheiding in planningsrooster:** Randen vervangen door afwisselende achtergrondtinten met hover-effect.
-- **Capaciteitspagina:** KPI-samenvattingsmodule met vijf kernmetrieken. Werkbalk geïntegreerd in paginakop.
-- **Chauffeurspagina:** Samengesteld dataoppervlak met geïntegreerde zoekbalk en tonale rijafwisseling.
+- **API-bron configuratie:** Importbronnen ondersteunen nu naast CSV ook API-verbindingen. Brontype-kiezer (CSV/API), URL en HTTP-methode, headers key-value editor, authenticatietype (geen, basic, bearer token, API-sleutel) met credential-velden. Bronnenlijst toont type-badge met icoon en API-details.
+- **Verbinding testen:** Nieuwe "Verbinding testen" knop in het API-configuratieformulier met inline succes/fout-feedback. Werkt ook voor nog niet opgeslagen bronnen.
+- **Response-structuur ontdekking:** Na een succesvolle verbindingstest worden ontdekte JSON-paden en voorbeeldwaarden getoond. Klik op een pad om het als bronveld in de veldkoppeling over te nemen. Bronveld-invoer biedt autocomplete op basis van ontdekte paden.
+- **Auditlog viewer:** Nieuw tabblad "Auditlog" in instellingen (alleen beheerders). Filter op tabel, actie en datumbereik. Expandeerbare rijen met oude en nieuwe waarden. Paginering.
+- **Planningsrooster:** Werkbalk herstructurering naar vier zones (Periode, Filter, Weergave, Status). Tonale rijscheiding met hover-effect.
+- **Capaciteitspagina:** KPI-samenvattingsmodule met vijf kernmetrieken.
+- **Chauffeurspagina:** Geïntegreerde zoekbalk en tonale rijafwisseling.
 
 #### Functionele verbeteringen
 
-- **API-bronnen datamodel:** Het ImportSource-model ondersteunt API-bronnen met URL, HTTP-methode, headers, authenticatietype en credentials. Validatie op API-specifieke velden bij aanmaken en bewerken.
+- **API-bron uitvoering:** Server-side HTTP-request naar geconfigureerde URL met authenticatie. JSON-response wordt geparseerd via dot-notatie veldmappings (bijv. `employee.firstName`). Automatische data-array detectie in veelgebruikte wrapper-structuren. Resultaten zichtbaar in importlogboek.
 - **Volledige audittrail:** Alle mutaties op stamtabellen, chauffeurs, roosterprofielen, importbronnen, scenario's, gebruikersgroepen en gebruikers worden vastgelegd. Planning-entries uitgezonderd vanwege hoog volume.
 - **Per-gebruiker scenario:** Het actieve scenario wordt per ingelogde gebruiker opgeslagen.
 - **Foutmeldingen zichtbaar:** Server-foutmeldingen worden in toastmeldingen getoond.
 
 #### Beveiliging
 
-- **Afdelingsfilter op planning-schrijfroutes:** Planners met beperkte toegang kunnen geen planningsitems aanmaken voor chauffeurs buiten hun afdelingen.
+- **Afdelingsfilter op planning-routes:** DELETE-route past nu dezelfde afdelingscontrole toe als POST-routes. Planners kunnen geen items verwijderen buiten hun scope.
+- **Importbron GET-endpoint beveiligd:** Ophalen van individuele importbron (inclusief API-credentials) vereist nu ADMIN-rol.
+- **Afdelingsfilter op planning-schrijfroutes:** Planners met beperkte toegang kunnen geen planningsitems aanmaken buiten hun afdelingen.
 
 #### Betrouwbaarheid
 
@@ -57,13 +37,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### Prestaties
 
-- **Snellere sub-record aanmaak:** Overbodige database-query verwijderd uit `autoCloseOpenRecords()`. Bespaart ~3 roundtrips per wijziging op Neon serverless.
+- **Snellere sub-record aanmaak:** Overbodige database-query verwijderd. Bespaart ~3 roundtrips per wijziging op Neon serverless.
 
 #### Bugfixes
 
 - **Rijstreeppatroon bij groepering hersteld.**
 - **Gebruikersgroepen zonder afdelingen:** Terugval op onbeperkte toegang in plaats van leeg scherm.
-- **Beveiligingsverbetering importlogboek:** Endpoint vereist nu ADMIN-rol.
 
 ### 2026-03-30 — Gebruikersgroepen autorisatie compleet
 

@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** API connections Phase 1 is halfway done (PB-150, PB-151 complete). Next: API execution (PB-152), then test connection (PB-158), response mapping (PB-153). Mobile views (PB-154–156) follow after API Phase 1 is complete.
+**Current direction:** API Phase 1 is fully complete. Next priorities: (1) deduplicate API helpers created during Phase 1, (2) audit log cleanup mechanism, (3) mobile views starting with layout shell. Mobile is sequenced as PB-154 → PB-155 → PB-156.
 
 ## Status Definitions
 
@@ -27,21 +27,43 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-160: Deduplicate API import helpers naar gedeelde module
 
----
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem:** `buildApiHeaders()`, `extractDataArray()`, `resolveJsonPath()` en `discoverPaths()` zijn volledig gedupliceerd tussen de execute-route en test-route. Als één kopie wordt gewijzigd (bijv. nieuw auth-type), moet de andere handmatig worden bijgewerkt.
+- **Scope notes:** Extract de vier functies naar `src/lib/api-import-helpers.ts`. Beide route-bestanden importeren van daar. Geen gedragswijziging — puur refactoring. Elimineert ~80 regels duplicatie.
+- **Dependencies:** None
+- **Definition of done:** Vier functies in `src/lib/api-import-helpers.ts`. Beide routes importeren van de gedeelde module. `npm run verify` slaagt. Test-verbinding en execute-flow werken ongewijzigd.
+- **Why this matters now:** Duplication was created during API Phase 1. Consolidating now prevents divergence.
+- **Source:** DE-REC-066
 
-## Upcoming (Sequenced)
+### PB-161: Audit log cleanup mechanisme
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem:** Met auditlogging actief op alle entiteiten (PB-146–149) groeit de AuditLog-tabel onbegrensd. Bij groeiend gebruik wordt dit een performance-probleem voor de auditlog-viewer.
+- **Scope notes:** Voeg een `cleanupOldAuditLogs(retentionDays: number)` functie toe in `src/lib/audit.ts`. Standaard retentie: 90 dagen. Roep aan aan het einde van import-uitvoering of als periodieke opschoning. Geen schema-wijziging nodig — gebruik `deleteMany` met datumfilter.
+- **Dependencies:** None
+- **Definition of done:** Cleanup-functie bestaat en wordt ergens periodiek aangeroepen. Oude audit-entries (> 90 dagen) worden opgeruimd. `npm run verify` slaagt.
+- **Why this matters now:** Audit logging is nu volledig actief. Tabel groeit sneller dan PerformanceEvent.
+- **Source:** DE-REC-067
 
 ### PB-154: Mobiele layout shell en navigatie
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked (sequenced after API Phase 1)
+- **Status:** Ready
 - **Problem:** De applicatie heeft geen mobiele navigatie of responsive layout shell. De Scrum Master wil selectieve mobiele weergaven (ESC-013, Option B).
 - **Scope notes:** Maak een responsive layout variant voor schermen < 768px: hamburger-menu voor navigatie, compactere header, touch-vriendelijke tap targets. Sidebar wordt een slide-over panel op mobiel. Desktop layout blijft ongewijzigd. Gebruik Tailwind responsive utilities.
-- **Dependencies:** None (technical), but sequenced after API Phase 1 for capacity reasons
+- **Dependencies:** None
 - **Definition of done:** Op mobiele viewports: sidebar is verborgen achter hamburger-menu, header is compact, navigatie werkt via slide-over. Desktop is ongewijzigd. `npm run verify` slaagt.
+
+---
+
+## Upcoming (Sequenced)
 
 ### PB-155: Mobiele chauffeurlijst en zoeken
 
@@ -78,60 +100,48 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Summary:** Twee autorisatielekken gedicht: (1) Planning DELETE-route miste afdelingsscope-check — planners konden items verwijderen buiten hun toegestane afdelingen. (2) Import-source GET-endpoint miste `requireRole("ADMIN")` — API-credentials waren toegankelijk voor niet-admin gebruikers.
-- **Implementation note:** Planning DELETE nu identiek patroon als POST/bulk. Import-source GET heeft nu dezelfde ADMIN-check als PUT/DELETE.
 
 ### PB-158: API-bron test-verbinding knop
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-31
-- **Summary:** "Verbinding testen" knop in het API-configuratieformulier. Test-endpoint (`/api/import-sources/test`) voert een lichtgewicht HTTP-request uit met de geconfigureerde URL, headers en authenticatie. Toont inline succes/fout-status. Bij succes wordt ook de response-structuur ontdekt (JSON-paden en voorbeelddata) — dit dient als basis voor PB-153.
-- **Implementation note:** Test endpoint accepteert configuratie als POST body (werkt ook voor nog niet opgeslagen bronnen). 15s timeout. Hergebruikt dezelfde auth-header bouwlogica als de execute-handler.
 
 ### PB-153: API-bron response mapping
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-31
-- **Summary:** Na een succesvolle verbindingstest toont het formulier de ontdekte response-structuur met JSON-paden en voorbeeldwaarden. Klik op een pad om het als bronveld in de veldkoppeling toe te voegen. Bronveld-invoervelden bieden autocomplete via datalist met ontdekte paden. Ondersteunt geneste objecten via dot-notatie.
-- **Implementation note:** Response structure discovery via recursive path extraction op het eerste record. Datalist HTML5 autocomplete op source column inputs. Click-to-add populeert eerste lege mapping of voegt nieuwe rij toe.
 
 ### PB-152: API-bron uitvoering — GET-request en response-import
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Summary:** Execute-handler uitgebreid voor API-bronnen. Server-side HTTP-request naar geconfigureerde URL met headers en authenticatie (Basic, Bearer, API-sleutel). JSON-response wordt geparseerd en via dot-notatie veldmapping geïmporteerd. Ondersteunt geneste objecten (bijv. `employee.firstName`). Zoekt automatisch data-arrays in response (root array of `data`/`results`/`items`/`rows`/`records` wrapper). UI met uitvoerknop, moduskeuze en resultaatweergave. Resultaat zichtbaar in importlogboek.
-- **Implementation note:** Reuses existing importDrivers/importStamtabel functions. API-specific: 30s timeout, auth header building, JSON path resolution, data array extraction. Frontend: `executeApi()` method and dedicated API execute panel in ImportSourceManager.
 
 ### PB-151: API-bron configuratie UI
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-31
-- **Summary:** ImportSourceManager uitgebreid met brontype-kiezer (CSV/API). API-modus toont URL, HTTP-methode, headers key-value editor, authenticatietype met credential-velden. Bronnenlijst toont type-badge met icoon en API-details.
 
 ### PB-150: API-bron type — datamodel uitbreiding ImportSource
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Summary:** ImportSource model uitgebreid met API-specifieke velden. Migratie aangemaakt. Domain enums toegevoegd. API-routes valideren API-velden bij type=API.
 
 ### PB-157: Elimineer overbodige findMany in autoCloseOpenRecords
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Summary:** Redundante `findMany()` guard verwijderd. Bespaart ~3 DB-roundtrips per sub-record aanmaak.
 
 ### PB-146–PB-149: Audittrail — volledig
 
 - **Status:** Completed
 - **Owner:** Delivery Agent + Experience Agent
 - **Completed:** 2026-03-31
-- **Summary:** Volledige audittrail: datamodel, logging op alle entiteiten, UI viewer in instellingen.
 
 ---
 
@@ -191,7 +201,7 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current field mapping editor is functional. May be revisited when API mapping work (PB-153) starts.
+- **Reason:** Current field mapping editor is functional with autocomplete from discovered paths.
 
 ### EX-REC-042: Deduplicate scenarios list fetch
 
@@ -228,6 +238,14 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Quick optimization but not user-facing.
 
+### DE-REC-065: API response data path configuration
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Natural Phase 1 follow-up but not blocking. Current auto-detection handles common patterns. Promote if users report incompatible APIs.
+- **Source:** DE-REC-065
+
 ---
 
 ## Backlog Hygiene Rules
@@ -237,7 +255,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-160.
+- Backlog IDs are sequential and never reused. Next available: PB-162.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.
