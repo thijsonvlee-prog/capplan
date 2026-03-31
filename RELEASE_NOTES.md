@@ -6,6 +6,20 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Autorisatie planning-schrijfroutes, foutmeldingen en invoervalidatie
+
+#### Beveiliging
+
+- **Afdelingsfilter op planning-schrijfroutes:** `POST /api/planning` en `POST /api/planning/bulk` controleren nu of de chauffeur binnen het afdelingsbereik van de ingelogde gebruiker valt. Planners met beperkte gebruikersgroep-toegang kunnen niet langer planningsitems aanmaken voor chauffeurs buiten hun afdelingen.
+
+#### Functionele verbeteringen
+
+- **Specifieke foutmeldingen zichtbaar:** Foutmeldingen van de server worden nu in toastmeldingen getoond in plaats van generieke "Er ging iets mis" berichten. Alle 29 API-routes leveren al Nederlandstalige foutmeldingen — deze zijn nu zichtbaar voor gebruikers.
+
+#### Betrouwbaarheid
+
+- **Notitieveld begrensd:** Planningsnotities zijn begrensd op maximaal 500 tekens per item. Voorheen was er geen limiet, waardoor bij bulkbewerkingen met 366 datums zeer grote hoeveelheden tekst opgeslagen konden worden.
+
 ### 2026-03-31 — Invoervalidatie planning-endpoint
 
 #### Betrouwbaarheid

@@ -27,50 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-136: Enforce department scope on planning write endpoints
-
-- **ID:** PB-136
-- **Title:** Add user group department filter to POST `/api/planning` and POST `/api/planning/bulk`
-- **Problem / opportunity:** `GET /api/planning` validates that a `driverId` belongs to the caller's allowed departments. But both write endpoints skip this check. A planner with restricted department scope can write planning entries for any driver by POSTing directly, bypassing user group access control.
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** The read enforcement is already in place. The write gap is a real authorization inconsistency that undermines the user group access control model shipped in PB-109/110/111.
-- **Scope notes:** Copy the existing `getAllowedDepartmentIds` + `driverDepartmentFilter` validation pattern from the GET handler to both POST handlers. Return 403 with Dutch error message when a driver is outside the caller's scope.
-- **Dependencies:** None.
-- **Definition of done:** Both planning write endpoints reject mutations for drivers outside the caller's department scope. Existing behavior unchanged when auth is not configured.
-- **Implementation note:** Follow the pattern at `route.ts:44-58` in the planning GET handler.
-- **Source:** DE-REC-048.
-
-### PB-137: Surface API error messages in fetchJson
-
-- **ID:** PB-137
-- **Title:** Parse and display structured error messages from API responses
-- **Problem / opportunity:** `fetchJson` in `src/lib/api.ts` throws `new Error(\`API error: ${res.status}\`)`, discarding the response body. All 29 API route files return carefully crafted Dutch error messages in `{ error: "..." }` format, but these are never shown to users. Toasts display generic "Er ging iets mis" messages instead.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** All the error message work across API routes becomes user-visible with a small change in one file. High value-to-effort ratio.
-- **Scope notes:** Parse the JSON response body on error and include the `error` field in the thrown Error message. Keep the status code as fallback if body parsing fails.
-- **Dependencies:** None.
-- **Definition of done:** When an API route returns `{ error: "Chauffeur niet gevonden" }`, the user sees that message in the toast instead of a generic failure.
-- **Implementation note:** Change is in `src/lib/api.ts:24`. Must handle cases where response body is not JSON or lacks an `error` field.
-- **Source:** DE-REC-050.
-
-### PB-138: Add server-side length cap on planning notes field
-
-- **ID:** PB-138
-- **Title:** Cap `notes` field length on planning POST and bulk POST
-- **Problem / opportunity:** The `notes` field is an unbounded TEXT column. Neither write endpoint validates its length. Arbitrarily large strings can be submitted, compounding in bulk operations with 366 dates.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Quick defensive fix completing the input validation story on planning write endpoints. Natural companion to PB-136.
-- **Scope notes:** Add a 500-character cap with a Dutch error message. Apply to both single POST and bulk POST.
-- **Dependencies:** None.
-- **Definition of done:** Both planning write endpoints reject notes longer than 500 characters with a Dutch error message.
-- **Implementation note:** Follow the existing validation patterns in the planning route handlers.
-- **Source:** DE-REC-049.
+_No items currently ready._
 
 ---
 
@@ -99,6 +56,27 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-136: Enforce department scope on planning write endpoints
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** POST `/api/planning` and POST `/api/planning/bulk` now check `getAllowedDepartmentIds` + `driverDepartmentFilter` before processing mutations. Returns 403 with Dutch error message when a driver is outside the caller's department scope. Behavior unchanged when auth is not configured.
+
+### PB-137: Surface API error messages in fetchJson
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** `fetchJson` in `src/lib/api.ts` now parses the JSON response body on error and surfaces the server's `error` field in the thrown Error. Falls back to status code if body is not JSON. All 29 route files' Dutch error messages are now user-visible in toasts.
+
+### PB-138: Add server-side length cap on planning notes field
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Note:** Both `POST /api/planning` and `POST /api/planning/bulk` reject notes longer than 500 characters with Dutch error message "Notitie mag maximaal 500 tekens bevatten".
 
 ### PB-135: Add length cap on planning dates parameter
 

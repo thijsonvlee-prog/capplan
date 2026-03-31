@@ -6,63 +6,50 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-135 (dates parameter cap on GET /api/planning). All planning endpoints now have consistent input length validation.
+This cycle completed PB-136 (department scope on planning writes), PB-137 (surface API error messages), and PB-138 (notes length cap). The authorization model is now consistent across read and write planning endpoints. Users see meaningful Dutch error messages instead of generic failures.
 
-A fresh codebase scan uncovered a meaningful authorization inconsistency: `GET /api/planning` validates `driverId` against the user's department scope, but `POST /api/planning` and `POST /api/planning/bulk` do not. This means a planner in a restricted user group can write planning entries for drivers outside their assigned departments. This is the most important open item. Additionally found: `notes` field has no server-side length cap, `fetchJson` discards structured API error messages, and `sickPercentage` has inconsistent max values between API (100) and UI (99).
+A fresh codebase scan uncovered two high-priority gaps: missing `employmentType` enum validation on employment record endpoints (invalid values can be stored), and missing `maxLength` validation on several text fields across settings and driver sub-record routes. Additionally, duplicate skill names can be created without warning.
 
 ## Recommended Next Improvements
 
-### DE-REC-048: Add department scope validation to planning write endpoints
+### DE-REC-052: Add employmentType enum validation to employment routes
 
-- **Title:** Enforce user group department filter on POST `/api/planning` and POST `/api/planning/bulk`
-- **Problem:** `GET /api/planning` validates that a `driverId` belongs to the caller's allowed departments (via `getAllowedDepartmentIds` + `driverDepartmentFilter`). But `POST /api/planning` and `POST /api/planning/bulk` skip this check entirely. A planner with a restricted department scope can write planning entries for any driver by POSTing directly, bypassing the user group access control.
-- **Proposed improvement:** Add the same `getAllowedDepartmentIds` + `driverDepartmentFilter` check to both write handlers before processing the mutation, matching the GET handler pattern at `route.ts:44-58`.
-- **Expected product/technical value:** Closes the authorization gap between read and write operations. Ensures department scoping is consistent across the entire planning API surface.
+- **Title:** Validate `employmentType` against domain enum on employment POST and PUT
+- **Problem:** The employment POST route (`/api/drivers/[id]/employment/route.ts`) and PUT route (`/api/drivers/[id]/employment/[recordId]/route.ts`) accept any string for `employmentType` without validating against the `EmploymentType` enum (PERMANENT, TEMPORARY, CHARTER). Invalid values pass through to the database, which may break downstream logic that checks employment type strings (e.g., PlanningGrid charter detection).
+- **Proposed improvement:** Add validation against `Object.values(EmploymentType)` in both POST and PUT handlers, returning a Dutch error message for invalid values.
+- **Expected product/technical value:** Prevents invalid employment types from being stored. Ensures downstream logic (charter detection, capacity calculations) operates on valid data.
 - **Priority:** P2 High
-- **Effort:** Small (copy existing validation pattern from GET handler)
-- **Risk:** Low (well-established pattern, no schema changes)
+- **Effort:** Small
+- **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** The read enforcement is already in place. The write gap is a real inconsistency that undermines the user group access control model.
+- **Why now:** Same pattern as the status validation already on planning endpoints. Quick defensive fix.
 
-### DE-REC-049: Add server-side length cap on planning notes field
+### DE-REC-053: Add maxLength validation on description and text fields
 
-- **Title:** Cap `notes` field length on planning POST and bulk POST
-- **Problem:** The `notes` field on `PlanningEntry` is an unbounded Postgres `TEXT` column. Neither the single-entry POST nor bulk POST validates its length. A caller can send arbitrarily large strings. In a bulk operation with 366 dates this compounds.
-- **Proposed improvement:** Add a server-side cap (e.g. 500 characters) with a Dutch error message when exceeded.
-- **Expected product/technical value:** Prevents abuse and excessive storage. Completes the defensive validation story on planning write endpoints.
+- **Title:** Cap `description` field length on stamtabel routes and text fields on driver sub-records
+- **Problem:** The stamtabel `description` field (settings routes) has no length validation — only `code` is capped at 100 chars. Similarly, `position` and `manager` fields on function records, and `notes` on employment records have no length caps. These are all unbounded TEXT columns.
+- **Proposed improvement:** Add consistent length caps: 500 chars for `description`, 200 chars for `position`/`manager`, matching the notes cap pattern.
+- **Expected product/technical value:** Completes the defensive validation story across all write endpoints. Prevents unbounded storage.
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Quick defensive fix matching the dates cap pattern.
+- **Why now:** Natural follow-up to PB-138. Same validation pattern applied more broadly.
 
-### DE-REC-050: Surface API error messages in fetchJson
+### DE-REC-054: Prevent duplicate skill names
 
-- **Title:** Parse and surface structured error messages from API responses in `fetchJson`
-- **Problem:** `fetchJson` in `src/lib/api.ts:24` throws `new Error(\`API error: ${res.status}\`)`, discarding the response body. All API routes return carefully crafted Dutch error messages in `{ error: "..." }` format, but these are never shown to users — toasts display generic "Er ging iets mis" messages instead.
-- **Proposed improvement:** Parse the JSON response body on error and include the `error` field in the thrown Error message.
-- **Expected product/technical value:** Users see meaningful Dutch error messages (e.g. "Chauffeur niet gevonden") instead of generic failures. Leverages all the error message work already done across 29 route files.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low (error messages are already validated to be Dutch and user-friendly)
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** All API routes already return good error messages. This is the missing link between server-side validation and user-visible feedback.
-
-### DE-REC-051: Resolve sickPercentage domain inconsistency
-
-- **Title:** Align `sickPercentage` max value between API, UI, and domain types
-- **Problem:** The API validates `sickPercentage` at 0–100, the UI (`StatusSelector.tsx:139`) caps at `max={99}` with `Math.min(99, ...)`, and the domain type comment says "0-99 attendance percentage". The field semantics are unclear: if 100% means "fully present", that contradicts being on the SICK status.
-- **Proposed improvement:** Decide on the correct domain range and enforce consistently across API validation, UI input, and type documentation.
-- **Expected product/technical value:** Eliminates a data inconsistency between API-submitted and UI-submitted values.
+- **Title:** Check for existing skill name before creating in POST `/api/settings/skills`
+- **Problem:** The skills POST endpoint doesn't check if a skill with the same name already exists. Unlike stamtabellen (where `code` uniqueness is enforced by the database), skills can have duplicate names, leading to redundant competencies in selectors.
+- **Proposed improvement:** Add a `findFirst` check by name before creating. Return a Dutch error message if a skill with the same name exists.
+- **Expected product/technical value:** Prevents data quality issues in skill assignment. Users won't see duplicate competencies in dropdowns.
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low
-- **Dependencies:** Needs a product decision: should the max be 99 (current UI) or 100 (current API)?
-- **Suggested owner:** Product Owner (decision) + Delivery Agent (implementation)
-- **Why now:** Easy to fix once the correct value is decided.
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Quick defensive fix. Skill list is user-facing in driver forms.
 
 ### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
 
@@ -93,7 +80,7 @@ A fresh codebase scan uncovered a meaningful authorization inconsistency: `GET /
 ### DE-REC-030: Extract hardcoded API limits to constants
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
-- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 90 (max range), 100 (max code length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs).
+- **Problem:** Magic numbers scattered across API routes: 364 (roster days), 28 (roster cycle), 50000 (max duplicate entries), 5000 (chunk size), 366 (max dates), 500 (max notes), 90 (max range), 100 (max code length), 5MB (max file size), 10000 (max import rows), 500 (chunk size), 20 (max import logs).
 - **Proposed improvement:** Add an `API_LIMITS` constant object to `src/domain/constants.ts`.
 - **Expected product/technical value:** Centralized configuration. Easier to audit and adjust limits.
 - **Priority:** P4 Low
@@ -177,7 +164,6 @@ A fresh codebase scan uncovered a meaningful authorization inconsistency: `GET /
 - **Add driverId FK validation on planning POST:** Prisma FK constraint catches invalid IDs.
 - **Refactor useApi global cache invalidation:** The broadcast approach works because cache entries have a 30s freshness window.
 - **autoCloseOpenRecords race condition:** Theoretical at current concurrency.
-- **Add user group filtering to write endpoints:** Previously dismissed — now promoted to DE-REC-048. The GET handler does enforce department scope, making the write gap a real inconsistency.
 - **Add cache eviction to useApi:** Key space is bounded in practice.
 - **Add parent driver existence checks in sub-record GET routes:** Returns empty array for non-existent driver. Correct behavior.
 - **Add date format validation on sub-record POST endpoints:** Prisma/PostgreSQL rejects invalid dates at storage layer.
@@ -207,6 +193,9 @@ A fresh codebase scan uncovered a meaningful authorization inconsistency: `GET /
 - **for-range route orderBy diverges from drivers route:** `for-range` orders by `lastName` only; `/api/drivers` orders by `[lastName, firstName]`. Non-deterministic for duplicate surnames. Minor inconsistency.
 - **csv-parser escaped quote handling for non-comma separators:** Quote toggle logic desyncs on escaped `""` pairs in semicolon/tab CSVs. Low risk for typical Dutch HR data exports.
 - **for-range inline driverIncludeFields diverges from canonical driverInclude:** Intentional optimization with explicit `select` but creates maintenance divergence if sub-record models gain new columns. Add a code comment noting the intentional divergence.
+- **Roster assignment without driver existence check:** The `driverId` comes from URL params and Prisma FK constraint catches invalid IDs. Explicit check would improve the error message but is low-priority.
+- **Duplicate skillIds silently deduplicated on driver create:** `createMany` with `skipDuplicates` silently drops duplicates. No user-facing impact since skill selection UI prevents duplicates.
+- **Employment record PUT findFirst/update not wrapped in transaction:** Theoretical race condition at current concurrency. Prisma FK constraint prevents orphan updates.
 
 ## Recommendation Rules
 
