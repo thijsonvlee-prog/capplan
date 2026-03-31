@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Planning grid visual quality now at product-grade level (PB-123, PB-124 completed). Authorization model complete. Next focus: closing the visual consistency gap between the planning/settings screens and the drivers page, plus small technical quality items that improve type safety and error handling.
+**Current direction:** Planning grid and drivers page are now at product-grade visual quality. Authorization model complete. The active backlog is light — remaining work is polish and consistency items. Next focus: capacity page visual lift (last screen below standard), small technical consistency fixes, and resolving the ESC-009 POC decision.
 
 ## Status Definitions
 
@@ -27,32 +27,31 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-126: Move ScenarioSelector out of "Weergave" toolbar zone
+### PB-130: Extend P2025 handling to remaining DELETE routes
 
-- **ID:** PB-126
+- **ID:** PB-130
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** Four DELETE routes still return 500 when the record doesn't exist: `roster-profiles/[id]`, `settings/[type]/[id]`, `settings/skills/[id]`, and `user-groups/[id]`. This is inconsistent with the just-fixed routes (PB-128).
+- **Why this matters now:** Pattern is fresh from PB-128. Quick consistency fix across all DELETE endpoints.
+- **Scope notes:** Add the same P2025 error check pattern to these four routes. Return 404 with Dutch "niet gevonden" messages.
+- **Dependencies:** None.
+- **Definition of done:** All four DELETE routes return 404 for non-existent records instead of 500. `npm run verify` passes.
+- **Source:** DE-REC-042.
+
+### PB-131: Capacity page — visual identity lift
+
+- **ID:** PB-131
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Ready
-- **Problem / opportunity:** `PlanningGrid.tsx:478` places ScenarioSelector inside the "Weergave" (View) control zone. Scenario selection is a data/context control, not a view setting. The zone label is misleading.
-- **Why this matters now:** The toolbar was just restructured (PB-123). This is a small follow-up to correct zone semantics while the design is fresh.
-- **Scope notes:** Move ScenarioSelector into the "Periode" zone (alongside date range controls) or into its own labeled zone. Keep the toolbar single-row layout. Do not restructure other zones.
+- **Problem / opportunity:** The capacity page is functionally correct and clean, but reads as a standard analytics dashboard rather than a product-grade analysis surface. Per DESIGN.md section 8.3, KPIs should be treated as first-class information. Now that planning, drivers, and settings screens are aligned, this is the last remaining screen below target.
+- **Why this matters now:** PB-127 (drivers page lift) is complete. The capacity page is the most visible remaining design gap.
+- **Scope notes:** Add a summary module above the chart showing key capacity KPIs (total available, total on leave, total sick, utilization %). Improve chart/table visual framing. Consider stronger section headers between chart and table zones. Use existing aggregation logic from `src/lib/aggregation.ts`.
 - **Dependencies:** None.
-- **Definition of done:** ScenarioSelector is no longer inside the "Weergave" zone. Toolbar remains visually coherent. `npm run verify` passes.
-- **Source:** DE-REC-037.
-
-### PB-127: Drivers page — visual quality lift
-
-- **ID:** PB-127
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The drivers table uses a flat table-first layout with weak hierarchy. Per DESIGN.md section 3.2, this is an anti-pattern. The gap between this page and the now product-grade planning/settings screens creates visible inconsistency.
-- **Why this matters now:** Drivers page is a high-frequency screen. It is the most visible remaining design gap.
-- **Scope notes:** Wrap the table in a card container with subtle shadow. Improve row hover treatment. Add visual framing around the data zone. Do not restructure the page layout or change the data table columns. Keep changes CSS/component-level only.
-- **Dependencies:** None.
-- **Definition of done:** Drivers page table has card containment, improved hover treatment, and visual framing. Consistent with planning grid and settings styling. `npm run verify` passes.
-- **Source:** EX-REC-036.
-
+- **Definition of done:** Capacity page has a KPI summary module, improved visual framing, and feels product-grade rather than generic. `npm run verify` passes.
+- **Source:** EX-REC-047.
 
 ---
 
@@ -86,59 +85,39 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Added `scenarioId?: string` to `PlanningEntry` type in `src/domain/types.ts`. Closes the type gap between `transformPlanningEntry` (which sets it) and `PlanningGrid.tsx` (which uses it in optimistic updates).
+- **Note:** Added `scenarioId?: string` to `PlanningEntry` type in `src/domain/types.ts`.
 
 ### PB-128: DELETE routes — return 404 instead of 500 for missing records
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Added Prisma P2025 error detection in catch blocks of `drivers/[id]`, `planning/[id]`, and `scenarios/[id]` DELETE routes. Non-existent records now return 404 with Dutch "niet gevonden" messages instead of generic 500 errors.
+- **Note:** Added P2025 error detection for `drivers/[id]`, `planning/[id]`, and `scenarios/[id]` DELETE routes.
 
 ### PB-126: Move ScenarioSelector out of "Weergave" toolbar zone
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-31
-- **Note:** Moved ScenarioSelector from the "Weergave" (view settings) control group into the "Periode" zone alongside date range and zoom controls. Scenario selection is a data/context control, not a view setting. Toolbar remains single-row with four zones.
+- **Note:** ScenarioSelector moved from "Weergave" to "Periode" zone.
 
 ### PB-127: Drivers page — visual quality lift
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-31
-- **Note:** Three improvements: (1) Replaced `border-b` row separators with tonal row alternation (`bg-surface-secondary` on odd rows, transparent on even) matching the planning grid pattern. (2) Upgraded row hover from `bg-surface-secondary` to `bg-brand-50` for clear row identification. (3) Integrated search bar into the card surface as a toolbar zone with result count, creating a composed data surface instead of a disconnected search + table layout. Pagination footer updated to `bg-surface-tertiary/50` for visual consistency.
-
-### PB-123: Planning grid toolbar — composed control zones
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-124: Planning grid matrix — tonal row separation instead of borders
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
+- **Note:** Tonal row alternation, brand hover, integrated search toolbar, pagination footer styling.
 
 ### Delivery Agent bugfix: Row striping pattern at group boundaries
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Fixed row striping that reset at each group boundary when groupBy was active. Now uses continuous global index.
+- **Note:** Fixed continuous global index for row striping across groups.
 
 ---
 
 ## Deferred
-
-### EX-REC-047: Capacity page — visual identity lift
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Functional and clean. Recommend after drivers page improvement (PB-127) is complete.
-- **Source:** EX-REC-047.
 
 ### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
@@ -187,13 +166,6 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Depends on POC decision (ESC-009/PB-129). Will be actionable after that decision.
 - **Source:** DE-REC-036.
-
-### EX-REC-036: Drivers table — reduce generic admin feel
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Superseded by PB-127
-- **Reason:** Promoted to PB-127 with refined scope. This deferred entry is no longer needed separately.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
