@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization is complete. A department scope gap on planning write endpoints is the most important open item. After that, surfacing existing API error messages to users and input validation hardening are the next priorities. All remaining Experience Agent work is P4 polish.
+**Current direction:** The product is stable and all major screens are at product-grade quality. Authorization is complete. The next priorities are input validation hardening: enum validation on employment type, length caps on remaining text fields, and duplicate skill prevention. One blocked item (sickPercentage domain inconsistency) awaits Scrum Master decision. All Experience Agent work is P4 polish.
 
 ## Status Definitions
 
@@ -27,7 +27,47 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-140: Validate employmentType against domain enum
+
+- **ID:** PB-140
+- **Title:** Add employmentType enum validation to employment POST and PUT routes
+- **Problem / opportunity:** Employment routes accept any string for `employmentType` without validating against the `EmploymentType` enum (PERMANENT, TEMPORARY, CHARTER). Invalid values can be stored, breaking downstream logic like charter detection in PlanningGrid and capacity calculations.
+- **Owner:** Delivery Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Same defensive validation pattern already applied to planning status. Quick fix that prevents data corruption.
+- **Scope notes:** Add `Object.values(EmploymentType)` check in both POST and PUT handlers for `/api/drivers/[id]/employment`. Return Dutch error message for invalid values.
+- **Dependencies:** None.
+- **Definition of done:** POST and PUT reject invalid employmentType values with a Dutch error message. Valid values (PERMANENT, TEMPORARY, CHARTER) continue to work.
+- **Source:** DE-REC-052.
+
+### PB-141: Add maxLength validation on description and text fields
+
+- **ID:** PB-141
+- **Title:** Cap description field length on stamtabel routes and text fields on driver sub-records
+- **Problem / opportunity:** Stamtabel `description` fields, function `position`/`manager` fields, and employment `notes` have no length validation. Unbounded TEXT columns.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Natural follow-up to PB-138 (notes cap). Same validation pattern applied more broadly.
+- **Scope notes:** 500 chars for `description`, 200 chars for `position`/`manager`. Dutch error messages. Apply to all stamtabel POST/PUT routes and driver sub-record routes.
+- **Dependencies:** None.
+- **Definition of done:** All targeted text fields reject values exceeding the cap with a Dutch error message. Existing data is unaffected.
+- **Source:** DE-REC-053.
+
+### PB-142: Prevent duplicate skill names
+
+- **ID:** PB-142
+- **Title:** Check for existing skill name before creating in POST `/api/settings/skills`
+- **Problem / opportunity:** Skills POST endpoint doesn't check for existing names. Duplicate skill names can be created, leading to redundant entries in driver form skill selectors.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Quick defensive fix. Skill list is user-facing in driver forms.
+- **Scope notes:** Add `findFirst` by name before creating. Return Dutch error message if duplicate. Case-insensitive check preferred.
+- **Dependencies:** None.
+- **Definition of done:** Creating a skill with a name that already exists returns a Dutch error message. Existing duplicates are not retroactively cleaned up.
+- **Source:** DE-REC-054.
 
 ---
 
@@ -62,70 +102,65 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** POST `/api/planning` and POST `/api/planning/bulk` now check `getAllowedDepartmentIds` + `driverDepartmentFilter` before processing mutations. Returns 403 with Dutch error message when a driver is outside the caller's department scope. Behavior unchanged when auth is not configured.
+- **Note:** POST `/api/planning` and POST `/api/planning/bulk` now check `getAllowedDepartmentIds` + `driverDepartmentFilter` before processing mutations. Returns 403 with Dutch error message when a driver is outside the caller's department scope.
 
 ### PB-137: Surface API error messages in fetchJson
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** `fetchJson` in `src/lib/api.ts` now parses the JSON response body on error and surfaces the server's `error` field in the thrown Error. Falls back to status code if body is not JSON. All 29 route files' Dutch error messages are now user-visible in toasts.
+- **Note:** `fetchJson` in `src/lib/api.ts` now parses the JSON response body on error and surfaces the server's `error` field in the thrown Error. All 29 route files' Dutch error messages are now user-visible in toasts.
 
 ### PB-138: Add server-side length cap on planning notes field
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Both `POST /api/planning` and `POST /api/planning/bulk` reject notes longer than 500 characters with Dutch error message "Notitie mag maximaal 500 tekens bevatten".
+- **Note:** Both `POST /api/planning` and `POST /api/planning/bulk` reject notes longer than 500 characters with Dutch error message.
 
 ### PB-135: Add length cap on planning dates parameter
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Added 366-date cap to `GET /api/planning` matching the existing caps on `/capacity` and `/bulk` routes. Returns Dutch error message "Maximaal 366 datums per verzoek" when exceeded. All planning endpoints now have consistent input length validation.
+- **Note:** Added 366-date cap to `GET /api/planning` matching the existing caps on `/capacity` and `/bulk` routes.
 
 ### PB-134: Propagate error state to remaining useApiDataWithLoading consumers
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** All `useApiDataWithLoading` consumers now show Dutch-language error messages when data fetching fails. Updated: StamtabelManager (new `error` prop), SkillManager, RosterProfileEditor, ImportSourceManager, UserManager, UserGroupManager. Settings page passes per-entity error state. Pattern matches DriverList exactly. Error visibility is now consistent across the entire product.
+- **Note:** All `useApiDataWithLoading` consumers now show Dutch-language error messages when data fetching fails.
 
 ### PB-132: Make active scenario selection per-user
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Active scenario preference now stored per authenticated user via `getServerSession`. Falls back to `"default"` when auth is not configured. Uses same `resolveUserId()` pattern as the preferences route. Eliminates cross-user interference in multi-user deployments.
 
 ### PB-133: Add error state to useApiData / useApiDataWithLoading hooks
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** `useApiDataWithLoading` now returns `[data, loading, error]` where `error` is `string | null`. Backward-compatible. DriverList shows a Dutch-language error state when the driver fetch fails.
 
 ### PB-129: POC capacity summary row — remove
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** Per ESC-009 decision (Option B), deleted `CapacitySummaryRow.tsx` and removed all related code from PlanningGrid.
 
 ### PB-130: Extend P2025 handling to remaining DELETE routes
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Note:** All DELETE and PUT routes now return 404 for non-existent records. Fixed empty department list bug. Added missing `requireRole("ADMIN")` to import logs endpoint.
 
 ### PB-131: Capacity page — visual identity lift
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-31
-- **Note:** Added KPI summary module, integrated toolbar, section headers, No-Line Rule applied.
 
 ---
 
