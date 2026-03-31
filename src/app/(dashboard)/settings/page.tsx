@@ -7,12 +7,13 @@ import { RosterProfileEditor } from "@/components/settings/RosterProfileEditor";
 import { ImportSourceManager } from "@/components/settings/ImportSourceManager";
 import { UserManager } from "@/components/settings/UserManager";
 import { UserGroupManager } from "@/components/settings/UserGroupManager";
+import { AuditLogViewer } from "@/components/settings/AuditLogViewer";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
 import { useUserRole } from "@/hooks/useUserRole";
 
-type TabKey = "stamgegevens" | "competenties" | "roosters" | "connectiviteit" | "gebruikers" | "gebruikersgroepen";
+type TabKey = "stamgegevens" | "competenties" | "roosters" | "connectiviteit" | "gebruikers" | "gebruikersgroepen" | "auditlog";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "stamgegevens", label: "Stamgegevens" },
@@ -21,6 +22,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "connectiviteit", label: "Connectiviteit" },
   { key: "gebruikers", label: "Gebruikers" },
   { key: "gebruikersgroepen", label: "Gebruikersgroepen" },
+  { key: "auditlog", label: "Auditlog" },
 ];
 
 const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
@@ -48,6 +50,10 @@ const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
     title: "Gebruikersgroepen beheren",
     desc: "Maak groepen aan en koppel afdelingen. Leden van een groep zien alleen chauffeurs en planning van hun afdelingen.",
   },
+  auditlog: {
+    title: "Auditlogboek",
+    desc: "Overzicht van alle mutaties in de applicatie. Filter op tabel, actie of datumbereik om specifieke wijzigingen te vinden.",
+  },
 };
 
 export default function SettingsPage() {
@@ -66,6 +72,7 @@ export default function SettingsPage() {
     connectiviteit: null,
     gebruikers: null,
     gebruikersgroepen: null,
+    auditlog: null,
   }), [employers.length, departments.length, locations.length, leaveTypes.length]);
 
   function toastMutate(fn: () => Promise<unknown>, successMsg: string) {
@@ -77,7 +84,7 @@ export default function SettingsPage() {
   const sectionInfo = TAB_DESCRIPTIONS[activeTab];
 
   return (
-    <div className="max-w-3xl">
+    <div className={activeTab === "auditlog" ? "max-w-5xl" : "max-w-3xl"}>
       <div className="page-header">
         <div className="page-header-row">
           <div>
@@ -90,7 +97,7 @@ export default function SettingsPage() {
       </div>
 
       <nav className="settings-tabs" role="tablist" aria-label="Instellingencategorieën">
-        {TABS.filter((tab) => (tab.key !== "gebruikers" && tab.key !== "gebruikersgroepen") || canWriteSettings).map((tab) => (
+        {TABS.filter((tab) => (tab.key !== "gebruikers" && tab.key !== "gebruikersgroepen" && tab.key !== "auditlog") || canWriteSettings).map((tab) => (
           <button
             key={tab.key}
             role="tab"
@@ -170,6 +177,8 @@ export default function SettingsPage() {
       {activeTab === "gebruikers" && canWriteSettings && <UserManager />}
 
       {activeTab === "gebruikersgroepen" && canWriteSettings && <UserGroupManager />}
+
+      {activeTab === "auditlog" && canWriteSettings && <AuditLogViewer />}
     </div>
   );
 }

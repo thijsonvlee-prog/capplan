@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Auditlog viewer
+
+#### UX / design verbeteringen
+
+- **Auditlog viewer in instellingen:** Nieuw tabblad "Auditlog" op de instellingenpagina, alleen zichtbaar voor beheerders (ADMIN). Toont een chronologisch overzicht van alle vastgelegde mutaties met: gebruikersnaam, tabelnaam (in Nederlands), actie en tijdstip. Klik op een rij om oude en nieuwe waarden in te zien. Filter op tabel, actie (aangemaakt/bewerkt/verwijderd) en datumbereik. Actie-badges met semantische kleuren (groen voor aangemaakt, blauw voor bewerkt, rood voor verwijderd). Paginering met 25 items per pagina. Actief-filterindicator met wis-knop.
+
 ### 2026-03-31 — Auditlog API-endpoint
 
 #### Functionele verbeteringen
