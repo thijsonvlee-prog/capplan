@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Beveiligingsfixes autorisatie
+
+#### Beveiliging
+
+- **Afdelingsfilter op planning-verwijderroute:** Planners met beperkte afdelingstoegang konden eerder planningsitems verwijderen voor chauffeurs buiten hun scope. De DELETE-route past nu dezelfde afdelingscontrole toe als de POST-routes.
+- **Importbron GET-endpoint beveiligd:** Het ophalen van een individuele importbron (inclusief API-credentials) vereist nu de ADMIN-rol, consistent met alle andere importbron-endpoints.
+
 ### 2026-03-31 — API-bronnen test en response mapping
 
 #### UX / design verbeteringen

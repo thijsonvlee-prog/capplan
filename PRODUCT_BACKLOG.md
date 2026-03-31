@@ -73,6 +73,14 @@ _No items currently in progress._
 
 ## Completed Recently
 
+### PB-159: Fix authorization bypass op planning DELETE en import-source GET
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Summary:** Twee autorisatielekken gedicht: (1) Planning DELETE-route miste afdelingsscope-check — planners konden items verwijderen buiten hun toegestane afdelingen. (2) Import-source GET-endpoint miste `requireRole("ADMIN")` — API-credentials waren toegankelijk voor niet-admin gebruikers.
+- **Implementation note:** Planning DELETE nu identiek patroon als POST/bulk. Import-source GET heeft nu dezelfde ADMIN-check als PUT/DELETE.
+
 ### PB-158: API-bron test-verbinding knop
 
 - **Status:** Completed
@@ -229,7 +237,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-159.
+- Backlog IDs are sequential and never reused. Next available: PB-160.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.
