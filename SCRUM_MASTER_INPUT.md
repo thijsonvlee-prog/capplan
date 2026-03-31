@@ -23,6 +23,15 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+Implementeer een audittrail op alle stamdata, wie heeft wat aangemaakt en gewijzijgd en wanneer
+
+Implementeer API management:
+beheren welke api's er zijn
+get requests uitvoeren om gegevens uit andere applicaties op te halne
+credentials beheren voor externe applicaties en ook beheren welke api's zij kunnen aanroepen
+
+Implementeer een mobiele versie
+
 _No active inputs._
 
 ## Closed Inputs
