@@ -12,6 +12,7 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 - **Actief scenario per gebruiker:** Het actieve scenario wordt nu per ingelogde gebruiker opgeslagen. Gebruikers beïnvloeden elkaars scenariokeuze niet meer. Bij ontwikkelomgevingen zonder authenticatie wordt teruggevallen op een standaardwaarde.
 - **Foutmeldingen bij laden chauffeurs:** De chauffeurspagina toont nu een duidelijke foutmelding wanneer het ophalen van gegevens mislukt, in plaats van een leeg scherm.
+- **Foutmeldingen op alle pagina's:** Alle instellingenpagina's (stamgegevens, competenties, roosters, connectiviteit, gebruikers, gebruikersgroepen) tonen nu een foutmelding wanneer het ophalen van gegevens mislukt. Voorheen werd alleen een leeg scherm getoond.
 
 #### Technische verbeteringen
 

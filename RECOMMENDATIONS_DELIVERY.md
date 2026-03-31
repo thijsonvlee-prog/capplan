@@ -6,27 +6,11 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed three backlog items:
-- **PB-132:** Active scenario selection is now per-user (production correctness fix for multi-user deployments).
-- **PB-133:** `useApiDataWithLoading` now exposes an `error` field. DriverList shows error state on fetch failure.
-- **PB-129:** POC capacity summary row removed from PlanningGrid per ESC-009 decision (Option B). Component, state, fetch, toggle button, and CSS class all deleted.
+This cycle completed PB-134 (error state propagation). All `useApiDataWithLoading` consumers now show Dutch-language error messages on fetch failure. The error visibility story is complete across the entire product.
 
-A fresh codebase scan confirms the codebase is in good shape: no N+1 patterns, no hot-path `.find()` issues, no dead imports, no console.log leaks. The remaining recommendations are P4 polish items that were already deferred.
+A fresh codebase scan confirms the codebase is in good shape. No new critical issues found. The remaining recommendations are the same P4 items already deferred in the backlog, plus one medium-priority item (COMPARE_COLORS array allocation in CapacityChart). The most actionable quick win remains DE-REC-045 (dates parameter cap on GET /api/planning).
 
 ## Recommended Next Improvements
-
-### DE-REC-046: Propagate error state to more useApiDataWithLoading consumers
-
-- **Title:** Show error states on settings, import, and roster profile pages
-- **Problem:** Only DriverList currently shows an error state on fetch failure. Other pages using `useApiDataWithLoading` (settings, import sources, roster profiles, user groups) still silently show empty data.
-- **Proposed improvement:** Destructure the third `error` return value in remaining `useApiDataWithLoading` callers and show a short error message.
-- **Expected product/technical value:** Consistent error visibility across all pages. Users always know when data loading failed.
-- **Priority:** P3 Medium
-- **Effort:** Small (6-8 straightforward edits, pattern already established in DriverList)
-- **Risk:** Low — purely additive UI change.
-- **Dependencies:** PB-133 (completed)
-- **Suggested owner:** Delivery Agent
-- **Why now:** The hook now provides error state. Low effort to propagate.
 
 ### DE-REC-045: Add length cap on planning dates parameter
 
@@ -34,12 +18,25 @@ A fresh codebase scan confirms the codebase is in good shape: no N+1 patterns, n
 - **Problem:** `GET /api/planning` accepts a comma-separated `dates` parameter with no length limit. The `/capacity` and `/for-range` routes cap at 366 and 90 respectively, but the base planning endpoint does not.
 - **Proposed improvement:** Add a limit (e.g. 366) matching the capacity endpoint's cap.
 - **Expected product/technical value:** Prevents accidental or malicious overload of the planning query.
-- **Priority:** P4 Low
+- **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Quick defensive fix.
+- **Why now:** Quick defensive fix. All other planning endpoints already have caps.
+
+### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
+
+- **Title:** Hoist COMPARE_COLORS array to module scope in CapacityChart
+- **Problem:** `COMPARE_COLORS` is defined inside the `CapacityChart` component function, creating a new array reference on every render. This breaks referential stability for child `<Area>` components.
+- **Proposed improvement:** Move `const COMPARE_COLORS = [...]` outside the component function to module scope.
+- **Expected product/technical value:** Minor render optimization; follows established pattern (other constants like STATUS_COLORS are module-scoped).
+- **Priority:** P4 Low
+- **Effort:** Small (one-line move)
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Trivial fix during next cycle.
 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 
@@ -161,6 +158,9 @@ A fresh codebase scan confirms the codebase is in good shape: no N+1 patterns, n
 - **autoCloseOpenRecords date math timezone:** Node.js defaults to UTC. Not a risk unless server timezone is changed.
 - **DE-REC-036 (CapacitySummaryRow optimization):** No longer applicable — component removed per ESC-009 decision.
 - **DE-REC-038 (POC promote/remove decision):** Resolved — ESC-009 chose removal.
+- **Missing required field validation in PUT /api/users/[id]:** Empty body silently succeeds. Harmless no-op — not worth the complexity.
+- **Unsafe `context?: any` in roster-assignments and scenario duplicate routes:** Stylistic; Next.js 14 doesn't enforce typed params. Fix when upgrading to Next.js 15.
+- **useApi console.error logging:** Error is now captured and surfaced to consumers via error state (PB-133/PB-134). Console.error logging is intentional for debugging.
 
 ## Recommendation Rules
 
