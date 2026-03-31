@@ -32,7 +32,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 **Choose one option:**
 
-- ( ) **Option A — Max 99 (recommended):** Align the API to cap at 99, matching the current UI behavior. Rationale: 100% attendance means the driver is not sick. A planner should change the status instead.
+- ( ) **Option A — Max 99 (recommended):** (X) Align the API to cap at 99, matching the current UI behavior. Rationale: 100% attendance means the driver is not sick. A planner should change the status instead.
 - ( ) **Option B — Max 100:** Align the UI to allow 100, matching the current API. Rationale: 100% could mean "registered as sick but fully operational" for administrative tracking purposes.
 
 **Trade-offs:**
