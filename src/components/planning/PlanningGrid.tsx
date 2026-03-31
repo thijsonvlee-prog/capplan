@@ -332,12 +332,13 @@ export function PlanningGrid() {
   // Flatten groups into a single item array for virtual scrolling
   const flatItems = useMemo<FlatItem[]>(() => {
     const items: FlatItem[] = [];
+    let globalIdx = 0;
     for (const group of groups) {
       if (group.label) {
         items.push({ type: "group", label: group.label, count: group.drivers.length });
       }
-      group.drivers.forEach((driver, idx) => {
-        items.push({ type: "driver", driver, driverIdx: idx });
+      group.drivers.forEach((driver) => {
+        items.push({ type: "driver", driver, driverIdx: globalIdx++ });
       });
     }
     return items;

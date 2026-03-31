@@ -6,13 +6,26 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed PB-121 (user group enforcement on individual-access routes) and PB-122 (capacity endpoint relation-based filtering optimization). The authorization model is now complete — all read endpoints enforce user group department filtering consistently. The capacity endpoint no longer pre-fetches driver IDs, using a Prisma relation filter instead.
+This cycle had no assigned backlog items. A fresh codebase scan was performed. The codebase is in good shape: no TODO/FIXME/HACK comments, no N+1 patterns, no large-array `.find()` in hot render paths, and no missing input validation on write routes.
 
-A fresh codebase scan confirms the codebase is in good shape: no N+1 patterns, no large-array `.find()` in render paths, no missing input validation on write routes, and no TODO/FIXME/HACK comments. The only outstanding finding is the hardcoded chart colors in CapacityChart (already tracked as DE-REC-014).
+One bug was found and fixed: the planning grid's row striping pattern reset at each group boundary when groupBy was active, causing visual inconsistency. This was a side effect of using a per-group index instead of a global index for even/odd row styling.
 
-With the security and performance gaps closed, remaining recommendations are lower-priority maintainability and hygiene items.
+Remaining recommendations are low-priority maintainability items. No new critical or high-priority findings.
 
 ## Recommended Next Improvements
+
+### DE-REC-037: Planning grid — ScenarioSelector placement in toolbar
+
+- **Title:** Move ScenarioSelector out of "Weergave" control zone
+- **Problem:** `PlanningGrid.tsx:478` places the `ScenarioSelector` component inside the "Weergave" (View) control group. Scenario selection is conceptually a context/data control, not a view density/column control. The "Weergave" label is misleading for this slot.
+- **Proposed improvement:** Move ScenarioSelector into its own zone or into a "Context" zone alongside the period controls.
+- **Expected product/technical value:** Clearer toolbar semantics. Users can find scenario switching more intuitively.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Experience Agent
+- **Why now:** The toolbar was just restructured (PB-123). This is a small follow-up to improve the zone semantics while the design is fresh.
 
 ### DE-REC-036: CapacitySummaryRow per-cell entry lookup optimization
 
@@ -26,6 +39,19 @@ With the security and performance gaps closed, remaining recommendations are low
 - **Dependencies:** Decision on whether CapacitySummaryRow POC should be promoted or removed.
 - **Suggested owner:** Delivery Agent
 - **Why now:** Small fix, but depends on the POC's future.
+
+### DE-REC-038: POC capacity summary row — promote or remove
+
+- **Title:** Decide fate of POC capacity summary row in PlanningGrid
+- **Problem:** `PlanningGrid.tsx:86` has `showCapacitySummary` state marked as "POC: capacity summary row". This experimental feature adds maintenance cost — the CapacitySummaryRow component and its integration in PlanningGrid must be kept in sync with any grid changes. Either it should be promoted to a proper feature or removed.
+- **Proposed improvement:** Product decision: promote (remove POC label, add to documentation) or remove the code entirely.
+- **Expected product/technical value:** Reduces maintenance ambiguity. Either we support it properly or we don't carry the code.
+- **Priority:** P3 Medium
+- **Effort:** Small (either direction)
+- **Risk:** Low
+- **Dependencies:** Product Owner decision
+- **Suggested owner:** Product Owner
+- **Why now:** The planning grid just received visual updates (PB-123, PB-124). Good time to settle the POC's status before more grid changes.
 
 ### DE-REC-030: Extract hardcoded API limits to constants
 
@@ -114,6 +140,8 @@ With the security and performance gaps closed, remaining recommendations are low
 - **Refactor useApi global cache invalidation:** The broadcast approach works because cache entries have a 30s freshness window.
 - **autoCloseOpenRecords race condition:** Theoretical at current concurrency. Would require wrapping callers in transactions.
 - **Add user group filtering to write endpoints:** Write endpoints already require the user to know the driver ID. The read-level filtering (now complete via PB-121) prevents discovery of out-of-scope IDs.
+- **Warning tokens unused in CSS classes:** `--color-warning-*` tokens are defined in globals.css but not used in CSS class definitions. They may be used via Tailwind utilities directly — this is acceptable.
+- **`--radius-xl` token unused:** Defined but not currently referenced. Keep for future use; removing saves nothing.
 
 ## Recommendation Rules
 
