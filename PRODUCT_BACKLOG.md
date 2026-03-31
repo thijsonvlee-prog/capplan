@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The Scrum Master has approved three strategic initiatives: audit trail (separate log table), outbound API connections, and selective mobile views. These are phased into concrete backlog items below. The audit trail is first priority, followed by API connections, then mobile. Each initiative is broken into 3-4 phases to deliver incremental value. Remaining P4 polish items stay deferred.
+**Current direction:** Audit trail is fully delivered. Next initiative: outbound API connections (PB-150–153), followed by selective mobile views (PB-154–156). Each initiative is phased for incremental delivery. One quick-win optimization (PB-157) is bundled into the next cycle.
 
 ## Status Definitions
 
@@ -27,21 +27,30 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
-
----
-
-## Upcoming (Sequenced)
-
 ### PB-150: API-bron type — datamodel uitbreiding ImportSource
 
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Ready (sequenced after PB-149 for capacity reasons)
+- **Status:** Ready
 - **Problem:** De connectiviteitshub ondersteunt alleen CSV-bronnen. De Scrum Master wil REST API-bronnen toevoegen (ESC-012, Option B).
 - **Scope notes:** Breid het ImportSource model uit met: `sourceType` (CSV | API enum), API-specifieke velden (`apiUrl`, `apiMethod`, `apiHeaders` als Json, `apiAuthType` als enum: NONE/BASIC/BEARER/API_KEY, `apiCredentials` als encrypted/Json). Maak de migratie. Bestaande bronnen krijgen `sourceType: CSV` als default. Pas de bestaande API-routes aan zodat ze `sourceType` meesturen.
-- **Dependencies:** PB-146 (sequencing only — no technical dependency)
+- **Dependencies:** None
 - **Definition of done:** ImportSource model heeft API-velden, migratie is aangemaakt, bestaande CSV-bronnen blijven werken, `npm run verify` slaagt.
+
+### PB-157: Elimineer overbodige findMany in autoCloseOpenRecords
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem:** `autoCloseOpenRecords()` in `api-route-utils.ts` voert een onnodige `findMany()` uit als guard voor een `updateMany()`. De `updateMany` met nul resultaten is een no-op — de guard is overbodig en kost een extra database-roundtrip per sub-record aanmaak.
+- **Scope notes:** Verwijder de `findMany()` aanroep en voer `updateMany()` onvoorwaardelijk uit. Bespaart ~3 overbodige DB-calls per chauffeurbewerking op Neon serverless.
+- **Dependencies:** None
+- **Definition of done:** `autoCloseOpenRecords()` bevat geen `findMany()` meer. Bestaande functionaliteit ongewijzigd. `npm run verify` slaagt.
+- **Implementation note:** Source: DE-REC-061. Small change (~5 lines removed).
+
+---
+
+## Upcoming (Sequenced)
 
 ### PB-151: API-bron configuratie UI
 
@@ -118,14 +127,14 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Experience Agent (UI) + Delivery Agent (API endpoint)
 - **Completed:** 2026-03-31
-- **Summary:** Nieuw "Auditlog"-tabblad op de instellingenpagina (alleen ADMIN). Chronologisch overzicht van alle mutaties met filteren op tabel, actie en datumbereik. Expandable rows tonen oude en nieuwe waarden. Paginering met 25 items per pagina. Actie-badges met semantische kleuren (groen/blauw/rood). Gebruikersidentificatie en record-ID per entry.
+- **Summary:** Nieuw "Auditlog"-tabblad op de instellingenpagina (alleen ADMIN). Chronologisch overzicht van alle mutaties met filteren op tabel, actie en datumbereik. Expandable rows tonen oude en nieuwe waarden. Paginering met 25 items per pagina.
 
 ### PB-146, PB-147, PB-148: Audittrail — datamodel, stamtabel-logging en alle overige entiteiten
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Summary:** Volledige audittrail geïmplementeerd. AuditLog model met JSONB old/new values, indexes, fire-and-forget `logAudit()` helper. Geïntegreerd in alle CRUD-routes: stamtabellen, competenties, chauffeurs, roosterprofielen, importbronnen, scenario's, gebruikersgroepen en gebruikers. Planning-entries uitgezonderd (hoog volume).
+- **Summary:** Volledige audittrail geïmplementeerd. AuditLog model met JSONB old/new values, indexes, fire-and-forget `logAudit()` helper. Geïntegreerd in alle CRUD-routes.
 
 ### PB-129–PB-145: Validatie, foutafhandeling en visuele verbeteringen
 
@@ -208,6 +217,27 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Only remaining route without text field length cap. Near-zero risk.
 
+### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Minor optimization. Apply together with PB-157 if convenient, otherwise low urgency.
+
+### DE-REC-063: weeklyHours range validation on roster assignment routes
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Trivial validation gap on a single numeric field. Near-zero risk.
+
+### DE-REC-059: Parallelize sequential DB calls in import-source execute route
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Quick optimization but not user-facing.
+
 ---
 
 ## Backlog Hygiene Rules
@@ -217,7 +247,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-157.
+- Backlog IDs are sequential and never reused. Next available: PB-158.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

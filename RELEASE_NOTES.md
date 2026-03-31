@@ -6,154 +6,68 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-03-31 — Auditlog viewer
+### 2026-03-31 — Audittrail, validatie en visuele verbeteringen
 
 #### UX / design verbeteringen
 
-- **Auditlog viewer in instellingen:** Nieuw tabblad "Auditlog" op de instellingenpagina, alleen zichtbaar voor beheerders (ADMIN). Toont een chronologisch overzicht van alle vastgelegde mutaties met: gebruikersnaam, tabelnaam (in Nederlands), actie en tijdstip. Klik op een rij om oude en nieuwe waarden in te zien. Filter op tabel, actie (aangemaakt/bewerkt/verwijderd) en datumbereik. Actie-badges met semantische kleuren (groen voor aangemaakt, blauw voor bewerkt, rood voor verwijderd). Paginering met 25 items per pagina. Actief-filterindicator met wis-knop.
-
-### 2026-03-31 — Auditlog API-endpoint
-
-#### Functionele verbeteringen
-
-- **Auditlog API-endpoint:** Nieuw `GET /api/audit-log` endpoint beschikbaar voor beheerders (ADMIN-only). Ondersteunt paginering, filteren op tabelnaam, datumbereik en actietype (aanmaken/bewerken/verwijderen). Retourneert per entry: tijdstip, gebruikersnaam, e-mailadres, tabelnaam, record-ID, actie en oude/nieuwe waarden. Dient als backend voor het auditlog-viewertabblad op de instellingenpagina.
-- **Auditlog domeintypen en frontend-koppeling:** `AuditLogEntry` en `AuditLogPagination` typen beschikbaar in `domain/types.ts`. Frontend fetcher `api.auditLog.list()` beschikbaar in `api.ts` voor de Experience Agent om de UI-component tegen te bouwen.
-
-### 2026-03-31 — Audittrail: logging op alle entiteiten
+- **Auditlog viewer in instellingen:** Nieuw tabblad "Auditlog" op de instellingenpagina, alleen zichtbaar voor beheerders (ADMIN). Chronologisch overzicht van alle vastgelegde mutaties met: gebruikersnaam, tabelnaam (in Nederlands), actie en tijdstip. Klik op een rij om oude en nieuwe waarden in te zien. Filter op tabel, actie (aangemaakt/bewerkt/verwijderd) en datumbereik. Actie-badges met semantische kleuren. Paginering met 25 items per pagina.
+- **Planningsrooster werkbalk herstructurering:** Werkbalk samengevoegd van twee losse rijen naar één samengestelde balk met vier zones: Periode, Filter, Weergave en Status. Zones gescheiden door verticale dividers.
+- **Tonale rijscheiding in planningsrooster:** 1px-randen tussen datarijen vervangen door afwisselende achtergrondtinten. Rij-hover toont zachte merkkleur.
+- **Scenariokiezer verplaatst:** Van de "Weergave"-zone naar de "Periode"-zone (scenario is een datacontext, geen weergave-instelling).
+- **Chauffeurspagina visuele verbetering:** Tabel ingepakt in samengesteld dataoppervlak met geïntegreerde zoekbalk en tonale rijafwisseling.
+- **Capaciteitspagina visuele verbetering:** KPI-samenvattingsmodule toegevoegd met vijf kernmetrieken. Werkbalk geïntegreerd in paginakop. Buitenranden verwijderd.
 
 #### Functionele verbeteringen
 
-- **Audittrail op alle entiteiten:** Naast stamtabellen worden nu ook mutaties op chauffeurs, roosterprofielen, importbronnen, scenario's (inclusief dupliceren), gebruikersgroepen en gebruikers (rolwijzigingen) vastgelegd in het auditlogboek. Per mutatie worden oude en nieuwe waarden, gebruiker en tijdstip opgeslagen. Planning-entries zijn uitgezonderd vanwege het hoge volume.
-
-### 2026-03-31 — Audittrail: datamodel en stamtabel-logging
-
-#### Functionele verbeteringen
-
-- **Audittrail op stamtabellen:** Alle mutaties (aanmaken, bewerken, verwijderen) op werkgevers, afdelingen, locaties, verloftypes en competenties worden nu vastgelegd in een auditlogboek. Per mutatie wordt opgeslagen: tabel, record-ID, actie, oude waarden, nieuwe waarden, gebruiker en tijdstip.
-- **AuditLog datamodel:** Nieuw `AuditLog` model in de database met geoptimaliseerde indexes voor snel opvragen per tabel/record en op tijdstip.
-- **Audit-helper:** Herbruikbare `logAudit()` functie beschikbaar voor integratie in overige API-routes in volgende fases.
-
-### 2026-03-31 — Validatie afrondend: ziektepercentage, chauffeurs, scenario's, importbronnen, roosters en gebruikersgroepen
-
-#### Betrouwbaarheid
-
-- **Ziektepercentage maximaal 99:** API-validatie op planning POST en bulk-endpoints gewijzigd van 0–100 naar 0–99. Als een chauffeur 100% aanwezig is, hoort de status niet ZIEK te zijn. UI was al begrensd op 99.
-- **Chauffeursvelden begrensd:** Voornaam en achternaam zijn begrensd op 100 tekens, personeelsnummer op 50 tekens. Geldt voor zowel aanmaken als bewerken.
-- **Scenarionaam en -omschrijving begrensd:** Scenarionaam begrensd op 200 tekens, omschrijving op 500 tekens bij aanmaken.
-- **Importbronnaam en -omschrijving begrensd:** Naam begrensd op 200 tekens, omschrijving op 500 tekens bij aanmaken en bewerken.
-- **Roosterprofielnaam begrensd:** Naam begrensd op 200 tekens bij aanmaken en bewerken.
-- **Gebruikersgroepnaam begrensd:** Naam begrensd op 200 tekens bij aanmaken en bewerken.
-- **Invoervalidatie compleet:** Alle POST/PUT-endpoints hebben nu lengtebegrenzingen op tekstvelden, enum-validatie en referentievalidatie.
-
-### 2026-03-31 — Invoervalidatie dienstverband, tekstvelden en competenties
-
-#### Betrouwbaarheid
-
-- **Dienstverband type-validatie:** POST en PUT op dienstverbandrecords valideren nu het type (FULLTIME, PARTTIME, ONCALL, TEMPORARY, CHARTER) tegen het domein-enum. Ongeldige waarden worden afgewezen met een foutmelding die de geldige opties toont.
-- **Tekstveldlimieten uitgebreid:** Omschrijvingsvelden op stamtabellen (werkgevers, afdelingen, locaties, verloftypes) zijn begrensd op 500 tekens. Functie- en leidinggevendevelden zijn begrensd op 200 tekens. Competentienamen zijn begrensd op 200 tekens. Code-veldlimiet (100 tekens) nu ook op PUT-routes.
-- **Dubbele competentienamen voorkomen:** Het aanmaken of hernoemen van een competentie naar een bestaande naam (hoofdletterongevoelig) wordt nu afgewezen met een foutmelding die de bestaande naam toont.
-
-### 2026-03-31 — Autorisatie planning-schrijfroutes, foutmeldingen en invoervalidatie
+- **Volledige audittrail:** Alle mutaties op stamtabellen, chauffeurs, roosterprofielen, importbronnen, scenario's, gebruikersgroepen en gebruikers worden vastgelegd in een auditlogboek. Per mutatie: tabel, record-ID, actie, oude/nieuwe waarden, gebruiker en tijdstip. Planning-entries uitgezonderd vanwege hoog volume.
+- **Per-gebruiker scenario:** Het actieve scenario wordt nu per ingelogde gebruiker opgeslagen.
+- **Foutmeldingen zichtbaar:** Server-foutmeldingen worden nu in toastmeldingen getoond in plaats van generieke berichten. Alle pagina's tonen foutmeldingen bij mislukt ophalen van gegevens.
 
 #### Beveiliging
 
-- **Afdelingsfilter op planning-schrijfroutes:** `POST /api/planning` en `POST /api/planning/bulk` controleren nu of de chauffeur binnen het afdelingsbereik van de ingelogde gebruiker valt. Planners met beperkte gebruikersgroep-toegang kunnen niet langer planningsitems aanmaken voor chauffeurs buiten hun afdelingen.
-
-#### Functionele verbeteringen
-
-- **Specifieke foutmeldingen zichtbaar:** Foutmeldingen van de server worden nu in toastmeldingen getoond in plaats van generieke "Er ging iets mis" berichten. Alle 29 API-routes leveren al Nederlandstalige foutmeldingen — deze zijn nu zichtbaar voor gebruikers.
+- **Afdelingsfilter op planning-schrijfroutes:** Planners met beperkte gebruikersgroep-toegang kunnen niet langer planningsitems aanmaken voor chauffeurs buiten hun afdelingen.
 
 #### Betrouwbaarheid
 
-- **Notitieveld begrensd:** Planningsnotities zijn begrensd op maximaal 500 tekens per item. Voorheen was er geen limiet, waardoor bij bulkbewerkingen met 366 datums zeer grote hoeveelheden tekst opgeslagen konden worden.
-
-### 2026-03-31 — Invoervalidatie planning-endpoint
-
-#### Betrouwbaarheid
-
-- **Datumslimiet op planning-endpoint:** `GET /api/planning` beperkt het aantal datums per verzoek nu tot maximaal 366, in lijn met de capaciteits- en bulkendpoints. Voorheen was dit onbeperkt.
-
-### 2026-03-31 — Per-gebruiker scenario, foutmeldingen en opschoning
-
-#### Functionele verbeteringen
-
-- **Actief scenario per gebruiker:** Het actieve scenario wordt nu per ingelogde gebruiker opgeslagen. Gebruikers beïnvloeden elkaars scenariokeuze niet meer. Bij ontwikkelomgevingen zonder authenticatie wordt teruggevallen op een standaardwaarde.
-- **Foutmeldingen bij laden chauffeurs:** De chauffeurspagina toont nu een duidelijke foutmelding wanneer het ophalen van gegevens mislukt, in plaats van een leeg scherm.
-- **Foutmeldingen op alle pagina's:** Alle instellingenpagina's (stamgegevens, competenties, roosters, connectiviteit, gebruikers, gebruikersgroepen) tonen nu een foutmelding wanneer het ophalen van gegevens mislukt. Voorheen werd alleen een leeg scherm getoond.
+- **Invoervalidatie compleet:** Alle POST/PUT-endpoints hebben nu lengtebegrenzingen op tekstvelden, enum-validatie en referentievalidatie. Specifiek: chauffeursvelden, scenarionaam/-omschrijving, importbronnaam, roosterprofielnaam, gebruikersgroepnaam, dienstverband-type, competentienamen (uniek), planningsnotities (max 500 tekens), ziektepercentage (max 99), datumslimiet (max 366 per verzoek).
 
 #### Technische verbeteringen
 
-- **Foutstatus in data-hooks:** `useApiDataWithLoading` geeft nu een `error`-veld terug (tekst of null). Bestaande componenten blijven ongewijzigd werken. Nieuwe componenten kunnen foutmeldingen tonen.
-- **POC capaciteitssamenvatting verwijderd:** De experimentele capaciteitssamenvatting in het planningsrooster is verwijderd (ESC-009 beslissing). De capaciteitspagina dekt deze functionaliteit. Het planningsrooster is hierdoor eenvoudiger en beter onderhoudbaar.
-
-### 2026-03-31 — Planningsrooster visuele verbetering en bugfix
-
-#### UX / design verbeteringen
-
-- **Planningsrooster werkbalk herstructurering:** Werkbalk samengevoegd van twee losse rijen naar één samengestelde balk met vier duidelijke zones: Periode, Filter, Weergave en Status. Zones gescheiden door verticale dividers voor snellere visuele oriëntatie.
-- **Tonale rijscheiding in planningsrooster:** 1px-randen tussen datarijen vervangen door afwisselende achtergrondtinten (wit/lichtgrijs). Rij-hover toont zachte merkkleur. Koprij-rand versoepeld. Planningsrooster oogt nu als productoppervlak in plaats van spreadsheet.
-- **Scenariokiezer verplaatst:** Scenariokiezer verplaatst van de "Weergave"-zone naar de "Periode"-zone in de planningswerkbalk. Scenario is een datacontext, geen weergave-instelling.
-- **Chauffeurspagina visuele verbetering:** Tabel ingepakt in samengesteld dataoppervlak met geïntegreerde zoekbalk. 1px-rijranden vervangen door tonale rijafwisseling (overeenkomstig planningsrooster). Rij-hover toont zachte merkkleur voor duidelijke rij-identificatie.
-- **Capaciteitspagina visuele verbetering:** KPI-samenvattingsmodule toegevoegd boven de grafiek met vijf kernmetrieken: gemiddeld beschikbaar, gemiddeld totaal, gemiddeld verlof, gemiddeld ziek en bezettingsgraad. Werkbalk geïntegreerd in paginakop met control-group-patroon. Grafiek en tabel voorzien van sectiekoppen. Buitenranden verwijderd conform het No-Line-principe.
+- **AuditLog datamodel:** Nieuw model met JSONB old/new values, geoptimaliseerde indexes en herbruikbare `logAudit()` helper.
+- **Foutstatus in data-hooks:** `useApiDataWithLoading` geeft nu een `error`-veld terug.
+- **Verbeterde foutafhandeling bij verwijderen:** Alle DELETE- en PUT-routes geven 404 bij niet-bestaande records.
+- **POC capaciteitssamenvatting verwijderd:** De experimentele samenvatting in het planningsrooster is verwijderd. De capaciteitspagina dekt deze functionaliteit.
 
 #### Bugfix
 
-- **Rijstreeppatroon bij groepering hersteld:** Bij gebruik van groepering (bijv. op afdeling) startte het even/oneven streeppatroon opnieuw bij elke groep, wat visuele inconsistentie veroorzaakte. Nu loopt het streeppatroon continu door over alle groepen.
-
-#### Technische verbeteringen
-
-- **Typecorrectie PlanningEntry:** `scenarioId` veld toegevoegd aan het `PlanningEntry` domeintype. Sluit de typekloof tussen API-transformatie en optimistische updates in het planningsrooster.
-- **Verbeterde foutafhandeling bij verwijderen:** Verwijderverzoeken voor niet-bestaande chauffeurs, planningsitems en scenario's geven nu een 404 "niet gevonden"-foutmelding in plaats van een generieke 500-fout.
-- **Foutafhandeling verwijderen uitgebreid:** Alle overige verwijderroutes (roosterprofielen, instellingen, competenties, gebruikersgroepen) geven nu ook een 404 bij niet-bestaande records. Alle DELETE-endpoints zijn nu consistent. Ook toegevoegd op PUT-routes voor instellingen en competenties.
-- **Bugfix gebruikersgroepen zonder afdelingen:** Gebruikers in een groep zonder gekoppelde afdelingen zagen een leeg scherm zonder foutmelding. Nu wordt teruggevallen op onbeperkte toegang bij een lege afdelingsconfiguratie.
-- **Beveiligingsverbetering importlogboek:** Het endpoint voor importlogboeken (`/api/import-sources/[id]/logs`) vereist nu de ADMIN-rol, in lijn met alle andere import-endpoints.
+- **Rijstreeppatroon bij groepering hersteld:** Bij gebruik van groepering liep het streeppatroon nu continu door over alle groepen.
+- **Gebruikersgroepen zonder afdelingen:** Gebruikers in een groep zonder afdelingen zagen een leeg scherm. Nu terugval op onbeperkte toegang.
+- **Beveiligingsverbetering importlogboek:** Endpoint voor importlogboeken vereist nu ADMIN-rol.
 
 ### 2026-03-30 — Gebruikersgroepen autorisatie compleet
 
 #### Beveiliging
 
-- **Gebruikersgroepen op alle routes:** Alle lees-endpoints (lijsten én individuele toegang) passen nu afdelingsfiltering toe op basis van gebruikersgroepen. Chauffeurs, planning en capaciteit buiten de toegewezen afdelingen zijn niet zichtbaar. Gebruikers zonder groep zien alle gegevens (achterwaarts compatibel).
-- **Individuele routes beveiligd:** `/api/drivers/[id]` en `/api/planning` (per chauffeur) geven 404 voor chauffeurs buiten de gebruikersgroep, zonder informatie te lekken.
-- **Voorkeuren per gebruiker:** Het voorkeuren-endpoint leest de gebruikers-ID uit de sessie. Niet-ingelogde gebruikers krijgen een 401-fout.
+- **Gebruikersgroepen op alle routes:** Alle lees-endpoints passen afdelingsfiltering toe op basis van gebruikersgroepen. Chauffeurs, planning en capaciteit buiten de toegewezen afdelingen zijn niet zichtbaar.
+- **Individuele routes beveiligd:** `/api/drivers/[id]` en `/api/planning` geven 404 voor chauffeurs buiten de gebruikersgroep.
+- **Voorkeuren per gebruiker:** Niet-ingelogde gebruikers krijgen een 401-fout.
 - **Geen automatische gebruikersaanmaak:** Alleen vooraf aangemaakte gebruikers kunnen inloggen via OAuth.
 - **Rolhandhaving op alle schrijfroutes:** Settings/gebruikersbeheer = Admin. Chauffeurs/planning/scenario's = Planner.
 
 #### Functionele verbeteringen
 
-- **Gebruikersgroepen beheer:** Nieuw tabblad "Gebruikersgroepen" op de instellingenpagina (alleen beheerders). Groepen aanmaken, bewerken en verwijderen met afdelingskoppeling en ledenbeheer.
-- **Gebruikersgroepen datamodel:** Gebruikers kunnen aan een groep worden gekoppeld die bepaalt welke afdelingen ze mogen zien. API-routes voor CRUD-beheer op `/api/user-groups`.
-- **CSV-import upsert modus:** Keuze tussen "Alleen aanmaken" en "Aanmaken of bijwerken" bij CSV-import.
-- **Gebruikersbeheer:** Tabblad "Gebruikers" op instellingenpagina met roloverzicht en rolbeheer.
-- **Inlogpagina:** Google login met "onder constructie"-melding. Alleen bekende gebruikers kunnen inloggen.
+- **Gebruikersgroepen beheer:** Nieuw tabblad op de instellingenpagina met afdelingskoppeling en ledenbeheer.
+- **CSV-import upsert modus:** Keuze tussen "Alleen aanmaken" en "Aanmaken of bijwerken".
+- **Gebruikersbeheer:** Tabblad "Gebruikers" met roloverzicht en rolbeheer.
+- **Inlogpagina:** Google login met "onder constructie"-melding.
 
 #### Prestaties
 
-- **Capaciteitsendpoint geoptimaliseerd:** Prisma-relatiefilter in plaats van aparte query voor chauffeur-ID's.
-- **Snellere CSV-import:** Batch-lookups en `createMany` in plaats van per-rij queries (~90% minder database-queries).
-- **Virtual scrolling planningsrooster:** Alleen zichtbare rijen worden gerenderd. Soepel scrollen bij 1000+ chauffeurs.
+- **Capaciteitsendpoint geoptimaliseerd:** Prisma-relatiefilter in plaats van aparte query.
+- **Snellere CSV-import:** Batch-lookups en `createMany` (~90% minder database-queries).
+- **Virtual scrolling planningsrooster:** Alleen zichtbare rijen gerenderd. Soepel bij 1000+ chauffeurs.
 - **Paginering:** Server-side paginering op planningsrooster en chauffeurspagina.
-- **Samengestelde index:** `(scenarioId, date, status)` index op planning-entries.
-- **Scenario-duplicatie in chunks:** Planningitems in blokken van 5.000 verwerkt.
-
-#### Betrouwbaarheid
-
-- **Statusvalidatie:** Planning POST en bulk-endpoints valideren status tegen domein-enum.
-- **Ziektepercentage bereikvalidatie:** Veld gevalideerd op 0–100.
-- **Datumvalidatie:** Alle planningsendpoints valideren datumformaat (JJJJ-MM-DD).
-- **Capaciteitsendpoint:** Datumformaatvalidatie en limiet van 366 datums per verzoek.
-- **Import in chunks:** Grote CSV-imports in blokken van 500 rijen. Maximaal 10.000 rijen per import.
-- **JSON-parseerbeveiliging:** Alle POST/PUT API-routes gebruiken `parseJsonBody()` helper.
-- **Veldkoppelingsvalidatie:** Import-bronnen valideren veldkoppelingen.
-
-#### UX / design verbeteringen
-
-- **Rolbewuste interface:** Interface past zich aan op basis van gebruikersrol.
-- **Server-side zoeken planningsrooster:** Zoekfilter doorzoekt alle chauffeurs in de database.
-- **Volledige capaciteitstotalen:** Totaalrij toont capaciteit over alle chauffeurs.
-- **Gebruikersidentiteit in zijbalk:** Naam en rol van ingelogde gebruiker zichtbaar.
-- **Sessie-indicator:** Profielfoto en uitlogknop in koptekstbalk.
-- **Instellingen-tabbladen op smal scherm:** Horizontaal scrollende tabbalk.
-- **Paginering chauffeurspagina:** Pagineringknoppen, paginagrootte-kiezer (25/50/100) en totaalteller.
+- **Samengestelde index:** `(scenarioId, date, status)` op planning-entries.
 
 #### Documentatie
 
@@ -170,7 +84,6 @@ This is the central release log for CapPlan. All user-facing and significant int
 - **Instellingenpagina herontwerp:** Tabnavigatie met secties.
 - **Capaciteitspagina:** Statuschips met kleurindicatorstippen.
 - **Datuminvoer:** Gestylede invoer met kalenderknop.
-- **Subtabellen:** Tonale rijscheidingen.
 - **Verwijderbevestigingen:** Gestylede bevestigingsdialogen.
 - **Typografie:** Manrope lettertype voor paginatitels.
 
@@ -182,11 +95,6 @@ This is the central release log for CapPlan. All user-facing and significant int
 #### Prestaties
 
 - **Map-gebaseerde lookups:** O(1) lookups in het planningsrooster.
-
-#### Betrouwbaarheid
-
-- **Referentievalidatie:** Alle API-routes valideren relaties.
-- **Transactieveiligheid:** Meervoudige databasebewerkingen in transacties.
 
 #### Bugfix
 

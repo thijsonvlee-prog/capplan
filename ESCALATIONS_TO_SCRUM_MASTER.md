@@ -28,23 +28,13 @@ _No open escalations._
 
 ## Planned Escalations
 
-### ESC-011: Audittrail op stamdata — aanpak en scope
-
-- **Status:** Planned
-- **Date / run context:** 2026-03-31 — triggered by SMI-017
-- **Chosen option:** Option B — Aparte audit-logtabel. Maak een `AuditLog` tabel die elke mutatie vastlegt (tabel, record-ID, actie, oude/nieuwe waarden, gebruiker, tijdstip). Toon een doorzoekbaar auditlogboek in de instellingen.
-- **Backlog linkage:** PB-146, PB-147, PB-148, PB-149
-- **Product Owner action:** Broken into 4 phased backlog items. Phase 1 (PB-146: data model) ready for Delivery Agent. Phases 2-4 sequenced.
-
----
-
 ### ESC-012: API management — scope en fasering
 
 - **Status:** Planned
 - **Date / run context:** 2026-03-31 — triggered by SMI-018
 - **Chosen option:** Option B — Fase 1: Uitgaande API-connecties. Breid de connectiviteitshub uit met REST API-bronnen naast CSV. Configureer URL, headers, authenticatie per bron. Voer GET-requests uit en importeer de response. Credential-opslag per bron.
 - **Backlog linkage:** PB-150, PB-151, PB-152, PB-153
-- **Product Owner action:** Broken into 4 phased backlog items. Sequenced after audit trail Phase 1. PB-150 is first item, ready after PB-146.
+- **Product Owner action:** Broken into 4 phased backlog items. PB-150 is now ready for next cycle.
 
 ---
 
@@ -54,11 +44,19 @@ _No open escalations._
 - **Date / run context:** 2026-03-31 — triggered by SMI-019
 - **Chosen option:** Option B — Selectieve mobiele weergaven. Maak 2-3 kernschermen mobielvriendelijk: chauffeurlijst met zoeken, individueel chauffeurprofiel, en dag-/weekplanning per chauffeur. Planningsrooster en instellingen blijven desktop-only.
 - **Backlog linkage:** PB-154, PB-155, PB-156
-- **Product Owner action:** Broken into 3 phased backlog items. Sequenced after API connections Phase 1 starts. PB-154 is first item.
+- **Product Owner action:** Broken into 3 phased backlog items. Sequenced after API connections Phase 1.
 
 ---
 
 ## Closed Escalations
+
+### ESC-011: Audittrail op stamdata — aanpak en scope
+
+- **Status:** Closed
+- **Date / run context:** 2026-03-31 — triggered by SMI-017
+- **Chosen option:** Option B — Aparte audit-logtabel.
+- **Backlog linkage:** PB-146, PB-147, PB-148, PB-149 (all completed 2026-03-31)
+- **Resolution:** All 4 phases delivered and deployed.
 
 ### ESC-010: sickPercentage maximumwaarde — 99 of 100
 

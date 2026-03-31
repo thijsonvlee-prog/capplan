@@ -23,21 +23,12 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-### SMI-017: Audittrail op alle stamdata
-
-- **Type:** Initiative / new feature
-- **Status:** Planned
-- **Input:** Implementeer een audittrail op alle stamdata — wie heeft wat aangemaakt en gewijzigd en wanneer.
-- **PO assessment:** Scrum Master koos Option B (aparte audit-logtabel) via ESC-011. Opgebroken in 4 fasen: datamodel (PB-146), stamtabel-integratie (PB-147), overige entiteiten (PB-148), UI viewer (PB-149).
-- **Escalation linkage:** ESC-011 (decided — Option B)
-- **Backlog linkage:** PB-146, PB-147, PB-148, PB-149
-
 ### SMI-018: API management
 
 - **Type:** Initiative / new feature
 - **Status:** Planned
 - **Input:** Implementeer API management: beheren welke API's er zijn, GET-requests uitvoeren om gegevens uit andere applicaties op te halen, credentials beheren voor externe applicaties en ook beheren welke API's zij kunnen aanroepen.
-- **PO assessment:** Scrum Master koos Option B (Fase 1: uitgaande API-connecties) via ESC-012. Opgebroken in 4 fasen: datamodel uitbreiding (PB-150), configuratie UI (PB-151), uitvoering (PB-152), response mapping (PB-153). Bouwt voort op bestaande connectiviteitshub.
+- **PO assessment:** Scrum Master koos Option B (Fase 1: uitgaande API-connecties) via ESC-012. Opgebroken in 4 fasen: datamodel uitbreiding (PB-150), configuratie UI (PB-151), uitvoering (PB-152), response mapping (PB-153). PB-150 is nu klaar voor uitvoering.
 - **Escalation linkage:** ESC-012 (decided — Option B)
 - **Backlog linkage:** PB-150, PB-151, PB-152, PB-153
 
@@ -46,11 +37,18 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Type:** Initiative / new feature
 - **Status:** Planned
 - **Input:** Implementeer een mobiele versie.
-- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). Planningsrooster en instellingen blijven desktop-only.
+- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). Gepland na API connections Phase 1.
 - **Escalation linkage:** ESC-013 (decided — Option B)
 - **Backlog linkage:** PB-154, PB-155, PB-156
 
 ## Closed Inputs
+
+### SMI-017: Audittrail op alle stamdata
+
+- **Type:** Initiative / new feature
+- **Status:** Closed
+- **Closed reason:** Fully delivered. All 4 phases completed 2026-03-31: data model (PB-146), stamtabel-integratie (PB-147), overige entiteiten (PB-148), UI viewer (PB-149).
+- **Backlog linkage:** PB-146, PB-147, PB-148, PB-149 (all completed).
 
 ### SMI-015: Gebruikersgroepen met autorisatiefilters
 
