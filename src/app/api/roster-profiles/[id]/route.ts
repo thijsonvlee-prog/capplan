@@ -52,6 +52,10 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (typeof name === "string" && name.length > 200) {
+      return NextResponse.json({ error: "Naam mag maximaal 200 tekens bevatten" }, { status: 400 });
+    }
+
     const profile = await prisma.$transaction(async (tx) => {
       // Update profile name
       await tx.rosterProfile.update({

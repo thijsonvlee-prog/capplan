@@ -49,6 +49,16 @@ export async function PUT(
     const body = parsed.data;
     const { skillIds, ...driverData } = body;
 
+    if (driverData.firstName !== undefined && typeof driverData.firstName === "string" && driverData.firstName.length > 100) {
+      return NextResponse.json({ error: "Voornaam mag maximaal 100 tekens bevatten" }, { status: 400 });
+    }
+    if (driverData.lastName !== undefined && typeof driverData.lastName === "string" && driverData.lastName.length > 100) {
+      return NextResponse.json({ error: "Achternaam mag maximaal 100 tekens bevatten" }, { status: 400 });
+    }
+    if (driverData.employeeNumber !== undefined && typeof driverData.employeeNumber === "string" && driverData.employeeNumber.length > 50) {
+      return NextResponse.json({ error: "Personeelsnummer mag maximaal 50 tekens bevatten" }, { status: 400 });
+    }
+
     const updateData: any = {};
     if (driverData.firstName !== undefined)
       updateData.firstName = driverData.firstName;

@@ -35,6 +35,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (typeof name === "string" && name.length > 200) {
+      return NextResponse.json({ error: "Naam mag maximaal 200 tekens bevatten" }, { status: 400 });
+    }
+
     const profile = await prisma.rosterProfile.create({
       data: {
         name,

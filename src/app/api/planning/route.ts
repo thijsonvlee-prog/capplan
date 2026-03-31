@@ -104,9 +104,9 @@ export const POST = withPerfLogging(
       );
     }
 
-    if (sickPercentage !== undefined && sickPercentage !== null && (sickPercentage < 0 || sickPercentage > 100)) {
+    if (sickPercentage !== undefined && sickPercentage !== null && (sickPercentage < 0 || sickPercentage > 99)) {
       return NextResponse.json(
-        { error: "Ziektepercentage moet tussen 0 en 100 liggen" },
+        { error: "Ziektepercentage moet tussen 0 en 99 liggen" },
         { status: 400 }
       );
     }

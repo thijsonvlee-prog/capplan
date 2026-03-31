@@ -77,6 +77,10 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (typeof body.name === "string" && body.name.length > 200) {
+      return NextResponse.json({ error: "Naam mag maximaal 200 tekens bevatten" }, { status: 400 });
+    }
+
     // Verify group exists
     const existing = await prisma.userGroup.findUnique({
       where: { id },

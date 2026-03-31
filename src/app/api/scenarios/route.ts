@@ -35,6 +35,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (typeof name === "string" && name.length > 200) {
+      return NextResponse.json({ error: "Naam mag maximaal 200 tekens bevatten" }, { status: 400 });
+    }
+    if (description && typeof description === "string" && description.length > 500) {
+      return NextResponse.json({ error: "Omschrijving mag maximaal 500 tekens bevatten" }, { status: 400 });
+    }
+
     const scenario = await prisma.scenario.create({
       data: {
         name,

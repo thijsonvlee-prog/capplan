@@ -85,7 +85,7 @@ export type PlanningEntry = {
   date: string; // YYYY-MM-DD
   status: PlanningStatus;
   leaveTypeId?: string;
-  sickPercentage?: number; // 0-99 attendance percentage
+  sickPercentage?: number; // 0-99 attendance percentage when status is SICK
   notes?: string;
 };
 

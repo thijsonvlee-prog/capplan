@@ -62,6 +62,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
+    if (typeof body.name === "string" && body.name.length > 200) {
+      return NextResponse.json({ error: "Naam mag maximaal 200 tekens bevatten" }, { status: 400 });
+    }
+
     const departmentIds: string[] = Array.isArray(body.departmentIds) ? body.departmentIds : [];
 
     // Validate that all department IDs exist

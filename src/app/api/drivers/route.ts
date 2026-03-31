@@ -98,8 +98,17 @@ export const POST = withPerfLogging(
     if (!firstName || typeof firstName !== "string" || firstName.trim().length === 0) {
       return NextResponse.json({ error: "Voornaam is verplicht" }, { status: 400 });
     }
+    if (typeof firstName === "string" && firstName.length > 100) {
+      return NextResponse.json({ error: "Voornaam mag maximaal 100 tekens bevatten" }, { status: 400 });
+    }
     if (!lastName || typeof lastName !== "string" || lastName.trim().length === 0) {
       return NextResponse.json({ error: "Achternaam is verplicht" }, { status: 400 });
+    }
+    if (typeof lastName === "string" && lastName.length > 100) {
+      return NextResponse.json({ error: "Achternaam mag maximaal 100 tekens bevatten" }, { status: 400 });
+    }
+    if (employeeNumber && typeof employeeNumber === "string" && employeeNumber.length > 50) {
+      return NextResponse.json({ error: "Personeelsnummer mag maximaal 50 tekens bevatten" }, { status: 400 });
     }
 
     // Validate all FK references in nested records
