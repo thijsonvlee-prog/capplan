@@ -27,35 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-123: Planning grid toolbar — composed control zones
-
-- **ID:** PB-123
-- **Title:** Planning grid toolbar — composed control zones
-- **Problem / opportunity:** The planning grid toolbar is two rows of loosely arranged controls. Per DESIGN.md section 7.2, controls should be grouped by meaning with visible containment. The planning screen is the core product surface and the toolbar is the first thing users interact with.
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** The planning screen is the core product surface (DESIGN.md section 2.2). Settings and sidebar are already product-grade; the planning toolbar is the most visible gap.
-- **Scope notes:** Restructure the toolbar into contained zones: Period (date range + zoom), View (density + columns + scenario), Filter (search + grouping), Status legend. Use surface containers or whitespace for zone boundaries. Consider collapsing status legend into a popover. Must coordinate with PB-124 for a cohesive visual pass.
-- **Dependencies:** Should be implemented together with PB-124 as a single coordinated visual pass on PlanningGrid.tsx.
-- **Definition of done:** Toolbar has visually distinct control zones. Passes typecheck and lint. No regression in toolbar functionality (date range, zoom, density, search, scenario selector all work).
-- **Implementation note:** PlanningGrid.tsx is ~800 lines. Handle with extreme care per CLAUDE.md. Run `npm run verify` after changes.
-- **Source:** EX-REC-045.
-
-### PB-124: Planning grid matrix — tonal row separation instead of borders
-
-- **ID:** PB-124
-- **Title:** Planning grid matrix — tonal row separation instead of borders
-- **Problem / opportunity:** The planning grid uses 1px borders for row separation. DESIGN.md section 4.1 explicitly prohibits this as the default separation method. Recommends surface contrast, spacing, and tonal transitions instead.
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** The border-heavy grid is the most visible deviation from DESIGN.md across the entire app. Core product surface.
-- **Scope notes:** Replace row borders with alternating tonal backgrounds. Use stronger surface contrast for header and totals rows. Must be tested carefully with 100+ rows to avoid reducing scanability in dense views.
-- **Dependencies:** Should be implemented together with PB-123 as a single coordinated visual pass on PlanningGrid.tsx.
-- **Definition of done:** Grid rows use tonal separation instead of 1px borders. Header/totals rows have stronger surface contrast. Passes typecheck and lint. Scanability verified in dense view (100+ rows).
-- **Implementation note:** PlanningGrid.tsx is ~800 lines. Alternating row pattern partially in place. Handle with extreme care.
-- **Source:** EX-REC-046.
+_No items ready for next cycle._
 
 ---
 
@@ -72,6 +44,18 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-123: Planning grid toolbar — composed control zones
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
+
+### PB-124: Planning grid matrix — tonal row separation instead of borders
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
 
 ### PB-121: User group enforcement — individual-access routes
 

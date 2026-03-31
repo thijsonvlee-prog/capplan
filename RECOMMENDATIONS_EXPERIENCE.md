@@ -3,64 +3,51 @@
 ## Summary
 
 **What was improved this cycle:**
-- No ready tasks were assigned to the Experience Agent in this cycle. All Experience Agent items in the backlog are deferred at P4.
-- A fresh UX/design audit was performed across all major screens and components.
+- **Planning grid toolbar (PB-123):** Restructured from two loose rows of controls into a single composed toolbar surface with four clearly separated zones (Periode, Filter, Weergave, Status). Uses `.planning-toolbar` container with surface/shadow treatment and vertical dividers between zones.
+- **Planning grid tonal rows (PB-124):** Removed 1px border-bottom from all data rows. Replaced with alternating tonal backgrounds (transparent / `surface-secondary`). Hover now uses `brand-50` for clear row identification. Header edge softened. Group and totals rows use minimal structural borders only where needed.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8). Premium, calm, anchoring.
 - Settings page: well-aligned (sections 2.5, 7.1, 7.2). Strong hierarchy, tab navigation, composed zones.
 - Login page: well-aligned. Clean, premium, brand-surface split.
 - Header: well-aligned. Minimal, composed, contextual subtitle support.
+- Planning grid toolbar: **now aligned** (section 7.2). Controls grouped by meaning in contained zones with visible boundaries.
+- Planning grid matrix: **now aligned** (section 4.1). Tonal row separation replaces 1px borders. No-Line Rule respected.
+- Planning grid cells (DayCell/StatusBadge): well-designed. Density-responsive, status gradients.
 - User group manager: well-aligned. Card-based layout, expandable details, modal editor.
 - User manager: well-aligned. Avatar display, role badges, inline role editing.
 - Toast & ConfirmDialog: product-grade. Accessibility, focus trapping, semantic colors.
 - Button system: fully aligned. Clear hierarchy across primary/secondary/icon/danger.
-- Planning grid cells (DayCell/StatusBadge): well-designed. Density-responsive, status gradients.
 - Capacity page: partially aligned. Clean but not distinctly product-focused. Reads as standard analytics.
 - Drivers page: below standard. Table-first layout, generic admin CRUD feel.
-- Planning grid toolbar: below standard. Two loose rows of controls without strong visual zones.
-- Planning grid matrix: below standard. 1px border-based row separation violates No-Line Rule from DESIGN.md.
 
 **Where design quality is still below target:**
 - The drivers page still reads as standard admin CRUD with a table-first layout, weak hierarchy, and no composed zones beyond the page header.
-- The planning grid toolbar uses two rows of loosely grouped controls. Per DESIGN.md section 7.2, controls should be grouped by meaning with visible containment.
-- The planning grid matrix relies on 1px borders for row separation. DESIGN.md section 4.1 explicitly states "Do not use 1px borders as the default way to separate major sections."
-- The capacity page is functional and clean but lacks the visual distinctiveness expected of a product-grade analytics surface.
+- The capacity page is functional and clean but lacks the visual distinctiveness expected of a product-grade analytics surface (DESIGN.md section 8.3 — KPIs as first-class information).
 
 ## Recommended Next Improvements
-
-### EX-REC-045: Planning grid toolbar — composed control zones
-
-- **Problem:** The planning grid toolbar is two rows of loosely arranged dropdowns, buttons, and inputs. Per DESIGN.md section 7.2, "Avoid long unstructured rows of dropdowns, toggles, pills, and buttons." The controls are functionally grouped via `.control-group` but visually the toolbar still reads as flat form elements.
-- **Proposed improvement:** Restructure the toolbar into clearly contained zones: Period zone (date range + zoom), View zone (density + columns + scenario), Filter zone (search + grouping), and Status legend. Use surface containers or stronger whitespace to make zone boundaries visible. Consider collapsing the status legend into a popover to reduce toolbar width.
-- **Expected user value:** Faster comprehension of available controls. The planning screen — the core product surface — feels more intentional and composed.
-- **Priority:** P3 Medium
-- **Effort:** Medium
-- **Dependencies:** None. PlanningGrid.tsx changes require careful handling (~800 lines).
-- **Suggested owner:** Experience Agent
-- **Why now:** The planning screen is the core product surface per DESIGN.md section 2.2. Every session starts here. The toolbar is the first thing users interact with, and it currently reads as admin tooling.
-
-### EX-REC-046: Planning grid matrix — tonal row separation instead of borders
-
-- **Problem:** The planning grid uses 1px `border-b` on every data row and 2px borders for header/totals separation. DESIGN.md section 4.1 explicitly says "Do not use 1px borders as the default way to separate major sections" and recommends surface contrast, spacing, and tonal transitions instead.
-- **Proposed improvement:** Replace row borders with alternating tonal backgrounds (e.g., transparent vs `surface-secondary/30` already partially in place). Use stronger surface contrast for header and totals rows. Remove or reduce border reliance.
-- **Expected user value:** The planning grid feels less spreadsheet-like and more product-grade. Better alignment with the visual calm expected per DESIGN.md.
-- **Priority:** P3 Medium
-- **Effort:** Medium
-- **Dependencies:** Should be coordinated with EX-REC-045 for a cohesive planning grid visual pass.
-- **Suggested owner:** Experience Agent
-- **Why now:** Core product surface. The current border-heavy grid is the most visible deviation from DESIGN.md across the entire app.
 
 ### EX-REC-036: Drivers table — reduce generic admin feel
 
 - **Problem:** The drivers table uses a flat table-first layout. Per DESIGN.md section 3.2, "table-first UI where the table dominates everything else" and "flat screens with weak hierarchy" are anti-patterns. The page has a good header zone but the data area below is unframed.
 - **Proposed improvement:** Wrap the table in a card container with subtle shadow. Improve row hover treatment. Consider column grouping or denser badge treatment for license/skill columns. Add visual framing around the data zone.
 - **Expected user value:** Drivers page feels intentional and composed rather than a default CRUD list.
-- **Priority:** P4 Low
+- **Priority:** P3 Medium
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent, but the drivers page is a high-frequency screen. The gap between this page and the settings page (which is well-composed) creates inconsistency.
+- **Why now:** The drivers page is a high-frequency screen. The gap between this page and the settings/planning pages (which are now product-grade) creates visible inconsistency.
+
+### EX-REC-047: Capacity page — visual identity lift
+
+- **Problem:** The capacity page is functionally correct and clean, but it reads as a standard analytics dashboard rather than a product-grade analysis surface. Per DESIGN.md section 8.3, "KPIs, totals, warnings, capacity metrics, and operational summaries should be treated as first-class information."
+- **Proposed improvement:** Add a summary module above the chart showing key capacity KPIs (total available, total on leave, total sick, utilization %). Improve chart/table visual framing. Consider stronger section headers between chart and table zones.
+- **Expected user value:** Capacity analysis feels more actionable and product-grade. Key numbers are visible without reading the full table.
+- **Priority:** P4 Low
+- **Effort:** Medium
+- **Dependencies:** Capacity data aggregation already exists in `src/lib/aggregation.ts`.
+- **Suggested owner:** Experience Agent
+- **Why now:** Not urgent. The page works well functionally. Recommend after drivers page improvement.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
@@ -73,16 +60,16 @@
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-risk typographic refinement. Should be visually evaluated before applying broadly.
 
-### EX-REC-047: Capacity page — visual identity lift
+### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
-- **Problem:** The capacity page is functionally correct and clean, but it reads as a standard analytics dashboard rather than a product-grade analysis surface. Per DESIGN.md section 8.3, "KPIs, totals, warnings, capacity metrics, and operational summaries should be treated as first-class information."
-- **Proposed improvement:** Add a summary module above the chart showing key capacity KPIs (total available, total on leave, total sick, utilization %). Improve chart/table visual framing. Consider stronger section headers between chart and table zones.
-- **Expected user value:** Capacity analysis feels more actionable and product-grade. Key numbers are visible without reading the full table.
+- **Problem:** The new single-row composed toolbar works well on wide screens, but may overflow or wrap awkwardly on narrow viewports (< 1200px). The `flex-wrap` behavior handles this gracefully at a basic level, but the zone structure could break visually when wrapped.
+- **Proposed improvement:** Add responsive breakpoint behavior: on narrow screens, stack the toolbar into two rows (Period + Filter on top, View + Status below) while maintaining zone containment.
+- **Expected user value:** Consistent toolbar experience across screen sizes.
 - **Priority:** P4 Low
-- **Effort:** Medium
-- **Dependencies:** Capacity data aggregation already exists in `src/lib/aggregation.ts`.
+- **Effort:** Small
+- **Dependencies:** None. Builds on PB-123.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent. The page works well functionally. Recommend after planning grid improvements are complete.
+- **Why now:** Low priority. Current flex-wrap handles basic cases. Only relevant if narrow viewport usage is reported.
 
 ### EX-REC-044: User group member assignment — batch API
 
@@ -119,10 +106,10 @@
 
 ## Risks / Watch-outs
 
-- **Planning grid complexity.** PlanningGrid.tsx is ~800 lines and the most complex component. Any visual changes (EX-REC-045, EX-REC-046) must be carefully tested against typecheck, lint, and visual behavior. Recommend these as a coordinated visual pass rather than piecemeal changes.
+- **Planning grid toolbar wrap behavior.** The single-row toolbar with four zones may wrap on screens narrower than ~1200px. Current `flex-wrap` handles this, but the visual zone structure may degrade when wrapped. Monitor for user feedback. See EX-REC-048.
+- **Tonal row separation at extreme density.** In compact density with 100+ rows, the tonal alternation between transparent and `surface-secondary` provides sufficient contrast for scanability. If users report difficulty distinguishing rows, the `surface-secondary` tone could be strengthened.
 - **Settings tab count growth.** The settings page now has 6 tabs with horizontal scroll. More tabs may need a different navigation pattern (vertical tabs or sub-navigation).
-- **Inconsistency between screens.** Settings and sidebar are product-grade while the planning toolbar and drivers table are below standard. This inconsistency is visible to users who navigate between screens.
-- **No-Line Rule adoption scope.** Removing borders from the planning grid is the right direction per DESIGN.md, but must be tested carefully to avoid reducing scanability in dense data views with 100+ rows.
+- **Inconsistency between planning and drivers screens.** Planning grid and settings are now product-grade while the drivers table is below standard. This gap is more visible after the planning improvements. Recommend prioritizing EX-REC-036 next.
 
 ## Items Intentionally Not Recommended
 
@@ -141,6 +128,7 @@
 - **Page size selector for planning grid:** Fixed 100 per page is reasonable.
 - **FormField wrapper component:** Would reduce repetition across forms, but introducing a new abstraction at this point adds risk and cross-agent coordination overhead. Only recommend if a major form refactor is planned.
 - **Skeleton loaders:** Spinner pattern works. Skeleton loaders add complexity without strong user demand.
+- **Status legend popover collapse:** Considered during PB-123, but the inline legend provides constant reference while planning. Hiding it behind a click would add friction for the most frequent workflow.
 
 ## Recommendation Rules
 

@@ -389,99 +389,102 @@ export function PlanningGrid() {
 
   return (
     <div className="select-none flex flex-col h-full min-h-0">
-      {/* Toolbar row 1: navigation + view settings */}
-      <div className="flex items-center justify-between mb-2 flex-wrap gap-2 flex-shrink-0">
-        <div className="control-group">
-          <span className="control-group-label">Periode</span>
-          <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
-          <ZoomSelector value={aggregation} onChange={setAggregation} />
-        </div>
-        <div className="control-group">
-          <span className="control-group-label">Weergave</span>
-          <button
-            onClick={cycleDensity}
-            className="flex items-center gap-1.5 px-2 py-1.5 border border-border-default rounded-lg text-sm text-text-secondary hover:bg-surface-secondary bg-surface-primary transition-colors"
-            title={`Dichtheid: ${dc.label}`}
-          >
-            <DensityIcon className="w-4 h-4" />
-            {dc.label}
-          </button>
-          <ScenarioSelector />
-        </div>
-      </div>
-
-      {/* Toolbar row 2: search/filter + display options + status legend */}
-      <div className="flex items-center gap-3 mb-3 flex-wrap flex-shrink-0">
-        <div className="control-group">
-          <input
-            type="text"
-            placeholder="Zoek op naam of personeelsnr..."
-            value={searchInput}
-            onChange={handleSearchChange}
-            className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-64 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
-          />
-          <label className="text-caption whitespace-nowrap">Groepeer op:</label>
-          <select
-            value={groupBy}
-            onChange={(e) => setGroupBy(e.target.value as GroupByField)}
-            className="input-field"
-          >
-            {Object.entries(GROUP_BY_LABELS).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="control-group">
-          {/* Column picker */}
-          <div className="relative">
-            <button
-              onClick={() => setShowColumnPicker(!showColumnPicker)}
-              className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
-                extraColumns.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-secondary bg-surface-primary"
-              }`}
-              title="Kolommen toevoegen"
-            >
-              <Columns3 className="w-4 h-4" />
-              Kolommen{extraColumns.length > 0 && ` (${extraColumns.length})`}
-            </button>
-            {showColumnPicker && (
-              <>
-                <div className="fixed inset-0 z-20" onClick={() => setShowColumnPicker(false)} />
-                <div className="absolute top-full left-0 mt-1 bg-surface-primary border border-border-default rounded-lg shadow-dropdown z-30 py-1 min-w-[200px]" role="dialog" aria-modal="true" aria-label="Kolommen selecteren">
-                  {DRIVER_COLUMNS.map((col) => (
-                    <label key={col.key} className="flex items-center gap-2 px-3 py-1.5 hover:bg-surface-secondary cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={extraColumns.includes(col.key)}
-                        onChange={() => toggleColumn(col.key)}
-                        className="w-3.5 h-3.5 rounded border-border-default accent-brand-600"
-                      />
-                      {col.label}
-                    </label>
-                  ))}
-                </div>
-              </>
-            )}
+      {/* Composed toolbar */}
+      <div className="planning-toolbar flex-shrink-0">
+        <div className="planning-toolbar-row">
+          {/* Period zone */}
+          <div className="control-group">
+            <span className="control-group-label">Periode</span>
+            <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
+            <ZoomSelector value={aggregation} onChange={setAggregation} />
           </div>
 
-          {/* Capacity summary toggle */}
-          <button
-            onClick={() => setShowCapacitySummary((v) => !v)}
-            className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
-              showCapacitySummary ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-secondary bg-surface-primary"
-            }`}
-            title="Capaciteitssamenvatting tonen/verbergen"
-          >
-            Totalen
-          </button>
-        </div>
+          <div className="planning-toolbar-divider" />
 
-        <div className="control-group ml-auto">
-          <span className="control-group-label">Status</span>
-          {ALL_PLANNING_STATUSES.map((s) => (
-            <StatusBadge key={s} status={s} />
-          ))}
+          {/* Filter zone */}
+          <div className="control-group">
+            <span className="control-group-label">Filter</span>
+            <input
+              type="text"
+              placeholder="Zoek op naam of personeelsnr..."
+              value={searchInput}
+              onChange={handleSearchChange}
+              className="px-3 py-1.5 border border-border-default rounded-lg text-sm w-56 bg-surface-primary placeholder:text-text-tertiary focus:border-brand-400 focus:ring-1 focus:ring-brand-400 transition-colors"
+            />
+            <select
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as GroupByField)}
+              className="input-field text-sm"
+              aria-label="Groepeer op"
+            >
+              {Object.entries(GROUP_BY_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>{key === "none" ? "Geen groepering" : `Groepeer: ${label}`}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="planning-toolbar-divider" />
+
+          {/* View zone */}
+          <div className="control-group">
+            <span className="control-group-label">Weergave</span>
+            <button
+              onClick={cycleDensity}
+              className="flex items-center gap-1.5 px-2 py-1.5 border border-border-default rounded-lg text-sm text-text-secondary hover:bg-surface-primary bg-surface-primary transition-colors"
+              title={`Dichtheid: ${dc.label}`}
+            >
+              <DensityIcon className="w-4 h-4" />
+              {dc.label}
+            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowColumnPicker(!showColumnPicker)}
+                className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
+                  extraColumns.length > 0 ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-primary bg-surface-primary"
+                }`}
+                title="Kolommen toevoegen"
+              >
+                <Columns3 className="w-4 h-4" />
+                Kolommen{extraColumns.length > 0 && ` (${extraColumns.length})`}
+              </button>
+              {showColumnPicker && (
+                <>
+                  <div className="fixed inset-0 z-20" onClick={() => setShowColumnPicker(false)} />
+                  <div className="absolute top-full left-0 mt-1 bg-surface-primary border border-border-default rounded-lg shadow-dropdown z-30 py-1 min-w-[200px]" role="dialog" aria-modal="true" aria-label="Kolommen selecteren">
+                    {DRIVER_COLUMNS.map((col) => (
+                      <label key={col.key} className="flex items-center gap-2 px-3 py-1.5 hover:bg-surface-secondary cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={extraColumns.includes(col.key)}
+                          onChange={() => toggleColumn(col.key)}
+                          className="w-3.5 h-3.5 rounded border-border-default accent-brand-600"
+                        />
+                        {col.label}
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => setShowCapacitySummary((v) => !v)}
+              className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-lg text-sm transition-colors ${
+                showCapacitySummary ? "border-brand-300 bg-brand-50 text-brand-700" : "border-border-default text-text-secondary hover:bg-surface-primary bg-surface-primary"
+              }`}
+              title="Capaciteitssamenvatting tonen/verbergen"
+            >
+              Totalen
+            </button>
+            <ScenarioSelector />
+          </div>
+
+          {/* Status legend — pushed right */}
+          <div className="control-group ml-auto">
+            <span className="control-group-label">Status</span>
+            {ALL_PLANNING_STATUSES.map((s) => (
+              <StatusBadge key={s} status={s} />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -565,12 +568,13 @@ export function PlanningGrid() {
                 const isDayLevel = aggregation === "day";
                 const isCompact = density === "compact";
                 const driverEntryMap = entryMaps.get(driver.id);
+                const isOdd = driverIdx % 2 === 1;
                 return (
-                  <tr key={driver.id} className={cn("hover:bg-surface-secondary/50", driverIdx % 2 === 1 && "bg-surface-secondary/30")} style={{ height: rowH }}>
+                  <tr key={driver.id} className={isOdd ? "grid-row-odd" : "grid-row-even"} style={{ height: rowH }}>
                     <td className={cn(
                         dc.cellPad,
                         "sticky left-0 z-10",
-                        driverIdx % 2 === 1 ? "bg-surface-secondary/30" : "bg-surface-primary",
+                        isOdd ? "bg-surface-secondary" : "bg-surface-primary",
                         extraColumns.length === 0 && "grid-sticky-edge"
                       )} style={{ minWidth: driverColWidth }}>
                       <div className="flex items-center justify-between gap-1">
@@ -614,7 +618,7 @@ export function PlanningGrid() {
                           className={cn(
                             dc.cellPad, dc.fontSize,
                             "text-text-secondary sticky z-10 whitespace-nowrap",
-                            driverIdx % 2 === 1 ? "bg-surface-secondary/30" : "bg-surface-primary",
+                            isOdd ? "bg-surface-secondary" : "bg-surface-primary",
                             isLast && "grid-sticky-edge"
                           )}
                           style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth, maxWidth: extraColWidth }}

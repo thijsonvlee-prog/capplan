@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Planningsrooster visuele verbetering
+
+#### UX / design verbeteringen
+
+- **Planningsrooster werkbalk herstructurering:** Werkbalk samengevoegd van twee losse rijen naar één samengestelde balk met vier duidelijke zones: Periode, Filter, Weergave en Status. Zones gescheiden door verticale dividers voor snellere visuele oriëntatie.
+- **Tonale rijscheiding in planningsrooster:** 1px-randen tussen datarijen vervangen door afwisselende achtergrondtinten (wit/lichtgrijs). Rij-hover toont zachte merkkleur. Koprij-rand versoepeld. Planningsrooster oogt nu als productoppervlak in plaats van spreadsheet.
+
 ### 2026-03-30 — Gebruikersgroepen autorisatie compleet
 
 #### Beveiliging

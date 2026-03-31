@@ -444,6 +444,7 @@ body {
 /* ===================================================================
    Planning Grid Surface System
    Tonal hierarchy replaces border-heavy grid structure.
+   Uses alternating row tones and surface contrast for separation.
    =================================================================== */
 
 .planning-grid {
@@ -451,31 +452,73 @@ body {
   width: 100%;
 }
 
-/* Header: strong bottom edge, no cell borders */
+/* Header: subtle bottom edge for structural boundary */
 .planning-grid thead th {
-  border-bottom: 2px solid var(--color-border-default);
-}
-
-/* Data rows: subtle bottom separator */
-.planning-grid tbody tr {
-  border-bottom: 1px solid var(--color-border-subtle);
-}
-
-/* Group header row: distinct surface with stronger edges */
-.planning-grid .grid-group-row td {
-  background-color: var(--color-surface-inset);
   border-bottom: 1px solid var(--color-border-default);
 }
 
-/* Totals section: top edge separates from data */
+/* Data rows: tonal separation via alternating backgrounds, no borders */
+.planning-grid tbody tr.grid-row-even {
+  background-color: transparent;
+}
+
+.planning-grid tbody tr.grid-row-odd {
+  background-color: var(--color-surface-secondary);
+}
+
+.planning-grid tbody tr.grid-row-even:hover,
+.planning-grid tbody tr.grid-row-odd:hover {
+  background-color: var(--color-brand-50);
+}
+
+/* Group header row: distinct inset surface */
+.planning-grid .grid-group-row td {
+  background-color: var(--color-surface-inset);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* Totals section: stronger surface contrast */
 .planning-grid .grid-totals-row {
-  border-top: 2px solid var(--color-border-default);
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-top: 1px solid var(--color-border-default);
 }
 
 /* Sticky column right-edge shadow for scroll separation */
 .grid-sticky-edge {
   box-shadow: 2px 0 6px -2px rgb(0 0 0 / 0.06);
+}
+
+/* ===================================================================
+   Planning Toolbar
+   Composed toolbar with clear zone separation.
+   =================================================================== */
+
+.planning-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  margin-bottom: 0.75rem;
+}
+
+.planning-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.planning-toolbar-divider {
+  width: 1px;
+  height: 1.5rem;
+  background-color: var(--color-border-subtle);
+  flex-shrink: 0;
+}
+
+.planning-toolbar .control-group {
+  background-color: var(--color-surface-secondary);
 }
 
 /* ===================================================================
