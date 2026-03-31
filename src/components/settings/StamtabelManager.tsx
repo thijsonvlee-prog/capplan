@@ -14,9 +14,10 @@ type Props = {
   onDelete: (id: string) => void;
   loading?: boolean;
   readOnly?: boolean;
+  error?: string | null;
 };
 
-export function StamtabelManager({ title, description, records, onCreate, onUpdate, onDelete, loading, readOnly }: Props) {
+export function StamtabelManager({ title, description, records, onCreate, onUpdate, onDelete, loading, readOnly, error }: Props) {
   const [newCode, setNewCode] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -89,6 +90,12 @@ export function StamtabelManager({ title, description, records, onCreate, onUpda
         {loading && (
           <div className="p-6 flex justify-center">
             <div className="spinner" />
+          </div>
+        )}
+        {!loading && error && records.length === 0 && (
+          <div className="p-6 text-center">
+            <div className="text-sm font-medium text-danger-600">Fout bij ophalen gegevens</div>
+            <div className="text-xs text-text-tertiary mt-1">{error}</div>
           </div>
         )}
         {!loading && records.map((r) => (

@@ -72,7 +72,7 @@ function RoleBadge({ role }: { role: string }) {
 }
 
 export function UserManager() {
-  const [users, loading] = useApiDataWithLoading(() => api.users.list(), [], []);
+  const [users, loading, error] = useApiDataWithLoading(() => api.users.list(), [], []);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [pendingChange, setPendingChange] = useState<{ user: User; newRole: string } | null>(null);
@@ -131,6 +131,13 @@ export function UserManager() {
         {loading && (
           <div className="p-8 flex justify-center">
             <div className="spinner" />
+          </div>
+        )}
+
+        {!loading && error && users.length === 0 && (
+          <div className="p-8 text-center">
+            <div className="text-sm font-medium text-danger-600">Fout bij ophalen gebruikers</div>
+            <div className="text-xs text-text-tertiary mt-1">{error}</div>
           </div>
         )}
 

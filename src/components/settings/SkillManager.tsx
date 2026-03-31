@@ -14,7 +14,7 @@ export function SkillManager({ readOnly }: { readOnly?: boolean }) {
   const [showValidation, setShowValidation] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const [skills, loading] = useApiDataWithLoading(() => api.settings.getSkills(), [], []);
+  const [skills, loading, error] = useApiDataWithLoading(() => api.settings.getSkills(), [], []);
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -88,6 +88,12 @@ export function SkillManager({ readOnly }: { readOnly?: boolean }) {
         {loading && (
           <div className="p-6 flex justify-center">
             <div className="spinner" />
+          </div>
+        )}
+        {!loading && error && skills.length === 0 && (
+          <div className="p-6 text-center">
+            <div className="text-sm font-medium text-danger-600">Fout bij ophalen vaardigheden</div>
+            <div className="text-xs text-text-tertiary mt-1">{error}</div>
           </div>
         )}
         {!loading && skills.map((skill) => (

@@ -81,7 +81,7 @@ function formatDateTime(iso: string): string {
 }
 
 export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
-  const [sources, loading] = useApiDataWithLoading(() => api.importSources.list(), [], []);
+  const [sources, loading, sourcesError] = useApiDataWithLoading(() => api.importSources.list(), [], []);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -308,7 +308,14 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
           </div>
         )}
 
-        {!loading && sources.length === 0 && !showForm && (
+        {!loading && sourcesError && sources.length === 0 && (
+          <div className="p-6 text-center">
+            <div className="text-sm font-medium text-danger-600">Fout bij ophalen importbronnen</div>
+            <div className="text-xs text-text-tertiary mt-1">{sourcesError}</div>
+          </div>
+        )}
+
+        {!loading && sources.length === 0 && !showForm && !sourcesError && (
           <div className="p-8 text-center">
             <div className="w-12 h-12 rounded-xl bg-surface-tertiary flex items-center justify-center mx-auto mb-3">
               <FileSpreadsheet className="w-6 h-6 text-text-tertiary" />

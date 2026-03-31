@@ -454,7 +454,7 @@ function GroupEditor({
 // === Main component ===
 
 export function UserGroupManager() {
-  const [groups, groupsLoading] = useApiDataWithLoading(() => api.userGroups.list(), [], []);
+  const [groups, groupsLoading, groupsError] = useApiDataWithLoading(() => api.userGroups.list(), [], []);
   const [departments] = useApiDataWithLoading(() => api.settings.getDepartments(), [], []);
   const [users] = useApiDataWithLoading(() => api.users.list(), [], []);
 
@@ -588,6 +588,14 @@ export function UserGroupManager() {
       {groupsLoading && (
         <div className="p-8 flex justify-center">
           <div className="spinner" />
+        </div>
+      )}
+
+      {/* Error */}
+      {!groupsLoading && groupsError && groups.length === 0 && (
+        <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle p-8 text-center">
+          <div className="text-sm font-medium text-danger-600">Fout bij ophalen gebruikersgroepen</div>
+          <div className="text-xs text-text-tertiary mt-1">{groupsError}</div>
         </div>
       )}
 

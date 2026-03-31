@@ -54,10 +54,10 @@ export default function SettingsPage() {
   const { canWriteSettings } = useUserRole();
   const [activeTab, setActiveTab] = useState<TabKey>("stamgegevens");
 
-  const [employers, employersLoading] = useApiDataWithLoading(() => api.settings.getEmployers(), [], []);
-  const [departments, departmentsLoading] = useApiDataWithLoading(() => api.settings.getDepartments(), [], []);
-  const [locations, locationsLoading] = useApiDataWithLoading(() => api.settings.getLocations(), [], []);
-  const [leaveTypes, leaveTypesLoading] = useApiDataWithLoading(() => api.settings.getLeaveTypes(), [], []);
+  const [employers, employersLoading, employersError] = useApiDataWithLoading(() => api.settings.getEmployers(), [], []);
+  const [departments, departmentsLoading, departmentsError] = useApiDataWithLoading(() => api.settings.getDepartments(), [], []);
+  const [locations, locationsLoading, locationsError] = useApiDataWithLoading(() => api.settings.getLocations(), [], []);
+  const [leaveTypes, leaveTypesLoading, leaveTypesError] = useApiDataWithLoading(() => api.settings.getLeaveTypes(), [], []);
 
   const tabCounts = useMemo((): Record<TabKey, number | null> => ({
     stamgegevens: employers.length + departments.length + locations.length + leaveTypes.length,
@@ -119,6 +119,7 @@ export default function SettingsPage() {
             description="Beschikbaar in het chauffeurscherm bij het toevoegen van dienstverbanden."
             records={employers}
             loading={employersLoading}
+            error={employersError}
             readOnly={!canWriteSettings}
             onCreate={(code, desc) => toastMutate(() => api.settings.createEmployer(code, desc), "Werkgever toegevoegd")}
             onUpdate={(id, code, desc) => toastMutate(() => api.settings.updateEmployer(id, code, desc), "Werkgever bijgewerkt")}
@@ -129,6 +130,7 @@ export default function SettingsPage() {
             description="Beschikbaar in het chauffeurscherm bij het toevoegen van dienstverbanden."
             records={departments}
             loading={departmentsLoading}
+            error={departmentsError}
             readOnly={!canWriteSettings}
             onCreate={(code, desc) => toastMutate(() => api.settings.createDepartment(code, desc), "Afdeling toegevoegd")}
             onUpdate={(id, code, desc) => toastMutate(() => api.settings.updateDepartment(id, code, desc), "Afdeling bijgewerkt")}
@@ -139,6 +141,7 @@ export default function SettingsPage() {
             description="Beschikbaar in het chauffeurscherm bij het toevoegen van dienstverbanden."
             records={locations}
             loading={locationsLoading}
+            error={locationsError}
             readOnly={!canWriteSettings}
             onCreate={(code, desc) => toastMutate(() => api.settings.createLocation(code, desc), "Standplaats toegevoegd")}
             onUpdate={(id, code, desc) => toastMutate(() => api.settings.updateLocation(id, code, desc), "Standplaats bijgewerkt")}
@@ -149,6 +152,7 @@ export default function SettingsPage() {
             description="Beschikbaar bij de categorie Verlof in het planningsscherm."
             records={leaveTypes}
             loading={leaveTypesLoading}
+            error={leaveTypesError}
             readOnly={!canWriteSettings}
             onCreate={(code, desc) => toastMutate(() => api.settings.createLeaveType(code, desc), "Verloftype toegevoegd")}
             onUpdate={(id, code, desc) => toastMutate(() => api.settings.updateLeaveType(id, code, desc), "Verloftype bijgewerkt")}

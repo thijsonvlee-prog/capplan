@@ -15,7 +15,7 @@ function emptyGrid(): RosterProfileEntry[] {
 }
 
 export function RosterProfileEditor({ readOnly }: { readOnly?: boolean }) {
-  const [profiles, loading] = useApiDataWithLoading(() => api.rosterProfiles.list(), [], []);
+  const [profiles, loading, error] = useApiDataWithLoading(() => api.rosterProfiles.list(), [], []);
   const [editingProfile, setEditingProfile] = useState<RosterProfile | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [name, setName] = useState("");
@@ -172,6 +172,12 @@ export function RosterProfileEditor({ readOnly }: { readOnly?: boolean }) {
         {loading && (
           <div className="p-6 flex justify-center">
             <div className="spinner" />
+          </div>
+        )}
+        {!loading && error && profiles.length === 0 && (
+          <div className="p-6 text-center">
+            <div className="text-sm font-medium text-danger-600">Fout bij ophalen roosterprofielen</div>
+            <div className="text-xs text-text-tertiary mt-1">{error}</div>
           </div>
         )}
         {!loading && profiles.map((p) => (
