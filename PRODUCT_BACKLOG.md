@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** API Phase 1 is fully complete. Next priorities: (1) deduplicate API helpers created during Phase 1, (2) audit log cleanup mechanism, (3) mobile views starting with layout shell. Mobile is sequenced as PB-154 → PB-155 → PB-156.
+**Current direction:** API Phase 1 is fully complete. Deduplication and audit cleanup done. Mobile views in progress (PB-154 ✓, PB-155 ✓, PB-156 ready). Next priorities: consolidate remaining duplicated helpers (DE-REC-068, DE-REC-069), then P4 cleanup items.
 
 ## Status Definitions
 
@@ -76,6 +76,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-162: Importbron GET-lijst endpoint beveiligd met ADMIN-rol
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-03-31
+- **Implementation note:** Added `requireRole("ADMIN")` to the GET handler in `/api/import-sources/route.ts`. The list endpoint returned all fields including `apiCredentials` without any role check. The individual GET (`/api/import-sources/[id]`) was already fixed in PB-159, but the list endpoint was overlooked. Same class of security gap.
 
 ### PB-160: Deduplicate API import helpers naar gedeelde module
 
@@ -251,7 +258,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-162.
+- Backlog IDs are sequential and never reused. Next available: PB-163.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

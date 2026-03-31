@@ -6,7 +6,7 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-160 (API import helper deduplication) and PB-161 (audit log cleanup) are now completed. The codebase is stable with clean verify output. A fresh scan identified two new consolidation opportunities: duplicated `resolveUserId()` across two routes, and duplicated `validateApiFields()` across two import-source routes (previously noted as acceptable, but now that DE-REC-066 established the extraction pattern, it's cleaner to follow through). All existing P4 recommendations remain valid. No new critical or high-priority items discovered.
+PB-162 (import-sources list GET endpoint missing ADMIN role) was discovered and fixed this cycle — same class of security gap as PB-159. The codebase is stable with clean verify output. Two P3 consolidation recommendations (DE-REC-068, DE-REC-069) remain the highest-value next items. All P4 recommendations remain valid. No new critical issues discovered.
 
 ## Recommended Next Improvements
 
@@ -21,14 +21,14 @@ PB-160 (API import helper deduplication) and PB-161 (audit log cleanup) are now 
 - **Risk:** Low (pure refactoring, no behavior change)
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Follows the same extraction pattern just applied in PB-160. Small, safe consolidation.
+- **Why now:** Follows the same extraction pattern applied in PB-160. Small, safe consolidation.
 
 ### DE-REC-069: Extract duplicated validateApiFields to shared module
 
 - **Title:** Deduplicate `validateApiFields()` between import-sources route.ts and [id]/route.ts
-- **Problem:** `validateApiFields()` is fully duplicated between `src/app/api/import-sources/route.ts` (line 11) and `src/app/api/import-sources/[id]/route.ts` (line 11). Both validate API source fields identically. Previously noted as acceptable at 2 instances, but now that `api-import-helpers.ts` exists as a shared module for import-source logic, this duplication can be cleanly consolidated.
-- **Proposed improvement:** Move `validateApiFields()` to `src/lib/api-import-helpers.ts`. Both routes import from there.
-- **Expected product/technical value:** Eliminates ~30 lines of duplication. Prevents divergence if validation rules change (e.g., new auth type).
+- **Problem:** `validateApiFields()` is fully duplicated between `src/app/api/import-sources/route.ts` (line 11) and `src/app/api/import-sources/[id]/route.ts` (line 11). Both validate API source fields identically. The shared constants `VALID_TARGET_ENTITIES`, `VALID_SOURCE_TYPES`, `VALID_API_METHODS`, and `VALID_API_AUTH_TYPES` are also duplicated across both files.
+- **Proposed improvement:** Move `validateApiFields()` and the validation constants to `src/lib/api-import-helpers.ts`. Both routes import from there.
+- **Expected product/technical value:** Eliminates ~70 lines of duplication (function + constants). Prevents divergence if validation rules change (e.g., new auth type).
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Risk:** Low (pure refactoring, no behavior change)
@@ -91,7 +91,7 @@ PB-160 (API import helper deduplication) and PB-161 (audit log cleanup) are now 
 ### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
 
 - **Title:** Hoist COMPARE_COLORS array to module scope in CapacityChart
-- **Problem:** `COMPARE_COLORS` is defined inside the `CapacityChart` component function (line 54), creating a new array reference on every render. This breaks referential stability for child `<Area>` components.
+- **Problem:** `COMPARE_COLORS` is defined inside the `CapacityChart` component function, creating a new array reference on every render. This breaks referential stability for child `<Area>` components.
 - **Proposed improvement:** Move `const COMPARE_COLORS = [...]` outside the component function to module scope.
 - **Expected product/technical value:** Minor render optimization; follows established pattern (other constants like STATUS_COLORS are module-scoped).
 - **Priority:** P4 Low
@@ -223,6 +223,9 @@ PB-160 (API import helper deduplication) and PB-161 (audit log cleanup) are now 
 - **Extract SortIcon from PlanningGrid:** Tiny inline function. Moving outside component provides negligible benefit and reduces locality.
 - **Centralize Map construction across components:** Each component constructs Maps from its own fetched data. A shared hook would add coupling without clear benefit.
 - **Scoped cache invalidation in useApi:** Current global invalidation is simple and reliable. Scoped invalidation adds complexity without clear performance benefit at current data volumes.
+- **Add error states to capacity/planning components:** These components receive data from parent pages that already handle loading/error states. Adding redundant error handling at the child level would be defensive coding without real benefit.
+- **Extract useDebounce to custom hook:** Only used in DriverList with a simple inline implementation. Extraction for a single consumer adds indirection without benefit.
+- **Add aria-labels to chart visualizations:** Recharts manages its own accessibility. Adding custom aria attributes would conflict with the library's internal handling.
 
 ## Recommendation Rules
 

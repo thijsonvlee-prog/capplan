@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Importbron lijst-endpoint beveiligd
+
+#### Beveiliging
+
+- **Importbron GET-lijst beveiligd:** Het ophalen van de importbronnenlijst (`/api/import-sources`) vereist nu de ADMIN-rol. Voorheen was dit endpoint onbeschermd en retourneerde het alle velden inclusief API-credentials aan elke ingelogde gebruiker.
+
 ### 2026-03-31 — API-import helpers, audit cleanup, mobiele navigatie
 
 #### Onderhoud

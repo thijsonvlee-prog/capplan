@@ -43,6 +43,9 @@ function validateApiFields(body: Record<string, unknown>): string | null {
 
 export async function GET() {
   try {
+    const authError = await requireRole("ADMIN");
+    if (authError) return authError;
+
     const sources = await prisma.importSource.findMany({
       orderBy: { createdAt: "desc" },
     });
