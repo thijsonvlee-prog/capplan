@@ -33,27 +33,6 @@ _No items currently ready._
 
 ## Upcoming (Sequenced)
 
-### PB-158: API-bron test-verbinding knop
-
-- **Owner:** Experience Agent (UI) + Delivery Agent (test endpoint)
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** Gebruikers configureren een API-bron maar kunnen niet verifiëren of de verbinding werkt voordat ze de bron opslaan. Ze ontdekken fouten pas bij het uitvoeren van de import.
-- **Scope notes:** Voeg een "Verbinding testen" knop toe aan het API-configuratieformulier. Bij klik: voer een lichtgewicht request uit naar de URL met de geconfigureerde headers en authenticatie. Toon succes/fout-status inline. Vereist een lichtgewicht test-endpoint aan de server-side (kan hergebruik maken van de execute-handler logica uit PB-152).
-- **Dependencies:** PB-152
-- **Definition of done:** Gebruiker kan vanuit het API-formulier de verbinding testen en ziet direct inline of de verbinding slaagt of faalt, met een duidelijke foutmelding bij mislukking.
-- **Implementation note:** Origineel voorstel: EX-REC-050.
-
-### PB-153: API-bron response mapping
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** JSON-responses hebben een andere structuur dan CSV-rijen. De veldmapping-editor moet JSON-paden ondersteunen.
-- **Scope notes:** Breid de veldmapping-editor uit voor API-bronnen. Bij het uitvoeren van een test-request: toon de response-structuur en laat de gebruiker JSON-paden koppelen aan doelvelden (vergelijkbaar met hoe CSV-kolommen nu gekoppeld worden). Ondersteun geneste objecten via dot-notatie (bijv. `employee.firstName`).
-- **Dependencies:** PB-152
-- **Definition of done:** Gebruikers kunnen JSON-response velden koppelen aan doelvelden. Test-request toont response-preview.
-
 ### PB-154: Mobiele layout shell en navigatie
 
 - **Owner:** Experience Agent
@@ -93,6 +72,22 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-158: API-bron test-verbinding knop
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
+- **Summary:** "Verbinding testen" knop in het API-configuratieformulier. Test-endpoint (`/api/import-sources/test`) voert een lichtgewicht HTTP-request uit met de geconfigureerde URL, headers en authenticatie. Toont inline succes/fout-status. Bij succes wordt ook de response-structuur ontdekt (JSON-paden en voorbeelddata) — dit dient als basis voor PB-153.
+- **Implementation note:** Test endpoint accepteert configuratie als POST body (werkt ook voor nog niet opgeslagen bronnen). 15s timeout. Hergebruikt dezelfde auth-header bouwlogica als de execute-handler.
+
+### PB-153: API-bron response mapping
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-03-31
+- **Summary:** Na een succesvolle verbindingstest toont het formulier de ontdekte response-structuur met JSON-paden en voorbeeldwaarden. Klik op een pad om het als bronveld in de veldkoppeling toe te voegen. Bronveld-invoervelden bieden autocomplete via datalist met ontdekte paden. Ondersteunt geneste objecten via dot-notatie.
+- **Implementation note:** Response structure discovery via recursive path extraction op het eerste record. Datalist HTML5 autocomplete op source column inputs. Click-to-add populeert eerste lege mapping of voegt nieuwe rij toe.
 
 ### PB-152: API-bron uitvoering — GET-request en response-import
 

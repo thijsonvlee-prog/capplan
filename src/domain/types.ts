@@ -249,6 +249,17 @@ export type AuditLogPagination = {
   totalPages: number;
 };
 
+// === API Test Result ===
+
+export type ApiTestResult = {
+  success: boolean;
+  statusCode?: number;
+  message: string;
+  discoveredPaths?: string[];
+  sampleData?: Record<string, string>;
+  totalRecords?: number;
+};
+
 // === Computed Types ===
 
 export type DriverComputedFields = {

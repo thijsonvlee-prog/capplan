@@ -2,12 +2,12 @@
 
 ## Summary
 
-**This cycle (2026-03-31, run 6):** Implemented PB-151 — API-bron configuratie UI. Extended ImportSourceManager with a source type selector (CSV/API), API-specific fields (URL, HTTP method, headers key-value editor, authentication type with credential fields), and updated the source list display to differentiate CSV from API sources.
+**This cycle (2026-03-31, run 7):** Implemented PB-158 (API test connection button) and PB-153 (API response mapping). Added a "Verbinding testen" button to the API configuration form with inline success/error feedback, and a response structure preview that shows discovered JSON paths with sample values. Users can click paths to populate field mappings, and source column inputs offer autocomplete from discovered paths.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8). Premium, calm, anchoring.
 - Settings page: well-aligned (sections 2.5, 7.1, 7.2). Strong hierarchy, tab navigation, composed zones. Now 7 tabs including Auditlog.
-- Import source manager (Connectiviteit tab): well-aligned. Source type selector uses toggle-button pattern with visual feedback (brand-50 highlight for active type). API configuration section uses surface layering (surface-secondary card within the form). Headers use key-value editor pattern consistent with field mappings. Credential fields use show/hide toggle for sensitive data. Source list shows type-differentiated badges with icons and contextual API metadata.
+- Import source manager (Connectiviteit tab): well-aligned. Source type selector, API configuration with surface layering, test connection with inline feedback, response structure preview with interactive path discovery, field mapping editor with autocomplete support.
 - Audit log viewer: well-aligned. Filter card, expandable rows, semantic badges, tonal row separation, pagination.
 - Login page: well-aligned. Clean, premium, brand-surface split.
 - Header: well-aligned. Minimal, composed, contextual subtitle support.
@@ -38,17 +38,6 @@
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-risk polish. The capacity page is structurally aligned. Custom tooltip would complete the integration. This is the most visible remaining integration gap.
-
-### EX-REC-050: API-bron test-verbinding knop
-
-- **Problem:** Gebruikers configureren een API-bron maar kunnen niet verifiëren of de verbinding werkt voordat ze de bron opslaan. Ze ontdekken fouten pas bij het uitvoeren van de import.
-- **Proposed improvement:** Voeg een "Verbinding testen" knop toe aan het API-configuratieformulier. Bij klik: voer een lichtgewicht request uit naar de URL met de geconfigureerde headers en authenticatie. Toon succes/fout-status inline.
-- **Expected user value:** Gebruikers ontdekken configuratiefouten direct bij het aanmaken, niet pas bij de eerste importpoging.
-- **Priority:** P3 Medium
-- **Effort:** Small (UI) + Small (API endpoint)
-- **Dependencies:** PB-152 (API execute handler moet bestaan voor server-side request).
-- **Suggested owner:** Experience Agent (UI) + Delivery Agent (test endpoint)
-- **Why now:** Natural follow-up to PB-151 and PB-152. Reduces friction in the API source setup flow.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
@@ -81,7 +70,7 @@
 - **Effort:** Medium
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Not urgent. The current editor is functional. May be revisited when API mapping work (PB-153) starts.
+- **Why now:** Not urgent. The current editor is functional and now enhanced with autocomplete from discovered paths. May be revisited later.
 
 ### EX-REC-044: User group member assignment — batch API
 

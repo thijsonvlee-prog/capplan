@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, X, ArrowRight, FileSpreadsheet, Upload, CheckCircle2, AlertCircle, Play, Clock, ChevronDown, ChevronUp, Globe, Key, Eye, EyeOff } from "lucide-react";
-import type { ImportSource, CsvUploadResult, ImportExecuteResult, ImportLog } from "@/domain/types";
+import { Plus, Pencil, Trash2, X, ArrowRight, FileSpreadsheet, Upload, CheckCircle2, AlertCircle, Play, Clock, ChevronDown, ChevronUp, Globe, Key, Eye, EyeOff, Zap } from "lucide-react";
+import type { ImportSource, CsvUploadResult, ImportExecuteResult, ImportLog, ApiTestResult } from "@/domain/types";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
@@ -135,6 +135,8 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [showCredentials, setShowCredentials] = useState(false);
   const [apiExecuteSourceId, setApiExecuteSourceId] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<ApiTestResult | null>(null);
 
   function openCreateForm() {
     setEditingId(null);
@@ -166,6 +168,8 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
     setEditingId(null);
     setForm(EMPTY_FORM);
     setShowValidation(false);
+    setTestResult(null);
+    setTesting(false);
   }
 
   function addMappingRow() {
@@ -373,6 +377,34 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
       .catch((err) => {
         setExecuting(false);
         showToast(err instanceof Error ? err.message : "API-import mislukt.", "error");
+      });
+  }
+
+  function handleTestConnection() {
+    if (!form.apiUrl.trim()) return;
+    setTesting(true);
+    setTestResult(null);
+
+    const headers = entriesToHeaders(form.apiHeaders);
+    const config: Parameters<typeof api.importSources.testConnection>[0] = {
+      apiUrl: form.apiUrl.trim(),
+      apiMethod: form.apiMethod,
+      apiAuthType: form.apiAuthType,
+    };
+    if (Object.keys(headers).length > 0) config.apiHeaders = headers;
+    if (form.apiAuthType !== "NONE") config.apiCredentials = form.apiCredentials;
+
+    api.importSources.testConnection(config)
+      .then((result) => {
+        setTestResult(result);
+        setTesting(false);
+      })
+      .catch((err) => {
+        setTestResult({
+          success: false,
+          message: err instanceof Error ? err.message : "Verbindingstest mislukt.",
+        });
+        setTesting(false);
       });
   }
 
@@ -875,6 +907,89 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                     </div>
                   </div>
                 )}
+
+                {/* Test connection */}
+                <div className="pt-3 border-t border-border-subtle">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleTestConnection}
+                      disabled={testing || !form.apiUrl.trim()}
+                      className="btn-secondary"
+                    >
+                      {testing ? (
+                        <>
+                          <div className="spinner !w-4 !h-4" />
+                          Testen…
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-4 h-4" />
+                          Verbinding testen
+                        </>
+                      )}
+                    </button>
+                    {testResult && (
+                      <div className={`flex items-center gap-1.5 text-sm ${
+                        testResult.success ? "text-success-700" : "text-danger-700"
+                      }`}>
+                        {testResult.success ? (
+                          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        )}
+                        <span>{testResult.message}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Response structure preview (PB-153) */}
+                  {testResult?.success && testResult.discoveredPaths && testResult.discoveredPaths.length > 0 && (
+                    <div className="mt-3 bg-surface-primary rounded-md border border-border-subtle">
+                      <div className="p-3 border-b border-border-subtle flex items-center justify-between">
+                        <h5 className="text-label">
+                          Response-structuur
+                          <span className="text-text-tertiary font-normal ml-2">
+                            {testResult.totalRecords} record{testResult.totalRecords !== 1 ? "s" : ""} gevonden
+                          </span>
+                        </h5>
+                        <span className="text-xs text-text-tertiary">Klik op een pad om het als bronveld toe te voegen</span>
+                      </div>
+                      <div className="p-3 space-y-1 max-h-56 overflow-y-auto">
+                        {testResult.discoveredPaths.map((path) => (
+                          <button
+                            key={path}
+                            type="button"
+                            onClick={() => {
+                              // Add path as a new mapping row or fill first empty source column
+                              setForm(prev => {
+                                const emptyIdx = prev.mappings.findIndex(m => !m.sourceColumn.trim());
+                                if (emptyIdx >= 0) {
+                                  return {
+                                    ...prev,
+                                    mappings: prev.mappings.map((m, i) =>
+                                      i === emptyIdx ? { ...m, sourceColumn: path } : m
+                                    ),
+                                  };
+                                }
+                                return {
+                                  ...prev,
+                                  mappings: [...prev.mappings, { sourceColumn: path, targetField: "" }],
+                                };
+                              });
+                            }}
+                            className="w-full flex items-center justify-between gap-3 px-2.5 py-1.5 rounded text-left hover:bg-surface-secondary transition-colors group"
+                          >
+                            <span className="font-mono text-xs text-text-primary">{path}</span>
+                            <span className="text-xs text-text-tertiary truncate max-w-[50%] text-right">
+                              {testResult.sampleData?.[path] || "—"}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -906,6 +1021,13 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                     <span className="text-xs text-text-tertiary font-medium">Doelveld</span>
                     <span className="w-7" />
                   </div>
+                  {form.sourceType === "API" && testResult?.discoveredPaths && testResult.discoveredPaths.length > 0 && (
+                    <datalist id="discovered-paths">
+                      {testResult.discoveredPaths.map(p => (
+                        <option key={p} value={p} />
+                      ))}
+                    </datalist>
+                  )}
                   {form.mappings.map((mapping, index) => (
                     <div key={index} className="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
                       <input
@@ -914,6 +1036,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                         onChange={e => updateMapping(index, "sourceColumn", e.target.value)}
                         placeholder={form.sourceType === "API" ? "Bijv. employee.firstName" : "Kolomnaam in CSV"}
                         className="input-field"
+                        list={form.sourceType === "API" && testResult?.discoveredPaths?.length ? "discovered-paths" : undefined}
                       />
                       <ArrowRight className="w-4 h-4 text-text-tertiary flex-shrink-0" />
                       <select

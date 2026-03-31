@@ -6,6 +6,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — API-bronnen test en response mapping
+
+#### UX / design verbeteringen
+
+- **Verbinding testen voor API-bronnen:** Nieuwe "Verbinding testen" knop in het API-configuratieformulier. Test de geconfigureerde URL, headers en authenticatie met inline feedback (succes/fout). Werkt ook voor nog niet opgeslagen bronnen.
+- **Response-structuur ontdekking:** Na een succesvolle verbindingstest worden de ontdekte JSON-paden en voorbeeldwaarden uit de API-response getoond. Klik op een pad om het direct als bronveld in de veldkoppeling over te nemen.
+- **Autocomplete op bronvelden:** Bij API-bronnen biedt het bronveld-invoerveld autocomplete-suggesties op basis van ontdekte JSON-paden uit de laatste verbindingstest.
+
 ### 2026-03-31 — API-bronnen uitvoering
 
 #### Functionele verbeteringen

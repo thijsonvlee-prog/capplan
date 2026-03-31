@@ -1,4 +1,5 @@
 import type {
+  ApiTestResult,
   AuditLogEntry,
   AuditLogPagination,
   CsvUploadResult,
@@ -496,6 +497,16 @@ const importSources = {
       `/api/import-sources/${id}/execute`,
       jsonBody({ mode })
     ).then(r => r.data);
+  },
+
+  testConnection(config: {
+    apiUrl: string;
+    apiMethod: string;
+    apiHeaders?: Record<string, string>;
+    apiAuthType: string;
+    apiCredentials?: Record<string, unknown>;
+  }): Promise<ApiTestResult> {
+    return fetchJson<{ data: ApiTestResult }>("/api/import-sources/test", jsonBody(config)).then(r => r.data);
   },
 
   getLogs(id: string): Promise<ImportLog[]> {
