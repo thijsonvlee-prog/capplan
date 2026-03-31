@@ -6,24 +6,50 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle completed **PB-148** (audit logging on all remaining entities). `logAudit()` is now integrated in all CRUD routes for drivers, roster profiles, import sources, scenarios (including duplicate), user groups, and users (role/group changes). The audit trail is now comprehensive across all entities except high-volume planning entries (excluded by design).
+This cycle completed the **Delivery Agent part of PB-149**: the `GET /api/audit-log` endpoint with pagination, filtering, ADMIN-only access, and user name/email via User join. Domain types (`AuditLogEntry`, `AuditLogPagination`) and frontend fetcher (`api.auditLog.list()`) are in place for the Experience Agent to build the viewer UI.
 
-**PB-149** (audit log viewer) is now unblocked. The Delivery Agent's part is the API endpoint (`GET /api/audit-log`). The codebase is stable — no new critical issues found. Existing P4 recommendations remain valid.
+The codebase is stable. The fresh scan identified one new medium-priority issue (redundant DB query in `autoCloseOpenRecords`) and confirms all existing P4 recommendations remain valid. PB-150 (API source data model) is next in sequence for the Delivery Agent.
 
 ## Recommended Next Improvements
 
-### DE-REC-060: Build GET /api/audit-log endpoint for PB-149
+### DE-REC-061: Eliminate redundant findMany in autoCloseOpenRecords
 
-- **Title:** Audit log viewer API endpoint with pagination and filtering
-- **Problem:** PB-149 requires a `GET /api/audit-log` endpoint for the Experience Agent to build the viewer UI against. This is the Delivery Agent's part of PB-149.
-- **Proposed improvement:** Create `GET /api/audit-log` with: pagination (`page`, `pageSize`), filter by `tableName`, filter by date range (`from`, `to`), ADMIN-only access via `requireRole`. Return chronological entries with user name/email joined from User table.
-- **Expected product/technical value:** Enables audit log viewer UI. Completes the audit trail feature.
-- **Priority:** P2 High (part of PB-149)
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** PB-148 (completed)
+- **Title:** Remove unnecessary findMany check before updateMany in autoCloseOpenRecords
+- **Problem:** `autoCloseOpenRecords()` in `api-route-utils.ts` (lines 406-424) calls `findMany()` to check if records exist, then `updateMany()` on the same criteria. The `findMany` result is only used for a `.length > 0` guard, but `updateMany` with zero matches is a no-op — the guard is unnecessary.
+- **Proposed improvement:** Remove the `findMany` call and execute `updateMany` unconditionally. Saves one DB round-trip per employment/function/roster-assignment creation.
+- **Expected product/technical value:** Reduces latency on sub-record creation. Eliminates ~3 unnecessary DB calls per driver edit workflow on Neon serverless.
+- **Priority:** P3 Medium
+- **Effort:** Small (remove 5 lines)
+- **Risk:** Low (updateMany with zero matches returns `{ count: 0 }`)
+- **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** PB-149 is unblocked and next in the backlog sequence.
+- **Why now:** Quick win that reduces round-trip cost on every sub-record creation.
+
+### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber in transactions
+
+- **Title:** Use Promise.all for independent operations inside sub-record creation transactions
+- **Problem:** Employment, function, and roster-assignment POST handlers await `autoCloseOpenRecords()` then `getNextSequenceNumber()` sequentially inside `$transaction`. These two operations are independent (different tables/queries).
+- **Proposed improvement:** Wrap both calls in `Promise.all()` within the transaction.
+- **Expected product/technical value:** Saves one sequential DB round-trip per sub-record creation.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low (both are reads before the write)
+- **Dependencies:** DE-REC-061 (apply first for cleaner code)
+- **Suggested owner:** Delivery Agent
+- **Why now:** Minor optimization, apply together with DE-REC-061.
+
+### DE-REC-063: Add weeklyHours range validation on roster assignment routes
+
+- **Title:** Validate weeklyHours bounds (0-168) on roster assignment POST/PUT
+- **Problem:** The `weeklyHours` field on roster assignments is accepted without bounds validation. A negative value or impossibly high value (e.g., 999) would be stored without error.
+- **Proposed improvement:** Add `if (weeklyHours != null && (weeklyHours < 0 || weeklyHours > 168))` check with Dutch error message.
+- **Expected product/technical value:** Completes validation coverage on the last unvalidated numeric field.
+- **Priority:** P4 Low
+- **Effort:** Small (one check)
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Trivial validation gap.
 
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route
 
@@ -160,6 +186,9 @@ This cycle completed **PB-148** (audit logging on all remaining entities). `logA
 - **for-range inline driverIncludeFields diverges from canonical driverInclude:** Intentional optimization.
 - **csv-parser escaped quote handling for non-comma separators:** Low risk for typical Dutch HR data exports.
 - **Audit planning entries:** High-volume writes (drag-select creates many entries). Would generate excessive audit data. Excluded by design in PB-148.
+- **P2025 error handling on sub-record DELETE routes:** Employment, function, and roster-assignment DELETE handlers return 500 instead of 404 for missing records. Low impact — sub-records are accessed via parent driver UI, so deleting non-existent records is rare.
+- **Scenario duplicate name detection:** No unique constraint check on scenario names. Requires product decision (some users may intentionally create same-named scenarios for comparison).
+- **handleUpdate not wrapped in useCallback in PlanningGrid:** Would break the existing exhaustive-deps warnings. The DayCell memo already works via entry-level comparison. Marginal improvement for significant refactoring risk.
 
 ## Recommendation Rules
 

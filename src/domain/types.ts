@@ -221,6 +221,28 @@ export type ImportExecuteResult = {
   errors: ImportRowError[];
 };
 
+// === Audit Log ===
+
+export type AuditLogEntry = {
+  id: string;
+  tableName: string;
+  recordId: string;
+  action: string;
+  oldValues: Record<string, unknown> | null;
+  newValues: Record<string, unknown> | null;
+  userId: string | null;
+  userName: string | null;
+  userEmail: string | null;
+  createdAt: string;
+};
+
+export type AuditLogPagination = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+};
+
 // === Computed Types ===
 
 export type DriverComputedFields = {

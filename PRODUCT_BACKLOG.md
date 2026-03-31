@@ -31,12 +31,12 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent (UI) + Delivery Agent (API endpoint)
 - **Priority:** P2 High
-- **Status:** Ready
+- **Status:** In Progress (Delivery Agent part completed — API endpoint shipped. Experience Agent UI pending.)
 - **Problem:** Audit data wordt vastgelegd maar is niet zichtbaar voor beheerders.
 - **Scope notes:** Voeg een nieuw tabblad "Auditlog" toe aan de instellingenpagina (alleen ADMIN). Maak een API-endpoint `GET /api/audit-log` met paginering, filteren op tabel en datum. Toon een chronologisch overzicht met: tijdstip, gebruiker, tabel, actie, record-identificatie. Detailweergave met oude/nieuwe waarden in een modal of expandable row.
 - **Dependencies:** PB-148 (completed)
 - **Definition of done:** Beheerders kunnen het auditlogboek bekijken, filteren op tabel en datumbereik, en details van individuele entries inzien. `npm run verify` slaagt.
-- **Implementation note:** Delivery Agent bouwt eerst het API-endpoint (`GET /api/audit-log` met paginering, tabel/datum filters, ADMIN-only, gebruikersnaam/e-mail via User join — zie DE-REC-060). Experience Agent bouwt daarna de UI-component tegen die API. Coördineer de response-shape: Delivery Agent levert eerst, Experience Agent volgt.
+- **Implementation note (Delivery Agent, completed 2026-03-31):** `GET /api/audit-log` endpoint gebouwd met: paginering (`page`, `pageSize`, max 200), filters op `tableName`, `from`/`to` (datum), `action` (CREATE/UPDATE/DELETE), ADMIN-only via `requireRole`. Gebruikersnaam en e-mail via User join. Response shape: `{ data: AuditLogEntry[], pagination: { page, pageSize, total, totalPages } }`. Domeintypen `AuditLogEntry` en `AuditLogPagination` toegevoegd aan `domain/types.ts`. Frontend fetcher `api.auditLog.list()` toegevoegd aan `api.ts`. Experience Agent kan nu de UI-component bouwen.
 
 ---
 

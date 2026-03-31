@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-03-31 — Auditlog API-endpoint
+
+#### Functionele verbeteringen
+
+- **Auditlog API-endpoint:** Nieuw `GET /api/audit-log` endpoint beschikbaar voor beheerders (ADMIN-only). Ondersteunt paginering, filteren op tabelnaam, datumbereik en actietype (aanmaken/bewerken/verwijderen). Retourneert per entry: tijdstip, gebruikersnaam, e-mailadres, tabelnaam, record-ID, actie en oude/nieuwe waarden. Dient als backend voor het auditlog-viewertabblad op de instellingenpagina.
+- **Auditlog domeintypen en frontend-koppeling:** `AuditLogEntry` en `AuditLogPagination` typen beschikbaar in `domain/types.ts`. Frontend fetcher `api.auditLog.list()` beschikbaar in `api.ts` voor de Experience Agent om de UI-component tegen te bouwen.
+
 ### 2026-03-31 — Audittrail: logging op alle entiteiten
 
 #### Functionele verbeteringen

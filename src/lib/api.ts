@@ -1,4 +1,6 @@
 import type {
+  AuditLogEntry,
+  AuditLogPagination,
   CsvUploadResult,
   Driver,
   DriverEmploymentRecord,
@@ -545,6 +547,28 @@ const preferences = {
   },
 };
 
+const auditLog = {
+  list(filter?: {
+    page?: number;
+    pageSize?: number;
+    tableName?: string;
+    from?: string;
+    to?: string;
+    action?: string;
+  }): Promise<{ data: AuditLogEntry[]; pagination: AuditLogPagination }> {
+    return fetchJson<{ data: AuditLogEntry[]; pagination: AuditLogPagination }>(
+      buildUrl("/api/audit-log", {
+        page: filter?.page !== undefined ? String(filter.page) : undefined,
+        pageSize: filter?.pageSize !== undefined ? String(filter.pageSize) : undefined,
+        tableName: filter?.tableName,
+        from: filter?.from,
+        to: filter?.to,
+        action: filter?.action,
+      })
+    );
+  },
+};
+
 // === Exported API Object ===
 
 export const api = {
@@ -557,6 +581,7 @@ export const api = {
   users,
   userGroups,
   preferences,
+  auditLog,
 };
 
 export default api;
