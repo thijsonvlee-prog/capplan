@@ -28,7 +28,7 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Type:** Initiative / new feature
 - **Status:** Planned
 - **Input:** Implementeer API management: beheren welke API's er zijn, GET-requests uitvoeren om gegevens uit andere applicaties op te halen, credentials beheren voor externe applicaties en ook beheren welke API's zij kunnen aanroepen.
-- **PO assessment:** Scrum Master koos Option B (Fase 1: uitgaande API-connecties) via ESC-012. Opgebroken in 4 fasen: datamodel uitbreiding (PB-150), configuratie UI (PB-151), uitvoering (PB-152), response mapping (PB-153). PB-150 is nu klaar voor uitvoering.
+- **PO assessment:** Scrum Master koos Option B (Fase 1: uitgaande API-connecties) via ESC-012. Opgebroken in 4 fasen: datamodel uitbreiding (PB-150 ✓), configuratie UI (PB-151 ✓), uitvoering (PB-152), response mapping (PB-153). Fase 1 is halverwege: PB-150 en PB-151 zijn afgerond. PB-152 staat klaar voor de volgende cyclus. Aanvullend item PB-158 (test-verbinding knop) gepland na PB-152.
 - **Escalation linkage:** ESC-012 (decided — Option B)
 - **Backlog linkage:** PB-150, PB-151, PB-152, PB-153
 

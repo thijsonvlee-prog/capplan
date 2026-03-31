@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Audit trail is fully delivered. Next initiative: outbound API connections (PB-150–153), followed by selective mobile views (PB-154–156). Each initiative is phased for incremental delivery. One quick-win optimization (PB-157) is bundled into the next cycle.
+**Current direction:** API connections Phase 1 is halfway done (PB-150, PB-151 complete). Next: API execution (PB-152), then test connection (PB-158), response mapping (PB-153). Mobile views (PB-154–156) follow after API Phase 1 is complete.
 
 ## Status Definitions
 
@@ -27,12 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready for next cycle._
-
----
-
-## Upcoming (Sequenced)
-
 ### PB-152: API-bron uitvoering — GET-request en response-import
 
 - **Owner:** Delivery Agent
@@ -40,8 +34,23 @@ _No items currently ready for next cycle._
 - **Status:** Ready
 - **Problem:** API-bronnen kunnen geconfigureerd worden maar nog niet uitgevoerd.
 - **Scope notes:** Maak een execute-handler voor API-bronnen (naast de bestaande CSV-execute). Voer een server-side GET/POST-request uit naar de geconfigureerde URL met headers en authenticatie. Parse de JSON-response. Pas de bestaande veldmapping toe om data te importeren. Log het resultaat in ImportLog.
-- **Dependencies:** PB-150 (completed)
+- **Dependencies:** PB-150 (completed), PB-151 (completed)
 - **Definition of done:** Een API-bron kan worden uitgevoerd, data wordt opgehaald en geïmporteerd, resultaat is zichtbaar in importlogboek.
+
+---
+
+## Upcoming (Sequenced)
+
+### PB-158: API-bron test-verbinding knop
+
+- **Owner:** Experience Agent (UI) + Delivery Agent (test endpoint)
+- **Priority:** P3 Medium
+- **Status:** Blocked (on PB-152)
+- **Problem:** Gebruikers configureren een API-bron maar kunnen niet verifiëren of de verbinding werkt voordat ze de bron opslaan. Ze ontdekken fouten pas bij het uitvoeren van de import.
+- **Scope notes:** Voeg een "Verbinding testen" knop toe aan het API-configuratieformulier. Bij klik: voer een lichtgewicht request uit naar de URL met de geconfigureerde headers en authenticatie. Toon succes/fout-status inline. Vereist een lichtgewicht test-endpoint aan de server-side (kan hergebruik maken van de execute-handler logica uit PB-152).
+- **Dependencies:** PB-152
+- **Definition of done:** Gebruiker kan vanuit het API-formulier de verbinding testen en ziet direct inline of de verbinding slaagt of faalt, met een duidelijke foutmelding bij mislukking.
+- **Implementation note:** Origineel voorstel: EX-REC-050.
 
 ### PB-153: API-bron response mapping
 
@@ -57,7 +66,7 @@ _No items currently ready for next cycle._
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Blocked (on PB-150 — sequenced to start after API connections Phase 1)
+- **Status:** Blocked (sequenced after API Phase 1)
 - **Problem:** De applicatie heeft geen mobiele navigatie of responsive layout shell. De Scrum Master wil selectieve mobiele weergaven (ESC-013, Option B).
 - **Scope notes:** Maak een responsive layout variant voor schermen < 768px: hamburger-menu voor navigatie, compactere header, touch-vriendelijke tap targets. Sidebar wordt een slide-over panel op mobiel. Desktop layout blijft ongewijzigd. Gebruik Tailwind responsive utilities.
 - **Dependencies:** None (technical), but sequenced after API Phase 1 for capacity reasons
@@ -98,42 +107,28 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-03-31
-- **Summary:** ImportSourceManager uitgebreid met brontype-kiezer (CSV/API). API-modus toont URL, HTTP-methode, headers key-value editor, authenticatietype (Geen/Basic/Bearer/API-sleutel) met credential-velden. CSV-upload verborgen bij API-type. Bronnenlijst toont type-badge met icoon en API-details.
+- **Summary:** ImportSourceManager uitgebreid met brontype-kiezer (CSV/API). API-modus toont URL, HTTP-methode, headers key-value editor, authenticatietype met credential-velden. Bronnenlijst toont type-badge met icoon en API-details.
 
 ### PB-150: API-bron type — datamodel uitbreiding ImportSource
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Summary:** ImportSource model uitgebreid met API-specifieke velden: `apiUrl`, `apiMethod`, `apiHeaders` (JSONB), `apiAuthType` (NONE/BASIC/BEARER/API_KEY), `apiCredentials` (JSONB). Migratie aangemaakt. Domain enums (`SourceType`, `ApiAuthType`, `ApiMethod`) toegevoegd. POST/PUT API-routes valideren API-velden bij type=API. Bestaande CSV-bronnen ongewijzigd. Frontend fetch wrapper bijgewerkt.
+- **Summary:** ImportSource model uitgebreid met API-specifieke velden. Migratie aangemaakt. Domain enums toegevoegd. API-routes valideren API-velden bij type=API.
 
 ### PB-157: Elimineer overbodige findMany in autoCloseOpenRecords
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-03-31
-- **Summary:** Redundante `findMany()` guard verwijderd uit `autoCloseOpenRecords()`. Functie voert nu onvoorwaardelijk `updateMany()` uit. Bespaart ~3 DB-roundtrips per sub-record aanmaak op Neon serverless.
+- **Summary:** Redundante `findMany()` guard verwijderd. Bespaart ~3 DB-roundtrips per sub-record aanmaak.
 
-### PB-149: Audit log viewer — UI in instellingen
-
-- **Status:** Completed
-- **Owner:** Experience Agent (UI) + Delivery Agent (API endpoint)
-- **Completed:** 2026-03-31
-- **Summary:** Nieuw "Auditlog"-tabblad op de instellingenpagina (alleen ADMIN). Chronologisch overzicht van alle mutaties met filteren op tabel, actie en datumbereik. Expandable rows tonen oude en nieuwe waarden. Paginering met 25 items per pagina.
-
-### PB-146, PB-147, PB-148: Audittrail — datamodel, stamtabel-logging en alle overige entiteiten
+### PB-146–PB-149: Audittrail — volledig
 
 - **Status:** Completed
-- **Owner:** Delivery Agent
+- **Owner:** Delivery Agent + Experience Agent
 - **Completed:** 2026-03-31
-- **Summary:** Volledige audittrail geïmplementeerd. AuditLog model met JSONB old/new values, indexes, fire-and-forget `logAudit()` helper. Geïntegreerd in alle CRUD-routes.
-
-### PB-129–PB-145: Validatie, foutafhandeling en visuele verbeteringen
-
-- **Status:** Completed
-- **Owner:** Delivery Agent / Experience Agent
-- **Completed:** 2026-03-31
-- **Summary:** Batch van 17 items: invoervalidatie op alle endpoints, enum-validatie, tekstveldlimieten, foutmeldingen, afdelingsfilter op schrijfroutes, per-gebruiker scenario, capaciteitspagina KPI's, planningsrooster werkbalkherstructurering, POC-verwijdering.
+- **Summary:** Volledige audittrail: datamodel, logging op alle entiteiten, UI viewer in instellingen.
 
 ---
 
@@ -214,7 +209,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Minor optimization. Apply together with PB-157 if convenient, otherwise low urgency.
+- **Reason:** Minor optimization. Low urgency.
 
 ### DE-REC-063: weeklyHours range validation on roster assignment routes
 
@@ -239,7 +234,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-158.
+- Backlog IDs are sequential and never reused. Next available: PB-159.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.
