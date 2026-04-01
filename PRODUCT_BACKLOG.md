@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** API Phase 1 is fully complete. Deduplication and audit cleanup done. Mobile views in progress (PB-154 ✓, PB-155 ✓, PB-156 ready). Next priorities: consolidate remaining duplicated helpers (DE-REC-068, DE-REC-069), then P4 cleanup items.
+**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. All ready items are P4 Low — a mix of code cleanup and visual polish. No critical or high-priority work pending.
 
 ## Status Definitions
 
@@ -27,45 +27,80 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-176: Verplaats COMPARE_COLORS naar module scope en constants
 
-### PB-154: Mobiele layout shell en navigatie
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Completed
-- **Completed:** 2026-03-31
-- **Problem:** De applicatie heeft geen mobiele navigatie of responsive layout shell. De Scrum Master wil selectieve mobiele weergaven (ESC-013, Option B).
-- **Scope notes:** Maak een responsive layout variant voor schermen < 768px: hamburger-menu voor navigatie, compactere header, touch-vriendelijke tap targets. Sidebar wordt een slide-over panel op mobiel. Desktop layout blijft ongewijzigd. Gebruik Tailwind responsive utilities.
-- **Dependencies:** None
-- **Definition of done:** Op mobiele viewports: sidebar is verborgen achter hamburger-menu, header is compact, navigatie werkt via slide-over. Desktop is ongewijzigd. `npm run verify` slaagt.
-- **Implementation note:** Sidebar hidden on mobile (`hidden md:flex`), slide-over panel with backdrop overlay and close-on-navigate. Hamburger button in Header (md:hidden). Touch-friendly tap targets (py-2.5 on mobile nav items). Compact mobile padding (p-4 vs p-6). Animations: slide-in-left for panel, fade-in for overlay. Desktop completely unchanged.
-
----
-
-## Upcoming (Sequenced)
-
-### PB-155: Mobiele chauffeurlijst en zoeken
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Completed
-- **Completed:** 2026-03-31
-- **Problem:** De chauffeurspagina is niet bruikbaar op mobiel (brede tabel, kleine tekst).
-- **Scope notes:** Maak een mobiele variant van de chauffeurspagina: card-based layout in plaats van tabel, prominente zoekbalk, tap-to-open detail. Toon naam, personeelsnummer, afdeling en status per card. Gebruik responsive breakpoints: tabel op desktop, cards op mobiel.
-- **Dependencies:** PB-154
-- **Definition of done:** Chauffeurlijst is bruikbaar op mobiel met card-layout en zoekfunctie.
-- **Implementation note:** Mobile card layout below md breakpoint using `.driver-card` CSS class. Each card shows name, employee number, department, employment type badge, location, licenses, and skills. Full-width search bar on mobile. Tap-to-edit with chevron indicator. Simplified mobile pagination (prev/next only). Page description hidden on mobile, add button icon-only on small screens. Desktop table completely unchanged.
-
-### PB-156: Mobiele dag-/weekplanning per chauffeur
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
+- **ID:** PB-176
+- **Title:** Verplaats COMPARE_COLORS naar module scope en constants
+- **Problem / opportunity:** `COMPARE_COLORS` is defined inside the `CapacityChart` component function, creating a new array reference on every render. Also uses hardcoded hex values without referencing design tokens.
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
 - **Status:** Ready
-- **Problem:** De planningsgrid is niet bruikbaar op mobiel (30+ kolommen).
-- **Scope notes:** Maak een mobiele planning-weergave: selecteer één chauffeur, toon dag- of weekweergave met statusblokken. Geen bewerkfunctionaliteit in eerste versie (read-only). Planners kunnen op mobiel de planning inzien maar bewerken op desktop.
-- **Dependencies:** PB-155
-- **Definition of done:** Planners kunnen op mobiel de planning van een individuele chauffeur bekijken per dag of week.
+- **Why this matters now:** Trivial fix that improves render stability and centralizes color definitions. Combines two related recommendations.
+- **Scope notes:** Move `COMPARE_COLORS` outside the component to module scope. Add comments referencing design token equivalents. Optionally move to `src/domain/constants.ts` if reuse is likely.
+- **Dependencies:** None.
+- **Definition of done:** `COMPARE_COLORS` is at module scope (not inside the component function). Hex values have comments referencing tokens. Verify passes.
+- **Implementation note:** Combines DE-REC-047 and DE-REC-014.
+- **Source:** DE-REC-047 + DE-REC-014
+
+### PB-177: Verwijder ongebruikte type-exports uit domain/types.ts
+
+- **ID:** PB-177
+- **Title:** Verwijder ongebruikte type-exports uit domain/types.ts
+- **Problem / opportunity:** `PlanningEntryOptions` and `UserContext` are defined but never imported anywhere. Dead code creates confusion.
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Quick cleanup. No risk.
+- **Scope notes:** Remove only types confirmed unused via grep. Do not remove types that may be used indirectly.
+- **Dependencies:** None.
+- **Definition of done:** Unused types removed. Verify passes. No other files affected.
+- **Implementation note:** See DE-REC-041.
+- **Source:** DE-REC-041
+
+### PB-178: Opruimen ongebruikte mobiele CSS-klassen
+
+- **ID:** PB-178
+- **Title:** Opruimen ongebruikte mobiele CSS-klassen
+- **Problem / opportunity:** `mobile-nav-overlay` and `mobile-nav-panel` CSS classes in globals.css are no longer used after the mobile navigation overhaul removed the hamburger menu.
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Dead CSS from the mobile redesign. Quick cleanup.
+- **Scope notes:** Confirm classes are unused via grep, then remove from globals.css. Do not remove any CSS class that is still referenced.
+- **Dependencies:** None.
+- **Definition of done:** Unused mobile-nav CSS classes removed. Verify passes.
+- **Implementation note:** Flagged in Experience Agent risks/watch-outs.
+- **Source:** EX-REC risks
+
+### PB-180: StamtabelManager en SkillManager — visuele verhoging lijstitems
+
+- **ID:** PB-180
+- **Title:** StamtabelManager en SkillManager — visuele verhoging lijstitems
+- **Problem / opportunity:** StamtabelManager and SkillManager list items use basic `divide-y` separator with flat `hover:bg-surface-secondary`. Inline editing is functional but feels generic compared to composed headers, cards, and surfaces elsewhere. These shared components propagate their feel across 4+ stamtabel instances and skills.
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Low-risk refinement with broad propagation. Settings screens should match the premium feel of planning and capacity screens.
+- **Scope notes:** Add subtle hover elevation (shadow-xs), improve row spacing, add light left-accent border on active/editing row, refine action icon spacing. Keep inline edit pattern. Use existing design tokens only.
+- **Dependencies:** None.
+- **Definition of done:** StamtabelManager and SkillManager rows feel visually elevated. Hover states and editing states are visually distinct. Verify passes. No regressions on stamtabel or skills screens.
+- **Implementation note:** From EX-REC-054.
+- **Source:** EX-REC-054
+
+### PB-181: Capaciteitspagina — vergelijkingsknoppen visuele verbetering
+
+- **ID:** PB-181
+- **Title:** Capaciteitspagina — vergelijkingsknoppen visuele verbetering
+- **Problem / opportunity:** Scenario comparison buttons on the capacity page use basic padding/color styling. They lack visual weight and don't clearly communicate toggled state.
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Quick visual polish on the second most important screen. Low risk.
+- **Scope notes:** Restyle as badge-style pills with subtle borders when inactive and solid fill when active. Add transition on toggle. Ensure selected state has clear visual distinction. Use existing design tokens only.
+- **Dependencies:** None.
+- **Definition of done:** Comparison buttons have clear active/inactive states with badge-style treatment. Verify passes. No regressions on capacity page.
+- **Implementation note:** From EX-REC-055.
+- **Source:** EX-REC-055
 
 ---
 
@@ -75,150 +110,98 @@ _No items currently in progress._
 
 ---
 
+## Blocked / Needs Decision
+
+### Desktop homescreen (SMI-026)
+
+- **Status:** Blocked — awaiting Scrum Master scope decision
+- **Escalation:** ESC-014
+- **Summary:** Scrum Master wil een desktop startscherm. Scope en aanpak moeten gekozen worden voordat dit gepland kan worden. Zie ESC-014 voor de opties.
+
+---
+
 ## Completed Recently
 
-### PB-162: Importbron GET-lijst endpoint beveiligd met ADMIN-rol
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Implementation note:** Added `requireRole("ADMIN")` to the GET handler in `/api/import-sources/route.ts`. The list endpoint returned all fields including `apiCredentials` without any role check. The individual GET (`/api/import-sources/[id]`) was already fixed in PB-159, but the list endpoint was overlooked. Same class of security gap.
-
-### PB-160: Deduplicate API import helpers naar gedeelde module
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Implementation note:** Extracted `buildApiHeaders()`, `extractDataArray()`, `resolveJsonPath()`, and `discoverPaths()` to `src/lib/api-import-helpers.ts`. Both test and execute routes now import from the shared module. ~80 lines of duplication eliminated. Minor inconsistency fixed: execute route used raw `value` in header loop; shared version uses `String(value)` for safety.
-
-### PB-161: Audit log cleanup mechanisme
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Implementation note:** Added `cleanupOldAuditLogs(retentionDays = 90)` to `src/lib/audit.ts`. Fire-and-forget call at the end of import execution in the execute route. Uses `deleteMany` with date filter. Failures are logged but never block the import.
-
-### PB-159: Fix authorization bypass op planning DELETE en import-source GET
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-158: API-bron test-verbinding knop
+### PB-179: Fix mobiele navigatie — planning en instellingen knoppen werken niet
 
 - **Status:** Completed
 - **Owner:** Experience Agent
-- **Completed:** 2026-03-31
+- **Completed:** 2026-04-01
+- **Summary:** Root cause: React useState functional updater bug in `useMobileTitle` hook. `setMobileBackAction(fn)` was interpreted as a functional updater, immediately executing the back action instead of storing it. Fixed by wrapping: `setMobileBackAction(() => fn)`. One-line fix in `src/hooks/useHeaderSubtitle.tsx`.
 
-### PB-153: API-bron response mapping
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-152: API-bron uitvoering — GET-request en response-import
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-151: API-bron configuratie UI
+### PB-175: Mobiele chauffeurspagina — visuele opfrisbeurt
 
 - **Status:** Completed
 - **Owner:** Experience Agent
-- **Completed:** 2026-03-31
+- **Completed:** 2026-04-01
+- **Summary:** Entrance animation and improved card spacing on mobile drivers page.
 
-### PB-150: API-bron type — datamodel uitbreiding ImportSource
+### PB-170–174: Mobiele app-ervaring compleet
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Summary:** Mobile planning nav (PB-170), capacity view (PB-171), settings view (PB-172), transitions/polish (PB-173), release notes page (PB-174). Full mobile initiative delivered.
+
+### PB-163–164: Deduplicatie consolidatie
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-157: Elimineer overbodige findMany in autoCloseOpenRecords
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-146–PB-149: Audittrail — volledig
-
-- **Status:** Completed
-- **Owner:** Delivery Agent + Experience Agent
-- **Completed:** 2026-03-31
+- **Completed:** 2026-04-01
+- **Summary:** resolveUserId (PB-163) and validateApiFields (PB-164) deduplicated to shared modules.
 
 ---
 
 ## Deferred
+
+### EX-REC-052: Mobiele planning — bewerkingsmogelijkheid (v2)
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Natural next step after mobile initiative is complete. The read-only planning flow should be validated with user feedback first.
+
+### EX-REC-053: Mobiel startscherm — begroeting en scenario-context
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Low-effort personalization enhancement. Can be combined with any future mobile work cycle.
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low-risk polish. Capacity page is structurally aligned. Custom tooltip is cosmetic.
+- **Reason:** Most visible remaining desktop integration gap. Low risk but no user demand driving it.
 
 ### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current flex-wrap handles basic cases. May become relevant when mobile work (PB-154) starts.
-
-### DE-REC-041: Remove unused type exports from domain/types.ts
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Quick cleanup but no user impact.
-
-### EX-REC-044: User group member assignment — batch API
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Current sequential approach works for typical group sizes.
-
-### PB-030: Move hardcoded constants and chart colors to centralized config
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Low user impact. Covers DE-REC-014, DE-REC-030, DE-REC-047.
-
-### PB-061: Add PerformanceEvent table cleanup mechanism
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Table grows unbounded but traffic is low.
+- **Reason:** Desktop-only concern. Only relevant if narrow desktop viewport usage is reported.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low-risk typographic refinement. Needs visual evaluation.
+- **Reason:** Low-risk typographic refinement.
 
 ### EX-REC-043: Import source manager — visual mapping builder enhancement
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current field mapping editor is functional with autocomplete from discovered paths.
+- **Reason:** Current field mapping editor is functional. Desktop-only concern.
 
-### EX-REC-042: Deduplicate scenarios list fetch
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** No direct user impact. Minor code hygiene.
-
-### DE-REC-058: Cap value length on preferences PUT route
+### DE-REC-070: Align client-side TARGET_ENTITIES met server-side constante
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Only remaining route without text field length cap. Near-zero risk.
+- **Reason:** No user impact. Pick up when capacity allows.
 
 ### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber
 
@@ -234,6 +217,13 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Trivial validation gap on a single numeric field. Near-zero risk.
 
+### DE-REC-058: Cap value length on preferences PUT route
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Only remaining route without text field length cap. Near-zero risk.
+
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route
 
 - **Owner:** Delivery Agent
@@ -246,8 +236,35 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Natural Phase 1 follow-up but not blocking. Current auto-detection handles common patterns. Promote if users report incompatible APIs.
-- **Source:** DE-REC-065
+- **Reason:** Natural Phase 1 follow-up but not blocking.
+
+### PB-061: Add PerformanceEvent table cleanup mechanism
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Table grows unbounded but traffic is low.
+
+### PB-030: Move hardcoded constants and chart colors to centralized config
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Low user impact. Partially addressed by PB-176.
+
+### EX-REC-042: Deduplicate scenarios list fetch
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** No direct user impact. Minor code hygiene.
+
+### EX-REC-044: User group member assignment — batch API
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Current sequential approach works for typical group sizes.
 
 ---
 
@@ -258,7 +275,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-163.
+- Backlog IDs are sequential and never reused. Next available: PB-182.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

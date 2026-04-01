@@ -23,16 +23,73 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+### SMI-026: Desktop homescreen
+
+- **Type:** Feature request / initiative
+- **Status:** Escalated
+- **Date:** 2026-04-01
+- **Original input:** "maak ook voor desktop een homescreen."
+- **Analysis:** Currently the app redirects `/` to `/planning` on desktop. On mobile there is already a card-based homescreen. The desktop version needs scope definition: what content to show, whether it replaces the redirect or becomes a new route, and how it integrates with the existing sidebar navigation.
+- **Escalation linkage:** ESC-014
+
+## Closed Inputs
+
+### SMI-027: Mobiele navigatie werkt niet — planning en instellingen flikkeren zonder resultaat
+
+- **Type:** Bug report
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-179 completed 2026-04-01. Root cause: React useState functional updater bug in `useMobileTitle` hook. One-line fix.
+- **Backlog linkage:** PB-179 (completed)
+
+### SMI-024: Mobiele app-ervaring — homescreen, kaartnavigatie, terugknop
+
+- **Type:** Initiative / major redesign
+- **Status:** Closed
+- **Closed reason:** Fully delivered. All 5 phases completed 2026-04-01: homescreen (PB-169), planning nav (PB-170), capacity view (PB-171), settings view (PB-172), transitions/polish (PB-173). Budget was 10 cycles; delivered in 2 cycles.
+- **Backlog linkage:** PB-169, PB-170, PB-171, PB-172, PB-173 (all completed)
+
+### SMI-025: Documentatiepagina vervangen door releasenotes-pagina
+
+- **Type:** Feature change
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-174 completed 2026-04-01. Documentation page replaced with chronological release notes viewer with collapsible sections and category badges.
+- **Backlog linkage:** PB-174 (completed)
+
+### SMI-023: Hamburger-menu werkt nog steeds niet
+
+- **Type:** Bug report (regressie / onvolledige fix)
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-168 completed 2026-04-01. Mount-guard fix in Sidebar.tsx prevents useEffect from triggering onClose on initial render.
+- **Backlog linkage:** PB-168 (completed)
+
+### SMI-022: Uitlijning vergrootglas in zoekbalk klopt niet
+
+- **Type:** Bug report
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-166 completed 2026-04-01.
+- **Backlog linkage:** PB-166 (completed)
+
+### SMI-021: Mobiele planning omzetten naar maandkalender
+
+- **Type:** Feature change
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-167 completed 2026-04-01. Month calendar with week numbers, status dots, tap-to-detail.
+- **Backlog linkage:** PB-167 (completed)
+
+### SMI-020: Hamburgermenu op mobiel werkt niet
+
+- **Type:** Bug report
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-165 completed 2026-04-01. z-index fix on header.
+- **Backlog linkage:** PB-165 (completed)
+
 ### SMI-019: Mobiele versie
 
 - **Type:** Initiative / new feature
-- **Status:** Planned
-- **Input:** Implementeer een mobiele versie.
-- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). PB-154 is nu klaar voor de volgende cyclus nu API Phase 1 volledig is afgerond.
-- **Escalation linkage:** ESC-013 (decided — Option B)
-- **Backlog linkage:** PB-154, PB-155, PB-156
-
-## Closed Inputs
+- **Status:** Closed
+- **Closed reason:** Fully delivered. All 3 phases completed 2026-04-01: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). ESC-013 Option B scope complete. Superseded by SMI-024 (broader mobile redesign).
+- **Escalation linkage:** ESC-013 (closed)
+- **Backlog linkage:** PB-154, PB-155, PB-156, PB-167 (all completed)
 
 ### SMI-018: API management
 
