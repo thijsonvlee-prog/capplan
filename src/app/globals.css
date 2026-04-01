@@ -752,3 +752,85 @@ body {
   color: var(--color-text-primary);
   background-color: var(--color-surface-tertiary);
 }
+
+/* ===================================================================
+   Mobile Planning View
+   Touch-friendly day/week planning for individual drivers.
+   =================================================================== */
+
+.mobile-planning-driver-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem;
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  transition-property: background-color;
+  transition-duration: 150ms;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-planning-driver-card:active {
+  background-color: var(--color-surface-secondary);
+}
+
+.mobile-planning-driver-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-tertiary);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.mobile-planning-view-toggle {
+  display: flex;
+  background-color: var(--color-surface-tertiary);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.mobile-planning-view-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: calc(var(--radius-md) - 2px);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition-property: background-color, color, box-shadow;
+  transition-duration: 150ms;
+}
+
+.mobile-planning-view-toggle-btn--active {
+  background-color: var(--color-surface-primary);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.mobile-planning-status-block {
+  padding: 0.75rem;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.mobile-planning-day-label {
+  display: inline-flex;
+  align-items: center;
+  min-width: 3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.mobile-planning-day-label--today {
+  color: var(--color-brand-600);
+}

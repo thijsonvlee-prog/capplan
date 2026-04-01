@@ -6,6 +6,19 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-01 — Code deduplicatie consolidatie
+
+#### Onderhoud
+
+- **resolveUserId geconsolideerd:** De gedupliceerde `resolveUserId()` functie is geëxtraheerd naar `src/lib/api-route-utils.ts`. Voorkeuren- en actief-scenario-routes importeren nu van dezelfde module.
+- **validateApiFields geconsolideerd:** De gedupliceerde `validateApiFields()` functie en 4 validatieconstanten zijn verplaatst naar `src/lib/api-import-helpers.ts`. Drie importbron-routes importeren nu van dezelfde module. ~85 regels duplicatie geëlimineerd.
+
+### 2026-04-01 — Mobiele planningsweergave
+
+#### UX / design verbeteringen
+
+- **Mobiele dag-/weekplanning:** Op mobiele schermen toont de planningspagina nu een chauffeur-specifieke weergave in plaats van het volledige planningsrooster. Zoek en selecteer een chauffeur, wissel tussen dag- en weekweergave, navigeer per dag of week. Statusblokken met semantische kleuren, verloftype, ziektepercentage en notities. Vandaag-knop voor snelle navigatie. Legenda onderaan. Desktop planningsrooster is ongewijzigd. Dit voltooit de mobiele read-only flow (ESC-013).
+
 ### 2026-03-31 — Importbron lijst-endpoint beveiligd
 
 #### Beveiliging
