@@ -721,7 +721,7 @@ body {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 0.75rem;
+  padding: 0.875rem 1rem;
   background-color: var(--color-surface-primary);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xs);
@@ -735,13 +735,13 @@ body {
   background-color: var(--color-surface-secondary);
 }
 
-/* Hamburger button */
+/* Mobile back/menu button — min 44px tap target */
 .mobile-menu-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   transition-property: color, background-color;
@@ -751,4 +751,268 @@ body {
 .mobile-menu-btn:hover {
   color: var(--color-text-primary);
   background-color: var(--color-surface-tertiary);
+}
+
+/* ===================================================================
+   Mobile Planning View
+   Month calendar and driver selector for mobile planning.
+   =================================================================== */
+
+.mobile-planning-driver-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem;
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  transition-property: background-color;
+  transition-duration: 150ms;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-planning-driver-card:active {
+  background-color: var(--color-surface-secondary);
+}
+
+.mobile-planning-driver-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-tertiary);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.mobile-planning-status-block {
+  padding: 0.75rem;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+/* --- Month Calendar Grid --- */
+
+.mobile-calendar-header {
+  display: grid;
+  grid-template-columns: 2rem repeat(7, 1fr);
+  background-color: var(--color-surface-tertiary);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.mobile-calendar-day-header {
+  padding: 0.375rem 0;
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.mobile-calendar-row {
+  display: grid;
+  grid-template-columns: 2rem repeat(7, 1fr);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.mobile-calendar-row:last-child {
+  border-bottom: none;
+}
+
+.mobile-calendar-week-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  background-color: var(--color-surface-secondary);
+}
+
+.mobile-calendar-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.375rem 0;
+  min-height: 2.75rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition-property: background-color;
+  transition-duration: 100ms;
+  border-left: 1px solid var(--color-border-subtle);
+}
+
+.mobile-calendar-cell:active {
+  background-color: var(--color-surface-tertiary);
+}
+
+.mobile-calendar-cell--selected {
+  background-color: var(--color-brand-50);
+}
+
+.mobile-calendar-day-number {
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+.mobile-calendar-day-number--today {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 9999px;
+  background-color: var(--color-brand-600);
+  color: var(--color-text-inverse);
+  font-weight: 600;
+}
+
+.mobile-calendar-status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+/* ===================================================================
+   Mobile Homescreen
+   App-like card-based navigation for the mobile entry point.
+   =================================================================== */
+
+.mobile-homescreen-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.mobile-homescreen-card {
+  display: block;
+  padding: 1rem;
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  -webkit-tap-highlight-color: transparent;
+  transition-property: transform, box-shadow;
+  transition-duration: 150ms;
+}
+
+.mobile-homescreen-card:active {
+  transform: scale(0.97);
+}
+
+.mobile-homescreen-card--hero {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, var(--color-brand-600), var(--color-brand-800));
+  padding: 1.25rem;
+}
+
+.mobile-homescreen-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}
+
+/* ===================================================================
+   Mobile Capacity View
+   Responsive controls and chart sizing for the capacity page.
+   =================================================================== */
+
+.mobile-capacity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.mobile-capacity-chart-container {
+  height: 250px;
+}
+
+@media (min-width: 768px) {
+  .mobile-capacity-chart-container {
+    height: 350px;
+  }
+}
+
+/* ===================================================================
+   Mobile Settings View
+   Card-based section navigation and touch-friendly layout for settings.
+   =================================================================== */
+
+.mobile-settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-settings-section-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.875rem 1rem;
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  -webkit-tap-highlight-color: transparent;
+  transition-property: background-color;
+  transition-duration: 150ms;
+}
+
+.mobile-settings-section-card:active {
+  background-color: var(--color-surface-secondary);
+}
+
+.mobile-settings-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+/* ===================================================================
+   Page Transitions (Mobile)
+   Smooth transitions between screens for app-like feel.
+   =================================================================== */
+
+@keyframes mobile-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-page-enter {
+  animation: mobile-page-enter 0.2s ease-out;
+}
+
+/* Mobile-specific btn-icon: ensure 44px minimum tap target */
+@media (max-width: 767px) {
+  .btn-icon {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

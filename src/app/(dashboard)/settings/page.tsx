@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { SkillManager } from "@/components/settings/SkillManager";
 import { StamtabelManager } from "@/components/settings/StamtabelManager";
 import { RosterProfileEditor } from "@/components/settings/RosterProfileEditor";
@@ -12,6 +12,8 @@ import { useApiDataWithLoading, mutate } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { showToast } from "@/components/ui/Toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useMobileTitle } from "@/hooks/useHeaderSubtitle";
+import { Database, Award, CalendarClock, Link2, Users, UsersRound, ScrollText, ChevronRight } from "lucide-react";
 
 type TabKey = "stamgegevens" | "competenties" | "roosters" | "connectiviteit" | "gebruikers" | "gebruikersgroepen" | "auditlog";
 
@@ -24,6 +26,26 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "gebruikersgroepen", label: "Gebruikersgroepen" },
   { key: "auditlog", label: "Auditlog" },
 ];
+
+const TAB_ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
+  stamgegevens: Database,
+  competenties: Award,
+  roosters: CalendarClock,
+  connectiviteit: Link2,
+  gebruikers: Users,
+  gebruikersgroepen: UsersRound,
+  auditlog: ScrollText,
+};
+
+const TAB_ICON_STYLES: Record<TabKey, { bg: string; text: string }> = {
+  stamgegevens: { bg: "bg-brand-50", text: "text-brand-600" },
+  competenties: { bg: "bg-success-50", text: "text-success-700" },
+  roosters: { bg: "bg-warning-50", text: "text-warning-700" },
+  connectiviteit: { bg: "bg-surface-tertiary", text: "text-text-secondary" },
+  gebruikers: { bg: "bg-brand-50", text: "text-brand-600" },
+  gebruikersgroepen: { bg: "bg-success-50", text: "text-success-700" },
+  auditlog: { bg: "bg-surface-tertiary", text: "text-text-secondary" },
+};
 
 const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
   stamgegevens: {
@@ -59,6 +81,14 @@ const TAB_DESCRIPTIONS: Record<TabKey, { title: string; desc: string }> = {
 export default function SettingsPage() {
   const { canWriteSettings } = useUserRole();
   const [activeTab, setActiveTab] = useState<TabKey>("stamgegevens");
+  // Mobile: null = show section list, string = show content for that section
+  const [mobileSectionOpen, setMobileSectionOpen] = useState<TabKey | null>(null);
+
+  const handleMobileSectionBack = useCallback(() => setMobileSectionOpen(null), []);
+
+  // When a mobile section is open, show its title in the header with back arrow
+  const mobileSectionTitle = mobileSectionOpen ? TAB_DESCRIPTIONS[mobileSectionOpen].title : "";
+  useMobileTitle(mobileSectionTitle, handleMobileSectionBack);
 
   const [employers, employersLoading, employersError] = useApiDataWithLoading(() => api.settings.getEmployers(), [], []);
   const [departments, departmentsLoading, departmentsError] = useApiDataWithLoading(() => api.settings.getDepartments(), [], []);
@@ -82,44 +112,11 @@ export default function SettingsPage() {
   }
 
   const sectionInfo = TAB_DESCRIPTIONS[activeTab];
+  const visibleTabs = TABS.filter((tab) => (tab.key !== "gebruikers" && tab.key !== "gebruikersgroepen" && tab.key !== "auditlog") || canWriteSettings);
 
-  return (
-    <div className={activeTab === "auditlog" ? "max-w-5xl" : "max-w-3xl"}>
-      <div className="page-header">
-        <div className="page-header-row">
-          <div>
-            <h1 className="text-page-title">Instellingen</h1>
-            <p className="text-text-secondary text-sm mt-1">
-              Configuratie en referentiegegevens voor de gehele applicatie.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <nav className="settings-tabs" role="tablist" aria-label="Instellingencategorieën">
-        {TABS.filter((tab) => (tab.key !== "gebruikers" && tab.key !== "gebruikersgroepen" && tab.key !== "auditlog") || canWriteSettings).map((tab) => (
-          <button
-            key={tab.key}
-            role="tab"
-            aria-selected={activeTab === tab.key}
-            data-active={activeTab === tab.key}
-            className="settings-tab"
-            onClick={() => setActiveTab(tab.key)}
-          >
-            {tab.label}
-            {tabCounts[tab.key] !== null && (
-              <span className="settings-tab-badge">{tabCounts[tab.key]}</span>
-            )}
-          </button>
-        ))}
-      </nav>
-
-      <div className="settings-section-intro">
-        <h2 className="settings-section-title">{sectionInfo.title}</h2>
-        <p className="settings-section-desc">{sectionInfo.desc}</p>
-      </div>
-
-      {activeTab === "stamgegevens" && (
+  function renderTabContent(tab: TabKey) {
+    switch (tab) {
+      case "stamgegevens": return (
         <div className="space-y-6">
           <StamtabelManager
             title="Werkgevers"
@@ -166,19 +163,98 @@ export default function SettingsPage() {
             onDelete={(id) => toastMutate(() => api.settings.deleteLeaveType(id), "Verloftype verwijderd")}
           />
         </div>
-      )}
+      );
+      case "competenties": return <SkillManager readOnly={!canWriteSettings} />;
+      case "roosters": return <RosterProfileEditor readOnly={!canWriteSettings} />;
+      case "connectiviteit": return <ImportSourceManager readOnly={!canWriteSettings} />;
+      case "gebruikers": return canWriteSettings ? <UserManager /> : null;
+      case "gebruikersgroepen": return canWriteSettings ? <UserGroupManager /> : null;
+      case "auditlog": return canWriteSettings ? <AuditLogViewer /> : null;
+      default: return null;
+    }
+  }
 
-      {activeTab === "competenties" && <SkillManager readOnly={!canWriteSettings} />}
+  return (
+    <div className={activeTab === "auditlog" || mobileSectionOpen === "auditlog" ? "max-w-5xl" : "max-w-3xl"}>
+      {/* Desktop layout: tabs + content */}
+      <div className="hidden md:block">
+        <div className="page-header">
+          <div className="page-header-row">
+            <div>
+              <h1 className="text-page-title">Instellingen</h1>
+              <p className="text-text-secondary text-sm mt-1">
+                Configuratie en referentiegegevens voor de gehele applicatie.
+              </p>
+            </div>
+          </div>
+        </div>
 
-      {activeTab === "roosters" && <RosterProfileEditor readOnly={!canWriteSettings} />}
+        <nav className="settings-tabs" role="tablist" aria-label="Instellingencategorieën">
+          {visibleTabs.map((tab) => (
+            <button
+              key={tab.key}
+              role="tab"
+              aria-selected={activeTab === tab.key}
+              data-active={activeTab === tab.key}
+              className="settings-tab"
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+              {tabCounts[tab.key] !== null && (
+                <span className="settings-tab-badge">{tabCounts[tab.key]}</span>
+              )}
+            </button>
+          ))}
+        </nav>
 
-      {activeTab === "connectiviteit" && <ImportSourceManager readOnly={!canWriteSettings} />}
+        <div className="settings-section-intro">
+          <h2 className="settings-section-title">{sectionInfo.title}</h2>
+          <p className="settings-section-desc">{sectionInfo.desc}</p>
+        </div>
 
-      {activeTab === "gebruikers" && canWriteSettings && <UserManager />}
+        {renderTabContent(activeTab)}
+      </div>
 
-      {activeTab === "gebruikersgroepen" && canWriteSettings && <UserGroupManager />}
-
-      {activeTab === "auditlog" && canWriteSettings && <AuditLogViewer />}
+      {/* Mobile layout: section cards or section content */}
+      <div className="md:hidden">
+        {mobileSectionOpen === null ? (
+          <div className="mobile-settings-sections mobile-page-enter">
+            {visibleTabs.map((tab) => {
+              const Icon = TAB_ICONS[tab.key];
+              const iconStyle = TAB_ICON_STYLES[tab.key];
+              const desc = TAB_DESCRIPTIONS[tab.key];
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setMobileSectionOpen(tab.key)}
+                  className="mobile-settings-section-card"
+                >
+                  <div className={`mobile-settings-section-icon ${iconStyle.bg} ${iconStyle.text}`}>
+                    <Icon className="w-[1.125rem] h-[1.125rem]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-text-primary">{tab.label}</div>
+                    <div className="text-xs text-text-secondary mt-0.5 line-clamp-1">{desc.desc}</div>
+                  </div>
+                  {tabCounts[tab.key] !== null && (
+                    <span className="text-xs font-medium text-text-tertiary bg-surface-tertiary rounded-full px-2 py-0.5 flex-shrink-0">
+                      {tabCounts[tab.key]}
+                    </span>
+                  )}
+                  <ChevronRight className="w-4 h-4 text-text-tertiary flex-shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="mobile-page-enter">
+            <div className="mb-4">
+              <p className="text-xs text-text-secondary">{TAB_DESCRIPTIONS[mobileSectionOpen].desc}</p>
+            </div>
+            {renderTabContent(mobileSectionOpen)}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

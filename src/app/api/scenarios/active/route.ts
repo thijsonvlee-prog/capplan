@@ -1,31 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { validateRequired, requireRole, parseJsonBody, resolveUserId } from "@/lib/api-route-utils";
 
 const PREFERENCE_KEY = "activeScenario";
-
-/**
- * Resolve the userId from the session. When auth is not configured
- * (no NEXTAUTH_SECRET), falls back to "default" for backward compatibility.
- * Returns null if auth is configured but the user is not logged in.
- */
-async function resolveUserId(): Promise<{ userId: string } | { error: NextResponse }> {
-  if (!process.env.NEXTAUTH_SECRET) {
-    return { userId: "default" };
-  }
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return {
-      error: NextResponse.json(
-        { error: "Niet ingelogd. Log in om het actieve scenario te beheren." },
-        { status: 401 }
-      ),
-    };
-  }
-  return { userId: session.user.id };
-}
 
 export async function GET() {
   try {

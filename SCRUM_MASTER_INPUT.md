@@ -87,7 +87,7 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 - **Type:** Initiative / new feature
 - **Status:** Closed
-- **Closed reason:** Fully delivered. All 3 phases completed 2026-04-01: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). ESC-013 Option B scope complete. Superseded by SMI-024 (broader mobile redesign).
+- **Closed reason:** Fully delivered. All 3 phases completed 2026-04-01: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). ESC-013 Option B scope complete. PB-167 (month calendar redesign) also delivered. Superseded by SMI-024 (broader mobile redesign).
 - **Escalation linkage:** ESC-013 (closed)
 - **Backlog linkage:** PB-154, PB-155, PB-156, PB-167 (all completed)
 

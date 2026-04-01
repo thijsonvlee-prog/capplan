@@ -1,295 +1,247 @@
 "use client";
 
-export default function DocumentatiePage() {
-  function handleDownload() {
-    const content = generateDocumentation();
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "capplan-documentatie.txt";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+import { useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface ReleaseGroup {
+  heading: string;
+  items: string[];
+}
+
+interface Release {
+  date: string;
+  title: string;
+  groups: ReleaseGroup[];
+}
+
+const RELEASES: Release[] = [
+  {
+    date: "1 april 2026",
+    title: "Mobiel startscherm, navigatie en releasenotes",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "Mobiel startscherm met kaartnavigatie naar alle secties. Planningkaart als hero met merkkleurgradient, overige secties in 2-koloms raster.",
+          "Terugknop op alle mobiele subpagina\u2019s om terug te keren naar het startscherm. Hamburger-menu en sidebar-slideout op mobiel verwijderd.",
+          "Documentatiepagina vervangen door een chronologisch releasenotes-overzicht met inklapbare secties per dag.",
+          "Maandkalender op mobiel: maandnavigatie met vorige/volgende, weeknummers, statuskleurdots per dag, dagdetailpaneel met status en notities. Vandaag gemarkeerd met blauwe cirkel.",
+          "Zoekicoon-uitlijning in zoekbalken verbeterd.",
+        ],
+      },
+      {
+        heading: "Bugfixes",
+        items: [
+          "Mobiele sidebar opende niet betrouwbaar: z-index conflict en useEffect mount-bug opgelost met mount-guard.",
+        ],
+      },
+      {
+        heading: "Onderhoud",
+        items: [
+          "resolveUserId en validateApiFields geconsolideerd naar gedeelde modules.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "31 maart 2026",
+    title: "API-connecties, audittrail, beveiliging en mobiele navigatie",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "API-bron configuratie: brontype-kiezer (CSV/API), URL, HTTP-methode, headers, authenticatietype met credential-velden.",
+          "Verbinding testen met inline succes/fout-feedback.",
+          "Response-structuur ontdekking na verbindingstest met interactieve padkeuze en autocomplete.",
+          "Auditlog viewer in instellingen met filters, expandeerbare rijen en paginering.",
+          "Planningsrooster werkbalk herstructurering naar vier zones: Periode, Filter, Weergave, Status.",
+          "Capaciteitspagina KPI-samenvattingsmodule met vijf kernmetrieken.",
+          "Chauffeurspagina: ge\u00efntegreerde zoekbalk en tonale rijafwisseling.",
+          "Mobiele navigatie met hamburger-menu en slide-over sidebar.",
+          "Mobiele chauffeurlijst met kaartweergave, zoekbalk en vereenvoudigde paginering.",
+        ],
+      },
+      {
+        heading: "Functioneel",
+        items: [
+          "API-bron uitvoering: server-side HTTP-request met authenticatie, JSON-veldmappings en automatische data-array detectie.",
+          "Volledige audittrail op alle mutaties (planning-entries uitgezonderd).",
+          "Per-gebruiker actief scenario.",
+          "Server-foutmeldingen zichtbaar in toastmeldingen.",
+        ],
+      },
+      {
+        heading: "Beveiliging",
+        items: [
+          "Importbron endpoints beveiligd (ADMIN-rol vereist).",
+          "Afdelingsfilter op planning DELETE- en schrijfroutes.",
+        ],
+      },
+      {
+        heading: "Prestaties",
+        items: [
+          "Snellere sub-record aanmaak: ~3 roundtrips bespaard per wijziging.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "30 maart 2026",
+    title: "Gebruikersgroepen autorisatie compleet",
+    groups: [
+      {
+        heading: "Beveiliging",
+        items: [
+          "Gebruikersgroepen op alle lees- en schrijfendpoints met afdelingsfiltering.",
+          "Individuele routes beveiligd: 404 voor chauffeurs buiten gebruikersgroep.",
+          "Voorkeuren per gebruiker: 401-fout voor niet-ingelogde gebruikers.",
+          "Alleen vooraf aangemaakte gebruikers kunnen inloggen via OAuth.",
+          "Rolhandhaving op alle schrijfroutes (Admin/Planner/Viewer).",
+        ],
+      },
+      {
+        heading: "Functioneel",
+        items: [
+          "Gebruikersgroepen beheer met afdelingskoppeling en ledenbeheer.",
+          "CSV-import upsert modus: keuze tussen aanmaken en bijwerken.",
+          "Gebruikersbeheer met roloverzicht en rolbeheer.",
+          "Inlogpagina met Google OAuth.",
+        ],
+      },
+      {
+        heading: "Prestaties",
+        items: [
+          "Capaciteitsendpoint geoptimaliseerd.",
+          "Snellere CSV-import met batch-lookups en createMany.",
+          "Virtual scrolling planningsrooster: soepel bij 1000+ chauffeurs.",
+          "Server-side paginering op planningsrooster en chauffeurspagina.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "29 maart 2026",
+    title: "Ontwerp, connectiviteit en prestaties",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "Planningsrooster herontwerp: tonale lagen, statuscellen met kleurindicatorstippen.",
+          "Koptekst met contextuele informatie per pagina.",
+          "Chauffeurspagina herontwerp: samengestelde paginakop met contextbeschrijving.",
+          "Instellingenpagina herontwerp: tabnavigatie met secties.",
+          "Capaciteitspagina: statuschips met kleurindicatorstippen.",
+          "Gestylede datuminvoer met kalenderknop.",
+          "Gestylede verwijderbevestigingsdialogen.",
+          "Manrope lettertype voor paginatitels.",
+        ],
+      },
+      {
+        heading: "Connectiviteit",
+        items: [
+          "Importbronnen: datamodel, CRUD API en beheerscherm met visuele veldkoppelingseditor.",
+          "CSV-upload met kolomdetectie en voorbeeldrijen.",
+        ],
+      },
+      {
+        heading: "Prestaties",
+        items: [
+          "Map-gebaseerde lookups voor O(1) toegang in het planningsrooster.",
+        ],
+      },
+      {
+        heading: "Bugfixes",
+        items: [
+          "Chauffeurs zonder actief dienstverband nu zichtbaar in het planningsscherm.",
+        ],
+      },
+    ],
+  },
+];
+
+const CATEGORY_STYLES: Record<string, string> = {
+  "UX / design": "bg-brand-50 text-brand-700",
+  "Functioneel": "bg-success-50 text-success-700",
+  "Beveiliging": "bg-danger-50 text-danger-600",
+  "Prestaties": "bg-warning-50 text-warning-700",
+  "Bugfixes": "bg-danger-50 text-danger-600",
+  "Onderhoud": "bg-surface-tertiary text-text-secondary",
+  "Connectiviteit": "bg-brand-50 text-brand-700",
+};
+
+export default function ReleasenotesPage() {
+  const [expandedIndex, setExpandedIndex] = useState<number>(0);
 
   return (
-    <div>
-      {/* Page title is shown in the header */}
-      <div className="bg-surface-primary rounded-lg shadow-card border border-border-subtle p-6 space-y-4">
-        <p className="text-sm text-text-secondary">
-          Download de volledige documentatie van CapPlan als tekstbestand. Hierin staat een beschrijving van alle functionaliteiten en de opbouw van de applicatie.
+    <div className="max-w-3xl">
+      <div className="page-header">
+        <p className="text-sm text-text-secondary mt-1">
+          Overzicht van alle wijzigingen en verbeteringen in CapPlan.
         </p>
-        <button
-          onClick={handleDownload}
-          className="btn-primary"
-        >
-          Download documentatie (.txt)
-        </button>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {RELEASES.map((release, idx) => {
+          const isExpanded = expandedIndex === idx;
+          return (
+            <div
+              key={release.date}
+              className="bg-surface-primary rounded-lg shadow-card overflow-hidden"
+            >
+              <button
+                onClick={() => setExpandedIndex(isExpanded ? -1 : idx)}
+                className="w-full text-left px-4 py-3 md:px-5 md:py-4 flex items-center gap-3 hover:bg-surface-secondary transition-colors"
+              >
+                <div className="flex-shrink-0">
+                  {isExpanded ? (
+                    <ChevronDown className="w-4 h-4 text-text-tertiary" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-text-tertiary" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-medium text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
+                      {release.date}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-text-primary mt-1 truncate">
+                    {release.title}
+                  </h3>
+                </div>
+              </button>
+
+              {isExpanded && (
+                <div className="px-4 pb-4 md:px-5 md:pb-5 pt-0 ml-7 border-t border-border-subtle">
+                  {release.groups.map((group) => (
+                    <div key={group.heading} className="mt-3 first:mt-3">
+                      <span
+                        className={cn(
+                          "inline-block text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full mb-1.5",
+                          CATEGORY_STYLES[group.heading] ?? "bg-surface-tertiary text-text-secondary"
+                        )}
+                      >
+                        {group.heading}
+                      </span>
+                      <ul className="space-y-1">
+                        {group.items.map((item, i) => (
+                          <li
+                            key={i}
+                            className="text-[0.8125rem] text-text-secondary leading-relaxed pl-3 relative before:content-[''] before:absolute before:left-0 before:top-[0.55em] before:w-1 before:h-1 before:rounded-full before:bg-border-strong"
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
-}
-
-function generateDocumentation(): string {
-  return `================================================================================
-CAPPLAN - DRIVER PLANNING TOOL - VOLLEDIGE DOCUMENTATIE
-================================================================================
-
-1. OVERZICHT
-================================================================================
-
-CapPlan is een webapplicatie voor het plannen en beheren van chauffeurs in een
-transportorganisatie. De applicatie biedt functionaliteiten voor:
-
-- Het beheren van chauffeursgegevens en hun historische records
-- Het plannen van inzet via een visueel planningsrooster
-- Het analyseren van capaciteit via grafieken en tabellen
-- Het werken met scenario's voor what-if analyses
-- Het beheren van stamgegevens (werkgevers, afdelingen, locaties, etc.)
-
-Technische stack: Next.js 14, React 18, TypeScript, Tailwind CSS, PostgreSQL (Neon).
-Data wordt opgeslagen in een PostgreSQL database via Prisma ORM.
-
-
-2. APPLICATIESTRUCTUUR
-================================================================================
-
-De applicatie heeft 5 hoofdpagina's, bereikbaar via de navigatiebalk (sidebar):
-
-  - Planning       : Planningsrooster met dagelijkse statussen per chauffeur
-  - Capaciteit     : Grafiek en tabel met capaciteitsoverzicht
-  - Chauffeurs     : Beheer van chauffeursgegevens en subtabellen
-  - Instellingen   : Beheer van stamgegevens en roosterprofielen
-  - Documentatie   : Deze documentatie downloaden
-
-Layout:
-  - Links: sidebar (navigatie, altijd zichtbaar)
-  - Boven: header met versienummer
-  - Midden: pagina-inhoud
-
-
-3. PLANNING
-================================================================================
-
-Het planningsscherm toont een rooster met chauffeurs (rijen) en data (kolommen).
-
-3.1 Statustypen:
-  - Roostervrij (-)         : Geen inzet gepland (grijs)
-  - Basisrooster (B)        : Reguliere dienst (donkergroen)
-  - Aanvullend beschikbaar (A) : Extra beschikbaarheid (lichtgroen)
-  - Verlof (V)              : Vrije dag/vakantie (geel)
-  - Ziek (Z)                : Ziekmelding (rood)
-
-  Bij 'Verlof' kan een verloftype worden gekozen (vakantie, ADV, etc.).
-  Bij 'Ziek' kan een percentage worden opgegeven (deels ziek/deels werken).
-
-3.2 Interactie:
-  - Klik op een cel om de status te wijzigen
-  - Klik en sleep over meerdere cellen om ze in bulk te wijzigen
-  - Klik op het roostericoon naast een chauffeur om een roosterprofiel toe te wijzen
-
-3.3 Weergaveopties:
-  - Aggregatieniveau: dag, week, 4 weken, maand, kwartaal, jaar
-  - Dichtheid: ruim, gezellig, compact (bepaalt celhoogte)
-  - Navigatie: vorige/volgende periode, vandaag-knop
-  - Filter: zoek op chauffeursnaam
-  - Groeperen op: werkgever, afdeling, standplaats, rijbewijstype, dienstverband
-  - Kolommen: toon extra chauffeursinformatie (personeelsnr., werkgever, etc.)
-  - Sorteren: klik op kolomkop om te sorteren
-
-3.4 Scenario's:
-  - "Actuele planning" is het standaardscenario
-  - Scenario's aanmaken voor what-if analyses
-  - Scenario's dupliceren vanuit bestaande planning
-  - Elk scenario heeft eigen planningsdata
-
-
-4. CHAUFFEURS
-================================================================================
-
-Beheer van alle chauffeurs in de organisatie.
-
-4.1 Overzicht:
-  - Tabel met alle actieve chauffeurs
-  - Zoeken op naam of personeelsnummer
-  - Nieuwe chauffeur aanmaken
-  - Bestaande chauffeur bewerken of verwijderen
-
-4.2 Gegevens (tabblad):
-  - Voornaam, achternaam
-  - Personeelsnummer
-  - Rijbewijstypes: B, C, C1, CE, D, DE
-  - Vaardigheden: gekoppeld aan stamtabel (bijv. ADR, Koelvervoer)
-  - Actuele gegevens: afgeleid van de actieve records in de subtabellen
-
-4.3 Dienstverband (subtabblad):
-  - Historisch overzicht van dienstverbanden
-  - Velden: begindatum, type (fulltime/parttime/oproep/uitzend/charter), werkgever
-  - Begindatum kan iedere datum zijn (vrij invoerbaar via datumveld)
-  - Bij toevoegen wordt het vorige actieve record automatisch afgesloten
-
-4.4 Functie (subtabblad):
-  - Historisch overzicht van functiewijzigingen
-  - Velden: begindatum, functienaam, standplaats, afdeling, leidinggevende
-  - Begindatum kan iedere datum zijn (vrij invoerbaar via datumveld)
-  - Bij toevoegen wordt het vorige actieve record automatisch afgesloten
-
-4.5 Rooster (subtabblad):
-  - Historisch overzicht van toegewezen roosterprofielen
-  - Velden: begindatum, roosterprofiel, uren per week
-  - Begindatum kan iedere datum zijn (vrij invoerbaar via datumveld)
-  - Bij toewijzing worden automatisch 364 dagen (1 jaar) aan planningregels
-    gegenereerd op basis van het 28-daags patroon van het roosterprofiel
-  - Bestaande verlof- en ziekstatussen worden niet overschreven
-
-
-5. ROOSTERPROFIELEN
-================================================================================
-
-Een roosterprofiel definieert een herhalend 4-weeks (28-dagen) patroon.
-
-- Beheer via Instellingen > Roosterprofielen
-- Visuele editor: 4 rijen (weken) x 7 kolommen (dagen)
-- Per dag een status: Roostervrij, Basisrooster, Aanvullend beschikbaar
-- Klik om door de statussen te cyclen
-- Profielen worden gekoppeld aan chauffeurs via het rooster-subtabblad
-
-Bij toewijzing aan een chauffeur:
-- Het 28-daags patroon herhaalt zich 13x (= 364 dagen / 1 jaar)
-- Planningregels worden automatisch aangemaakt
-- Verlof en ziek worden niet overschreven
-
-
-6. CAPACITEITSANALYSE
-================================================================================
-
-Het capaciteitsscherm toont een grafiek en tabel met het aantal chauffeurs
-per status over een tijdsperiode.
-
-- Aggregatie: dag, week, 4 weken, maand, kwartaal, jaar
-- Vergelijk meerdere scenario's naast elkaar
-- Statusverdeling: hoeveel chauffeurs zijn roostervrij, op basisrooster,
-  aanvullend beschikbaar, met verlof of ziek per periode
-
-
-7. INSTELLINGEN (STAMGEGEVENS)
-================================================================================
-
-Beheer van referentiegegevens die in de applicatie worden gebruikt:
-
-7.1 Werkgevers:
-  - Code + omschrijving (bijv. CAPPLAN / CapPlan BV)
-  - Worden gekoppeld aan dienstverbandrecords van chauffeurs
-
-7.2 Afdelingen:
-  - Code + omschrijving (bijv. DIST / Distributie)
-  - Worden gekoppeld aan functierecords van chauffeurs
-
-7.3 Standplaatsen:
-  - Code + omschrijving (bijv. AMS / Amsterdam)
-  - Worden gekoppeld aan functierecords van chauffeurs
-
-7.4 Verloftypes:
-  - Code + omschrijving (bijv. VAK / Vakantie)
-  - Worden geselecteerd bij het instellen van verlofstatus in planning
-
-7.5 Vaardigheden:
-  - Naam (bijv. ADR, Koelvervoer)
-  - Worden gekoppeld aan chauffeurs
-
-7.6 Roosterprofielen:
-  - Naam + 28-daags patroon
-  - Worden toegewezen aan chauffeurs
-
-
-8. DATA-OPSLAG
-================================================================================
-
-Alle data wordt opgeslagen in een PostgreSQL database (Neon) via Prisma ORM.
-Data is persistent en niet gebonden aan de browser.
-
-
-9. ARCHITECTUUR
-================================================================================
-
-De applicatie volgt een gelaagde architectuur:
-
-  UI (Components/Pages)
-       ↓ gebruikt
-  API Routes (/src/app/api/)
-       ↓ gebruikt
-  Prisma ORM
-       ↓
-  PostgreSQL (Neon)
-
-9.1 Domeinlaag (/src/domain):
-  - enums.ts      : Alle enum-types (PlanningStatus, EmploymentType, etc.)
-  - types.ts      : Alle domeinentiteiten (Driver, PlanningEntry, Scenario, etc.)
-  - constants.ts  : Labels, kleuren, statusarrays (STATUS_LABELS, DAY_LABELS, etc.)
-
-9.2 API Routes (/src/app/api/):
-  - Alle data-toegang gaat via API routes met Prisma
-  - Frontend gebruikt /src/lib/api.ts (fetch wrapper)
-
-9.3 Reactiviteit:
-  - De frontend gebruikt een useApiData hook voor data-ophaling
-  - Mutaties worden doorgevoerd via de mutate() helper die automatisch herlaadt
-
-
-10. BRONCODE STRUCTUUR
-================================================================================
-
-/src
-  /app                              Next.js App Router
-    /api/                           API Routes (Prisma data-toegang)
-    /(dashboard)                    Dashboard layout (sidebar + header)
-      /planning/page.tsx            Planningspagina
-      /capacity/page.tsx            Capaciteitspagina
-      /drivers/page.tsx             Chauffeurspagina
-      /settings/page.tsx            Instellingenpagina
-      /documentatie/page.tsx        Documentatiepagina
-      layout.tsx                    Dashboard wrapper
-
-  /domain                           Domeinlaag
-    enums.ts                        Enum-types en union types
-    types.ts                        Domeinentiteiten en modellen
-    constants.ts                    Labels, kleuren, statusarrays
-
-  /components
-    /layout
-      Sidebar.tsx                   Navigatiebalk
-      Header.tsx                    Bovenste balk
-    /planning
-      PlanningGrid.tsx              Hoofdplanningsrooster
-      DayCell.tsx                   Individuele dagcel
-      WeekSelector.tsx              Periodenavigatie
-      ZoomSelector.tsx              Aggregatieniveau schakelaar
-      StatusSelector.tsx            Statuskeuzescherm
-      StatusBadge.tsx               Statusweergave badge
-      ScenarioSelector.tsx          Scenariobeheer
-      RosterAssigner.tsx            Roosterprofiel toewijzen
-    /drivers
-      DriverList.tsx                Chauffeurstabel
-      DriverForm.tsx                Chauffeur aanmaken/bewerken
-      SubTable.tsx                  Herbruikbare subtabel component
-    /capacity
-      CapacityChart.tsx             Grafiek (Recharts)
-      CapacityTable.tsx             Capaciteitstabel
-    /settings
-      SkillManager.tsx              Vaardigheden CRUD
-      StamtabelManager.tsx          Generiek stamtabelbeheer
-      RosterProfileEditor.tsx       Roosterprofiel editor
-
-  /lib
-    api.ts                          API fetch wrapper
-    utils.ts                        Hulpfuncties (cn, getMondayStart, getDateRange, etc.)
-
-  /prisma
-    schema.prisma                   Database schema
-
-
-================================================================================
-Einde documentatie - CapPlan v2.0
-================================================================================
-`;
 }

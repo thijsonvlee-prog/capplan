@@ -6,6 +6,7 @@ import {
   buildApiHeaders,
   extractDataArray,
   resolveJsonPath,
+  VALID_TARGET_ENTITIES,
 } from "@/lib/api-import-helpers";
 import { cleanupOldAuditLogs } from "@/lib/audit";
 import type { ImportRowError } from "@/domain/types";
@@ -13,8 +14,6 @@ import type { ImportRowError } from "@/domain/types";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const MAX_ROW_COUNT = 10_000;
 const API_TIMEOUT_MS = 30_000; // 30 seconds
-
-const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
 
 const REQUIRED_FIELDS: Record<string, string[]> = {
   drivers: ["firstName", "lastName"],

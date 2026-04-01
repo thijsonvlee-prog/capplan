@@ -2,44 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateRequired, requireRole, validateFieldMappings, parseJsonBody } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
-
-const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
-const VALID_SOURCE_TYPES = ["CSV", "API"];
-const VALID_API_METHODS = ["GET", "POST"];
-const VALID_API_AUTH_TYPES = ["NONE", "BASIC", "BEARER", "API_KEY"];
-
-function validateApiFields(body: Record<string, unknown>): string | null {
-  const { apiUrl, apiMethod, apiAuthType, apiHeaders, apiCredentials } = body;
-
-  if (!apiUrl || typeof apiUrl !== "string" || apiUrl.trim() === "") {
-    return "API-URL is verplicht voor API-bronnen";
-  }
-  if (apiUrl.length > 2000) {
-    return "API-URL mag maximaal 2000 tekens bevatten";
-  }
-
-  if (apiMethod && !VALID_API_METHODS.includes(apiMethod as string)) {
-    return `Ongeldige HTTP-methode. Kies uit: ${VALID_API_METHODS.join(", ")}`;
-  }
-
-  if (apiAuthType && !VALID_API_AUTH_TYPES.includes(apiAuthType as string)) {
-    return `Ongeldig authenticatietype. Kies uit: ${VALID_API_AUTH_TYPES.join(", ")}`;
-  }
-
-  if (apiHeaders !== undefined && apiHeaders !== null) {
-    if (typeof apiHeaders !== "object" || Array.isArray(apiHeaders)) {
-      return "API-headers moeten een object zijn met sleutel-waarde paren";
-    }
-  }
-
-  if (apiCredentials !== undefined && apiCredentials !== null) {
-    if (typeof apiCredentials !== "object" || Array.isArray(apiCredentials)) {
-      return "API-credentials moeten een object zijn";
-    }
-  }
-
-  return null;
-}
+import { VALID_TARGET_ENTITIES, VALID_SOURCE_TYPES, validateApiFields } from "@/lib/api-import-helpers";
 
 export async function GET() {
   try {

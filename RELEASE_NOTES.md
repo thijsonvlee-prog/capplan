@@ -6,20 +6,47 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-03-31 — Importbron lijst-endpoint beveiligd
+### 2026-04-01 — Mobiele navigatie hersteld
 
-#### Beveiliging
+#### Bugfixes
 
-- **Importbron GET-lijst beveiligd:** Het ophalen van de importbronnenlijst (`/api/import-sources`) vereist nu de ADMIN-rol. Voorheen was dit endpoint onbeschermd en retourneerde het alle velden inclusief API-credentials aan elke ingelogde gebruiker.
+- **Mobiele navigatie werkt weer:** Tappen op de Planning-kaart op het mobiele startscherm en tappen op secties in Instellingen navigeert nu betrouwbaar. Voorheen flikkerde het scherm zonder te navigeren. Oorzaak was een React state-bug in de mobiele titelhook.
 
-### 2026-03-31 — API-import helpers, audit cleanup, mobiele navigatie
+### 2026-04-01 — Mobiele chauffeurspagina opfrisbeurt
+
+#### UX / design verbeteringen
+
+- **Mobiele chauffeurspagina:** De mobiele chauffeurlijst heeft nu dezelfde ingangsanimatie (fade + slide-up) als de overige mobiele schermen. Kaartspacing is vergroot voor consistentie met de instellingen- en planningsweergaven.
+
+### 2026-04-01 — Mobiele app-ervaring compleet
+
+#### UX / design verbeteringen
+
+- **Mobiele planning navigatie:** De planningsweergave op mobiel is nu volledig geïntegreerd met het startscherm. De header toont "Planning" met een terugpijl wanneer de planning actief is. De losse home-knop in de chauffeurlijst is verwijderd ten gunste van de consistente header-navigatie.
+- **Mobiele capaciteitsweergave:** De capaciteitspagina is geoptimaliseerd voor mobiel. Filters en periodebesturing worden gestapeld weergegeven. De grafiekhoogte past zich aan het schermformaat aan. KPI-kaarten tonen in een 2-koloms raster.
+- **Mobiele instellingenweergave:** Op mobiel worden de 7 instellingentabs vervangen door een kaartgebaseerde sectielijst. Elke sectie toont een icoon, titel, beschrijving en telling. Tik op een sectie om de inhoud te openen met terugnavigatie via de header.
+- **Mobiele transities en touch-kwaliteit:** Alle mobiele schermwisselingen hebben nu een subtiele ingangsanimatie (fade + slide-up). Alle interactieve elementen voldoen aan de 44px minimale touch-target richtlijn. Consistente spacing en interactiekwaliteit over alle mobiele schermen.
+
+### 2026-04-01 — Mobiel startscherm, releasenotes en navigatie-overhaul
+
+#### UX / design verbeteringen
+
+- **Mobiel startscherm:** Op mobiel opent de app nu met een kaartgebaseerd startscherm. Een hero-kaart voor Planning (met merkkleurgradient) en vier sectiekaarten (Capaciteit, Chauffeurs, Instellingen, Releasenotes) in een 2-koloms raster. Tikken op een kaart navigeert naar de betreffende sectie.
+- **Terugknop op mobiel:** Alle mobiele subpagina's tonen een terugpijl in de header om terug te keren naar het startscherm. De planning-chauffeurlijst heeft een eigen home-knop. Het hamburger-menu en de slide-over sidebar op mobiel zijn volledig verwijderd.
+- **Releasenotes-pagina:** De documentatiepagina is vervangen door een chronologisch overzicht van alle releasenotes. Inklapbare secties per dag met categoriebadges (UX, Functioneel, Beveiliging, etc.). Sidebar-label gewijzigd van "Documentatie" naar "Releasenotes".
+- **Maandkalender op mobiel:** De mobiele planningsweergave is volledig herschreven naar een maandkalender. Zeven kolommen (ma-zo) met weeknummers per rij. Maandnavigatie met vorige/volgende en "Vandaag"-knop. Statuskleurdots per dag. Tik op een dag voor details (status, verloftype, ziektepercentage, notities). Vandaag gemarkeerd met blauwe cirkel. Dagen buiten de huidige maand worden gedimd getoond. Vervangt de eerdere dag-/weekweergave.
+- **Zoekicoon-uitlijning:** Het vergrootglas in zoekbalken (chauffeurlijst en mobiele planning) is iets naar rechts verschoven voor betere visuele uitlijning met de invoertekst.
+
+#### Bugfixes
+
+- **Mobiele sidebar opent nu betrouwbaar:** De sidebar sloot zichzelf direct na het openen doordat een useEffect op de initiële mount werd getriggerd (z-index conflict + mount-bug). Opgelost met een z-index correctie op de header en een mount-guard die de eerste useEffect-uitvoering overslaat. Navigatie via het hamburger-menu werkt nu betrouwbaar op mobiel.
 
 #### Onderhoud
 
-- **API-import helpers geconsolideerd:** De vier gedeelde functies (`buildApiHeaders`, `extractDataArray`, `resolveJsonPath`, `discoverPaths`) zijn geëxtraheerd naar `src/lib/api-import-helpers.ts`. Test-verbinding en uitvoerroutes importeren nu van dezelfde module. Elimineert ~80 regels duplicatie.
-- **Audit log opschoning:** Nieuwe `cleanupOldAuditLogs()` functie in `src/lib/audit.ts` verwijdert automatisch audit-entries ouder dan 90 dagen. Wordt fire-and-forget aangeroepen na elke import-uitvoering.
+- **resolveUserId geconsolideerd:** Gedupliceerde functie geëxtraheerd naar `api-route-utils.ts`. Voorkeuren- en actief-scenario-routes importeren nu van dezelfde module.
+- **validateApiFields geconsolideerd:** Gedupliceerde functie en 4 validatieconstanten verplaatst naar `api-import-helpers.ts`. ~85 regels duplicatie geëlimineerd.
 
-### 2026-03-31 — API-connecties, audittrail en beveiligingsfixes
+### 2026-03-31 — API-connecties, audittrail, beveiliging en mobiele navigatie
 
 #### UX / design verbeteringen
 
@@ -42,17 +69,22 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### Beveiliging
 
+- **Importbron endpoints beveiligd:** Ophalen van importbronnen (lijst en individueel, inclusief API-credentials) vereist nu de ADMIN-rol.
 - **Afdelingsfilter op planning-routes:** DELETE-route past nu dezelfde afdelingscontrole toe als POST-routes. Planners kunnen geen items verwijderen buiten hun scope.
-- **Importbron GET-endpoint beveiligd:** Ophalen van individuele importbron (inclusief API-credentials) vereist nu ADMIN-rol.
 - **Afdelingsfilter op planning-schrijfroutes:** Planners met beperkte toegang kunnen geen planningsitems aanmaken buiten hun afdelingen.
 
 #### Betrouwbaarheid
 
 - **Invoervalidatie compleet:** Alle POST/PUT-endpoints hebben lengtebegrenzingen, enum-validatie en referentievalidatie.
+- **Audit log opschoning:** Automatische verwijdering van audit-entries ouder dan 90 dagen.
 
 #### Prestaties
 
 - **Snellere sub-record aanmaak:** Overbodige database-query verwijderd. Bespaart ~3 roundtrips per wijziging op Neon serverless.
+
+#### Onderhoud
+
+- **API-import helpers geconsolideerd:** Gedeelde functies geëxtraheerd naar `api-import-helpers.ts`. Elimineert ~80 regels duplicatie.
 
 #### Bugfixes
 

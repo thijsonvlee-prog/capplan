@@ -1,51 +1,79 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, Menu } from "lucide-react";
-import { useHeaderSubtitleValue } from "@/hooks/useHeaderSubtitle";
+import { LogOut, ArrowLeft } from "lucide-react";
+import { useHeaderSubtitleValue, useMobileTitleValue, useMobileBackAction } from "@/hooks/useHeaderSubtitle";
 
 const PAGE_TITLES: Record<string, string> = {
   "/planning": "Planning",
   "/capacity": "Capaciteit",
   "/drivers": "Chauffeurs",
   "/settings": "Instellingen",
-  "/documentatie": "Documentatie",
+  "/documentatie": "Releasenotes",
 };
 
-interface HeaderProps {
-  onMenuOpen?: () => void;
-}
-
-export function Header({ onMenuOpen }: HeaderProps) {
+export function Header() {
   const pathname = usePathname();
   const subtitle = useHeaderSubtitleValue();
+  const mobileTitle = useMobileTitleValue();
+  const mobileBackAction = useMobileBackAction();
   const { data: session } = useSession();
   const title = Object.entries(PAGE_TITLES).find(([path]) => pathname.startsWith(path))?.[1];
+  const isHome = pathname === "/planning" || pathname === "/";
+  // When a mobile title override is set, treat the page as non-home on mobile
+  const showMobileBack = !isHome || !!mobileTitle;
+  const mobileDisplayTitle = mobileTitle || title;
 
   return (
-    <header className="h-14 bg-surface-primary flex items-center justify-between px-4 md:px-6">
+    <header className="h-14 bg-surface-primary flex items-center justify-between px-4 md:px-6 relative z-50">
       <div className="flex items-center gap-2">
-        {onMenuOpen && (
-          <button
-            onClick={onMenuOpen}
-            className="mobile-menu-btn md:hidden"
-            aria-label="Menu openen"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
+        {/* Mobile: back button on non-home routes or when mobile title is set */}
+        {showMobileBack && (
+          mobileBackAction ? (
+            <button
+              onClick={mobileBackAction}
+              className="mobile-menu-btn md:hidden"
+              aria-label="Terug naar startscherm"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          ) : (
+            <Link
+              href="/planning"
+              className="mobile-menu-btn md:hidden"
+              aria-label="Terug naar startscherm"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+          )
         )}
-        {title ? (
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-page-title">{title}</h1>
-            {subtitle && (
-              <span className="text-caption hidden sm:inline">{subtitle}</span>
-            )}
-          </div>
-        ) : (
-          <div />
-        )}
+
+        {/* Mobile: branding on home, page title on subpages */}
+        <div className="md:hidden">
+          {!showMobileBack ? (
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
+                <span className="text-white font-bold text-xs tracking-tight">CP</span>
+              </div>
+              <span className="text-[0.9375rem] font-semibold text-text-primary font-display">
+                CapPlan
+              </span>
+            </div>
+          ) : mobileDisplayTitle ? (
+            <h1 className="text-page-title">{mobileDisplayTitle}</h1>
+          ) : null}
+        </div>
+
+        {/* Desktop: page title with subtitle (unchanged) */}
+        <div className="hidden md:flex items-baseline gap-3">
+          {title && <h1 className="text-page-title">{title}</h1>}
+          {subtitle && (
+            <span className="text-caption">{subtitle}</span>
+          )}
+        </div>
       </div>
 
       {session?.user && (

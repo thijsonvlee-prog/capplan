@@ -54,7 +54,7 @@ export function PeriodSelector({ startDate, dayCount, onChangeStart }: Props) {
       >
         <Home className="w-4 h-4" />
       </button>
-      <span className="text-sm font-semibold min-w-[280px] text-center">{label}</span>
+      <span className="text-sm font-semibold min-w-0 md:min-w-[280px] text-center truncate">{label}</span>
       <button onClick={() => shiftDays(shiftAmount)} className="btn-icon p-1" title="Later" aria-label="Later">
         <ChevronRight className="w-5 h-5" />
       </button>

@@ -103,44 +103,62 @@ export default function CapacityPage() {
     <div>
       {/* Page header with integrated toolbar */}
       <div className="page-header">
-        <div className="page-header-row">
-          <div className="page-header-context">
-            <h1 className="text-page-title">Capaciteit</h1>
-            {activeId !== "default" && activeScenarioName && (
-              <span className="count-badge">{activeScenarioName}</span>
+        {/* Desktop header */}
+        <div className="hidden md:block">
+          <div className="page-header-row">
+            <div className="page-header-context">
+              <h1 className="text-page-title">Capaciteit</h1>
+              {activeId !== "default" && activeScenarioName && (
+                <span className="count-badge">{activeScenarioName}</span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+            <div className="control-group">
+              <span className="control-group-label">Periode</span>
+              <div className="w-px h-4 bg-border-subtle" />
+              <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
+              <div className="w-px h-4 bg-border-subtle" />
+              <ZoomSelector value={aggregation} onChange={setAggregation} />
+            </div>
+
+            {scenarios.length > 0 && (
+              <div className="control-group">
+                <span className="control-group-label">Vergelijk</span>
+                <div className="w-px h-4 bg-border-subtle" />
+                <div className="flex items-center gap-1.5">
+                  {scenarios.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => toggleCompare(s.id)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                        compareIds.includes(s.id)
+                          ? "bg-brand-50 text-brand-700 shadow-xs"
+                          : "bg-surface-primary text-text-secondary hover:bg-surface-secondary shadow-xs"
+                      }`}
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>
-        <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
-          <div className="control-group">
-            <span className="control-group-label">Periode</span>
-            <div className="w-px h-4 bg-border-subtle" />
-            <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
-            <div className="w-px h-4 bg-border-subtle" />
-            <ZoomSelector value={aggregation} onChange={setAggregation} />
-          </div>
 
-          {scenarios.length > 0 && (
-            <div className="control-group">
-              <span className="control-group-label">Vergelijk</span>
-              <div className="w-px h-4 bg-border-subtle" />
-              <div className="flex items-center gap-1.5">
-                {scenarios.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => toggleCompare(s.id)}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                      compareIds.includes(s.id)
-                        ? "bg-brand-50 text-brand-700 shadow-xs"
-                        : "bg-surface-primary text-text-secondary hover:bg-surface-secondary shadow-xs"
-                    }`}
-                  >
-                    {s.name}
-                  </button>
-                ))}
-              </div>
-            </div>
+        {/* Mobile header: compact controls */}
+        <div className="md:hidden">
+          {activeId !== "default" && activeScenarioName && (
+            <span className="count-badge mb-3 inline-block">{activeScenarioName}</span>
           )}
+          <div className="flex flex-col gap-3">
+            <div className="mobile-capacity-controls">
+              <PeriodSelector startDate={startDate} dayCount={dayCount} onChangeStart={setStartDate} />
+            </div>
+            <div className="overflow-x-auto -mx-1 px-1">
+              <ZoomSelector value={aggregation} onChange={setAggregation} />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -150,7 +168,7 @@ export default function CapacityPage() {
           <div className="text-sm">Capaciteitsgegevens laden...</div>
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 md:gap-6">
           {/* KPI Summary Module */}
           <CapacityKPIs capacityData={displayData} />
 
