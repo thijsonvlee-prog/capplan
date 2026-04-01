@@ -6,6 +6,15 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-01 — Mobiele maandkalender en navigatiefixes
+
+#### UX / design verbeteringen
+
+- **Maandkalender op mobiel:** De mobiele planningsweergave is herschreven van een dag-/weekweergave naar een volledige maandkalender. Zeven kolommen (ma-zo) met weeknummers per rij. Maandnavigatie met vorige/volgende en "Vandaag"-knop. Statuskleurdots per dag. Tik op een dag voor details (status, verloftype, ziektepercentage, notities). Vandaag gemarkeerd met blauwe cirkel. Dagen buiten de huidige maand worden gedimd getoond.
+- **Hamburger-menu gerepareerd:** De mobiele hamburger-knop was geblokkeerd door de overlay (z-index conflict). De header zit nu boven de overlay, waardoor navigatie betrouwbaar werkt.
+- **Zoekicoon-uitlijning:** Het vergrootglas in zoekbalken (chauffeurlijst en mobiele planning) is iets naar rechts verschoven voor betere visuele uitlijning met de invoertekst.
+
+
 ### 2026-04-01 — Code deduplicatie consolidatie
 
 #### Onderhoud

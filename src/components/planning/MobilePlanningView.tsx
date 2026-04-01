@@ -1,60 +1,66 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { Search, X, ChevronLeft, ChevronRight, Calendar, CalendarDays, User } from "lucide-react";
+import { Search, X, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { useApiData, useApiDataWithLoading } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { useHeaderSubtitle } from "@/hooks/useHeaderSubtitle";
-import { getDateRange, getMondayStart, cn } from "@/lib/utils";
+import { getDateRange, cn } from "@/lib/utils";
 import { STATUS_LABELS, DAY_LABELS, MONTH_SHORT } from "@/domain/constants";
 import type { PlanningEntry, Driver } from "@/domain/types";
 import type { PlanningStatus } from "@/domain/enums";
-import { addDays, getISOWeek, parseISO } from "date-fns";
-
-type ViewMode = "day" | "week";
+import { addDays, addMonths, subMonths, parseISO, getISOWeek, startOfMonth, endOfMonth, getDay } from "date-fns";
 
 const DEFAULT_PAGINATED = { data: [] as Driver[], total: 0, page: 1, pageSize: 20 };
 
-/** Format date for display: "Ma 1 apr" */
-function formatShortDate(dateStr: string): string {
-  const d = parseISO(dateStr);
-  const dayIdx = (d.getDay() + 6) % 7; // Mon=0
-  return `${DAY_LABELS[dayIdx]} ${d.getDate()} ${MONTH_SHORT[d.getMonth()].toLowerCase()}`;
-}
+const MONTH_NAMES = [
+  "Januari", "Februari", "Maart", "April", "Mei", "Juni",
+  "Juli", "Augustus", "September", "Oktober", "November", "December",
+];
 
-/** Format date header for week view: "Week 14 — 31 mrt – 6 apr 2026" */
-function formatWeekHeader(mondayStr: string): string {
-  const monday = parseISO(mondayStr);
-  const sunday = addDays(monday, 6);
-  const weekNum = getISOWeekNumber(mondayStr);
-  const startDay = monday.getDate();
-  const endDay = sunday.getDate();
-  const startMonth = MONTH_SHORT[monday.getMonth()].toLowerCase();
-  const endMonth = MONTH_SHORT[sunday.getMonth()].toLowerCase();
-  const year = sunday.getFullYear();
-
-  if (monday.getMonth() === sunday.getMonth()) {
-    return `Week ${weekNum} — ${startDay}–${endDay} ${endMonth} ${year}`;
-  }
-  return `Week ${weekNum} — ${startDay} ${startMonth} – ${endDay} ${endMonth} ${year}`;
-}
-
-function getISOWeekNumber(dateStr: string): number {
-  return getISOWeek(parseISO(dateStr));
-}
-
-/** Get Monday of the week containing the given date */
-function getMondayOf(dateStr: string): string {
-  const d = parseISO(dateStr);
-  const day = d.getDay();
+/** Get the Monday on or before the given date */
+function getMondayOf(date: Date): Date {
+  const day = getDay(date);
   const diff = day === 0 ? -6 : 1 - day;
-  return addDays(d, diff).toISOString().split("T")[0];
+  return addDays(date, diff);
+}
+
+/** Get the Sunday on or after the given date */
+function getSundayOf(date: Date): Date {
+  const day = getDay(date);
+  if (day === 0) return date;
+  return addDays(date, 7 - day);
+}
+
+/** Build the calendar grid for a given month (year, monthIndex 0-based).
+ *  Returns an array of weeks, each with 7 date strings (Mon-Sun).
+ *  Includes leading/trailing days from adjacent months. */
+function buildCalendarGrid(year: number, month: number): string[][] {
+  const firstDay = startOfMonth(new Date(year, month, 1));
+  const lastDay = endOfMonth(firstDay);
+  const gridStart = getMondayOf(firstDay);
+  const gridEnd = getSundayOf(lastDay);
+
+  const weeks: string[][] = [];
+  let current = gridStart;
+  while (current <= gridEnd) {
+    const week: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      week.push(current.toISOString().split("T")[0]);
+      current = addDays(current, 1);
+    }
+    weeks.push(week);
+  }
+  return weeks;
 }
 
 export function MobilePlanningView() {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("week");
-  const [currentDate, setCurrentDate] = useState(() => getMondayStart());
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -102,25 +108,25 @@ export function MobilePlanningView() {
   const totalDrivers = driversResult.total;
   const totalDriverPages = Math.max(1, Math.ceil(totalDrivers / 20));
 
-  // Date range for fetching entries
-  const dates = useMemo(() => {
-    const monday = getMondayOf(currentDate);
-    if (viewMode === "day") {
-      return [currentDate];
-    }
-    return getDateRange(monday, 7);
-  }, [currentDate, viewMode]);
+  // Calendar grid for the current month
+  const calendarWeeks = useMemo(
+    () => buildCalendarGrid(currentMonth.year, currentMonth.month),
+    [currentMonth.year, currentMonth.month]
+  );
 
-  // Planning entries for selected driver
+  // All dates needed for the calendar (includes leading/trailing days)
+  const allDates = useMemo(() => calendarWeeks.flat(), [calendarWeeks]);
+
+  // Planning entries for selected driver across the full calendar grid
   const [entries, entriesLoading] = useApiDataWithLoading(
     () => selectedDriver
-      ? api.planning.getEntries(activeScenarioId, dates, selectedDriver.id)
+      ? api.planning.getEntries(activeScenarioId, allDates, selectedDriver.id)
       : Promise.resolve([]),
-    [selectedDriver?.id, activeScenarioId, dates.join(",")],
+    [selectedDriver?.id, activeScenarioId, allDates.join(",")],
     [] as PlanningEntry[]
   );
 
-  // Build date→entry map for quick lookup
+  // Build date→entry map
   const entryMap = useMemo(() => {
     const map = new Map<string, PlanningEntry>();
     for (const e of entries) {
@@ -133,26 +139,24 @@ export function MobilePlanningView() {
   const leaveTypes = useApiData(() => api.settings.getLeaveTypes(), [], []);
   const leaveTypeMap = useMemo(() => new Map(leaveTypes.map((l) => [l.id, l.description])), [leaveTypes]);
 
-
   // Navigation
-  const navigateDate = useCallback((direction: -1 | 1) => {
-    const offset = viewMode === "day" ? direction : direction * 7;
-    const newDate = addDays(parseISO(currentDate), offset).toISOString().split("T")[0];
-    setCurrentDate(newDate);
-  }, [currentDate, viewMode]);
+  const navigateMonth = useCallback((direction: -1 | 1) => {
+    setCurrentMonth((prev) => {
+      const d = direction === 1
+        ? addMonths(new Date(prev.year, prev.month, 1), 1)
+        : subMonths(new Date(prev.year, prev.month, 1), 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+    setSelectedDate(null);
+  }, []);
 
   const goToToday = useCallback(() => {
-    const today = new Date().toISOString().split("T")[0];
-    setCurrentDate(viewMode === "week" ? getMondayOf(today) : today);
-  }, [viewMode]);
+    const now = new Date();
+    setCurrentMonth({ year: now.getFullYear(), month: now.getMonth() });
+    setSelectedDate(now.toISOString().split("T")[0]);
+  }, []);
 
-  // When switching to week mode, snap to Monday
-  const handleViewModeChange = useCallback((mode: ViewMode) => {
-    setViewMode(mode);
-    if (mode === "week") {
-      setCurrentDate(getMondayOf(currentDate));
-    }
-  }, [currentDate]);
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
 
   // --- Driver selector screen ---
   if (!selectedDriver) {
@@ -162,7 +166,7 @@ export function MobilePlanningView() {
         <div className="bg-surface-primary rounded-lg shadow-card overflow-hidden">
           <div className="px-3 py-2.5 border-b border-border-subtle">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -268,16 +272,17 @@ export function MobilePlanningView() {
     );
   }
 
-  // --- Planning view for selected driver ---
-  const monday = getMondayOf(currentDate);
+  // --- Month calendar view for selected driver ---
+  const selectedEntry = selectedDate ? entryMap.get(selectedDate) : undefined;
+  const selectedStatus: PlanningStatus = (selectedEntry?.status as PlanningStatus) || "ROSTER_FREE";
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Driver header + back */}
+      {/* Driver header + back + month navigation */}
       <div className="bg-surface-primary rounded-lg shadow-card overflow-hidden">
         <div className="flex items-center gap-3 px-3 py-2.5">
           <button
-            onClick={() => setSelectedDriver(null)}
+            onClick={() => { setSelectedDriver(null); setSelectedDate(null); }}
             className="btn-icon flex-shrink-0"
             aria-label="Terug naar chauffeurlijst"
           >
@@ -291,32 +296,6 @@ export function MobilePlanningView() {
               <div className="text-xs text-text-tertiary">Nr. {selectedDriver.employeeNumber}</div>
             )}
           </div>
-        </div>
-
-        {/* View mode toggle + today button */}
-        <div className="flex items-center justify-between px-3 py-2 border-t border-border-subtle bg-surface-secondary">
-          <div className="mobile-planning-view-toggle">
-            <button
-              onClick={() => handleViewModeChange("day")}
-              className={cn(
-                "mobile-planning-view-toggle-btn",
-                viewMode === "day" && "mobile-planning-view-toggle-btn--active"
-              )}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              Dag
-            </button>
-            <button
-              onClick={() => handleViewModeChange("week")}
-              className={cn(
-                "mobile-planning-view-toggle-btn",
-                viewMode === "week" && "mobile-planning-view-toggle-btn--active"
-              )}
-            >
-              <CalendarDays className="w-3.5 h-3.5" />
-              Week
-            </button>
-          </div>
           <button
             onClick={goToToday}
             className="text-xs font-medium text-brand-600 active:text-brand-800 px-2 py-1"
@@ -324,58 +303,101 @@ export function MobilePlanningView() {
             Vandaag
           </button>
         </div>
-      </div>
 
-      {/* Date navigation */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => navigateDate(-1)}
-          className="btn-icon"
-          aria-label={viewMode === "day" ? "Vorige dag" : "Vorige week"}
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="text-sm font-medium text-text-primary text-center">
-          {viewMode === "day"
-            ? formatShortDate(currentDate)
-            : formatWeekHeader(monday)
-          }
+        {/* Month navigation */}
+        <div className="flex items-center justify-between px-3 py-2 border-t border-border-subtle bg-surface-secondary">
+          <button
+            onClick={() => navigateMonth(-1)}
+            className="btn-icon"
+            aria-label="Vorige maand"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <span className="text-sm font-semibold text-text-primary">
+            {MONTH_NAMES[currentMonth.month]} {currentMonth.year}
+          </span>
+          <button
+            onClick={() => navigateMonth(1)}
+            className="btn-icon"
+            aria-label="Volgende maand"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
-        <button
-          onClick={() => navigateDate(1)}
-          className="btn-icon"
-          aria-label={viewMode === "day" ? "Volgende dag" : "Volgende week"}
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
       </div>
 
-      {/* Status content */}
+      {/* Calendar grid */}
       {entriesLoading && entries.length === 0 ? (
         <div className="bg-surface-primary rounded-lg shadow-card p-8 text-center">
           <div className="spinner mb-2 mx-auto" />
           <div className="text-sm text-text-tertiary">Planning laden...</div>
         </div>
-      ) : viewMode === "day" ? (
-        // Day view: single status block
-        <DayStatusBlock
-          date={currentDate}
-          entry={entryMap.get(currentDate)}
+      ) : (
+        <div className="bg-surface-primary rounded-lg shadow-card overflow-hidden">
+          {/* Day headers */}
+          <div className="mobile-calendar-header">
+            <div className="mobile-calendar-week-num" />
+            {DAY_LABELS.map((label) => (
+              <div key={label} className="mobile-calendar-day-header">
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Week rows */}
+          {calendarWeeks.map((week) => {
+            const weekNum = getISOWeek(parseISO(week[0]));
+            return (
+              <div key={week[0]} className="mobile-calendar-row">
+                <div className="mobile-calendar-week-num">
+                  {weekNum}
+                </div>
+                {week.map((dateStr) => {
+                  const d = parseISO(dateStr);
+                  const isCurrentMonth = d.getMonth() === currentMonth.month;
+                  const isToday = dateStr === todayStr;
+                  const isSelected = dateStr === selectedDate;
+                  const entry = entryMap.get(dateStr);
+                  const status: PlanningStatus = (entry?.status as PlanningStatus) || "ROSTER_FREE";
+                  const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+
+                  return (
+                    <button
+                      key={dateStr}
+                      type="button"
+                      onClick={() => setSelectedDate(isSelected ? null : dateStr)}
+                      className={cn(
+                        "mobile-calendar-cell",
+                        !isCurrentMonth && "opacity-30",
+                        isWeekend && isCurrentMonth && !entry && "opacity-50",
+                        isSelected && "mobile-calendar-cell--selected",
+                      )}
+                      aria-label={`${d.getDate()} ${MONTH_SHORT[d.getMonth()]} — ${STATUS_LABELS[status]}`}
+                    >
+                      <span className={cn(
+                        "mobile-calendar-day-number",
+                        isToday && "mobile-calendar-day-number--today",
+                      )}>
+                        {d.getDate()}
+                      </span>
+                      <span className={cn("mobile-calendar-status-dot", getStatusDotColor(status))} />
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Detail panel for selected date */}
+      {selectedDate && (
+        <DayDetailPanel
+          date={selectedDate}
+          entry={selectedEntry}
+          status={selectedStatus}
           leaveTypeMap={leaveTypeMap}
         />
-      ) : (
-        // Week view: 7 day blocks
-        <div className="flex flex-col gap-1.5">
-          {dates.map((date) => (
-            <DayStatusBlock
-              key={date}
-              date={date}
-              entry={entryMap.get(date)}
-              leaveTypeMap={leaveTypeMap}
-              showDate
-            />
-          ))}
-        </div>
       )}
 
       {/* Status legend */}
@@ -394,7 +416,7 @@ export function MobilePlanningView() {
   );
 }
 
-// --- Sub-components ---
+// --- Sub-components & helpers ---
 
 function getStatusDotColor(status: PlanningStatus): string {
   const map: Record<PlanningStatus, string> = {
@@ -405,17 +427,6 @@ function getStatusDotColor(status: PlanningStatus): string {
     SICK: "bg-danger-500",
   };
   return map[status] || "bg-surface-inset";
-}
-
-function getStatusBgColor(status: PlanningStatus): string {
-  const map: Record<PlanningStatus, string> = {
-    ROSTER_FREE: "bg-surface-tertiary",
-    BASE_ROSTER: "bg-success-50",
-    AVAILABLE_EXTRA: "bg-success-50",
-    LEAVE: "bg-warning-50",
-    SICK: "bg-danger-50",
-  };
-  return map[status] || "bg-surface-tertiary";
 }
 
 function getStatusAccentColor(status: PlanningStatus): string {
@@ -429,21 +440,30 @@ function getStatusAccentColor(status: PlanningStatus): string {
   return map[status] || "border-l-surface-inset";
 }
 
-type DayStatusBlockProps = {
+function getStatusBgColor(status: PlanningStatus): string {
+  const map: Record<PlanningStatus, string> = {
+    ROSTER_FREE: "bg-surface-tertiary",
+    BASE_ROSTER: "bg-success-50",
+    AVAILABLE_EXTRA: "bg-success-50",
+    LEAVE: "bg-warning-50",
+    SICK: "bg-danger-50",
+  };
+  return map[status] || "bg-surface-tertiary";
+}
+
+type DayDetailPanelProps = {
   date: string;
   entry: PlanningEntry | undefined;
+  status: PlanningStatus;
   leaveTypeMap: Map<string, string>;
-  showDate?: boolean;
 };
 
-function DayStatusBlock({ date, entry, leaveTypeMap, showDate }: DayStatusBlockProps) {
+function DayDetailPanel({ date, entry, status, leaveTypeMap }: DayDetailPanelProps) {
   const d = parseISO(date);
-  const dayIdx = (d.getDay() + 6) % 7;
-  const isWeekend = dayIdx >= 5;
-  const status: PlanningStatus = entry?.status as PlanningStatus || "ROSTER_FREE";
-  const isToday = date === new Date().toISOString().split("T")[0];
+  const dayIdx = (d.getDay() + 6) % 7; // Mon=0
+  const dayName = DAY_LABELS[dayIdx];
+  const monthName = MONTH_SHORT[d.getMonth()].toLowerCase();
 
-  // Additional info line
   let detail: string | null = null;
   if (status === "LEAVE" && entry?.leaveTypeId) {
     detail = leaveTypeMap.get(entry.leaveTypeId) || null;
@@ -461,31 +481,23 @@ function DayStatusBlock({ date, entry, leaveTypeMap, showDate }: DayStatusBlockP
         "mobile-planning-status-block border-l-4",
         getStatusBgColor(status),
         getStatusAccentColor(status),
-        isToday && "ring-2 ring-brand-500/30",
-        isWeekend && !entry && "opacity-60"
       )}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {showDate && (
-            <span className={cn(
-              "mobile-planning-day-label",
-              isToday && "mobile-planning-day-label--today"
-            )}>
-              {DAY_LABELS[dayIdx]}
-              <span className="ml-1 font-normal">{d.getDate()}</span>
-            </span>
-          )}
-          <div className="flex items-center gap-1.5">
-            <span className={cn("w-2 h-2 rounded-full flex-shrink-0", getStatusDotColor(status))} />
-            <span className="text-sm font-medium text-text-primary">
-              {STATUS_LABELS[status]}
-            </span>
-          </div>
+          <span className="text-xs font-semibold text-text-secondary">
+            {dayName} {d.getDate()} {monthName} {d.getFullYear()}
+          </span>
         </div>
       </div>
+      <div className="flex items-center gap-1.5 mt-1.5">
+        <span className={cn("w-2 h-2 rounded-full flex-shrink-0", getStatusDotColor(status))} />
+        <span className="text-sm font-medium text-text-primary">
+          {STATUS_LABELS[status]}
+        </span>
+      </div>
       {detail && (
-        <div className={cn("text-xs text-text-secondary mt-1", showDate && "ml-11")}>
+        <div className="text-xs text-text-secondary mt-1.5 ml-3.5">
           {detail}
         </div>
       )}

@@ -2,7 +2,7 @@
 
 ## Summary
 
-**This cycle (2026-04-01, run 10):** Implemented PB-156 (Mobile day/week planning view per driver). New `MobilePlanningView` component replaces the full planning grid on mobile viewports. Driver search with paginated list, day/week toggle, date navigation with prev/next and "Vandaag" button, status blocks with semantic colors showing leave type, sick percentage, and notes. Status legend. Desktop planning grid completely unchanged. This completes the ESC-013 mobile initiative (Option B: selective mobile views).
+**This cycle (2026-04-01, run 11):** Completed three items: PB-165 (mobile hamburger z-index fix — P1 critical), PB-166 (search icon alignment), PB-167 (mobile planning month calendar rewrite). The mobile planning view is now a full month calendar with week numbers, status color dots, tap-to-detail, and month navigation. The hamburger menu is fixed and mobile navigation is fully functional again.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8). Premium, calm, anchoring. Responsive — hidden on mobile, accessible via slide-over.
@@ -10,10 +10,10 @@
 - Import source manager (Connectiviteit tab): well-aligned. Source type selector, API configuration with surface layering, test connection with inline feedback, response structure preview with interactive path discovery, field mapping editor with autocomplete support.
 - Audit log viewer: well-aligned. Filter card, expandable rows, semantic badges, tonal row separation, pagination.
 - Login page: well-aligned. Clean, premium, brand-surface split.
-- Header: well-aligned. Minimal, composed, contextual subtitle support. Hamburger menu on mobile.
+- Header: well-aligned. Minimal, composed, contextual subtitle support. Hamburger menu on mobile with proper z-index layering.
 - Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning.
 - Planning grid matrix: fully aligned (section 4.1). Tonal row separation, No-Line Rule respected.
-- Mobile planning view: well-aligned. Card-based driver selector, segmented day/week toggle, status blocks with left-accent borders, semantic colors, compact legend. Follows mobile card patterns from driver list.
+- Mobile planning view: well-aligned. Month calendar grid with week numbers, status dots, tap-to-detail panel. Composed header with driver info and month navigation. Today highlight. Driver selector with card-based layout.
 - Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search. Mobile-optimized with card layout.
 - Capacity page: fully aligned (sections 7.1, 7.3, 8.3). KPI summary module, section headers.
 - User group manager: well-aligned. Card-based layout, expandable details, modal editor.
@@ -30,6 +30,18 @@
 - Settings tab count is now 7. Horizontal scrolling tabs handle this adequately but the pattern may need revisiting if more tabs are added.
 
 ## Recommended Next Improvements
+
+### EX-REC-052: Mobile planning — edit capability (v2)
+
+- **Problem:** The mobile planning view is read-only. Planners who check schedules on mobile may want to make quick status changes (e.g. mark a driver as sick) without returning to desktop.
+- **Proposed improvement:** Add tap-to-edit on day cells or in the detail panel. Tap a day → show a status selector (bottom sheet or inline). Use the existing `api.planning.upsert()` endpoint. Restrict to PLANNER/ADMIN roles.
+- **Expected user value:** Planners can make urgent schedule adjustments on the go without switching to a desktop computer.
+- **Priority:** P3 Medium
+- **Effort:** Medium
+- **Dependencies:** PB-167 (completed)
+- **Suggested owner:** Experience Agent
+- **Why now:** The month calendar view is complete. Edit capability is the natural next step for mobile planning productivity. Should be evaluated based on user feedback from the read-only version.
+
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -117,6 +129,7 @@
 - **Settings tab count growth.** The settings page now has 7 tabs with horizontal scroll. Adding more tabs may need a different navigation pattern (e.g. vertical tabs or grouped sections).
 - **StamtabelManager border usage.** The StamtabelManager component uses `border border-border-subtle` on the outer card and `border-b` between sections. This is a minor tension with the No-Line Rule from DESIGN.md, but the borders serve a structural role here since these are inline-editable list items where clear row separation aids usability. Not a priority to change.
 - **API credential storage.** API credentials (passwords, tokens, API keys) are stored in the database as JSONB. The UI masks them appropriately, but the API returns them in full. If this application becomes multi-tenant or externally accessible, credential values should be redacted from GET responses.
+- **Month calendar data volume.** The month calendar fetches ~35 days of planning entries per driver per month view. This is a larger payload than the previous 1-7 day view. For drivers with dense planning data, monitor API response time. The current approach is acceptable for typical data volumes.
 
 ## Items Intentionally Not Recommended
 
@@ -138,7 +151,7 @@
 - **Capacity page structural redesign:** No longer needed. PB-131 brought the page to product-grade quality.
 - **Documentation page redesign:** Low-traffic utility page. A single card with a download button is adequate for its purpose.
 - **Broad StamtabelManager No-Line refactor:** Borders serve usability here. Tonal-only separation would reduce clarity for inline-editable list items.
-- **Full mobile-first redesign of all screens:** ESC-013 decided Option B (selective mobile views). Only key screens need mobile optimization. PB-154/155/156 now complete.
+- **Full mobile-first redesign of all screens:** ESC-013 decided Option B (selective mobile views). Only key screens need mobile optimization. PB-154/155/156/167 now complete.
 - **Mobile planning edit in v1:** Deliberately deferred to v2. Read-only flow should be validated first. See EX-REC-052.
 
 ## Recommendation Rules

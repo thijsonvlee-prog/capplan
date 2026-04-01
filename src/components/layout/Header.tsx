@@ -25,7 +25,7 @@ export function Header({ onMenuOpen }: HeaderProps) {
   const title = Object.entries(PAGE_TITLES).find(([path]) => pathname.startsWith(path))?.[1];
 
   return (
-    <header className="h-14 bg-surface-primary flex items-center justify-between px-4 md:px-6">
+    <header className="h-14 bg-surface-primary flex items-center justify-between px-4 md:px-6 relative z-50">
       <div className="flex items-center gap-2">
         {onMenuOpen && (
           <button

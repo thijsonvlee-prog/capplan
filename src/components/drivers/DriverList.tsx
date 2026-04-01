@@ -162,7 +162,7 @@ export function DriverList() {
           <div className="bg-surface-primary rounded-lg shadow-card overflow-hidden mb-3 md:mb-0 md:rounded-b-none">
             <div className="flex items-center justify-between px-3 py-2.5 md:px-4 md:py-3 border-b border-border-subtle bg-surface-primary">
               <div className="relative flex-1 md:flex-none md:w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Zoek op naam of personeelsnummer..."
