@@ -735,13 +735,13 @@ body {
   background-color: var(--color-surface-secondary);
 }
 
-/* Hamburger button */
+/* Mobile back/menu button — min 44px tap target */
 .mobile-menu-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   transition-property: color, background-color;
@@ -922,4 +922,97 @@ body {
   height: 2.5rem;
   border-radius: var(--radius-lg);
   flex-shrink: 0;
+}
+
+/* ===================================================================
+   Mobile Capacity View
+   Responsive controls and chart sizing for the capacity page.
+   =================================================================== */
+
+.mobile-capacity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.mobile-capacity-chart-container {
+  height: 250px;
+}
+
+@media (min-width: 768px) {
+  .mobile-capacity-chart-container {
+    height: 350px;
+  }
+}
+
+/* ===================================================================
+   Mobile Settings View
+   Card-based section navigation and touch-friendly layout for settings.
+   =================================================================== */
+
+.mobile-settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-settings-section-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.875rem 1rem;
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  -webkit-tap-highlight-color: transparent;
+  transition-property: background-color;
+  transition-duration: 150ms;
+}
+
+.mobile-settings-section-card:active {
+  background-color: var(--color-surface-secondary);
+}
+
+.mobile-settings-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+/* ===================================================================
+   Page Transitions (Mobile)
+   Smooth transitions between screens for app-like feel.
+   =================================================================== */
+
+@keyframes mobile-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-page-enter {
+  animation: mobile-page-enter 0.2s ease-out;
+}
+
+/* Mobile-specific btn-icon: ensure 44px minimum tap target */
+@media (max-width: 767px) {
+  .btn-icon {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

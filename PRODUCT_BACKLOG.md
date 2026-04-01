@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Mobile app redesign initiative (SMI-024). The Scrum Master has directed a full mobile UX overhaul with a 10-cycle budget. Phase 1 (homescreen with card navigation, remove hamburger menu, back button) is complete (PB-169). Release notes page (SMI-025/PB-174) is also complete. Remaining phases: mobile planning nav integration (PB-170), mobile capacity view (PB-171), mobile settings view (PB-172), and final polish/transitions (PB-173). All desktop features remain stable.
+**Current direction:** Mobile app redesign initiative (SMI-024) is complete. All phases delivered: homescreen (PB-169), planning nav integration (PB-170), capacity view (PB-171), settings view (PB-172), and transitions/polish (PB-173). Release notes page (SMI-025/PB-174) also complete. All desktop features remain stable. Next mobile improvement opportunity: edit capability (EX-REC-052, deferred).
 
 ## Status Definitions
 
@@ -27,71 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-170: Mobiele planning — aanpassen aan nieuwe navigatie
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** After PB-169, the mobile planning view needs to integrate with the new homescreen navigation pattern. The current MobilePlanningView may need header/navigation adjustments to include the back button and match the new app-like feel.
-- **Why this matters now:** Part of mobile initiative (SMI-024). Planning is the most-used screen and must feel polished in the new navigation paradigm.
-- **Scope notes:**
-  - Ensure the mobile planning page has a consistent header with back/home button from PB-169.
-  - Review and refine the month calendar view to fit the app-like feel.
-  - Ensure smooth transitions from homescreen to planning and back.
-  - Do not add edit capability yet (deferred to EX-REC-052).
-- **Dependencies:** PB-169
-- **Definition of done:** Planning page integrates cleanly with new mobile nav. Back button works. Visual consistency with homescreen. `npm run verify` passes.
-- **SMI linkage:** SMI-024
-
-### PB-171: Mobiele capaciteitsweergave
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The capacity page currently renders its desktop layout on mobile. Charts and KPI modules need mobile-optimized layouts.
-- **Why this matters now:** Part of mobile initiative (SMI-024). With the homescreen linking to capacity, the page must be usable on mobile.
-- **Scope notes:**
-  - Create a mobile-optimized layout for the capacity page.
-  - KPI cards should stack vertically on mobile.
-  - Chart should be responsive or simplified for small screens.
-  - Filters should be mobile-friendly (stacked, full-width).
-  - Back/home button per PB-169 pattern.
-- **Dependencies:** PB-169
-- **Definition of done:** Capacity page is usable on mobile with proper layout. KPIs and chart display correctly. Back button works. `npm run verify` passes.
-- **SMI linkage:** SMI-024
-
-### PB-172: Mobiele instellingenweergave
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** The settings page uses horizontal tabs and complex forms that don't work well on mobile. With 7 tabs, the current horizontal scroll pattern is adequate on desktop but cramped on mobile.
-- **Why this matters now:** Part of mobile initiative (SMI-024). Settings is admin-only but should still be usable on mobile.
-- **Scope notes:**
-  - Create a mobile-optimized settings layout — consider vertical tab list or card-based section selector.
-  - Forms within each tab should be full-width and touch-friendly.
-  - StamtabelManager tables should be readable on mobile.
-  - Back/home button per PB-169 pattern.
-- **Dependencies:** PB-169
-- **Definition of done:** Settings page is navigable and usable on mobile. Tabs/sections accessible. Forms functional. Back button works. `npm run verify` passes.
-- **SMI linkage:** SMI-024
-
-### PB-173: Mobiele app-feel — transities en polish
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem / opportunity:** To truly feel like a native app, the mobile experience needs smooth transitions between screens, consistent motion design, and polished touch interactions.
-- **Why this matters now:** Final phase of mobile initiative (SMI-024). The SM explicitly wants it to "feel like an app." This item covers the polish layer.
-- **Scope notes:**
-  - Add page transition animations (slide-in/out or fade) between homescreen and subpages.
-  - Ensure all tap targets meet mobile guidelines (min 44px).
-  - Review and refine spacing, padding, and touch interactions across all mobile screens.
-  - Consider adding a subtle loading state between page transitions.
-  - Test across all mobile screens for visual consistency.
-- **Dependencies:** PB-169, PB-170, PB-171, PB-172
-- **Definition of done:** Mobile experience has smooth transitions, consistent spacing, polished interactions. Feels like a native app, not a responsive website. `npm run verify` passes.
-- **SMI linkage:** SMI-024
+_No items ready for next cycle._
 
 ---
 
@@ -108,6 +44,34 @@ _No blocked items._
 ---
 
 ## Completed Recently
+
+### PB-170: Mobiele planning — aanpassen aan nieuwe navigatie
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Summary:** Mobile planning view now integrates with the homescreen navigation. Header shows "Planning" title with back arrow when in planning mode via new `useMobileTitle` context hook. Removed redundant Home button from driver selector. Smooth entrance animation between homescreen and planning view.
+
+### PB-171: Mobiele capaciteitsweergave
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Summary:** Capacity page is now mobile-optimized. Controls stack vertically on mobile. Chart height adapts to screen size (250px mobile, 350px desktop). Period selector label truncates instead of overflowing. KPI cards use 2-column grid on mobile. Scenario compare controls hidden on mobile for clarity.
+
+### PB-172: Mobiele instellingenweergave
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Summary:** Settings page uses card-based section selector on mobile instead of horizontal tabs. Each section card shows icon, title, description, and count badge. Tapping a section opens its content with the section title in the header and back arrow via `useMobileTitle`. Desktop layout unchanged.
+
+### PB-173: Mobiele app-feel — transities en polish
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Summary:** Added entrance animations (fade + slide-up) across all mobile screen transitions via `mobile-page-enter` CSS class. All tap targets meet 44px minimum on mobile (back button enlarged to 2.75rem, btn-icon gets min-size on mobile). Consistent spacing and touch interaction quality across all mobile screens.
 
 ### PB-169: Mobiel homescreen met kaartnavigatie en terugknop
 

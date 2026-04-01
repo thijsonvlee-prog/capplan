@@ -6,6 +6,15 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-01 — Mobiele app-ervaring compleet
+
+#### UX / design verbeteringen
+
+- **Mobiele planning navigatie:** De planningsweergave op mobiel is nu volledig geïntegreerd met het startscherm. De header toont "Planning" met een terugpijl wanneer de planning actief is. De losse home-knop in de chauffeurlijst is verwijderd ten gunste van de consistente header-navigatie.
+- **Mobiele capaciteitsweergave:** De capaciteitspagina is geoptimaliseerd voor mobiel. Filters en periodebesturing worden gestapeld weergegeven. De grafiekhoogte past zich aan het schermformaat aan. KPI-kaarten tonen in een 2-koloms raster.
+- **Mobiele instellingenweergave:** Op mobiel worden de 7 instellingentabs vervangen door een kaartgebaseerde sectielijst. Elke sectie toont een icoon, titel, beschrijving en telling. Tik op een sectie om de inhoud te openen met terugnavigatie via de header.
+- **Mobiele transities en touch-kwaliteit:** Alle mobiele schermwisselingen hebben nu een subtiele ingangsanimatie (fade + slide-up). Alle interactieve elementen voldoen aan de 44px minimale touch-target richtlijn. Consistente spacing en interactiekwaliteit over alle mobiele schermen.
+
 ### 2026-04-01 — Mobiel startscherm, releasenotes en navigatie-overhaul
 
 #### UX / design verbeteringen

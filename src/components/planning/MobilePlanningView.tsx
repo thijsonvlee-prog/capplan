@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { Search, X, ChevronLeft, ChevronRight, User, Home } from "lucide-react";
+import { Search, X, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { useApiData, useApiDataWithLoading } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { useHeaderSubtitle } from "@/hooks/useHeaderSubtitle";
@@ -54,11 +54,7 @@ function buildCalendarGrid(year: number, month: number): string[][] {
   return weeks;
 }
 
-interface MobilePlanningViewProps {
-  onBackToHome?: () => void;
-}
-
-export function MobilePlanningView({ onBackToHome }: MobilePlanningViewProps) {
+export function MobilePlanningView() {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -165,20 +161,11 @@ export function MobilePlanningView({ onBackToHome }: MobilePlanningViewProps) {
   // --- Driver selector screen ---
   if (!selectedDriver) {
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 mobile-page-enter">
         {/* Search */}
         <div className="bg-surface-primary rounded-lg shadow-card overflow-hidden">
           <div className="px-3 py-2.5 border-b border-border-subtle">
             <div className="flex items-center gap-2">
-              {onBackToHome && (
-                <button
-                  onClick={onBackToHome}
-                  className="btn-icon flex-shrink-0 -ml-1"
-                  aria-label="Terug naar startscherm"
-                >
-                  <Home className="w-[1.125rem] h-[1.125rem]" />
-                </button>
-              )}
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
               <input
@@ -292,7 +279,7 @@ export function MobilePlanningView({ onBackToHome }: MobilePlanningViewProps) {
   const selectedStatus: PlanningStatus = (selectedEntry?.status as PlanningStatus) || "ROSTER_FREE";
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 mobile-page-enter">
       {/* Driver header + back + month navigation */}
       <div className="bg-surface-primary rounded-lg shadow-card overflow-hidden">
         <div className="flex items-center gap-3 px-3 py-2.5">
