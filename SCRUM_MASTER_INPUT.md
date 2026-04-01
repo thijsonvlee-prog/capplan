@@ -23,6 +23,10 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+maak ook voor desktop een homescreen. 
+
+op mobile werkt het nu niet als ik op de planning knop druk, want dan flikkert alleen het beeld maar gebeurt er niets, hetzelfde geldt voor alle opties bij instellingen
+
 _No active inputs._
 
 ## Closed Inputs
