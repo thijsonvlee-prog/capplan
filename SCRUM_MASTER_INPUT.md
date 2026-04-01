@@ -23,6 +23,12 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+hamnurgermenu op mobiel werkt niet
+
+maak de mobiele weergave van planning per chauffeur een kalenderweergave, dus per maand (kalender met ook weeknummers zichtbaar)
+
+de uitlijning van het vergrootglas in de zoekbalk klopt niet, te ver naar links
+
 _No active inputs._
 
 ## Closed Inputs
