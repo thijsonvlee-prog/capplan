@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { Search, X, ChevronLeft, ChevronRight, User } from "lucide-react";
+import { Search, X, ChevronLeft, ChevronRight, User, Home } from "lucide-react";
 import { useApiData, useApiDataWithLoading } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { useHeaderSubtitle } from "@/hooks/useHeaderSubtitle";
@@ -54,7 +54,11 @@ function buildCalendarGrid(year: number, month: number): string[][] {
   return weeks;
 }
 
-export function MobilePlanningView() {
+interface MobilePlanningViewProps {
+  onBackToHome?: () => void;
+}
+
+export function MobilePlanningView({ onBackToHome }: MobilePlanningViewProps) {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -165,7 +169,17 @@ export function MobilePlanningView() {
         {/* Search */}
         <div className="bg-surface-primary rounded-lg shadow-card overflow-hidden">
           <div className="px-3 py-2.5 border-b border-border-subtle">
-            <div className="relative">
+            <div className="flex items-center gap-2">
+              {onBackToHome && (
+                <button
+                  onClick={onBackToHome}
+                  className="btn-icon flex-shrink-0 -ml-1"
+                  aria-label="Terug naar startscherm"
+                >
+                  <Home className="w-[1.125rem] h-[1.125rem]" />
+                </button>
+              )}
+            <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
               <input
                 ref={searchInputRef}
@@ -185,6 +199,7 @@ export function MobilePlanningView() {
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
+            </div>
             </div>
           </div>
 

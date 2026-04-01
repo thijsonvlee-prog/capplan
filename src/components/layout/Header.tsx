@@ -1,9 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, Menu } from "lucide-react";
+import { LogOut, ArrowLeft } from "lucide-react";
 import { useHeaderSubtitleValue } from "@/hooks/useHeaderSubtitle";
 
 const PAGE_TITLES: Record<string, string> = {
@@ -11,41 +12,53 @@ const PAGE_TITLES: Record<string, string> = {
   "/capacity": "Capaciteit",
   "/drivers": "Chauffeurs",
   "/settings": "Instellingen",
-  "/documentatie": "Documentatie",
+  "/documentatie": "Releasenotes",
 };
 
-interface HeaderProps {
-  onMenuOpen?: () => void;
-}
-
-export function Header({ onMenuOpen }: HeaderProps) {
+export function Header() {
   const pathname = usePathname();
   const subtitle = useHeaderSubtitleValue();
   const { data: session } = useSession();
   const title = Object.entries(PAGE_TITLES).find(([path]) => pathname.startsWith(path))?.[1];
+  const isHome = pathname === "/planning" || pathname === "/";
 
   return (
     <header className="h-14 bg-surface-primary flex items-center justify-between px-4 md:px-6 relative z-50">
       <div className="flex items-center gap-2">
-        {onMenuOpen && (
-          <button
-            onClick={onMenuOpen}
+        {/* Mobile: back button on non-home routes */}
+        {!isHome && (
+          <Link
+            href="/planning"
             className="mobile-menu-btn md:hidden"
-            aria-label="Menu openen"
+            aria-label="Terug naar startscherm"
           >
-            <Menu className="w-5 h-5" />
-          </button>
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
         )}
-        {title ? (
-          <div className="flex items-baseline gap-3">
+
+        {/* Mobile: branding on home, page title on subpages */}
+        <div className="md:hidden">
+          {isHome ? (
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
+                <span className="text-white font-bold text-xs tracking-tight">CP</span>
+              </div>
+              <span className="text-[0.9375rem] font-semibold text-text-primary font-display">
+                CapPlan
+              </span>
+            </div>
+          ) : title ? (
             <h1 className="text-page-title">{title}</h1>
-            {subtitle && (
-              <span className="text-caption hidden sm:inline">{subtitle}</span>
-            )}
-          </div>
-        ) : (
-          <div />
-        )}
+          ) : null}
+        </div>
+
+        {/* Desktop: page title with subtitle (unchanged) */}
+        <div className="hidden md:flex items-baseline gap-3">
+          {title && <h1 className="text-page-title">{title}</h1>}
+          {subtitle && (
+            <span className="text-caption">{subtitle}</span>
+          )}
+        </div>
       </div>
 
       {session?.user && (

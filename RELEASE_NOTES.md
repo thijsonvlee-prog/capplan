@@ -6,10 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-04-01 — Mobiele maandkalender, navigatiefixes en code-onderhoud
+### 2026-04-01 — Mobiel startscherm, releasenotes en navigatie-overhaul
 
 #### UX / design verbeteringen
 
+- **Mobiel startscherm:** Op mobiel opent de app nu met een kaartgebaseerd startscherm. Een hero-kaart voor Planning (met merkkleurgradient) en vier sectiekaarten (Capaciteit, Chauffeurs, Instellingen, Releasenotes) in een 2-koloms raster. Tikken op een kaart navigeert naar de betreffende sectie.
+- **Terugknop op mobiel:** Alle mobiele subpagina's tonen een terugpijl in de header om terug te keren naar het startscherm. De planning-chauffeurlijst heeft een eigen home-knop. Het hamburger-menu en de slide-over sidebar op mobiel zijn volledig verwijderd.
+- **Releasenotes-pagina:** De documentatiepagina is vervangen door een chronologisch overzicht van alle releasenotes. Inklapbare secties per dag met categoriebadges (UX, Functioneel, Beveiliging, etc.). Sidebar-label gewijzigd van "Documentatie" naar "Releasenotes".
 - **Maandkalender op mobiel:** De mobiele planningsweergave is volledig herschreven naar een maandkalender. Zeven kolommen (ma-zo) met weeknummers per rij. Maandnavigatie met vorige/volgende en "Vandaag"-knop. Statuskleurdots per dag. Tik op een dag voor details (status, verloftype, ziektepercentage, notities). Vandaag gemarkeerd met blauwe cirkel. Dagen buiten de huidige maand worden gedimd getoond. Vervangt de eerdere dag-/weekweergave.
 - **Zoekicoon-uitlijning:** Het vergrootglas in zoekbalken (chauffeurlijst en mobiele planning) is iets naar rechts verschoven voor betere visuele uitlijning met de invoertekst.
 

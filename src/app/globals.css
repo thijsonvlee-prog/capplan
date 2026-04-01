@@ -881,3 +881,45 @@ body {
   border-radius: 9999px;
   flex-shrink: 0;
 }
+
+/* ===================================================================
+   Mobile Homescreen
+   App-like card-based navigation for the mobile entry point.
+   =================================================================== */
+
+.mobile-homescreen-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.mobile-homescreen-card {
+  display: block;
+  padding: 1rem;
+  background-color: var(--color-surface-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  -webkit-tap-highlight-color: transparent;
+  transition-property: transform, box-shadow;
+  transition-duration: 150ms;
+}
+
+.mobile-homescreen-card:active {
+  transform: scale(0.97);
+}
+
+.mobile-homescreen-card--hero {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, var(--color-brand-600), var(--color-brand-800));
+  padding: 1.25rem;
+}
+
+.mobile-homescreen-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}

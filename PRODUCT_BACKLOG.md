@@ -27,45 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-169: Mobiel homescreen met kaartnavigatie en terugknop
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The current mobile navigation uses a hamburger menu with a slide-over sidebar — it feels like a responsive desktop app, not a mobile app. The Scrum Master wants a native app-like experience with a dedicated homescreen.
-- **Why this matters now:** Core structural change for the entire mobile initiative (SMI-024). All other mobile improvements depend on this new navigation paradigm.
-- **Scope notes:**
-  - Create a mobile-only homescreen at the root route (or `/planning` redirect) that shows cards linking to all main sections: Planning, Chauffeurs, Capaciteit, Instellingen, Releasenotes.
-  - Each card should have an icon, title, and brief description. Design must feel premium and app-like per DESIGN.md principles.
-  - Remove the hamburger menu and slide-over sidebar on mobile entirely.
-  - Add a back button (or home button) in the mobile header on all subpages to return to the homescreen.
-  - Desktop navigation (sidebar) must remain completely unchanged.
-  - Mobile detection continues to use Tailwind `md:` breakpoint (768px).
-  - The homescreen is mobile-only — desktop users still land on `/planning` as before.
-- **Dependencies:** None
-- **Definition of done:** On mobile: homescreen renders with cards to all sections, tapping a card navigates to that section, each section has a visible back/home button, hamburger menu is gone. On desktop: no changes. `npm run verify` passes.
-- **Implementation note:** The existing `MobilePlanningView`, mobile driver cards, and mobile sidebar CSS can be repurposed or replaced. The homescreen layout should use design tokens, not hardcoded colors. Consider using the existing `surface-secondary` for the homescreen background and `surface-primary` for cards with `shadow-card`.
-- **SMI linkage:** SMI-024
-
-### PB-174: Documentatiepagina vervangen door releasenotes-pagina
-
-- **Owner:** Experience Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Problem / opportunity:** The Scrum Master wants the documentation page replaced with a release notes page that shows all historical release notes chronologically per day. The current page generates a text file download — not useful for end users.
-- **Why this matters now:** Direct Scrum Master request (SMI-025). Straightforward to implement. Gives users transparency into product evolution.
-- **Scope notes:**
-  - Replace the `/documentatie` route content with a release notes viewer.
-  - Update sidebar navigation label from "Documentatie" to "Releasenotes" (both desktop and mobile).
-  - Display all release notes from the project's history, ordered chronologically per day (newest first).
-  - The content should match what's in `RELEASE_NOTES.md` — the Experience Agent may embed the content directly in the page component or use a structured data approach.
-  - Each day's release should be a collapsible or scrollable section with clear date headers.
-  - Must follow DESIGN.md principles: proper surface hierarchy, typography tokens, Dutch language.
-  - Must also appear as a card on the new mobile homescreen (PB-169).
-- **Dependencies:** None (can be done in parallel with PB-169, but the homescreen card for "Releasenotes" should use the correct route).
-- **Definition of done:** `/documentatie` (or renamed route) shows all historical release notes per day. Sidebar label updated. Page uses design tokens. Dutch language. `npm run verify` passes.
-- **Implementation note:** The `generateDocumentation()` function in the current page can be removed. Consider a simple structured array of release entries rendered as sections. Keep it maintainable — new releases should be easy to add.
-- **SMI linkage:** SMI-025
+### PB-170: Mobiele planning — aanpassen aan nieuwe navigatie
 
 ### PB-170: Mobiele planning — aanpassen aan nieuwe navigatie
 
@@ -148,6 +110,20 @@ _No blocked items._
 ---
 
 ## Completed Recently
+
+### PB-169: Mobiel homescreen met kaartnavigatie en terugknop
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Implementation note:** Created `MobileHomescreen.tsx` with card-based navigation (hero Planning card with brand gradient, 2-column grid for Capaciteit, Chauffeurs, Instellingen, Releasenotes). Removed hamburger menu and slide-over sidebar on mobile. Header shows CapPlan branding on mobile homescreen, back arrow on subpages. MobilePlanningView receives `onBackToHome` callback with Home icon button. Desktop unchanged. `npm run verify` passes.
+
+### PB-174: Documentatiepagina vervangen door releasenotes-pagina
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Implementation note:** Replaced `/documentatie` page with a chronological release notes viewer. Structured data array with collapsible date sections, category badges (UX, Functioneel, Beveiliging, etc.), and bullet lists. Sidebar label updated from "Documentatie" to "Releasenotes". Homescreen card links to `/documentatie`. Page title updated in Header. All content in Dutch. `npm run verify` passes.
 
 ### PB-168: Fix mobiele sidebar sluit direct bij openen (useEffect mount-bug)
 

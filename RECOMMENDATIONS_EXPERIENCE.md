@@ -2,32 +2,29 @@
 
 ## Summary
 
-**This cycle (2026-04-01, run 12):** Completed PB-168 (mobile sidebar mount-bug fix — P1 critical). The sidebar's useEffect was firing `onClose()` on initial mount, causing the mobile menu to close immediately after opening. Fixed with a `useRef` mount guard. Mobile navigation is now fully functional.
+**This cycle (2026-04-01, run 13):** Completed PB-169 (mobile homescreen with card navigation) and PB-174 (release notes page). The mobile experience now has a dedicated app-like homescreen at `/planning` with a hero Planning card and section cards in a 2-column grid. The hamburger menu and slide-over sidebar on mobile are removed. All subpages have a back arrow to return to the homescreen. The documentation page is replaced with a chronological release notes viewer with collapsible sections and category badges.
 
 **Current design alignment with DESIGN.md:**
-- Sidebar: fully aligned (section 7.8). Premium, calm, anchoring. Responsive — hidden on mobile, accessible via slide-over.
-- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Strong hierarchy, tab navigation, composed zones. 7 tabs including Auditlog.
-- Import source manager (Connectiviteit tab): well-aligned. Source type selector, API configuration with surface layering, test connection with inline feedback, response structure preview with interactive path discovery, field mapping editor with autocomplete support.
-- Audit log viewer: well-aligned. Filter card, expandable rows, semantic badges, tonal row separation, pagination.
-- Login page: well-aligned. Clean, premium, brand-surface split.
-- Header: well-aligned. Minimal, composed, contextual subtitle support. Hamburger menu on mobile with proper z-index layering and mount-guard fix.
-- Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning.
-- Planning grid matrix: fully aligned (section 4.1). Tonal row separation, No-Line Rule respected.
-- Mobile planning view: well-aligned. Month calendar grid with week numbers, status dots, tap-to-detail panel. Composed header with driver info and month navigation. Today highlight. Driver selector with card-based layout.
-- Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search. Mobile-optimized with card layout.
-- Capacity page: fully aligned (sections 7.1, 7.3, 8.3). KPI summary module, section headers.
-- User group manager: well-aligned. Card-based layout, expandable details, modal editor.
-- User manager: well-aligned. Avatar display, role badges, inline role editing.
-- Toast & ConfirmDialog: product-grade. Accessibility, focus trapping, semantic colors.
-- Button system: fully aligned. Clear hierarchy across primary/secondary/icon/danger.
-- Mobile layout shell: fully aligned. Slide-over sidebar with mount-guard, overlay backdrop, smooth animations, auto-close on navigate (not on mount).
+- Mobile homescreen: well-aligned (sections 2.5, 7.3). Card-based navigation with brand gradient hero, tonal icon circles, touch-friendly targets with scale feedback. Feels intentional and app-like, not like a responsive admin sidebar.
+- Mobile navigation: well-aligned (section 7.1). Clean header with CapPlan branding on home, back arrow on subpages. Consistent navigation paradigm across all mobile screens.
+- Release notes page: well-aligned (sections 2.5, 5.2). Clear date hierarchy, category badges with semantic colors, collapsible sections. Proper surface layering and typography tokens.
+- Sidebar (desktop): fully aligned (section 7.8). Label updated to "Releasenotes". Desktop unchanged.
+- Header: fully aligned. Dual-mode mobile header (branding vs back+title). Desktop unchanged.
+- Planning grid toolbar: fully aligned (section 7.2).
+- Planning grid matrix: fully aligned (section 4.1).
+- Mobile planning view: well-aligned. Month calendar with home button for homescreen return.
+- Drivers page: fully aligned (sections 3.2, 7.3).
+- Capacity page: fully aligned (sections 7.1, 7.3, 8.3).
+- Settings page: well-aligned (sections 2.5, 7.1, 7.2).
+- Login page: well-aligned.
+- Toast & ConfirmDialog: product-grade.
 
 **Where design quality is still below target:**
-- All major desktop screens are aligned with DESIGN.md. Remaining opportunities are polish-level refinements, not structural gaps.
-- Mobile content views for capacity and settings are not yet optimized for mobile viewports — they use desktop layouts on small screens. These are lower-priority screens for mobile use.
-- The documentation page is minimal (single card with download button on a full page), but it is a low-traffic utility page and not a core product surface.
-- Recharts default tooltip/axis styling in the capacity chart is the most visible remaining integration gap.
-- Settings tab count is now 7. Horizontal scrolling tabs handle this adequately but the pattern may need revisiting if more tabs are added.
+- Mobile capacity page uses desktop layout on small screens (PB-171 is ready, depends on PB-169 which is now complete).
+- Mobile settings page uses desktop layout on small screens (PB-172 is ready).
+- Mobile transitions and polish layer not yet implemented (PB-173).
+- Recharts default tooltip/axis styling in the capacity chart is the most visible remaining desktop integration gap.
+- Mobile planning view (PB-170) may benefit from further refinement to integrate with the new navigation paradigm, but it already works functionally.
 
 ## Recommended Next Improvements
 
@@ -41,6 +38,17 @@
 - **Dependencies:** PB-167 (completed)
 - **Suggested owner:** Experience Agent
 - **Why now:** The month calendar view is complete. Edit capability is the natural next step for mobile planning productivity. Should be evaluated based on user feedback from the read-only version.
+
+### EX-REC-053: Mobile homescreen — user greeting and scenario context
+
+- **Problem:** The mobile homescreen currently shows cards without user-specific context. Adding a personalized greeting ("Welkom, [naam]") and the active scenario name would make the homescreen feel more operational and personalized.
+- **Proposed improvement:** Add a greeting area above the card grid showing the user's name and active scenario. Use existing session and scenario API.
+- **Expected user value:** The homescreen feels personalized and immediately communicates operational context.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** PB-169 (completed)
+- **Suggested owner:** Experience Agent
+- **Why now:** Low effort enhancement that can be added during mobile polish phase (PB-173).
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -111,13 +119,12 @@
 ## Risks / Watch-outs
 
 - **Mobile planning is read-only.** The mobile planning view does not support editing. Planners can view but must use desktop to make changes. Monitor for user demand for mobile edit capability. See EX-REC-052.
-- **Mobile capacity and settings not optimized.** Capacity charts and settings forms still render desktop layouts on mobile. These are lower-priority mobile screens — capacity is primarily a desktop analysis tool, settings is admin-only.
-- **Planning grid toolbar wrap behavior.** The single-row toolbar with four zones may wrap on screens narrower than ~1200px. Current `flex-wrap` handles this, but the visual zone structure may degrade when wrapped. Monitor for user feedback. See EX-REC-048.
-- **Recharts default styling.** The capacity chart now lives within a product-grade page, but the chart's internal tooltip/axis styling is still Recharts default. See EX-REC-049.
-- **Settings tab count growth.** The settings page now has 7 tabs with horizontal scroll. Adding more tabs may need a different navigation pattern (e.g. vertical tabs or grouped sections).
-- **StamtabelManager border usage.** The StamtabelManager component uses `border border-border-subtle` on the outer card and `border-b` between sections. This is a minor tension with the No-Line Rule from DESIGN.md, but the borders serve a structural role here since these are inline-editable list items where clear row separation aids usability. Not a priority to change.
-- **API credential storage.** API credentials (passwords, tokens, API keys) are stored in the database as JSONB. The UI masks them appropriately, but the API returns them in full. If this application becomes multi-tenant or externally accessible, credential values should be redacted from GET responses.
-- **Month calendar data volume.** The month calendar fetches ~35 days of planning entries per driver per month view. This is a larger payload than the previous 1-7 day view. For drivers with dense planning data, monitor API response time. The current approach is acceptable for typical data volumes.
+- **Mobile capacity and settings not optimized.** Capacity charts and settings forms still render desktop layouts on mobile. PB-171 and PB-172 are now unblocked (PB-169 complete) and ready for next cycle.
+- **Mobile transitions not yet implemented.** Page transitions between homescreen and subpages are instant (no animation). PB-173 covers this polish work.
+- **Recharts default styling.** The capacity chart's internal tooltip/axis styling is still Recharts default. See EX-REC-049.
+- **Settings tab count growth.** The settings page now has 7 tabs with horizontal scroll. Adding more tabs may need a different navigation pattern.
+- **Release notes page data maintenance.** Release notes are embedded as a structured data array in the page component. New releases require updating the RELEASES array. Consider moving to a CMS or markdown parsing if update frequency becomes burdensome.
+- **Mobile-nav CSS classes retained.** The `mobile-nav-overlay`, `mobile-nav-panel`, and `mobile-menu-btn` CSS classes in globals.css are now only used by the header back button (`mobile-menu-btn`). The overlay/panel classes are unused but retained for potential future use. Can be cleaned up in a maintenance cycle.
 
 ## Items Intentionally Not Recommended
 
@@ -137,10 +144,11 @@
 - **Skeleton loaders:** Spinner pattern works. Skeleton loaders add complexity without strong user demand.
 - **Status legend popover collapse:** The inline legend provides constant reference while planning. Hiding it behind a click adds friction.
 - **Capacity page structural redesign:** No longer needed. PB-131 brought the page to product-grade quality.
-- **Documentation page redesign:** Low-traffic utility page. A single card with a download button is adequate for its purpose.
+- **Documentation page redesign:** Now replaced by release notes viewer (PB-174 completed).
 - **Broad StamtabelManager No-Line refactor:** Borders serve usability here. Tonal-only separation would reduce clarity for inline-editable list items.
-- **Full mobile-first redesign of all screens:** ESC-013 decided Option B (selective mobile views). Only key screens need mobile optimization. PB-154/155/156/167 now complete.
+- **Full mobile-first redesign of all screens:** ESC-013 decided Option B (selective mobile views). Only key screens need mobile optimization.
 - **Mobile planning edit in v1:** Deliberately deferred to v2. Read-only flow should be validated first. See EX-REC-052.
+- **Mobile homescreen route rename:** Keeping the homescreen on `/planning` is functionally clean. A separate `/home` route would add routing complexity without user benefit.
 
 ## Recommendation Rules
 
