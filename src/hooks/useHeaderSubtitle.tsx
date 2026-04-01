@@ -42,7 +42,7 @@ export function useHeaderSubtitleValue() {
 export function useMobileTitle(value: string, backAction?: () => void) {
   const { setMobileTitle, setMobileBackAction } = useContext(HeaderSubtitleContext);
   const stableSetTitle = useCallback((v: string) => setMobileTitle(v), [setMobileTitle]);
-  const stableSetBack = useCallback((a: (() => void) | null) => setMobileBackAction(a), [setMobileBackAction]);
+  const stableSetBack = useCallback((a: (() => void) | null) => setMobileBackAction(() => a), [setMobileBackAction]);
   useEffect(() => {
     stableSetTitle(value);
     // Only set the back action when the title is actually active

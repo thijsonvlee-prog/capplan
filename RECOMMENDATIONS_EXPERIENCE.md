@@ -2,20 +2,19 @@
 
 ## Summary
 
-**This cycle (2026-04-01, run 15):** Completed PB-175 — mobile drivers page visual refresh. Added entrance animation and improved card spacing to match the newer mobile screens (settings, planning).
+**This cycle (2026-04-01, run 16):** Fixed PB-179 (P1 Critical) — mobile navigation completely broken. Planning and settings buttons flickered but didn't navigate on mobile. Root cause: React `useState` functional updater bug in `useMobileTitle` hook. One-line fix.
 
 **What was improved:**
-- Mobile driver list now has the `mobile-page-enter` fade + slide-up entrance animation, consistent with all other mobile views.
-- Driver card padding increased from 0.75rem to 0.875rem/1rem, matching the settings card touch target and spacing pattern.
-- Desktop view completely unchanged.
+- Mobile navigation now works reliably. Tapping Planning on the homescreen navigates to the planning view. Tapping settings section cards opens the correct section. No flicker or reset.
+- Root cause was in `src/hooks/useHeaderSubtitle.tsx`: `setMobileBackAction(fn)` was interpreted by React as a functional updater, immediately executing the back action instead of storing it as state. Fixed by wrapping: `setMobileBackAction(() => fn)`.
 
 **Current design alignment with DESIGN.md:**
 - Mobile homescreen: well-aligned (sections 2.5, 7.3). Card-based navigation with brand gradient hero, tonal icon circles, touch-friendly targets.
-- Mobile navigation: well-aligned (section 7.1). Consistent header pattern: branding on home, title + back arrow on all subpages.
-- Mobile planning: well-aligned (sections 2.5, 9). Month calendar with status dots, day detail panel, status legend. Entrance animation on view transitions.
-- Mobile capacity: well-aligned (sections 7.1, 7.3, 8.3). KPI cards, responsive chart, scrollable table. Controls stack vertically.
+- Mobile navigation: well-aligned (section 7.1). Consistent header pattern: branding on home, title + back arrow on all subpages. Navigation now fully functional.
+- Mobile planning: well-aligned (sections 2.5, 9). Month calendar with status dots, day detail panel, status legend.
+- Mobile capacity: well-aligned (sections 7.1, 7.3, 8.3). KPI cards, responsive chart, scrollable table.
 - Mobile settings: well-aligned (sections 2.5, 7.3). Card-based section selector with icon, description, and count.
-- Mobile drivers: now well-aligned (sections 7.3, 2.5). Entrance animation and spacing consistent with other mobile views.
+- Mobile drivers: well-aligned (sections 7.3, 2.5). Entrance animation and spacing consistent with other mobile views.
 - Release notes page: well-aligned (sections 2.5, 5.2). Clear date hierarchy, category badges.
 - Desktop: fully stable. All desktop layouts unchanged.
 - Planning grid toolbar: fully aligned (section 7.2).

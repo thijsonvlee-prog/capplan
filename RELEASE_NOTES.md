@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-01 — Mobiele navigatie hersteld
+
+#### Bugfixes
+
+- **Mobiele navigatie werkt weer:** Tappen op de Planning-kaart op het mobiele startscherm en tappen op secties in Instellingen navigeert nu betrouwbaar. Voorheen flikkerde het scherm zonder te navigeren. Oorzaak was een React state-bug in de mobiele titelhook.
+
 ### 2026-04-01 — Mobiele chauffeurspagina opfrisbeurt
 
 #### UX / design verbeteringen
