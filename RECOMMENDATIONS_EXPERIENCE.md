@@ -2,25 +2,25 @@
 
 ## Summary
 
-**This cycle (2026-04-01, run 14):** Completed all remaining mobile initiative items: PB-170 (planning nav integration), PB-171 (mobile capacity view), PB-172 (mobile settings view), and PB-173 (transitions and polish). The SMI-024 mobile app redesign initiative is now fully delivered.
+**This cycle (2026-04-01, run 15):** Completed PB-175 — mobile drivers page visual refresh. Added entrance animation and improved card spacing to match the newer mobile screens (settings, planning).
 
 **What was improved:**
-- Mobile planning view now uses the header back arrow consistently instead of a separate Home button. Entrance animation between homescreen and planning view.
-- Capacity page is mobile-optimized with stacked controls, responsive chart height, and 2-column KPI grid.
-- Settings page uses card-based section navigation on mobile with icon, title, description for each section. Section content opens with header title and back navigation.
-- All mobile screens have entrance animations (fade + slide-up). All tap targets meet 44px minimum. Consistent interaction quality.
+- Mobile driver list now has the `mobile-page-enter` fade + slide-up entrance animation, consistent with all other mobile views.
+- Driver card padding increased from 0.75rem to 0.875rem/1rem, matching the settings card touch target and spacing pattern.
+- Desktop view completely unchanged.
 
 **Current design alignment with DESIGN.md:**
 - Mobile homescreen: well-aligned (sections 2.5, 7.3). Card-based navigation with brand gradient hero, tonal icon circles, touch-friendly targets.
-- Mobile navigation: well-aligned (section 7.1). Consistent header pattern: branding on home, title + back arrow on all subpages. `useMobileTitle` context enables planning page to override header behavior.
+- Mobile navigation: well-aligned (section 7.1). Consistent header pattern: branding on home, title + back arrow on all subpages.
 - Mobile planning: well-aligned (sections 2.5, 9). Month calendar with status dots, day detail panel, status legend. Entrance animation on view transitions.
-- Mobile capacity: well-aligned (sections 7.1, 7.3, 8.3). KPI cards, responsive chart, scrollable table. Controls stack vertically on mobile.
-- Mobile settings: well-aligned (sections 2.5, 7.3). Card-based section selector replaces cramped horizontal tabs. Each section has icon, description, and count. Feels like an app section list, not a tab bar.
+- Mobile capacity: well-aligned (sections 7.1, 7.3, 8.3). KPI cards, responsive chart, scrollable table. Controls stack vertically.
+- Mobile settings: well-aligned (sections 2.5, 7.3). Card-based section selector with icon, description, and count.
+- Mobile drivers: now well-aligned (sections 7.3, 2.5). Entrance animation and spacing consistent with other mobile views.
 - Release notes page: well-aligned (sections 2.5, 5.2). Clear date hierarchy, category badges.
 - Desktop: fully stable. All desktop layouts unchanged.
 - Planning grid toolbar: fully aligned (section 7.2).
 - Planning grid matrix: fully aligned (section 4.1).
-- Drivers page: fully aligned (sections 3.2, 7.3).
+- Drivers page (desktop): fully aligned (sections 3.2, 7.3).
 - Capacity page (desktop): fully aligned (sections 7.1, 7.3, 8.3).
 - Settings page (desktop): well-aligned (sections 2.5, 7.1, 7.2).
 - Toast & ConfirmDialog: product-grade.
@@ -28,7 +28,6 @@
 **Where design quality is still below target:**
 - Recharts default tooltip/axis styling in the capacity chart is the most visible remaining desktop integration gap.
 - Mobile capacity: scenario compare is hidden on mobile (too complex for small screens). May be revisited if user demand exists.
-- Mobile drivers page: uses existing card layout from PB-155 which works but was built before the homescreen paradigm. Could benefit from visual refinement to match newer patterns.
 
 ## Recommended Next Improvements
 
@@ -64,17 +63,6 @@
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Most visible remaining integration gap on desktop. Low risk.
-
-### EX-REC-054: Mobile drivers page — visual refresh to match new patterns
-
-- **Problem:** The mobile driver list (PB-155) was built before the homescreen navigation paradigm. It works but doesn't use the entrance animation or match the visual polish level of the newer mobile screens (settings cards, planning calendar).
-- **Proposed improvement:** Add entrance animation, review card spacing and touch targets, ensure visual consistency with the other mobile screens.
-- **Expected user value:** Consistent, polished experience across all mobile screens.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Quick polish pass. The mobile initiative is complete, but the drivers page was built in an earlier phase and could benefit from alignment.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
@@ -163,6 +151,7 @@
 - **Mobile planning edit in v1:** Deliberately deferred to v2. Read-only flow validated first.
 - **Mobile homescreen route rename:** `/planning` is functionally clean for both homescreen and planning.
 - **Mobile capacity scenario compare:** Too complex for small screens. Desktop-only is appropriate until user demand exists.
+- **Mobile drivers page visual refresh:** Completed (PB-175). No further work needed.
 
 ## Recommendation Rules
 

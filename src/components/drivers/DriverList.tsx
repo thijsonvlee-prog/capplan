@@ -189,7 +189,7 @@ export function DriverList() {
           </div>
 
           {/* Mobile card list */}
-          <div className="md:hidden">
+          <div className="md:hidden mobile-page-enter">
             {driversError && drivers.length === 0 ? (
               <div className="bg-surface-primary rounded-lg shadow-card p-6 text-center">
                 <div className="text-sm font-medium text-danger-600">Fout bij ophalen chauffeurs</div>

@@ -27,21 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-175: Mobiele chauffeurspagina — visuele opfrisbeurt
-
-- **ID:** PB-175
-- **Title:** Mobiele chauffeurspagina — visuele opfrisbeurt
-- **Problem / opportunity:** The mobile driver list (PB-155) was built before the homescreen navigation paradigm. It works but doesn't use the entrance animation or match the visual polish of the newer mobile screens (settings cards, planning calendar).
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** The mobile initiative is complete and this is the one mobile screen that was built in an earlier phase. Quick alignment pass for visual consistency.
-- **Scope notes:** Add entrance animation, review card spacing and touch targets, ensure visual consistency with newer mobile screens. Do not redesign the driver card layout.
-- **Dependencies:** None.
-- **Definition of done:** Mobile drivers page has entrance animation, consistent spacing, and matches the polish level of settings/planning mobile views. Desktop unchanged. Verify passes.
-- **Implementation note:** See EX-REC-054. Small effort.
-- **Source:** EX-REC-054
-
 ### PB-176: Verplaats COMPARE_COLORS naar module scope en constants
 
 - **ID:** PB-176
@@ -102,6 +87,13 @@ _No blocked items._
 ---
 
 ## Completed Recently
+
+### PB-175: Mobiele chauffeurspagina — visuele opfrisbeurt
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Implementation note:** Added `mobile-page-enter` entrance animation to the mobile card list. Increased driver card padding from 0.75rem to 0.875rem/1rem to match settings card pattern. Desktop unchanged. Verify passes.
 
 ### PB-170: Mobiele planning — aanpassen aan nieuwe navigatie
 

@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-01 — Mobiele chauffeurspagina opfrisbeurt
+
+#### UX / design verbeteringen
+
+- **Mobiele chauffeurspagina:** De mobiele chauffeurlijst heeft nu dezelfde ingangsanimatie (fade + slide-up) als de overige mobiele schermen. Kaartspacing is vergroot voor consistentie met de instellingen- en planningsweergaven.
+
 ### 2026-04-01 — Mobiele app-ervaring compleet
 
 #### UX / design verbeteringen
