@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2 items. The product is stable across all core features: planning grid, capacity analysis, driver management, mobile views, API connectivity, audit trail, user groups, and authentication. All remaining items are P3/P4 deferred polish and cleanup. Next cycle work depends on Scrum Master direction or new user feedback.
+**Current direction:** Major mobile app redesign initiative (SMI-024). The Scrum Master has directed a full mobile UX overhaul: homescreen with card-based navigation, remove hamburger menu, add back button, app-like feel. Budget: 10 cycles. Additionally, the documentation page must be replaced with a release notes page (SMI-025). All desktop features remain stable. The mobile initiative is the primary work stream for the foreseeable future.
 
 ## Status Definitions
 
@@ -27,7 +27,111 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-169: Mobiel homescreen met kaartnavigatie en terugknop
+
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** The current mobile navigation uses a hamburger menu with a slide-over sidebar — it feels like a responsive desktop app, not a mobile app. The Scrum Master wants a native app-like experience with a dedicated homescreen.
+- **Why this matters now:** Core structural change for the entire mobile initiative (SMI-024). All other mobile improvements depend on this new navigation paradigm.
+- **Scope notes:**
+  - Create a mobile-only homescreen at the root route (or `/planning` redirect) that shows cards linking to all main sections: Planning, Chauffeurs, Capaciteit, Instellingen, Releasenotes.
+  - Each card should have an icon, title, and brief description. Design must feel premium and app-like per DESIGN.md principles.
+  - Remove the hamburger menu and slide-over sidebar on mobile entirely.
+  - Add a back button (or home button) in the mobile header on all subpages to return to the homescreen.
+  - Desktop navigation (sidebar) must remain completely unchanged.
+  - Mobile detection continues to use Tailwind `md:` breakpoint (768px).
+  - The homescreen is mobile-only — desktop users still land on `/planning` as before.
+- **Dependencies:** None
+- **Definition of done:** On mobile: homescreen renders with cards to all sections, tapping a card navigates to that section, each section has a visible back/home button, hamburger menu is gone. On desktop: no changes. `npm run verify` passes.
+- **Implementation note:** The existing `MobilePlanningView`, mobile driver cards, and mobile sidebar CSS can be repurposed or replaced. The homescreen layout should use design tokens, not hardcoded colors. Consider using the existing `surface-secondary` for the homescreen background and `surface-primary` for cards with `shadow-card`.
+- **SMI linkage:** SMI-024
+
+### PB-174: Documentatiepagina vervangen door releasenotes-pagina
+
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Problem / opportunity:** The Scrum Master wants the documentation page replaced with a release notes page that shows all historical release notes chronologically per day. The current page generates a text file download — not useful for end users.
+- **Why this matters now:** Direct Scrum Master request (SMI-025). Straightforward to implement. Gives users transparency into product evolution.
+- **Scope notes:**
+  - Replace the `/documentatie` route content with a release notes viewer.
+  - Update sidebar navigation label from "Documentatie" to "Releasenotes" (both desktop and mobile).
+  - Display all release notes from the project's history, ordered chronologically per day (newest first).
+  - The content should match what's in `RELEASE_NOTES.md` — the Experience Agent may embed the content directly in the page component or use a structured data approach.
+  - Each day's release should be a collapsible or scrollable section with clear date headers.
+  - Must follow DESIGN.md principles: proper surface hierarchy, typography tokens, Dutch language.
+  - Must also appear as a card on the new mobile homescreen (PB-169).
+- **Dependencies:** None (can be done in parallel with PB-169, but the homescreen card for "Releasenotes" should use the correct route).
+- **Definition of done:** `/documentatie` (or renamed route) shows all historical release notes per day. Sidebar label updated. Page uses design tokens. Dutch language. `npm run verify` passes.
+- **Implementation note:** The `generateDocumentation()` function in the current page can be removed. Consider a simple structured array of release entries rendered as sections. Keep it maintainable — new releases should be easy to add.
+- **SMI linkage:** SMI-025
+
+### PB-170: Mobiele planning — aanpassen aan nieuwe navigatie
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** After PB-169, the mobile planning view needs to integrate with the new homescreen navigation pattern. The current MobilePlanningView may need header/navigation adjustments to include the back button and match the new app-like feel.
+- **Why this matters now:** Part of mobile initiative (SMI-024). Planning is the most-used screen and must feel polished in the new navigation paradigm.
+- **Scope notes:**
+  - Ensure the mobile planning page has a consistent header with back/home button from PB-169.
+  - Review and refine the month calendar view to fit the app-like feel.
+  - Ensure smooth transitions from homescreen to planning and back.
+  - Do not add edit capability yet (deferred to EX-REC-052).
+- **Dependencies:** PB-169
+- **Definition of done:** Planning page integrates cleanly with new mobile nav. Back button works. Visual consistency with homescreen. `npm run verify` passes.
+- **SMI linkage:** SMI-024
+
+### PB-171: Mobiele capaciteitsweergave
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The capacity page currently renders its desktop layout on mobile. Charts and KPI modules need mobile-optimized layouts.
+- **Why this matters now:** Part of mobile initiative (SMI-024). With the homescreen linking to capacity, the page must be usable on mobile.
+- **Scope notes:**
+  - Create a mobile-optimized layout for the capacity page.
+  - KPI cards should stack vertically on mobile.
+  - Chart should be responsive or simplified for small screens.
+  - Filters should be mobile-friendly (stacked, full-width).
+  - Back/home button per PB-169 pattern.
+- **Dependencies:** PB-169
+- **Definition of done:** Capacity page is usable on mobile with proper layout. KPIs and chart display correctly. Back button works. `npm run verify` passes.
+- **SMI linkage:** SMI-024
+
+### PB-172: Mobiele instellingenweergave
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** The settings page uses horizontal tabs and complex forms that don't work well on mobile. With 7 tabs, the current horizontal scroll pattern is adequate on desktop but cramped on mobile.
+- **Why this matters now:** Part of mobile initiative (SMI-024). Settings is admin-only but should still be usable on mobile.
+- **Scope notes:**
+  - Create a mobile-optimized settings layout — consider vertical tab list or card-based section selector.
+  - Forms within each tab should be full-width and touch-friendly.
+  - StamtabelManager tables should be readable on mobile.
+  - Back/home button per PB-169 pattern.
+- **Dependencies:** PB-169
+- **Definition of done:** Settings page is navigable and usable on mobile. Tabs/sections accessible. Forms functional. Back button works. `npm run verify` passes.
+- **SMI linkage:** SMI-024
+
+### PB-173: Mobiele app-feel — transities en polish
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Problem / opportunity:** To truly feel like a native app, the mobile experience needs smooth transitions between screens, consistent motion design, and polished touch interactions.
+- **Why this matters now:** Final phase of mobile initiative (SMI-024). The SM explicitly wants it to "feel like an app." This item covers the polish layer.
+- **Scope notes:**
+  - Add page transition animations (slide-in/out or fade) between homescreen and subpages.
+  - Ensure all tap targets meet mobile guidelines (min 44px).
+  - Review and refine spacing, padding, and touch interactions across all mobile screens.
+  - Consider adding a subtle loading state between page transitions.
+  - Test across all mobile screens for visual consistency.
+- **Dependencies:** PB-169, PB-170, PB-171, PB-172
+- **Definition of done:** Mobile experience has smooth transitions, consistent spacing, polished interactions. Feels like a native app, not a responsive website. `npm run verify` passes.
+- **SMI linkage:** SMI-024
 
 ---
 
@@ -92,28 +196,28 @@ _No blocked items._
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Natural next step for mobile planning. PB-167 (calendar redesign) is complete. Validate read-only flow with user feedback first before investing in edit capability.
+- **Reason:** Natural next step after mobile initiative is complete. The read-only planning flow should be validated with user feedback first. Can be picked up after PB-170 is done.
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low-risk polish. Capacity page is structurally aligned. Custom tooltip is cosmetic.
+- **Reason:** May be addressed as part of PB-171 (mobile capacity view). Otherwise low-priority cosmetic.
 
 ### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current flex-wrap handles basic cases. Only relevant if narrow viewport usage is reported.
+- **Reason:** Desktop-only concern. Mobile has its own layout. Only relevant if narrow desktop viewport usage is reported.
 
 ### DE-REC-070: Align client-side TARGET_ENTITIES met server-side constante
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Natural follow-up to PB-164 deduplication. Low effort but no user impact.
+- **Reason:** No user impact. Pick up when capacity allows.
 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 
@@ -121,13 +225,6 @@ _No blocked items._
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** Quick cleanup but no user impact.
-
-### EX-REC-044: User group member assignment — batch API
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Current sequential approach works for typical group sizes.
 
 ### PB-030: Move hardcoded constants and chart colors to centralized config
 
@@ -142,27 +239,6 @@ _No blocked items._
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** Table grows unbounded but traffic is low.
-
-### EX-REC-038: Extend Manrope to section titles and modal headers
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Low-risk typographic refinement. Needs visual evaluation.
-
-### EX-REC-043: Import source manager — visual mapping builder enhancement
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Current field mapping editor is functional with autocomplete from discovered paths.
-
-### EX-REC-042: Deduplicate scenarios list fetch
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** No direct user impact. Minor code hygiene.
 
 ### DE-REC-058: Cap value length on preferences PUT route
 
@@ -197,7 +273,35 @@ _No blocked items._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Natural Phase 1 follow-up but not blocking. Current auto-detection handles common patterns.
+- **Reason:** Natural Phase 1 follow-up but not blocking.
+
+### EX-REC-038: Extend Manrope to section titles and modal headers
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Low-risk typographic refinement. May be addressed during mobile polish (PB-173).
+
+### EX-REC-043: Import source manager — visual mapping builder enhancement
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Current field mapping editor is functional. Desktop-only concern.
+
+### EX-REC-042: Deduplicate scenarios list fetch
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** No direct user impact. Minor code hygiene.
+
+### EX-REC-044: User group member assignment — batch API
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Current sequential approach works for typical group sizes.
 
 ---
 
@@ -208,7 +312,7 @@ _No blocked items._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-169.
+- Backlog IDs are sequential and never reused. Next available: PB-175.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

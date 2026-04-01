@@ -6,39 +6,23 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-04-01 — Mobiele sidebar-fix (mount-bug)
-
-#### Bugfixes
-
-- **Mobiele sidebar opent nu betrouwbaar:** De sidebar sloot zichzelf direct na het openen doordat een useEffect op de initiële mount werd getriggerd. Opgelost met een mount-guard die de eerste uitvoering overslaat. Navigatie via het hamburger-menu werkt nu betrouwbaar op mobiel.
-
 ### 2026-04-01 — Mobiele maandkalender, navigatiefixes en code-onderhoud
 
 #### UX / design verbeteringen
 
 - **Maandkalender op mobiel:** De mobiele planningsweergave is volledig herschreven naar een maandkalender. Zeven kolommen (ma-zo) met weeknummers per rij. Maandnavigatie met vorige/volgende en "Vandaag"-knop. Statuskleurdots per dag. Tik op een dag voor details (status, verloftype, ziektepercentage, notities). Vandaag gemarkeerd met blauwe cirkel. Dagen buiten de huidige maand worden gedimd getoond. Vervangt de eerdere dag-/weekweergave.
-- **Hamburger-menu gerepareerd:** De mobiele hamburger-knop was geblokkeerd door de overlay (z-index conflict). De header zit nu boven de overlay, waardoor navigatie betrouwbaar werkt.
 - **Zoekicoon-uitlijning:** Het vergrootglas in zoekbalken (chauffeurlijst en mobiele planning) is iets naar rechts verschoven voor betere visuele uitlijning met de invoertekst.
+
+#### Bugfixes
+
+- **Mobiele sidebar opent nu betrouwbaar:** De sidebar sloot zichzelf direct na het openen doordat een useEffect op de initiële mount werd getriggerd (z-index conflict + mount-bug). Opgelost met een z-index correctie op de header en een mount-guard die de eerste useEffect-uitvoering overslaat. Navigatie via het hamburger-menu werkt nu betrouwbaar op mobiel.
 
 #### Onderhoud
 
 - **resolveUserId geconsolideerd:** Gedupliceerde functie geëxtraheerd naar `api-route-utils.ts`. Voorkeuren- en actief-scenario-routes importeren nu van dezelfde module.
 - **validateApiFields geconsolideerd:** Gedupliceerde functie en 4 validatieconstanten verplaatst naar `api-import-helpers.ts`. ~85 regels duplicatie geëlimineerd.
 
-### 2026-03-31 — Importbron lijst-endpoint beveiligd
-
-#### Beveiliging
-
-- **Importbron GET-lijst beveiligd:** Het ophalen van de importbronnenlijst (`/api/import-sources`) vereist nu de ADMIN-rol. Voorheen was dit endpoint onbeschermd en retourneerde het alle velden inclusief API-credentials aan elke ingelogde gebruiker.
-
-### 2026-03-31 — API-import helpers, audit cleanup, mobiele navigatie
-
-#### Onderhoud
-
-- **API-import helpers geconsolideerd:** De vier gedeelde functies (`buildApiHeaders`, `extractDataArray`, `resolveJsonPath`, `discoverPaths`) zijn geëxtraheerd naar `src/lib/api-import-helpers.ts`. Test-verbinding en uitvoerroutes importeren nu van dezelfde module. Elimineert ~80 regels duplicatie.
-- **Audit log opschoning:** Nieuwe `cleanupOldAuditLogs()` functie in `src/lib/audit.ts` verwijdert automatisch audit-entries ouder dan 90 dagen. Wordt fire-and-forget aangeroepen na elke import-uitvoering.
-
-### 2026-03-31 — API-connecties, audittrail en beveiligingsfixes
+### 2026-03-31 — API-connecties, audittrail, beveiliging en mobiele navigatie
 
 #### UX / design verbeteringen
 
@@ -61,17 +45,22 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 #### Beveiliging
 
+- **Importbron endpoints beveiligd:** Ophalen van importbronnen (lijst en individueel, inclusief API-credentials) vereist nu de ADMIN-rol.
 - **Afdelingsfilter op planning-routes:** DELETE-route past nu dezelfde afdelingscontrole toe als POST-routes. Planners kunnen geen items verwijderen buiten hun scope.
-- **Importbron GET-endpoint beveiligd:** Ophalen van individuele importbron (inclusief API-credentials) vereist nu ADMIN-rol.
 - **Afdelingsfilter op planning-schrijfroutes:** Planners met beperkte toegang kunnen geen planningsitems aanmaken buiten hun afdelingen.
 
 #### Betrouwbaarheid
 
 - **Invoervalidatie compleet:** Alle POST/PUT-endpoints hebben lengtebegrenzingen, enum-validatie en referentievalidatie.
+- **Audit log opschoning:** Automatische verwijdering van audit-entries ouder dan 90 dagen.
 
 #### Prestaties
 
 - **Snellere sub-record aanmaak:** Overbodige database-query verwijderd. Bespaart ~3 roundtrips per wijziging op Neon serverless.
+
+#### Onderhoud
+
+- **API-import helpers geconsolideerd:** Gedeelde functies geëxtraheerd naar `api-import-helpers.ts`. Elimineert ~80 regels duplicatie.
 
 #### Bugfixes
 
