@@ -23,6 +23,10 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+de mobiele versie doet het nog niet goed. zorg ervoor dat het echt voelt als een app. de app moet een homescreen hebben en vanuit daar doorklikken via cards naar de andere schermen, inclusief een terugknop naar het homescreen. haal het hamburgermenu weg. je mag gerust de komende 10 cycles besteden aan dit, als het maar direct goed gebeurt.
+
+vervang daarnaast documentatie voor releasenotes. ik wil alle releasenotes sinds de start van de tool daar gepubliceerd hebben en werk dit ook steeds bij. geordend in chronologische volgorde per dag
+
 _No active inputs._
 
 ## Closed Inputs
