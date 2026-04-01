@@ -23,16 +23,36 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+### SMI-020: Hamburgermenu op mobiel werkt niet
+
+- **Type:** Bug report
+- **Status:** Planned
+- **Backlog linkage:** PB-165
+- **Detail:** De hamburger-knop in de header op mobiele schermen opent de sidebar niet (of sluit niet correct). Oorzaak: z-index probleem — de mobile-nav-overlay (z-40) bedekt de header (geen z-index), waardoor klikken op de hamburger-knop worden geblokkeerd.
+
+### SMI-021: Mobiele planning omzetten naar maandkalender
+
+- **Type:** Feature change
+- **Status:** Planned
+- **Backlog linkage:** PB-167
+- **Detail:** De mobiele planningsweergave per chauffeur moet een maandkalenderweergave worden in plaats van dag-/weekweergave. Kalender met weeknummers zichtbaar.
+
+### SMI-022: Uitlijning vergrootglas in zoekbalk klopt niet
+
+- **Type:** Bug report
+- **Status:** Planned
+- **Backlog linkage:** PB-166
+- **Detail:** Het vergrootglas-icoon in de zoekbalk staat te ver naar links. Betreft zowel de chauffeurlijst als de mobiele planningsweergave.
+
+## Closed Inputs
+
 ### SMI-019: Mobiele versie
 
 - **Type:** Initiative / new feature
-- **Status:** Planned
-- **Input:** Implementeer een mobiele versie.
-- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). PB-154 is nu klaar voor de volgende cyclus nu API Phase 1 volledig is afgerond.
-- **Escalation linkage:** ESC-013 (decided — Option B)
-- **Backlog linkage:** PB-154, PB-155, PB-156
-
-## Closed Inputs
+- **Status:** Closed
+- **Closed reason:** Fully delivered. All 3 phases completed 2026-04-01: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). ESC-013 Option B scope complete.
+- **Escalation linkage:** ESC-013 (closed)
+- **Backlog linkage:** PB-154, PB-155, PB-156 (all completed)
 
 ### SMI-018: API management
 

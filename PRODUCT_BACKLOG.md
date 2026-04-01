@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** API Phase 1 is fully complete. Deduplication and audit cleanup done. Mobile views in progress (PB-154 ✓, PB-155 ✓, PB-156 ready). Next priorities: consolidate remaining duplicated helpers (DE-REC-068, DE-REC-069), then P4 cleanup items.
+**Current direction:** Three new Scrum Master inputs drive this cycle: a critical mobile navigation bug (P1), a search icon alignment fix (P2), and a significant mobile planning redesign to monthly calendar view (P2). All assigned to Experience Agent. Delivery Agent has no active items this cycle — only P4 deferred items remain.
 
 ## Status Definitions
 
@@ -27,45 +27,47 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-165: Fix mobiele hamburger-menu (z-index bug)
 
-### PB-154: Mobiele layout shell en navigatie
-
+- **Title:** Hamburger-menu op mobiel werkt niet door z-index conflict
+- **Problem:** De mobile-nav-overlay (z-index: 40) bedekt de header (geen z-index), waardoor klikken op de hamburger-knop worden geblokkeerd. Mobiele navigatie is volledig onbruikbaar.
 - **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Completed
-- **Completed:** 2026-03-31
-- **Problem:** De applicatie heeft geen mobiele navigatie of responsive layout shell. De Scrum Master wil selectieve mobiele weergaven (ESC-013, Option B).
-- **Scope notes:** Maak een responsive layout variant voor schermen < 768px: hamburger-menu voor navigatie, compactere header, touch-vriendelijke tap targets. Sidebar wordt een slide-over panel op mobiel. Desktop layout blijft ongewijzigd. Gebruik Tailwind responsive utilities.
-- **Dependencies:** None
-- **Definition of done:** Op mobiele viewports: sidebar is verborgen achter hamburger-menu, header is compact, navigatie werkt via slide-over. Desktop is ongewijzigd. `npm run verify` slaagt.
-- **Implementation note:** Sidebar hidden on mobile (`hidden md:flex`), slide-over panel with backdrop overlay and close-on-navigate. Hamburger button in Header (md:hidden). Touch-friendly tap targets (py-2.5 on mobile nav items). Compact mobile padding (p-4 vs p-6). Animations: slide-in-left for panel, fade-in for overlay. Desktop completely unchanged.
-
----
-
-## Upcoming (Sequenced)
-
-### PB-155: Mobiele chauffeurlijst en zoeken
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Completed
-- **Completed:** 2026-03-31
-- **Problem:** De chauffeurspagina is niet bruikbaar op mobiel (brede tabel, kleine tekst).
-- **Scope notes:** Maak een mobiele variant van de chauffeurspagina: card-based layout in plaats van tabel, prominente zoekbalk, tap-to-open detail. Toon naam, personeelsnummer, afdeling en status per card. Gebruik responsive breakpoints: tabel op desktop, cards op mobiel.
-- **Dependencies:** PB-154
-- **Definition of done:** Chauffeurlijst is bruikbaar op mobiel met card-layout en zoekfunctie.
-- **Implementation note:** Mobile card layout below md breakpoint using `.driver-card` CSS class. Each card shows name, employee number, department, employment type badge, location, licenses, and skills. Full-width search bar on mobile. Tap-to-edit with chevron indicator. Simplified mobile pagination (prev/next only). Page description hidden on mobile, add button icon-only on small screens. Desktop table completely unchanged.
-
-### PB-156: Mobiele dag-/weekplanning per chauffeur
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
+- **Priority:** P1 Critical
 - **Status:** Ready
-- **Problem:** De planningsgrid is niet bruikbaar op mobiel (30+ kolommen).
-- **Scope notes:** Maak een mobiele planning-weergave: selecteer één chauffeur, toon dag- of weekweergave met statusblokken. Geen bewerkfunctionaliteit in eerste versie (read-only). Planners kunnen op mobiel de planning inzien maar bewerken op desktop.
-- **Dependencies:** PB-155
-- **Definition of done:** Planners kunnen op mobiel de planning van een individuele chauffeur bekijken per dag of week.
+- **Why this matters now:** Blokkeert alle mobiele navigatie. Directe SM-melding.
+- **Scope notes:** Fix de z-index hiërarchie zodat de header boven de overlay zit. Voeg een expliciete z-index toe aan de header (bijv. z-50 of hoger) of verlaag de overlay z-index. Test dat de overlay nog steeds correct sluit bij klik, en dat de hamburger-knop zowel opent als sluit.
+- **Dependencies:** Geen.
+- **Definition of done:** Hamburger-knop opent en sluit de mobiele sidebar betrouwbaar op alle mobiele schermgroottes. Overlay sluit bij tik buiten het paneel. Desktop-layout ongewijzigd.
+- **Implementation note:** Betrokken bestanden: `src/app/globals.css` (z-index waarden voor `.mobile-nav-overlay`, `.mobile-nav-panel`), `src/components/layout/Header.tsx` (header element), mogelijk `src/app/(dashboard)/layout.tsx`. Minimale wijziging — alleen z-index aanpassen.
+- **Source:** SMI-020
+
+### PB-166: Fix uitlijning vergrootglas in zoekbalken
+
+- **Title:** Vergrootglas-icoon staat te ver naar links in zoekbalken
+- **Problem:** Het Search-icoon is gepositioneerd met `left-3` (12px) maar lijkt visueel niet goed uitgelijnd ten opzichte van de invoertekst. Zichtbaar in zowel de chauffeurlijst als de mobiele planningsweergave.
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Directe SM-melding. Zichtbaar op elke pagina met een zoekbalk.
+- **Scope notes:** Pas de horizontale positie van het Search-icoon aan in beide zoekbalken. Controleer dat de uitlijning visueel klopt bij de invoertekst met `pl-9` padding. Overweeg `left-3` te verhogen naar bijv. `left-3.5` of een aangepaste waarde.
+- **Dependencies:** Geen.
+- **Definition of done:** Vergrootglas is visueel gecentreerd in de beschikbare ruimte links van de invoertekst, op zowel desktop als mobiel. Beide zoekbalken (DriverList, MobilePlanningView) zijn consistent.
+- **Implementation note:** Betrokken bestanden: `src/components/drivers/DriverList.tsx` (regel ~167), `src/components/planning/MobilePlanningView.tsx` (regel ~165). Wijzig de `left-3` class op het Search-icoon.
+- **Source:** SMI-022
+
+### PB-167: Mobiele planning omzetten naar maandkalenderweergave
+
+- **Title:** Vervang dag-/weekweergave door maandkalender met weeknummers op mobiel
+- **Problem:** De huidige mobiele planningsweergave toont een dag- of weekoverzicht per chauffeur. De Scrum Master wil een maandkalenderweergave met weeknummers, wat beter past bij hoe planners roosters overzien.
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Ready
+- **Why this matters now:** Directe SM-richtlijn. Verandert de kerninteractie van de mobiele planningsweergave.
+- **Scope notes:** Herschrijf `MobilePlanningView` om een maandkalender te tonen in plaats van dag/week toggle. Vereisten: (1) maandoverzicht als kalenderraster (7 kolommen, ma-zo), (2) weeknummers zichtbaar per rij, (3) maandnavigatie (vorige/volgende maand + "Vandaag"-knop), (4) statuskleuren per dag in het raster, (5) tik op een dag voor details (status, verloftype, ziektepercentage, notities). Data-ophaling wijzigt van 1-7 dagen naar ~35 dagen. Chauffeur-selectiescherm blijft ongewijzigd.
+- **Dependencies:** PB-165 (hamburger-menu moet werken om de planning te bereiken op mobiel). PB-166 (zoekbalk in het chauffeur-selectiescherm).
+- **Definition of done:** Mobiele planningsweergave toont een volledige maandkalender met weeknummers. Dagen tonen statuskleur. Tikken op een dag toont details. Maandnavigatie werkt. Desktop planningsrooster ongewijzigd.
+- **Implementation note:** Betrokken bestand: `src/components/planning/MobilePlanningView.tsx` (495 regels, significante herschrijving). API-aanroep wijzigt naar maandbereik via `api.planning.getEntries()`. Gebruik `getISOWeekNumber()` uit `src/lib/utils.ts` voor weeknummers. Compact raster nodig vanwege mobiele schermbreedte — overweeg kleine cellen met alleen een kleurstip per dag, met detail-popup bij tik.
+- **Source:** SMI-021
 
 ---
 
@@ -75,80 +77,43 @@ _No items currently in progress._
 
 ---
 
+## Blocked / Needs Decision
+
+_No blocked items._
+
+---
+
 ## Completed Recently
 
-### PB-162: Importbron GET-lijst endpoint beveiligd met ADMIN-rol
+### PB-163: Deduplicate resolveUserId naar gedeelde module
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Implementation note:** Added `requireRole("ADMIN")` to the GET handler in `/api/import-sources/route.ts`. The list endpoint returned all fields including `apiCredentials` without any role check. The individual GET (`/api/import-sources/[id]`) was already fixed in PB-159, but the list endpoint was overlooked. Same class of security gap.
+- **Completed:** 2026-04-01
 
-### PB-160: Deduplicate API import helpers naar gedeelde module
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Implementation note:** Extracted `buildApiHeaders()`, `extractDataArray()`, `resolveJsonPath()`, and `discoverPaths()` to `src/lib/api-import-helpers.ts`. Both test and execute routes now import from the shared module. ~80 lines of duplication eliminated. Minor inconsistency fixed: execute route used raw `value` in header loop; shared version uses `String(value)` for safety.
-
-### PB-161: Audit log cleanup mechanisme
+### PB-164: Deduplicate validateApiFields naar gedeelde module
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-- **Implementation note:** Added `cleanupOldAuditLogs(retentionDays = 90)` to `src/lib/audit.ts`. Fire-and-forget call at the end of import execution in the execute route. Uses `deleteMany` with date filter. Failures are logged but never block the import.
+- **Completed:** 2026-04-01
 
-### PB-159: Fix authorization bypass op planning DELETE en import-source GET
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-158: API-bron test-verbinding knop
+### PB-156: Mobiele dag-/weekplanning per chauffeur
 
 - **Status:** Completed
 - **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-153: API-bron response mapping
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-152: API-bron uitvoering — GET-request en response-import
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-151: API-bron configuratie UI
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-150: API-bron type — datamodel uitbreiding ImportSource
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-157: Elimineer overbodige findMany in autoCloseOpenRecords
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-146–PB-149: Audittrail — volledig
-
-- **Status:** Completed
-- **Owner:** Delivery Agent + Experience Agent
-- **Completed:** 2026-03-31
+- **Completed:** 2026-04-01
 
 ---
 
 ## Deferred
+
+### EX-REC-052: Mobiele planning — bewerkingsmogelijkheid (v2)
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Natural next step for mobile planning, but the read-only flow should be validated by user feedback before investing in edit capability. Also depends on PB-167 (calendar redesign) completing first — edit should be built on top of the new calendar view, not the old day/week view.
+- **Source:** EX-REC-052
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -162,7 +127,15 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current flex-wrap handles basic cases. May become relevant when mobile work (PB-154) starts.
+- **Reason:** Current flex-wrap handles basic cases. May become relevant after mobile work completes.
+
+### DE-REC-070: Align client-side TARGET_ENTITIES met server-side constante
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Natural follow-up to PB-164 deduplication. Low effort but no user impact.
+- **Source:** DE-REC-070
 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 
@@ -246,8 +219,7 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Natural Phase 1 follow-up but not blocking. Current auto-detection handles common patterns. Promote if users report incompatible APIs.
-- **Source:** DE-REC-065
+- **Reason:** Natural Phase 1 follow-up but not blocking. Current auto-detection handles common patterns.
 
 ---
 
@@ -258,7 +230,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-163.
+- Backlog IDs are sequential and never reused. Next available: PB-168.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.
