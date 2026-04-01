@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Mobile initiative (SMI-019 / ESC-013) is complete (PB-154 ✓, PB-155 ✓, PB-156 ✓). Deduplication consolidation complete (PB-163 ✓, PB-164 ✓). Only P4 polish/cleanup items remain.
+**Current direction:** All major initiatives are complete (mobile, API management, audit trail, user groups, design alignment). The product is stable. Only P4 polish/cleanup items remain. The next cycle depends on new Scrum Master direction or user feedback triggering higher-priority work.
 
 ## Status Definitions
 
@@ -50,55 +50,30 @@ _No blocked items._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** `resolveUserId()` extracted to `src/lib/api-route-utils.ts`. Both `preferences/route.ts` and `scenarios/active/route.ts` import from there. Uses generic 401 message consistent with `requireRole()`. ~15 lines duplication eliminated.
 
 ### PB-164: Deduplicate validateApiFields naar gedeelde module
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** `validateApiFields()` and 4 validation constants (`VALID_TARGET_ENTITIES`, `VALID_SOURCE_TYPES`, `VALID_API_METHODS`, `VALID_API_AUTH_TYPES`) extracted to `src/lib/api-import-helpers.ts`. Three route files (`route.ts`, `[id]/route.ts`, `[id]/execute/route.ts`) now import from there. ~85 lines duplication eliminated.
 
 ### PB-156: Mobiele dag-/weekplanning per chauffeur
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** MobilePlanningView component with driver search/select, day/week toggle, date navigation, and status blocks with semantic colors. Uses existing `/api/planning` endpoint with driverId filter. Leave types and sick percentage displayed. Desktop PlanningGrid unchanged. Completes ESC-013 mobile initiative.
-
-### PB-155: Mobiele chauffeurlijst en zoeken
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-154: Mobiele layout shell en navigatie
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-03-31
-
-### PB-162: Importbron GET-lijst endpoint beveiligd met ADMIN-rol
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-160: Deduplicate API import helpers naar gedeelde module
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
-
-### PB-161: Audit log cleanup mechanisme
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-03-31
 
 ---
 
 ## Deferred
+
+### EX-REC-052: Mobiele planning — bewerkingsmogelijkheid (v2)
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Deferred
+- **Reason:** Natural next step for mobile planning, but the read-only flow (PB-156) should be validated by user feedback before investing in edit capability. Promote when user demand is confirmed.
+- **Source:** EX-REC-052
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -113,6 +88,14 @@ _No blocked items._
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** Current flex-wrap handles basic cases. May become relevant after mobile work completes.
+
+### DE-REC-070: Align client-side TARGET_ENTITIES met server-side constante
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Natural follow-up to PB-164 deduplication. Low effort but no user impact. Add sync comment or shared constant when import-source work next occurs.
+- **Source:** DE-REC-070
 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 

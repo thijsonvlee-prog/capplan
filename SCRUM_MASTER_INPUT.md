@@ -23,16 +23,17 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+_No active inputs._
+
+## Closed Inputs
+
 ### SMI-019: Mobiele versie
 
 - **Type:** Initiative / new feature
-- **Status:** Planned
-- **Input:** Implementeer een mobiele versie.
-- **PO assessment:** Scrum Master koos Option B (selectieve mobiele weergaven) via ESC-013. Opgebroken in 3 fasen: layout shell (PB-154 ✓), chauffeurlijst (PB-155 ✓), planning per chauffeur (PB-156 ready). Twee van drie fasen zijn afgerond. PB-156 staat klaar voor de volgende cyclus.
-- **Escalation linkage:** ESC-013 (decided — Option B)
-- **Backlog linkage:** PB-154, PB-155, PB-156
-
-## Closed Inputs
+- **Status:** Closed
+- **Closed reason:** Fully delivered. All 3 phases completed 2026-04-01: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). ESC-013 Option B scope complete.
+- **Escalation linkage:** ESC-013 (closed)
+- **Backlog linkage:** PB-154, PB-155, PB-156 (all completed)
 
 ### SMI-018: API management
 
