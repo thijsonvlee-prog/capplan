@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-01 — Code deduplicatie consolidatie
+
+#### Onderhoud
+
+- **resolveUserId geconsolideerd:** De gedupliceerde `resolveUserId()` functie is geëxtraheerd naar `src/lib/api-route-utils.ts`. Voorkeuren- en actief-scenario-routes importeren nu van dezelfde module.
+- **validateApiFields geconsolideerd:** De gedupliceerde `validateApiFields()` functie en 4 validatieconstanten zijn verplaatst naar `src/lib/api-import-helpers.ts`. Drie importbron-routes importeren nu van dezelfde module. ~85 regels duplicatie geëlimineerd.
+
 ### 2026-04-01 — Mobiele planningsweergave
 
 #### UX / design verbeteringen

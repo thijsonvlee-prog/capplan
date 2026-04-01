@@ -6,35 +6,22 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-162 (import-sources list GET endpoint missing ADMIN role) was discovered and fixed this cycle — same class of security gap as PB-159. The codebase is stable with clean verify output. Two P3 consolidation recommendations (DE-REC-068, DE-REC-069) remain the highest-value next items. All P4 recommendations remain valid. No new critical issues discovered.
+PB-163 and PB-164 (deduplication consolidation) were completed this cycle. The codebase is stable with clean verify output. All remaining recommendations are P4 Low priority — no critical or high-priority improvements identified. The codebase is in good shape with consistent patterns, proper error handling, and no hardcoded colors in components.
 
 ## Recommended Next Improvements
 
-### DE-REC-068: Extract duplicated resolveUserId to shared module
+### DE-REC-070: Deduplicate VALID_TARGET_ENTITIES in ImportSourceManager.tsx (client-side)
 
-- **Title:** Deduplicate `resolveUserId()` between preferences and scenarios/active routes
-- **Problem:** `resolveUserId()` is fully duplicated between `src/app/api/preferences/route.ts` (line 12) and `src/app/api/scenarios/active/route.ts` (line 14). Both resolve the current user from session with fallback to "default" when auth is not configured.
-- **Proposed improvement:** Extract to `src/lib/api-route-utils.ts` alongside other shared route helpers. Both routes import from there.
-- **Expected product/technical value:** Eliminates ~15 lines of duplication. Ensures consistent behavior if fallback logic changes.
-- **Priority:** P3 Medium
+- **Title:** Align client-side TARGET_ENTITIES with server-side VALID_TARGET_ENTITIES
+- **Problem:** `ImportSourceManager.tsx` (line 11) defines its own `TARGET_ENTITIES` array with labels, while `api-import-helpers.ts` exports `VALID_TARGET_ENTITIES` as a plain string array. The values are identical but maintained separately. If a new target entity is added server-side, the client could fall out of sync.
+- **Proposed improvement:** The client-side version includes UI labels (value + label pairs), so it can't directly reuse the server constant. However, add a comment in `ImportSourceManager.tsx` referencing `api-import-helpers.ts` as the source of truth, or create a shared `TARGET_ENTITY_OPTIONS` constant with labels that both sides can derive from.
+- **Expected product/technical value:** Prevents silent divergence if target entities change.
+- **Priority:** P4 Low
 - **Effort:** Small
-- **Risk:** Low (pure refactoring, no behavior change)
+- **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Follows the same extraction pattern applied in PB-160. Small, safe consolidation.
-
-### DE-REC-069: Extract duplicated validateApiFields to shared module
-
-- **Title:** Deduplicate `validateApiFields()` between import-sources route.ts and [id]/route.ts
-- **Problem:** `validateApiFields()` is fully duplicated between `src/app/api/import-sources/route.ts` (line 11) and `src/app/api/import-sources/[id]/route.ts` (line 11). Both validate API source fields identically. The shared constants `VALID_TARGET_ENTITIES`, `VALID_SOURCE_TYPES`, `VALID_API_METHODS`, and `VALID_API_AUTH_TYPES` are also duplicated across both files.
-- **Proposed improvement:** Move `validateApiFields()` and the validation constants to `src/lib/api-import-helpers.ts`. Both routes import from there.
-- **Expected product/technical value:** Eliminates ~70 lines of duplication (function + constants). Prevents divergence if validation rules change (e.g., new auth type).
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low (pure refactoring, no behavior change)
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** `api-import-helpers.ts` now exists as the natural home for shared import-source logic.
+- **Why now:** Natural follow-up to PB-164. Low effort.
 
 ### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber in transactions
 
@@ -114,7 +101,7 @@ PB-162 (import-sources list GET endpoint missing ADMIN role) was discovered and 
 - **Suggested owner:** Delivery Agent
 - **Why now:** Quick cleanup.
 
-### DE-REC-030: Extract hardcoded API limits to constants
+### DE-REC-030: Extract hardcoded constants and API limits to centralized config
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
 - **Problem:** Magic numbers scattered across API routes. `MAX_FILE_SIZE` duplicated between execute and upload routes. `MAX_NOTES_LENGTH` duplicated between planning route and bulk route. Other magic numbers (364, 28, 10000, 500, 90, 100, 200, 50) appear in various routes.
@@ -188,10 +175,10 @@ PB-162 (import-sources list GET endpoint missing ADMIN role) was discovered and 
 - **Add date format validation to all endpoints:** Prisma/PostgreSQL reject invalid dates at the storage layer. Only planning endpoints warrant it.
 - **Add unique constraints on Driver/Scenario names:** Requires a product decision.
 - **Extend withPerfLogging to all routes:** Fix the analysis layer before expanding collection.
-- **Replace `any` types broadly:** ~27 instances are internal and well-contained. Fix opportunistically.
+- **Replace `any` types broadly:** ~20+ instances are internal and well-contained. Fix opportunistically.
 - **Translate console.error messages:** Server-facing logging should remain in English.
 - **Split DriverForm.tsx (~475 lines):** Well-structured with tab-based organization.
-- **Other `.find()` calls in render paths:** ScenarioSelector, RosterAssigner, etc. operate on small arrays (<10 items).
+- **Other `.find()` calls in render paths:** ScenarioSelector, RosterAssigner, etc. operate on small arrays (<10 items). PlanningGrid line 502 uses `.find()` on DRIVER_COLUMNS (~5 items) — negligible.
 - **Wrap DELETE routes in transactions:** Theoretical race condition at current concurrency.
 - **Add React.memo to settings list items:** Small lists, infrequent renders.
 - **Add missing foreign key indexes:** Not bottlenecks at current data volumes.

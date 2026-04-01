@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Mobile initiative (SMI-019 / ESC-013) is complete (PB-154 ✓, PB-155 ✓, PB-156 ✓). Next priorities: PB-163 and PB-164 (deduplication consolidation) for Delivery Agent. After that, only P4 polish/cleanup items remain.
+**Current direction:** Mobile initiative (SMI-019 / ESC-013) is complete (PB-154 ✓, PB-155 ✓, PB-156 ✓). Deduplication consolidation complete (PB-163 ✓, PB-164 ✓). Only P4 polish/cleanup items remain.
 
 ## Status Definitions
 
@@ -27,29 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-163: Deduplicate resolveUserId naar gedeelde module
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** `resolveUserId()` is volledig gedupliceerd tussen `src/app/api/preferences/route.ts` en `src/app/api/scenarios/active/route.ts`. Beide resolven de huidige gebruiker uit de sessie met fallback naar "default".
-- **Scope notes:** Extraheer naar `src/lib/api-route-utils.ts` naast de andere gedeelde route helpers. Beide routes importeren van daar. ~15 regels duplicatie geëlimineerd.
-- **Dependencies:** None
-- **Definition of done:** `resolveUserId()` staat in `api-route-utils.ts`. Beide routes importeren van daar. Functionaliteit ongewijzigd. `npm run verify` slaagt.
-- **Implementation note:** Volgt hetzelfde extractiepatroon als PB-160.
-- **Source:** DE-REC-068
-
-### PB-164: Deduplicate validateApiFields naar gedeelde module
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** `validateApiFields()` en bijbehorende validatieconstanten (`VALID_TARGET_ENTITIES`, `VALID_SOURCE_TYPES`, `VALID_API_METHODS`, `VALID_API_AUTH_TYPES`) zijn volledig gedupliceerd tussen `src/app/api/import-sources/route.ts` en `src/app/api/import-sources/[id]/route.ts`. ~70 regels duplicatie.
-- **Scope notes:** Verplaats `validateApiFields()` en de validatieconstanten naar `src/lib/api-import-helpers.ts` (bestaat al na PB-160). Beide routes importeren van daar.
-- **Dependencies:** None
-- **Definition of done:** `validateApiFields()` en constanten staan in `api-import-helpers.ts`. Beide routes importeren van daar. Functionaliteit ongewijzigd. `npm run verify` slaagt.
-- **Implementation note:** `api-import-helpers.ts` is de natuurlijke locatie — bevat al de andere gedeelde import-source logica.
-- **Source:** DE-REC-069
+_No items currently ready._
 
 ---
 
@@ -66,6 +44,20 @@ _No blocked items._
 ---
 
 ## Completed Recently
+
+### PB-163: Deduplicate resolveUserId naar gedeelde module
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-01
+- **Implementation note:** `resolveUserId()` extracted to `src/lib/api-route-utils.ts`. Both `preferences/route.ts` and `scenarios/active/route.ts` import from there. Uses generic 401 message consistent with `requireRole()`. ~15 lines duplication eliminated.
+
+### PB-164: Deduplicate validateApiFields naar gedeelde module
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-01
+- **Implementation note:** `validateApiFields()` and 4 validation constants (`VALID_TARGET_ENTITIES`, `VALID_SOURCE_TYPES`, `VALID_API_METHODS`, `VALID_API_AUTH_TYPES`) extracted to `src/lib/api-import-helpers.ts`. Three route files (`route.ts`, `[id]/route.ts`, `[id]/execute/route.ts`) now import from there. ~85 lines duplication eliminated.
 
 ### PB-156: Mobiele dag-/weekplanning per chauffeur
 

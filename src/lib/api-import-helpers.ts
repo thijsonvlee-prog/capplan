@@ -1,10 +1,56 @@
 /**
- * Shared helpers for API import source routes (test + execute).
+ * Shared helpers for API import source routes.
  *
  * Used by:
+ *   - /api/import-sources/route.ts
+ *   - /api/import-sources/[id]/route.ts
  *   - /api/import-sources/test/route.ts
  *   - /api/import-sources/[id]/execute/route.ts
  */
+
+// === API source validation constants ===
+
+export const VALID_TARGET_ENTITIES = ["drivers", "employers", "departments", "locations"];
+export const VALID_SOURCE_TYPES = ["CSV", "API"];
+export const VALID_API_METHODS = ["GET", "POST"];
+export const VALID_API_AUTH_TYPES = ["NONE", "BASIC", "BEARER", "API_KEY"];
+
+/**
+ * Validate API-specific fields on an import source body.
+ * Returns a Dutch error message if invalid, or null if valid.
+ */
+export function validateApiFields(body: Record<string, unknown>): string | null {
+  const { apiUrl, apiMethod, apiAuthType, apiHeaders, apiCredentials } = body;
+
+  if (!apiUrl || typeof apiUrl !== "string" || apiUrl.trim() === "") {
+    return "API-URL is verplicht voor API-bronnen";
+  }
+  if (apiUrl.length > 2000) {
+    return "API-URL mag maximaal 2000 tekens bevatten";
+  }
+
+  if (apiMethod && !VALID_API_METHODS.includes(apiMethod as string)) {
+    return `Ongeldige HTTP-methode. Kies uit: ${VALID_API_METHODS.join(", ")}`;
+  }
+
+  if (apiAuthType && !VALID_API_AUTH_TYPES.includes(apiAuthType as string)) {
+    return `Ongeldig authenticatietype. Kies uit: ${VALID_API_AUTH_TYPES.join(", ")}`;
+  }
+
+  if (apiHeaders !== undefined && apiHeaders !== null) {
+    if (typeof apiHeaders !== "object" || Array.isArray(apiHeaders)) {
+      return "API-headers moeten een object zijn met sleutel-waarde paren";
+    }
+  }
+
+  if (apiCredentials !== undefined && apiCredentials !== null) {
+    if (typeof apiCredentials !== "object" || Array.isArray(apiCredentials)) {
+      return "API-credentials moeten een object zijn";
+    }
+  }
+
+  return null;
+}
 
 /**
  * Build request headers including authentication for an API source.

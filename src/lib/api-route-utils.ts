@@ -8,6 +8,29 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { UserRole } from "@/domain/enums";
 
+// === User identity resolution ===
+
+/**
+ * Resolve the userId from the session. When auth is not configured
+ * (no NEXTAUTH_SECRET), falls back to "default" for backward compatibility.
+ * Returns an error response if auth is configured but the user is not logged in.
+ */
+export async function resolveUserId(): Promise<{ userId: string } | { error: NextResponse }> {
+  if (!process.env.NEXTAUTH_SECRET) {
+    return { userId: "default" };
+  }
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return {
+      error: NextResponse.json(
+        { error: "Niet ingelogd. Log in om deze actie uit te voeren." },
+        { status: 401 }
+      ),
+    };
+  }
+  return { userId: session.user.id };
+}
+
 // === Role enforcement ===
 
 /**
