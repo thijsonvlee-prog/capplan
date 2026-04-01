@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Mobile app redesign initiative (SMI-024) is complete. All phases delivered: homescreen (PB-169), planning nav integration (PB-170), capacity view (PB-171), settings view (PB-172), and transitions/polish (PB-173). Release notes page (SMI-025/PB-174) also complete. All desktop features remain stable. Next mobile improvement opportunity: edit capability (EX-REC-052, deferred).
+**Current direction:** The mobile app redesign initiative (SMI-024) is fully complete. All phases delivered and deployed. The project is in a stable post-initiative state with no active strategic driver. Next cycle focuses on small maintenance and polish items. No Scrum Master input pending.
 
 ## Status Definitions
 
@@ -27,7 +27,65 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-175: Mobiele chauffeurspagina — visuele opfrisbeurt
+
+- **ID:** PB-175
+- **Title:** Mobiele chauffeurspagina — visuele opfrisbeurt
+- **Problem / opportunity:** The mobile driver list (PB-155) was built before the homescreen navigation paradigm. It works but doesn't use the entrance animation or match the visual polish of the newer mobile screens (settings cards, planning calendar).
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** The mobile initiative is complete and this is the one mobile screen that was built in an earlier phase. Quick alignment pass for visual consistency.
+- **Scope notes:** Add entrance animation, review card spacing and touch targets, ensure visual consistency with newer mobile screens. Do not redesign the driver card layout.
+- **Dependencies:** None.
+- **Definition of done:** Mobile drivers page has entrance animation, consistent spacing, and matches the polish level of settings/planning mobile views. Desktop unchanged. Verify passes.
+- **Implementation note:** See EX-REC-054. Small effort.
+- **Source:** EX-REC-054
+
+### PB-176: Verplaats COMPARE_COLORS naar module scope en constants
+
+- **ID:** PB-176
+- **Title:** Verplaats COMPARE_COLORS naar module scope en constants
+- **Problem / opportunity:** `COMPARE_COLORS` is defined inside the `CapacityChart` component function, creating a new array reference on every render. Also uses hardcoded hex values without referencing design tokens.
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Trivial fix that improves render stability and centralizes color definitions. Combines two related recommendations.
+- **Scope notes:** Move `COMPARE_COLORS` outside the component to module scope. Add comments referencing design token equivalents. Optionally move to `src/domain/constants.ts` if reuse is likely.
+- **Dependencies:** None.
+- **Definition of done:** `COMPARE_COLORS` is at module scope (not inside the component function). Hex values have comments referencing tokens. Verify passes.
+- **Implementation note:** Combines DE-REC-047 and DE-REC-014.
+- **Source:** DE-REC-047 + DE-REC-014
+
+### PB-177: Verwijder ongebruikte type-exports uit domain/types.ts
+
+- **ID:** PB-177
+- **Title:** Verwijder ongebruikte type-exports uit domain/types.ts
+- **Problem / opportunity:** `PlanningEntryOptions` and `UserContext` are defined but never imported anywhere. Dead code creates confusion.
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Quick cleanup. No risk.
+- **Scope notes:** Remove only types confirmed unused via grep. Do not remove types that may be used indirectly.
+- **Dependencies:** None.
+- **Definition of done:** Unused types removed. Verify passes. No other files affected.
+- **Implementation note:** See DE-REC-041.
+- **Source:** DE-REC-041
+
+### PB-178: Opruimen ongebruikte mobiele CSS-klassen
+
+- **ID:** PB-178
+- **Title:** Opruimen ongebruikte mobiele CSS-klassen
+- **Problem / opportunity:** `mobile-nav-overlay` and `mobile-nav-panel` CSS classes in globals.css are no longer used after the mobile navigation overhaul removed the hamburger menu.
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Dead CSS from the mobile redesign. Quick cleanup.
+- **Scope notes:** Confirm classes are unused via grep, then remove from globals.css. Do not remove any CSS class that is still referenced.
+- **Dependencies:** None.
+- **Definition of done:** Unused mobile-nav CSS classes removed. Verify passes.
+- **Implementation note:** Flagged in Experience Agent risks/watch-outs.
+- **Source:** EX-REC risks
 
 ---
 
@@ -50,62 +108,26 @@ _No blocked items._
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Summary:** Mobile planning view now integrates with the homescreen navigation. Header shows "Planning" title with back arrow when in planning mode via new `useMobileTitle` context hook. Removed redundant Home button from driver selector. Smooth entrance animation between homescreen and planning view.
 
 ### PB-171: Mobiele capaciteitsweergave
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Summary:** Capacity page is now mobile-optimized. Controls stack vertically on mobile. Chart height adapts to screen size (250px mobile, 350px desktop). Period selector label truncates instead of overflowing. KPI cards use 2-column grid on mobile. Scenario compare controls hidden on mobile for clarity.
 
 ### PB-172: Mobiele instellingenweergave
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Summary:** Settings page uses card-based section selector on mobile instead of horizontal tabs. Each section card shows icon, title, description, and count badge. Tapping a section opens its content with the section title in the header and back arrow via `useMobileTitle`. Desktop layout unchanged.
 
 ### PB-173: Mobiele app-feel — transities en polish
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Summary:** Added entrance animations (fade + slide-up) across all mobile screen transitions via `mobile-page-enter` CSS class. All tap targets meet 44px minimum on mobile (back button enlarged to 2.75rem, btn-icon gets min-size on mobile). Consistent spacing and touch interaction quality across all mobile screens.
-
-### PB-169: Mobiel homescreen met kaartnavigatie en terugknop
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-- **Summary:** Card-based mobile homescreen with hero Planning card, 2-column section grid, back button on subpages. Hamburger menu removed on mobile. Desktop unchanged.
 
 ### PB-174: Documentatiepagina vervangen door releasenotes-pagina
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-- **Summary:** `/documentatie` replaced with chronological release notes viewer. Collapsible date sections, category badges. Sidebar label updated to "Releasenotes".
-
-### PB-168: Fix mobiele sidebar sluit direct bij openen
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-
-### PB-165: Fix mobiele hamburger-menu (z-index bug)
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-
-### PB-166: Fix uitlijning vergrootglas in zoekbalken
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-
-### PB-167: Mobiele planning omzetten naar maandkalenderweergave
 
 - **Status:** Completed
 - **Owner:** Experience Agent
@@ -132,21 +154,42 @@ _No blocked items._
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Natural next step after mobile initiative is complete. The read-only planning flow should be validated with user feedback first. Can be picked up after PB-170 is done.
+- **Reason:** Natural next step after mobile initiative is complete. The read-only planning flow should be validated with user feedback first. Can be picked up when user demand is confirmed.
+
+### EX-REC-053: Mobiel startscherm — begroeting en scenario-context
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Low-effort personalization enhancement. Can be combined with any future mobile work cycle.
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** May be addressed as part of PB-171 (mobile capacity view). Otherwise low-priority cosmetic.
+- **Reason:** Most visible remaining desktop integration gap. Low risk but no user demand driving it.
 
 ### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Desktop-only concern. Mobile has its own layout. Only relevant if narrow desktop viewport usage is reported.
+- **Reason:** Desktop-only concern. Only relevant if narrow desktop viewport usage is reported.
+
+### EX-REC-038: Extend Manrope to section titles and modal headers
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Low-risk typographic refinement.
+
+### EX-REC-043: Import source manager — visual mapping builder enhancement
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Current field mapping editor is functional. Desktop-only concern.
 
 ### DE-REC-070: Align client-side TARGET_ENTITIES met server-side constante
 
@@ -154,34 +197,6 @@ _No blocked items._
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** No user impact. Pick up when capacity allows.
-
-### DE-REC-041: Remove unused type exports from domain/types.ts
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Quick cleanup but no user impact.
-
-### PB-030: Move hardcoded constants and chart colors to centralized config
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Low user impact. Covers DE-REC-014, DE-REC-030, DE-REC-047.
-
-### PB-061: Add PerformanceEvent table cleanup mechanism
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Table grows unbounded but traffic is low.
-
-### DE-REC-058: Cap value length on preferences PUT route
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Only remaining route without text field length cap. Near-zero risk.
 
 ### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber
 
@@ -197,6 +212,13 @@ _No blocked items._
 - **Status:** Deferred
 - **Reason:** Trivial validation gap on a single numeric field. Near-zero risk.
 
+### DE-REC-058: Cap value length on preferences PUT route
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Only remaining route without text field length cap. Near-zero risk.
+
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route
 
 - **Owner:** Delivery Agent
@@ -211,19 +233,19 @@ _No blocked items._
 - **Status:** Deferred
 - **Reason:** Natural Phase 1 follow-up but not blocking.
 
-### EX-REC-038: Extend Manrope to section titles and modal headers
+### PB-061: Add PerformanceEvent table cleanup mechanism
 
-- **Owner:** Experience Agent
+- **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Low-risk typographic refinement. May be addressed during mobile polish (PB-173).
+- **Reason:** Table grows unbounded but traffic is low.
 
-### EX-REC-043: Import source manager — visual mapping builder enhancement
+### PB-030: Move hardcoded constants and chart colors to centralized config
 
-- **Owner:** Experience Agent
+- **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current field mapping editor is functional. Desktop-only concern.
+- **Reason:** Low user impact. Partially addressed by PB-176.
 
 ### EX-REC-042: Deduplicate scenarios list fetch
 
@@ -248,7 +270,7 @@ _No blocked items._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-175.
+- Backlog IDs are sequential and never reused. Next available: PB-179.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

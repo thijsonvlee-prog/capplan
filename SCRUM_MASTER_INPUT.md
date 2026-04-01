@@ -23,16 +23,16 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
+_No active inputs._
+
+## Closed Inputs
+
 ### SMI-024: Mobiele app-ervaring — homescreen, kaartnavigatie, terugknop
 
 - **Type:** Initiative / major redesign
-- **Status:** Planned (in progress — phase 1 complete)
-- **Original input:** "De mobiele versie doet het nog niet goed. Zorg ervoor dat het echt voelt als een app. De app moet een homescreen hebben en vanuit daar doorklikken via cards naar de andere schermen, inclusief een terugknop naar het homescreen. Haal het hamburgermenu weg. Je mag gerust de komende 10 cycles besteden aan dit, als het maar direct goed gebeurt."
-- **Budget:** 10 cycles (2 used, 8 remaining)
-- **Product Owner analysis:** Clear direction. Broken into 5 phased backlog items. Phase 1 (PB-169: homescreen + card nav + back button + remove hamburger) is complete. Remaining: PB-170 (planning nav), PB-171 (capacity), PB-172 (settings), PB-173 (polish/transitions). Experience Agent is primary owner.
-- **Backlog linkage:** PB-169 (done), PB-170, PB-171, PB-172, PB-173
-
-## Closed Inputs
+- **Status:** Closed
+- **Closed reason:** Fully delivered. All 5 phases completed 2026-04-01: homescreen (PB-169), planning nav (PB-170), capacity view (PB-171), settings view (PB-172), transitions/polish (PB-173). Budget was 10 cycles; delivered in 2 cycles.
+- **Backlog linkage:** PB-169, PB-170, PB-171, PB-172, PB-173 (all completed)
 
 ### SMI-025: Documentatiepagina vervangen door releasenotes-pagina
 
