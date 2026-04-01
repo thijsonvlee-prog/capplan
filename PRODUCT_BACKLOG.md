@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All active work from the previous cycle is complete. No new Scrum Master inputs. The backlog consists entirely of P3/P4 deferred items. The project is in a stable, clean state. Next cycle should await new Scrum Master direction or promote deferred items if capacity allows.
+**Current direction:** One P1 critical bug: the mobile hamburger menu still does not work (SMI-023). The previous fix (PB-165, z-index) was insufficient — the root cause is a useEffect in Sidebar.tsx that closes the sidebar on initial mount. This must be fixed before any other work proceeds. All other items are P3/P4 deferred.
 
 ## Status Definitions
 
@@ -27,7 +27,20 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle. Awaiting new Scrum Master input or promotion of deferred items._
+### PB-168: Fix mobiele sidebar sluit direct bij openen (useEffect mount-bug)
+
+- **ID:** PB-168
+- **Title:** Fix mobiele sidebar sluit direct bij openen
+- **Problem / opportunity:** The mobile hamburger menu does not work. Tapping the hamburger button appears to do nothing because the sidebar opens and immediately closes itself. Root cause: `Sidebar.tsx` line 37-43 has a `useEffect` with `[pathname]` dependency that calls `onClose()`. This effect fires on initial mount (React runs effects after first render), causing the sidebar to close itself immediately after rendering.
+- **Owner:** Experience Agent
+- **Priority:** P1 Critical
+- **Status:** Ready
+- **Why this matters now:** Core mobile navigation is broken. Users cannot access any page on mobile. Reported by Scrum Master as SMI-023. Previous fix (PB-165, z-index) addressed a different symptom but not this root cause.
+- **Scope notes:** Add a `useRef` to track whether this is the initial mount. Skip the `onClose()` call on mount; only call it when `pathname` actually changes after mount. Do not change the desktop sidebar behavior. Do not change the auto-close-on-navigate behavior — only prevent the mount-trigger.
+- **Dependencies:** None.
+- **Definition of done:** Mobile hamburger button opens the sidebar reliably. Sidebar stays open until the user navigates, taps the X, or taps the overlay. Sidebar still auto-closes on navigation. Desktop layout unchanged. `npm run verify` passes.
+- **Implementation note:** In `Sidebar.tsx`, add `const mountRef = useRef(true);` and guard the useEffect body: `if (mountRef.current) { mountRef.current = false; return; }`. Keep existing `[pathname]` dependency. Import `useRef` from React.
+- **Source:** SMI-023
 
 ---
 
@@ -50,21 +63,19 @@ _No blocked items._
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** Added `relative z-50` to header element in `Header.tsx`. Header now sits above the mobile-nav-overlay (z-40), making the hamburger button clickable to open and close. Desktop layout unchanged.
+- **Implementation note:** Added `relative z-50` to header element in `Header.tsx`. Partial fix — z-index was correct but a separate mount-trigger bug in Sidebar.tsx remained. See PB-168 for the full fix.
 
 ### PB-166: Fix uitlijning vergrootglas in zoekbalken
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** Changed Search icon position from `left-3` to `left-3.5` in both `DriverList.tsx` and `MobilePlanningView.tsx`. Consistent across both search bars.
 
 ### PB-167: Mobiele planning omzetten naar maandkalenderweergave
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** Full rewrite of `MobilePlanningView.tsx`. Replaced day/week toggle with month calendar grid (7 columns Mon-Sun). Week numbers shown per row. Month navigation (prev/next + "Vandaag" button). Status color dots per day cell. Tap a day to show detail panel with status, leave type, sick percentage, notes. Today highlighted with brand-colored circle. Leading/trailing days from adjacent months shown dimmed. New CSS classes in `globals.css` for calendar grid layout. Old view-toggle and day-label CSS removed. Driver selector screen unchanged. Desktop planning grid unchanged.
 
 ### PB-163: Deduplicate resolveUserId naar gedeelde module
 
@@ -78,13 +89,6 @@ _No blocked items._
 - **Owner:** Delivery Agent
 - **Completed:** 2026-04-01
 
-### PB-156: Mobiele dag-/weekplanning per chauffeur
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-- **Note:** Superseded by PB-167 (month calendar view).
-
 ---
 
 ## Deferred
@@ -95,7 +99,6 @@ _No blocked items._
 - **Priority:** P3 Medium
 - **Status:** Deferred
 - **Reason:** Natural next step for mobile planning. PB-167 (calendar redesign) is complete. Validate read-only flow with user feedback first before investing in edit capability.
-- **Source:** EX-REC-052
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -211,7 +214,7 @@ _No blocked items._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-168.
+- Backlog IDs are sequential and never reused. Next available: PB-169.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

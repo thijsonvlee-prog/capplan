@@ -23,8 +23,13 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-hamburger menu werkt nog steeds niet
-_No active inputs._
+### SMI-023: Hamburger-menu werkt nog steeds niet
+
+- **Type:** Bug report (regressie / onvolledige fix)
+- **Status:** Planned
+- **Date:** 2026-04-01
+- **Detail:** PB-165 (z-index fix) was onvoldoende. Het mobiele sidebar-menu opent niet bij het tikken op de hamburger-knop. Oorzaak: `useEffect` in `Sidebar.tsx` sluit de sidebar onmiddellijk bij mount (initial render triggert `onClose()`). Fix vereist een ref om het effect op initial mount over te slaan.
+- **Backlog linkage:** PB-168
 
 ## Closed Inputs
 
