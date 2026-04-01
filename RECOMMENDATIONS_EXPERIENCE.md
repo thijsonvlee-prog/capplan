@@ -2,33 +2,52 @@
 
 ## Summary
 
-**This cycle (2026-04-01, run 16):** Fixed PB-179 (P1 Critical) — mobile navigation completely broken. Planning and settings buttons flickered but didn't navigate on mobile. Root cause: React `useState` functional updater bug in `useMobileTitle` hook. One-line fix.
+**This cycle (2026-04-01, run 17):** No Experience Agent tasks were in the backlog. Performed a fresh UX/design audit of all key screens and components against the DESIGN.md standard.
 
 **What was improved:**
-- Mobile navigation now works reliably. Tapping Planning on the homescreen navigates to the planning view. Tapping settings section cards opens the correct section. No flicker or reset.
-- Root cause was in `src/hooks/useHeaderSubtitle.tsx`: `setMobileBackAction(fn)` was interpreted by React as a functional updater, immediately executing the back action instead of storing it as state. Fixed by wrapping: `setMobileBackAction(() => fn)`.
+- No code changes this cycle. All Experience Agent backlog items are either completed or deferred.
 
 **Current design alignment with DESIGN.md:**
-- Mobile homescreen: well-aligned (sections 2.5, 7.3). Card-based navigation with brand gradient hero, tonal icon circles, touch-friendly targets.
-- Mobile navigation: well-aligned (section 7.1). Consistent header pattern: branding on home, title + back arrow on all subpages. Navigation now fully functional.
-- Mobile planning: well-aligned (sections 2.5, 9). Month calendar with status dots, day detail panel, status legend.
-- Mobile capacity: well-aligned (sections 7.1, 7.3, 8.3). KPI cards, responsive chart, scrollable table.
-- Mobile settings: well-aligned (sections 2.5, 7.3). Card-based section selector with icon, description, and count.
-- Mobile drivers: well-aligned (sections 7.3, 2.5). Entrance animation and spacing consistent with other mobile views.
-- Release notes page: well-aligned (sections 2.5, 5.2). Clear date hierarchy, category badges.
-- Desktop: fully stable. All desktop layouts unchanged.
-- Planning grid toolbar: fully aligned (section 7.2).
-- Planning grid matrix: fully aligned (section 4.1).
-- Drivers page (desktop): fully aligned (sections 3.2, 7.3).
-- Capacity page (desktop): fully aligned (sections 7.1, 7.3, 8.3).
-- Settings page (desktop): well-aligned (sections 2.5, 7.1, 7.2).
-- Toast & ConfirmDialog: product-grade.
+- **Overall product quality: 8/10.** The application exceeds generic admin UI across all screens. Design tokens are comprehensive (~55 tokens), typography hierarchy is strong (Manrope display + Inter body), and surface layering is consistently applied.
+- **Planning grid:** Well-aligned (sections 7.4, 9). Toolbar organized into four zones (Period, Filter, View, Status). Tonal row striping with hover effects. Status cells with color indicator dots.
+- **Capacity page:** Well-aligned (sections 7.1, 7.3, 8.3). KPI summary module, grouped toolbar with subtle dividers, chart + table sections clearly separated.
+- **Settings page (desktop):** Well-aligned (sections 2.5, 7.1). Tab navigation with icon + badge counts, color-coded tab groups, section intros.
+- **Settings page (mobile):** Well-aligned (sections 2.5, 7.3). Card-based section picker with colored icon backgrounds.
+- **Drivers page:** Well-aligned (sections 3.2, 7.3). Composed page header, integrated search, tonal row alternation. Mobile card view.
+- **Mobile experience:** Well-aligned across all screens. Consistent header pattern, entrance animations, touch-friendly targets.
+- **Sidebar:** Well-aligned (section 7.8). Dark premium surface, clear active states.
+- **Toast & ConfirmDialog:** Product-grade. Proper icon treatment, modal backdrop, accessibility.
 
 **Where design quality is still below target:**
-- Recharts default tooltip/axis styling in the capacity chart is the most visible remaining desktop integration gap.
-- Mobile capacity: scenario compare is hidden on mobile (too complex for small screens). May be revisited if user demand exists.
+- Recharts default tooltip/axis styling remains the most visible desktop integration gap.
+- StamtabelManager/SkillManager list items feel utilitarian (basic hover:bg, divide-y pattern). Below the premium feel of other screens.
+- RosterProfileEditor 28-day grid lacks visual refinement compared to the planning grid.
+- Capacity comparison buttons feel flat — basic padding/color without badge-style treatment.
+- Form validation messaging lacks entrance animation or visual hierarchy.
 
 ## Recommended Next Improvements
+
+### EX-REC-054: StamtabelManager en SkillManager — visuele verhoging lijstitems
+
+- **Problem:** StamtabelManager and SkillManager list items use a basic `divide-y` separator with flat `hover:bg-surface-secondary`. Inline editing with Check/X icons is functional but feels generic compared to the composed headers, cards, and surfaces used elsewhere in the app.
+- **Proposed improvement:** Add subtle hover elevation (shadow-xs on hover), improve row spacing, add a light left-accent border on the active/editing row, and refine the action icon spacing. Keep the inline edit pattern but make it feel more intentional.
+- **Expected user value:** Settings screens feel as polished as the planning and capacity screens. Consistent premium feel across the full app.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Low-risk refinement. These components are shared across 4+ stamtabel instances and skills, so improvements propagate broadly.
+
+### EX-REC-055: Capaciteitspagina — vergelijkingsknoppen visuele verbetering
+
+- **Problem:** The scenario comparison buttons on the capacity page use basic `px-2.5 py-1` styling with flat color fills. They lack visual weight differentiation from surrounding text and don't communicate their interactive/toggled state clearly enough.
+- **Proposed improvement:** Restyle as badge-style pills with subtle borders when inactive and solid fill when active. Add a small transition on toggle. Ensure selected state has clear visual distinction.
+- **Expected user value:** Faster recognition of comparison state. The toolbar feels more cohesive and intentional.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Quick visual polish on the second most important screen.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -125,13 +144,14 @@
 - **Settings tab count growth.** The desktop settings page has 7 tabs. The mobile card list handles this well, but adding more tabs on desktop may need a different navigation pattern.
 - **Release notes page data maintenance.** Release notes are embedded as a structured data array. Consider markdown parsing if update frequency becomes burdensome.
 - **Mobile capacity scenario compare hidden.** The compare feature is desktop-only. May need mobile treatment if multi-scenario comparison is a common mobile use case.
-- **Unused mobile-nav CSS classes.** `mobile-nav-overlay` and `mobile-nav-panel` classes in globals.css are no longer used. Can be cleaned up in a maintenance cycle.
+- **Unused mobile-nav CSS classes.** `mobile-nav-overlay` and `mobile-nav-panel` classes in globals.css are no longer used. Tracked as PB-178 for Delivery Agent cleanup.
+- **StamtabelManager/SkillManager below premium standard.** These shared components propagate their generic feel across 5+ settings sections. Tracked as EX-REC-054.
 
 ## Items Intentionally Not Recommended
 
 - **Dark mode support:** No user demand. Token system supports it structurally but effort is significant.
 - **Drag-and-drop in tables:** Current sort/filter approach works well.
-- **Redesign of RosterProfileEditor grid interaction:** Click-to-cycle is unconventional but functional.
+- **Redesign of RosterProfileEditor grid interaction:** Click-to-cycle is unconventional but functional. Grid visual refinement could be a future polish item but is low priority.
 - **Custom calendar popup replacement:** ESC-004 decided Option B (styled wrapper). Browser native is functional.
 - **Settings tab URL persistence:** Low-frequency page. Low impact.
 - **Driver detail page / route-based navigation:** Current inline edit pattern works for the data volume.
@@ -145,12 +165,14 @@
 - **Skeleton loaders:** Spinner pattern works. Skeleton loaders add complexity without strong user demand.
 - **Status legend popover collapse:** Inline legend provides constant reference.
 - **Capacity page structural redesign:** PB-131 brought the page to product-grade quality.
-- **Broad StamtabelManager No-Line refactor:** Borders serve usability here.
+- **Broad StamtabelManager No-Line refactor:** Borders serve usability here. Subtle refinement via EX-REC-054 is the right approach.
 - **Full mobile-first redesign of all screens:** ESC-013 decided Option B. Only key screens need mobile optimization.
 - **Mobile planning edit in v1:** Deliberately deferred to v2. Read-only flow validated first.
 - **Mobile homescreen route rename:** `/planning` is functionally clean for both homescreen and planning.
 - **Mobile capacity scenario compare:** Too complex for small screens. Desktop-only is appropriate until user demand exists.
 - **Mobile drivers page visual refresh:** Completed (PB-175). No further work needed.
+- **Form validation entrance animation:** Minor polish. Current inline error display is functional and clear.
+- **Toast micro-interactions (stagger, exit):** Current slide-in is sufficient. Over-animating risks feeling unserious.
 
 ## Recommendation Rules
 
