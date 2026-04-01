@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Mobile initiative (SMI-019 / ESC-013) is 2/3 complete (PB-154 ✓, PB-155 ✓). Next priorities: PB-156 (mobile planning view) for Experience Agent, PB-163 and PB-164 (deduplication consolidation) for Delivery Agent. After that, only P4 polish/cleanup items remain.
+**Current direction:** Mobile initiative (SMI-019 / ESC-013) is complete (PB-154 ✓, PB-155 ✓, PB-156 ✓). Next priorities: PB-163 and PB-164 (deduplication consolidation) for Delivery Agent. After that, only P4 polish/cleanup items remain.
 
 ## Status Definitions
 
@@ -26,18 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-156: Mobiele dag-/weekplanning per chauffeur
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Problem:** De planningsgrid is niet bruikbaar op mobiel (30+ kolommen). De mobiele navigatie (PB-154) en chauffeurlijst (PB-155) zijn klaar — planners kunnen op hun telefoon navigeren en chauffeurs opzoeken, maar kunnen geen roosters inzien.
-- **Scope notes:** Maak een mobiele planning-weergave: selecteer één chauffeur, toon dag- of weekweergave met statusblokken. Geen bewerkfunctionaliteit in eerste versie (read-only). Planners kunnen op mobiel de planning inzien maar bewerken op desktop.
-- **Dependencies:** PB-155 (completed)
-- **Definition of done:** Planners kunnen op mobiel de planning van een individuele chauffeur bekijken per dag of week. Statusblokken met semantische kleuren. Desktop planning grid is ongewijzigd. `npm run verify` slaagt.
-- **Implementation note:** Read-only view. Single driver selection. Day/week toggle. Use existing status colors from STATUS_COLORS. Reuse data from planning API. No edit capability in v1. This completes the mobile read-only flow defined in ESC-013 Option B.
-- **Source:** EX-REC-051, ESC-013
 
 ### PB-163: Deduplicate resolveUserId naar gedeelde module
 
@@ -78,6 +66,13 @@ _No blocked items._
 ---
 
 ## Completed Recently
+
+### PB-156: Mobiele dag-/weekplanning per chauffeur
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Implementation note:** MobilePlanningView component with driver search/select, day/week toggle, date navigation, and status blocks with semantic colors. Uses existing `/api/planning` endpoint with driverId filter. Leave types and sick percentage displayed. Desktop PlanningGrid unchanged. Completes ESC-013 mobile initiative.
 
 ### PB-155: Mobiele chauffeurlijst en zoeken
 

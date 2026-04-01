@@ -2,18 +2,19 @@
 
 ## Summary
 
-**This cycle (2026-03-31, run 9):** Implemented PB-155 (Mobile driver list with card-based layout and search). Table replaced by touch-friendly cards on mobile showing name, employee number, department, employment type, location, licenses, and skills. Full-width search bar, simplified pagination, tap-to-edit with chevron indicator. Desktop table completely unchanged.
+**This cycle (2026-04-01, run 10):** Implemented PB-156 (Mobile day/week planning view per driver). New `MobilePlanningView` component replaces the full planning grid on mobile viewports. Driver search with paginated list, day/week toggle, date navigation with prev/next and "Vandaag" button, status blocks with semantic colors showing leave type, sick percentage, and notes. Status legend. Desktop planning grid completely unchanged. This completes the ESC-013 mobile initiative (Option B: selective mobile views).
 
 **Current design alignment with DESIGN.md:**
-- Sidebar: fully aligned (section 7.8). Premium, calm, anchoring. Now responsive — hidden on mobile, accessible via slide-over.
-- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Strong hierarchy, tab navigation, composed zones. Now 7 tabs including Auditlog.
+- Sidebar: fully aligned (section 7.8). Premium, calm, anchoring. Responsive — hidden on mobile, accessible via slide-over.
+- Settings page: well-aligned (sections 2.5, 7.1, 7.2). Strong hierarchy, tab navigation, composed zones. 7 tabs including Auditlog.
 - Import source manager (Connectiviteit tab): well-aligned. Source type selector, API configuration with surface layering, test connection with inline feedback, response structure preview with interactive path discovery, field mapping editor with autocomplete support.
 - Audit log viewer: well-aligned. Filter card, expandable rows, semantic badges, tonal row separation, pagination.
 - Login page: well-aligned. Clean, premium, brand-surface split.
-- Header: well-aligned. Minimal, composed, contextual subtitle support. Now includes hamburger menu on mobile.
+- Header: well-aligned. Minimal, composed, contextual subtitle support. Hamburger menu on mobile.
 - Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning.
 - Planning grid matrix: fully aligned (section 4.1). Tonal row separation, No-Line Rule respected.
-- Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search. Now mobile-optimized with card layout.
+- Mobile planning view: well-aligned. Card-based driver selector, segmented day/week toggle, status blocks with left-accent borders, semantic colors, compact legend. Follows mobile card patterns from driver list.
+- Drivers page: fully aligned (sections 3.2, 7.3). Card containment, tonal rows, integrated search. Mobile-optimized with card layout.
 - Capacity page: fully aligned (sections 7.1, 7.3, 8.3). KPI summary module, section headers.
 - User group manager: well-aligned. Card-based layout, expandable details, modal editor.
 - User manager: well-aligned. Avatar display, role badges, inline role editing.
@@ -23,23 +24,12 @@
 
 **Where design quality is still below target:**
 - All major desktop screens are aligned with DESIGN.md. Remaining opportunities are polish-level refinements, not structural gaps.
-- Mobile content views (planning, capacity, settings) are not yet optimized for mobile viewports — they use desktop layouts on small screens. PB-156 addresses the next priority mobile screen (planning). Drivers page is now mobile-optimized.
+- Mobile content views for capacity and settings are not yet optimized for mobile viewports — they use desktop layouts on small screens. These are lower-priority screens for mobile use.
 - The documentation page is minimal (single card with download button on a full page), but it is a low-traffic utility page and not a core product surface.
 - Recharts default tooltip/axis styling in the capacity chart is the most visible remaining integration gap.
 - Settings tab count is now 7. Horizontal scrolling tabs handle this adequately but the pattern may need revisiting if more tabs are added.
 
 ## Recommended Next Improvements
-
-### EX-REC-051: Mobile planning view — read-only day/week per driver
-
-- **Problem:** The planning grid is unusable on mobile (30+ columns). With PB-154 and PB-155 done, mobile navigation and driver lookup work, but planners cannot view schedules on the go.
-- **Proposed improvement:** This is already scheduled as PB-156. Read-only day/week view for a single driver. Status blocks with semantic colors. No edit capability in first version.
-- **Expected user value:** Planners can check individual driver schedules on their phone while on-site or in transit.
-- **Priority:** P3 Medium
-- **Effort:** Medium
-- **Dependencies:** PB-155 (completed)
-- **Suggested owner:** Experience Agent
-- **Why now:** Mobile layout shell and driver list are in place. This completes the core mobile read-only flow.
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -51,6 +41,17 @@
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-risk polish. The capacity page is structurally aligned. Custom tooltip would complete the integration. This is the most visible remaining integration gap.
+
+### EX-REC-052: Mobile planning — edit capability (v2)
+
+- **Problem:** The mobile planning view (PB-156) is read-only. Planners who check schedules on mobile may want to make quick status changes (e.g. mark a driver as sick) without returning to desktop.
+- **Proposed improvement:** Add tap-to-edit on status blocks in the mobile planning view. Tap a day block → show a status selector bottom sheet. Use the existing `api.planning.upsert()` endpoint. Restrict to PLANNER/ADMIN roles.
+- **Expected user value:** Planners can make urgent schedule adjustments on the go without switching to a desktop computer.
+- **Priority:** P3 Medium
+- **Effort:** Medium
+- **Dependencies:** PB-156 (completed)
+- **Suggested owner:** Experience Agent
+- **Why now:** The read-only mobile flow is complete. Edit capability is the natural next step for mobile planning productivity. Should be evaluated based on user feedback from the read-only version.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
@@ -109,7 +110,8 @@
 
 ## Risks / Watch-outs
 
-- **Mobile content screens partially optimized.** The mobile layout shell and driver list are mobile-optimized. Planning grid, capacity charts, and settings forms still render desktop layouts on mobile viewports. PB-156 addresses the planning view next.
+- **Mobile planning is read-only.** The mobile planning view does not support editing. Planners can view but must use desktop to make changes. Monitor for user demand for mobile edit capability. See EX-REC-052.
+- **Mobile capacity and settings not optimized.** Capacity charts and settings forms still render desktop layouts on mobile. These are lower-priority mobile screens — capacity is primarily a desktop analysis tool, settings is admin-only.
 - **Planning grid toolbar wrap behavior.** The single-row toolbar with four zones may wrap on screens narrower than ~1200px. Current `flex-wrap` handles this, but the visual zone structure may degrade when wrapped. Monitor for user feedback. See EX-REC-048.
 - **Recharts default styling.** The capacity chart now lives within a product-grade page, but the chart's internal tooltip/axis styling is still Recharts default. See EX-REC-049.
 - **Settings tab count growth.** The settings page now has 7 tabs with horizontal scroll. Adding more tabs may need a different navigation pattern (e.g. vertical tabs or grouped sections).
@@ -136,7 +138,8 @@
 - **Capacity page structural redesign:** No longer needed. PB-131 brought the page to product-grade quality.
 - **Documentation page redesign:** Low-traffic utility page. A single card with a download button is adequate for its purpose.
 - **Broad StamtabelManager No-Line refactor:** Borders serve usability here. Tonal-only separation would reduce clarity for inline-editable list items.
-- **Full mobile-first redesign of all screens:** ESC-013 decided Option B (selective mobile views). Only key screens need mobile optimization.
+- **Full mobile-first redesign of all screens:** ESC-013 decided Option B (selective mobile views). Only key screens need mobile optimization. PB-154/155/156 now complete.
+- **Mobile planning edit in v1:** Deliberately deferred to v2. Read-only flow should be validated first. See EX-REC-052.
 
 ## Recommendation Rules
 

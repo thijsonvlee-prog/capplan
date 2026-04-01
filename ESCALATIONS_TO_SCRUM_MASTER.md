@@ -28,17 +28,19 @@ _No open escalations._
 
 ## Planned Escalations
 
-### ESC-013: Mobiele versie — scope en aanpak
-
-- **Status:** Planned
-- **Date / run context:** 2026-03-31 — triggered by SMI-019
-- **Chosen option:** Option B — Selectieve mobiele weergaven. Maak 2-3 kernschermen mobielvriendelijk: chauffeurlijst met zoeken, individueel chauffeurprofiel, en dag-/weekplanning per chauffeur. Planningsrooster en instellingen blijven desktop-only.
-- **Backlog linkage:** PB-154, PB-155, PB-156
-- **Product Owner action:** Broken into 3 phased backlog items. PB-154 ✓, PB-155 ✓ completed. PB-156 ready for next cycle (final phase).
+_No planned escalations._
 
 ---
 
 ## Closed Escalations
+
+### ESC-013: Mobiele versie — scope en aanpak
+
+- **Status:** Closed
+- **Date / run context:** 2026-03-31 — triggered by SMI-019
+- **Chosen option:** Option B — Selectieve mobiele weergaven. Maak 2-3 kernschermen mobielvriendelijk: chauffeurlijst met zoeken, individueel chauffeurprofiel, en dag-/weekplanning per chauffeur. Planningsrooster en instellingen blijven desktop-only.
+- **Backlog linkage:** PB-154, PB-155, PB-156 (all completed)
+- **Resolution:** All 3 phases delivered. PB-154 (mobile layout shell) ✓, PB-155 (mobile driver list) ✓, PB-156 (mobile planning view) ✓ completed 2026-04-01.
 
 ### ESC-012: API management — scope en fasering
 
