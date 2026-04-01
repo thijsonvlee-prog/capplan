@@ -26,21 +26,20 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 ### SMI-024: Mobiele app-ervaring — homescreen, kaartnavigatie, terugknop
 
 - **Type:** Initiative / major redesign
-- **Status:** Planned
+- **Status:** Planned (in progress — phase 1 complete)
 - **Original input:** "De mobiele versie doet het nog niet goed. Zorg ervoor dat het echt voelt als een app. De app moet een homescreen hebben en vanuit daar doorklikken via cards naar de andere schermen, inclusief een terugknop naar het homescreen. Haal het hamburgermenu weg. Je mag gerust de komende 10 cycles besteden aan dit, als het maar direct goed gebeurt."
-- **Budget:** 10 cycles
-- **Product Owner analysis:** Clear direction. Broken into 5 phased backlog items covering: (1) homescreen with card navigation + back button + remove hamburger, (2) mobile planning refinements for new nav, (3) mobile capacity view, (4) mobile settings view, (5) transitions and app-like polish. Experience Agent is primary owner. No escalation needed — SM intent is unambiguous.
-- **Backlog linkage:** PB-169, PB-170, PB-171, PB-172, PB-173
+- **Budget:** 10 cycles (2 used, 8 remaining)
+- **Product Owner analysis:** Clear direction. Broken into 5 phased backlog items. Phase 1 (PB-169: homescreen + card nav + back button + remove hamburger) is complete. Remaining: PB-170 (planning nav), PB-171 (capacity), PB-172 (settings), PB-173 (polish/transitions). Experience Agent is primary owner.
+- **Backlog linkage:** PB-169 (done), PB-170, PB-171, PB-172, PB-173
+
+## Closed Inputs
 
 ### SMI-025: Documentatiepagina vervangen door releasenotes-pagina
 
 - **Type:** Feature change
-- **Status:** Planned
-- **Original input:** "Vervang daarnaast documentatie voor releasenotes. Ik wil alle releasenotes sinds de start van de tool daar gepubliceerd hebben en werk dit ook steeds bij. Geordend in chronologische volgorde per dag."
-- **Product Owner analysis:** Straightforward replacement. The current documentation page generates a text file download. Replace with a page that displays all release notes from RELEASE_NOTES.md chronologically per day. Must be kept up to date with each release.
-- **Backlog linkage:** PB-174
-
-## Closed Inputs
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-174 completed 2026-04-01. Documentation page replaced with chronological release notes viewer with collapsible sections and category badges.
+- **Backlog linkage:** PB-174 (completed)
 
 ### SMI-023: Hamburger-menu werkt nog steeds niet
 

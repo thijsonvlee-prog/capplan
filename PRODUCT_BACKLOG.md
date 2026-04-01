@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Major mobile app redesign initiative (SMI-024). The Scrum Master has directed a full mobile UX overhaul: homescreen with card-based navigation, remove hamburger menu, add back button, app-like feel. Budget: 10 cycles. Additionally, the documentation page must be replaced with a release notes page (SMI-025). All desktop features remain stable. The mobile initiative is the primary work stream for the foreseeable future.
+**Current direction:** Mobile app redesign initiative (SMI-024). The Scrum Master has directed a full mobile UX overhaul with a 10-cycle budget. Phase 1 (homescreen with card navigation, remove hamburger menu, back button) is complete (PB-169). Release notes page (SMI-025/PB-174) is also complete. Remaining phases: mobile planning nav integration (PB-170), mobile capacity view (PB-171), mobile settings view (PB-172), and final polish/transitions (PB-173). All desktop features remain stable.
 
 ## Status Definitions
 
@@ -26,8 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-170: Mobiele planning — aanpassen aan nieuwe navigatie
 
 ### PB-170: Mobiele planning — aanpassen aan nieuwe navigatie
 
@@ -116,28 +114,26 @@ _No blocked items._
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** Created `MobileHomescreen.tsx` with card-based navigation (hero Planning card with brand gradient, 2-column grid for Capaciteit, Chauffeurs, Instellingen, Releasenotes). Removed hamburger menu and slide-over sidebar on mobile. Header shows CapPlan branding on mobile homescreen, back arrow on subpages. MobilePlanningView receives `onBackToHome` callback with Home icon button. Desktop unchanged. `npm run verify` passes.
+- **Summary:** Card-based mobile homescreen with hero Planning card, 2-column section grid, back button on subpages. Hamburger menu removed on mobile. Desktop unchanged.
 
 ### PB-174: Documentatiepagina vervangen door releasenotes-pagina
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** Replaced `/documentatie` page with a chronological release notes viewer. Structured data array with collapsible date sections, category badges (UX, Functioneel, Beveiliging, etc.), and bullet lists. Sidebar label updated from "Documentatie" to "Releasenotes". Homescreen card links to `/documentatie`. Page title updated in Header. All content in Dutch. `npm run verify` passes.
+- **Summary:** `/documentatie` replaced with chronological release notes viewer. Collapsible date sections, category badges. Sidebar label updated to "Releasenotes".
 
-### PB-168: Fix mobiele sidebar sluit direct bij openen (useEffect mount-bug)
+### PB-168: Fix mobiele sidebar sluit direct bij openen
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** Added `useRef` mount guard in `Sidebar.tsx` to skip the `onClose()` call on initial mount. The useEffect now only triggers `onClose()` when `pathname` actually changes after the first render. Desktop behavior unchanged. `npm run verify` passes.
 
 ### PB-165: Fix mobiele hamburger-menu (z-index bug)
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** Added `relative z-50` to header element in `Header.tsx`. Partial fix — z-index was correct but a separate mount-trigger bug in Sidebar.tsx remained. See PB-168 for the full fix.
 
 ### PB-166: Fix uitlijning vergrootglas in zoekbalken
 
