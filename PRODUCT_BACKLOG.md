@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** PB-168 (mobile sidebar mount-bug) is now fixed. No P1/P2 items remain. All remaining items are P3/P4 deferred.
+**Current direction:** No P1/P2 items. The product is stable across all core features: planning grid, capacity analysis, driver management, mobile views, API connectivity, audit trail, user groups, and authentication. All remaining items are P3/P4 deferred polish and cleanup. Next cycle work depends on Scrum Master direction or new user feedback.
 
 ## Status Definitions
 
