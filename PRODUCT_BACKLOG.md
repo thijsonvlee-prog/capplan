@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** All three Experience Agent items from this cycle are complete: PB-165 (mobile hamburger fix), PB-166 (search icon alignment), PB-167 (month calendar view). No active items remain — only P3/P4 deferred items. Next cycle should evaluate deferred items or new Scrum Master inputs.
+**Current direction:** All active work from the previous cycle is complete. No new Scrum Master inputs. The backlog consists entirely of P3/P4 deferred items. The project is in a stable, clean state. Next cycle should await new Scrum Master direction or promote deferred items if capacity allows.
 
 ## Status Definitions
 
@@ -27,7 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+_No items ready for next cycle. Awaiting new Scrum Master input or promotion of deferred items._
 
 ---
 
@@ -66,7 +66,6 @@ _No blocked items._
 - **Completed:** 2026-04-01
 - **Implementation note:** Full rewrite of `MobilePlanningView.tsx`. Replaced day/week toggle with month calendar grid (7 columns Mon-Sun). Week numbers shown per row. Month navigation (prev/next + "Vandaag" button). Status color dots per day cell. Tap a day to show detail panel with status, leave type, sick percentage, notes. Today highlighted with brand-colored circle. Leading/trailing days from adjacent months shown dimmed. New CSS classes in `globals.css` for calendar grid layout. Old view-toggle and day-label CSS removed. Driver selector screen unchanged. Desktop planning grid unchanged.
 
-
 ### PB-163: Deduplicate resolveUserId naar gedeelde module
 
 - **Status:** Completed
@@ -95,7 +94,7 @@ _No blocked items._
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Natural next step for mobile planning. PB-167 (calendar redesign) is now complete — edit should be built on top of the new month calendar view. Validate read-only flow with user feedback first.
+- **Reason:** Natural next step for mobile planning. PB-167 (calendar redesign) is complete. Validate read-only flow with user feedback first before investing in edit capability.
 - **Source:** EX-REC-052
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
@@ -110,7 +109,7 @@ _No blocked items._
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Current flex-wrap handles basic cases. May become relevant after mobile work completes.
+- **Reason:** Current flex-wrap handles basic cases. Only relevant if narrow viewport usage is reported.
 
 ### DE-REC-070: Align client-side TARGET_ENTITIES met server-side constante
 
@@ -118,7 +117,6 @@ _No blocked items._
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** Natural follow-up to PB-164 deduplication. Low effort but no user impact.
-- **Source:** DE-REC-070
 
 ### DE-REC-041: Remove unused type exports from domain/types.ts
 

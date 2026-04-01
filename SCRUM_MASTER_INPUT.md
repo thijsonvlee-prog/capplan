@@ -23,36 +23,38 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-### SMI-020: Hamburgermenu op mobiel werkt niet
+_No active inputs._
 
-- **Type:** Bug report
-- **Status:** Planned
-- **Backlog linkage:** PB-165
-- **Detail:** De hamburger-knop in de header op mobiele schermen opent de sidebar niet (of sluit niet correct). Oorzaak: z-index probleem — de mobile-nav-overlay (z-40) bedekt de header (geen z-index), waardoor klikken op de hamburger-knop worden geblokkeerd.
-
-### SMI-021: Mobiele planning omzetten naar maandkalender
-
-- **Type:** Feature change
-- **Status:** Planned
-- **Backlog linkage:** PB-167
-- **Detail:** De mobiele planningsweergave per chauffeur moet een maandkalenderweergave worden in plaats van dag-/weekweergave. Kalender met weeknummers zichtbaar.
+## Closed Inputs
 
 ### SMI-022: Uitlijning vergrootglas in zoekbalk klopt niet
 
 - **Type:** Bug report
-- **Status:** Planned
-- **Backlog linkage:** PB-166
-- **Detail:** Het vergrootglas-icoon in de zoekbalk staat te ver naar links. Betreft zowel de chauffeurlijst als de mobiele planningsweergave.
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-166 completed 2026-04-01.
+- **Backlog linkage:** PB-166 (completed)
 
-## Closed Inputs
+### SMI-021: Mobiele planning omzetten naar maandkalender
+
+- **Type:** Feature change
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-167 completed 2026-04-01. Month calendar with week numbers, status dots, tap-to-detail.
+- **Backlog linkage:** PB-167 (completed)
+
+### SMI-020: Hamburgermenu op mobiel werkt niet
+
+- **Type:** Bug report
+- **Status:** Closed
+- **Closed reason:** Fully delivered. PB-165 completed 2026-04-01. z-index fix on header.
+- **Backlog linkage:** PB-165 (completed)
 
 ### SMI-019: Mobiele versie
 
 - **Type:** Initiative / new feature
 - **Status:** Closed
-- **Closed reason:** Fully delivered. All 3 phases completed 2026-04-01: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). ESC-013 Option B scope complete.
+- **Closed reason:** Fully delivered. All 3 phases completed 2026-04-01: layout shell (PB-154), chauffeurlijst (PB-155), planning per chauffeur (PB-156). ESC-013 Option B scope complete. PB-167 (month calendar redesign) also delivered.
 - **Escalation linkage:** ESC-013 (closed)
-- **Backlog linkage:** PB-154, PB-155, PB-156 (all completed)
+- **Backlog linkage:** PB-154, PB-155, PB-156, PB-167 (all completed)
 
 ### SMI-018: API management
 

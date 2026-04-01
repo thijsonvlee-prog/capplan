@@ -6,27 +6,18 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-04-01 — Mobiele maandkalender en navigatiefixes
+### 2026-04-01 — Mobiele maandkalender, navigatiefixes en code-onderhoud
 
 #### UX / design verbeteringen
 
-- **Maandkalender op mobiel:** De mobiele planningsweergave is herschreven van een dag-/weekweergave naar een volledige maandkalender. Zeven kolommen (ma-zo) met weeknummers per rij. Maandnavigatie met vorige/volgende en "Vandaag"-knop. Statuskleurdots per dag. Tik op een dag voor details (status, verloftype, ziektepercentage, notities). Vandaag gemarkeerd met blauwe cirkel. Dagen buiten de huidige maand worden gedimd getoond.
+- **Maandkalender op mobiel:** De mobiele planningsweergave is volledig herschreven naar een maandkalender. Zeven kolommen (ma-zo) met weeknummers per rij. Maandnavigatie met vorige/volgende en "Vandaag"-knop. Statuskleurdots per dag. Tik op een dag voor details (status, verloftype, ziektepercentage, notities). Vandaag gemarkeerd met blauwe cirkel. Dagen buiten de huidige maand worden gedimd getoond. Vervangt de eerdere dag-/weekweergave.
 - **Hamburger-menu gerepareerd:** De mobiele hamburger-knop was geblokkeerd door de overlay (z-index conflict). De header zit nu boven de overlay, waardoor navigatie betrouwbaar werkt.
 - **Zoekicoon-uitlijning:** Het vergrootglas in zoekbalken (chauffeurlijst en mobiele planning) is iets naar rechts verschoven voor betere visuele uitlijning met de invoertekst.
 
-
-### 2026-04-01 — Code deduplicatie consolidatie
-
 #### Onderhoud
 
-- **resolveUserId geconsolideerd:** De gedupliceerde `resolveUserId()` functie is geëxtraheerd naar `src/lib/api-route-utils.ts`. Voorkeuren- en actief-scenario-routes importeren nu van dezelfde module.
-- **validateApiFields geconsolideerd:** De gedupliceerde `validateApiFields()` functie en 4 validatieconstanten zijn verplaatst naar `src/lib/api-import-helpers.ts`. Drie importbron-routes importeren nu van dezelfde module. ~85 regels duplicatie geëlimineerd.
-
-### 2026-04-01 — Mobiele planningsweergave
-
-#### UX / design verbeteringen
-
-- **Mobiele dag-/weekplanning:** Op mobiele schermen toont de planningspagina nu een chauffeur-specifieke weergave in plaats van het volledige planningsrooster. Zoek en selecteer een chauffeur, wissel tussen dag- en weekweergave, navigeer per dag of week. Statusblokken met semantische kleuren, verloftype, ziektepercentage en notities. Vandaag-knop voor snelle navigatie. Legenda onderaan. Desktop planningsrooster is ongewijzigd. Dit voltooit de mobiele read-only flow (ESC-013).
+- **resolveUserId geconsolideerd:** Gedupliceerde functie geëxtraheerd naar `api-route-utils.ts`. Voorkeuren- en actief-scenario-routes importeren nu van dezelfde module.
+- **validateApiFields geconsolideerd:** Gedupliceerde functie en 4 validatieconstanten verplaatst naar `api-import-helpers.ts`. ~85 regels duplicatie geëlimineerd.
 
 ### 2026-03-31 — Importbron lijst-endpoint beveiligd
 
