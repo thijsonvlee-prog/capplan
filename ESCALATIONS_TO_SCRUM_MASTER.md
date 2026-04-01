@@ -22,7 +22,25 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 
 ## Open Escalations
 
-_No open escalations._
+### ESC-014: Desktop homescreen — scope en aanpak
+
+- **Status:** Open
+- **Date / run context:** 2026-04-01 — triggered by SMI-026
+- **Decision needed:** What should the desktop homescreen contain and how should it integrate with existing navigation?
+- **Why it matters:** Currently desktop users land directly on the planning grid. A homescreen changes the app's entry point and first impression. The scope ranges from a simple welcome/overview page to a full operational dashboard. This affects routing, sidebar behavior, and the overall product feel.
+- **Recommendation from Product Owner Agent:** Option B — lightweight card-based overview, consistent with the mobile homescreen pattern but adapted for desktop layout. Adds value without requiring complex dashboard infrastructure.
+
+**Choose one option:**
+
+- ( ) **Option A — Operationeel dashboard.** Een startpagina met live KPI-tegels (aantal chauffeurs, bezettingsgraad, ziekmeldingen vandaag), snelkoppelingen naar kernfuncties, en het actieve scenario. Vereist nieuwe API-endpoints voor dashboard-data. Hogere waarde maar aanzienlijk meer werk.
+- ( ) **Option B — Kaartgebaseerd overzicht (zoals mobiel).** Een startpagina met navigatiekaarten naar de 5 secties (Planning, Capaciteit, Chauffeurs, Instellingen, Releasenotes), vergelijkbaar met het mobiele startscherm maar in een desktop-layout. Optioneel met actief scenario-context. Laag risico, snel te leveren.
+- ( ) **Option C — Kaartgebaseerd overzicht + lichte KPI's.** Combinatie: navigatiekaarten aangevuld met 3-4 kerngetallen (aantal chauffeurs, actief scenario, vandaag-status). Geen nieuwe API's nodig als bestaande endpoints worden hergebruikt. Goede balans.
+- ( ) **Option D — Niet doen.** Behoud de huidige redirect naar /planning. Desktop-gebruikers hebben de sidebar voor navigatie.
+
+- **Recommended option:** Option C
+- **Trade-offs:** Option A biedt de meeste waarde maar vereist nieuwe API-endpoints en is 2-3 cycli werk. Option B is het snelst (1 cyclus) maar voegt weinig informatie toe boven de sidebar. Option C biedt een goede middenweg met hergebruik van bestaande data. Option D is het veiligst maar negeert de Scrum Master-wens.
+- **What the Scrum Master must do:** Place `(X)` next to exactly one option.
+- **Product Owner action after choice:** Create 1-2 backlog items for the chosen approach and assign to Experience Agent (UI) with possible Delivery Agent support (API endpoints if Option A/C).
 
 ---
 

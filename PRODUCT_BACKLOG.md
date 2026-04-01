@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** The mobile app redesign initiative (SMI-024) is fully complete. All phases delivered and deployed. The project is in a stable post-initiative state with no active strategic driver. Next cycle focuses on small maintenance and polish items. No Scrum Master input pending.
+**Current direction:** Mobile navigation is broken (SMI-027) — this is the top priority for the next cycle. Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. Remaining ready items are P4 Low maintenance.
 
 ## Status Definitions
 
@@ -26,6 +26,21 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
+
+### PB-179: Fix mobiele navigatie — planning en instellingen knoppen werken niet
+
+- **ID:** PB-179
+- **Title:** Fix mobiele navigatie — planning en instellingen knoppen werken niet
+- **Problem / opportunity:** Op mobiel flikkert het scherm wanneer je op de Planning-knop op het startscherm drukt, maar er gebeurt niets. Hetzelfde geldt voor alle secties in Instellingen. Kernnavigatie op mobiel is volledig kapot.
+- **Owner:** Experience Agent
+- **Priority:** P1 Critical
+- **Status:** Ready
+- **Why this matters now:** Alle mobiele navigatie is onbruikbaar. Gebruikers kunnen niet bij planning of instellingen komen op mobiel. Directe bug van de Scrum Master.
+- **Scope notes:** De oorzaak zit waarschijnlijk in de state-based view switching in combinatie met de `mobile-page-enter` animatie. In `planning/page.tsx` wordt `useState<"homescreen" | "planning">` gebruikt om te wisselen tussen het startscherm en de planningsweergave. In `settings/page.tsx` wordt `useState<TabKey | null>` gebruikt voor sectieselectie. De `mobile-page-enter` CSS-animatie draait op zowel de verdwijnende als verschijnende view, wat een visueel conflict veroorzaakt. Daarnaast reset de `useMobileTitle()` hook de header-titel tijdens de transitie. Onderzoek en fix de root cause zodat tappen op kaarten betrouwbaar navigeert.
+- **Dependencies:** None.
+- **Definition of done:** Tappen op de Planning-kaart op het mobiele startscherm navigeert betrouwbaar naar de planningsweergave. Tappen op een sectiekaart in Instellingen opent die sectie betrouwbaar. Geen flicker of reset. Verify passes.
+- **Implementation note:** Check `src/app/(dashboard)/planning/page.tsx` (mobileView state + MobileHomescreen), `src/app/(dashboard)/settings/page.tsx` (mobileSectionOpen state), `src/hooks/useHeaderSubtitle.tsx` (useMobileTitle cleanup), and `src/app/globals.css` (mobile-page-enter animation). Root cause is likely animation + state interaction during view transitions.
+- **Source:** SMI-027
 
 ### PB-176: Verplaats COMPARE_COLORS naar module scope en constants
 
@@ -82,7 +97,11 @@ _No items currently in progress._
 
 ## Blocked / Needs Decision
 
-_No blocked items._
+### Desktop homescreen (SMI-026)
+
+- **Status:** Blocked — awaiting Scrum Master scope decision
+- **Escalation:** ESC-014
+- **Summary:** Scrum Master wil een desktop startscherm. Scope en aanpak moeten gekozen worden voordat dit gepland kan worden. Zie ESC-014 voor de opties.
 
 ---
 
@@ -93,49 +112,21 @@ _No blocked items._
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
-- **Implementation note:** Added `mobile-page-enter` entrance animation to the mobile card list. Increased driver card padding from 0.75rem to 0.875rem/1rem to match settings card pattern. Desktop unchanged. Verify passes.
+- **Summary:** Entrance animation and improved card spacing on mobile drivers page.
 
-### PB-170: Mobiele planning — aanpassen aan nieuwe navigatie
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-
-### PB-171: Mobiele capaciteitsweergave
+### PB-170–174: Mobiele app-ervaring compleet
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-01
+- **Summary:** Mobile planning nav (PB-170), capacity view (PB-171), settings view (PB-172), transitions/polish (PB-173), release notes page (PB-174). Full mobile initiative delivered.
 
-### PB-172: Mobiele instellingenweergave
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-
-### PB-173: Mobiele app-feel — transities en polish
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-
-### PB-174: Documentatiepagina vervangen door releasenotes-pagina
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-
-### PB-163: Deduplicate resolveUserId naar gedeelde module
+### PB-163–164: Deduplicatie consolidatie
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-04-01
-
-### PB-164: Deduplicate validateApiFields naar gedeelde module
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-01
+- **Summary:** resolveUserId (PB-163) and validateApiFields (PB-164) deduplicated to shared modules.
 
 ---
 
@@ -146,7 +137,7 @@ _No blocked items._
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
-- **Reason:** Natural next step after mobile initiative is complete. The read-only planning flow should be validated with user feedback first. Can be picked up when user demand is confirmed.
+- **Reason:** Natural next step after mobile initiative is complete. The read-only planning flow should be validated with user feedback first.
 
 ### EX-REC-053: Mobiel startscherm — begroeting en scenario-context
 
@@ -262,7 +253,7 @@ _No blocked items._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-179.
+- Backlog IDs are sequential and never reused. Next available: PB-180.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

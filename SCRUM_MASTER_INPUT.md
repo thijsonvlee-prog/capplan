@@ -23,11 +23,23 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 
 ## Active Inputs
 
-maak ook voor desktop een homescreen. 
+### SMI-027: Mobiele navigatie werkt niet — planning en instellingen flikkeren zonder resultaat
 
-op mobile werkt het nu niet als ik op de planning knop druk, want dan flikkert alleen het beeld maar gebeurt er niets, hetzelfde geldt voor alle opties bij instellingen
+- **Type:** Bug report
+- **Status:** Planned
+- **Date:** 2026-04-01
+- **Original input:** "op mobile werkt het nu niet als ik op de planning knop druk, want dan flikkert alleen het beeld maar gebeurt er niets, hetzelfde geldt voor alle opties bij instellingen"
+- **Analysis:** Mobile homescreen card navigation and settings section cards use state-based view switching with `mobile-page-enter` animation. Investigation indicates the animation fires on both the disappearing and appearing views simultaneously, and the header title context resets during the transition. This likely causes the view to briefly switch then reset, producing a flicker without completing navigation.
+- **Backlog linkage:** PB-179
 
-_No active inputs._
+### SMI-026: Desktop homescreen
+
+- **Type:** Feature request / initiative
+- **Status:** Escalated
+- **Date:** 2026-04-01
+- **Original input:** "maak ook voor desktop een homescreen."
+- **Analysis:** Currently the app redirects `/` to `/planning` on desktop. On mobile there is already a card-based homescreen. The desktop version needs scope definition: what content to show, whether it replaces the redirect or becomes a new route, and how it integrates with the existing sidebar navigation.
+- **Escalation linkage:** ESC-014
 
 ## Closed Inputs
 
