@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-01 — Mobiele sidebar-fix (mount-bug)
+
+#### Bugfixes
+
+- **Mobiele sidebar opent nu betrouwbaar:** De sidebar sloot zichzelf direct na het openen doordat een useEffect op de initiële mount werd getriggerd. Opgelost met een mount-guard die de eerste uitvoering overslaat. Navigatie via het hamburger-menu werkt nu betrouwbaar op mobiel.
+
 ### 2026-04-01 — Mobiele maandkalender, navigatiefixes en code-onderhoud
 
 #### UX / design verbeteringen

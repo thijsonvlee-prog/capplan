@@ -2,7 +2,7 @@
 
 ## Summary
 
-**This cycle (2026-04-01, run 11):** Completed three items: PB-165 (mobile hamburger z-index fix — P1 critical), PB-166 (search icon alignment), PB-167 (mobile planning month calendar rewrite). The mobile planning view is now a full month calendar with week numbers, status color dots, tap-to-detail, and month navigation. The hamburger menu is fixed and mobile navigation is fully functional again.
+**This cycle (2026-04-01, run 12):** Completed PB-168 (mobile sidebar mount-bug fix — P1 critical). The sidebar's useEffect was firing `onClose()` on initial mount, causing the mobile menu to close immediately after opening. Fixed with a `useRef` mount guard. Mobile navigation is now fully functional.
 
 **Current design alignment with DESIGN.md:**
 - Sidebar: fully aligned (section 7.8). Premium, calm, anchoring. Responsive — hidden on mobile, accessible via slide-over.
@@ -10,7 +10,7 @@
 - Import source manager (Connectiviteit tab): well-aligned. Source type selector, API configuration with surface layering, test connection with inline feedback, response structure preview with interactive path discovery, field mapping editor with autocomplete support.
 - Audit log viewer: well-aligned. Filter card, expandable rows, semantic badges, tonal row separation, pagination.
 - Login page: well-aligned. Clean, premium, brand-surface split.
-- Header: well-aligned. Minimal, composed, contextual subtitle support. Hamburger menu on mobile with proper z-index layering.
+- Header: well-aligned. Minimal, composed, contextual subtitle support. Hamburger menu on mobile with proper z-index layering and mount-guard fix.
 - Planning grid toolbar: fully aligned (section 7.2). Controls grouped by meaning.
 - Planning grid matrix: fully aligned (section 4.1). Tonal row separation, No-Line Rule respected.
 - Mobile planning view: well-aligned. Month calendar grid with week numbers, status dots, tap-to-detail panel. Composed header with driver info and month navigation. Today highlight. Driver selector with card-based layout.
@@ -20,7 +20,7 @@
 - User manager: well-aligned. Avatar display, role badges, inline role editing.
 - Toast & ConfirmDialog: product-grade. Accessibility, focus trapping, semantic colors.
 - Button system: fully aligned. Clear hierarchy across primary/secondary/icon/danger.
-- Mobile layout shell: aligned. Slide-over sidebar, overlay backdrop, smooth animations, auto-close on navigate.
+- Mobile layout shell: fully aligned. Slide-over sidebar with mount-guard, overlay backdrop, smooth animations, auto-close on navigate (not on mount).
 
 **Where design quality is still below target:**
 - All major desktop screens are aligned with DESIGN.md. Remaining opportunities are polish-level refinements, not structural gaps.
@@ -42,7 +42,6 @@
 - **Suggested owner:** Experience Agent
 - **Why now:** The month calendar view is complete. Edit capability is the natural next step for mobile planning productivity. Should be evaluated based on user feedback from the read-only version.
 
-
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
 - **Problem:** The Recharts AreaChart uses default tooltip and axis styling. The default Recharts tooltip feels generic compared to the rest of the product-grade capacity page.
@@ -53,17 +52,6 @@
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-risk polish. The capacity page is structurally aligned. Custom tooltip would complete the integration. This is the most visible remaining integration gap.
-
-### EX-REC-052: Mobile planning — edit capability (v2)
-
-- **Problem:** The mobile planning view (PB-156) is read-only. Planners who check schedules on mobile may want to make quick status changes (e.g. mark a driver as sick) without returning to desktop.
-- **Proposed improvement:** Add tap-to-edit on status blocks in the mobile planning view. Tap a day block → show a status selector bottom sheet. Use the existing `api.planning.upsert()` endpoint. Restrict to PLANNER/ADMIN roles.
-- **Expected user value:** Planners can make urgent schedule adjustments on the go without switching to a desktop computer.
-- **Priority:** P3 Medium
-- **Effort:** Medium
-- **Dependencies:** PB-156 (completed)
-- **Suggested owner:** Experience Agent
-- **Why now:** The read-only mobile flow is complete. Edit capability is the natural next step for mobile planning productivity. Should be evaluated based on user feedback from the read-only version.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 

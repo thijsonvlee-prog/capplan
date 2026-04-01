@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** One P1 critical bug: the mobile hamburger menu still does not work (SMI-023). The previous fix (PB-165, z-index) was insufficient — the root cause is a useEffect in Sidebar.tsx that closes the sidebar on initial mount. This must be fixed before any other work proceeds. All other items are P3/P4 deferred.
+**Current direction:** PB-168 (mobile sidebar mount-bug) is now fixed. No P1/P2 items remain. All remaining items are P3/P4 deferred.
 
 ## Status Definitions
 
@@ -27,20 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-168: Fix mobiele sidebar sluit direct bij openen (useEffect mount-bug)
-
-- **ID:** PB-168
-- **Title:** Fix mobiele sidebar sluit direct bij openen
-- **Problem / opportunity:** The mobile hamburger menu does not work. Tapping the hamburger button appears to do nothing because the sidebar opens and immediately closes itself. Root cause: `Sidebar.tsx` line 37-43 has a `useEffect` with `[pathname]` dependency that calls `onClose()`. This effect fires on initial mount (React runs effects after first render), causing the sidebar to close itself immediately after rendering.
-- **Owner:** Experience Agent
-- **Priority:** P1 Critical
-- **Status:** Ready
-- **Why this matters now:** Core mobile navigation is broken. Users cannot access any page on mobile. Reported by Scrum Master as SMI-023. Previous fix (PB-165, z-index) addressed a different symptom but not this root cause.
-- **Scope notes:** Add a `useRef` to track whether this is the initial mount. Skip the `onClose()` call on mount; only call it when `pathname` actually changes after mount. Do not change the desktop sidebar behavior. Do not change the auto-close-on-navigate behavior — only prevent the mount-trigger.
-- **Dependencies:** None.
-- **Definition of done:** Mobile hamburger button opens the sidebar reliably. Sidebar stays open until the user navigates, taps the X, or taps the overlay. Sidebar still auto-closes on navigation. Desktop layout unchanged. `npm run verify` passes.
-- **Implementation note:** In `Sidebar.tsx`, add `const mountRef = useRef(true);` and guard the useEffect body: `if (mountRef.current) { mountRef.current = false; return; }`. Keep existing `[pathname]` dependency. Import `useRef` from React.
-- **Source:** SMI-023
+_No items ready for next cycle._
 
 ---
 
@@ -57,6 +44,13 @@ _No blocked items._
 ---
 
 ## Completed Recently
+
+### PB-168: Fix mobiele sidebar sluit direct bij openen (useEffect mount-bug)
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-01
+- **Implementation note:** Added `useRef` mount guard in `Sidebar.tsx` to skip the `onClose()` call on initial mount. The useEffect now only triggers `onClose()` when `pathname` actually changes after the first render. Desktop behavior unchanged. `npm run verify` passes.
 
 ### PB-165: Fix mobiele hamburger-menu (z-index bug)
 

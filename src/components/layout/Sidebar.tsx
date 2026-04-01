@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CalendarDays, BarChart3, Users, Settings, FileText, ShieldCheck, Shield, Eye, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const navItems = [
   { href: "/planning", label: "Planning", icon: CalendarDays },
@@ -33,8 +33,13 @@ export function Sidebar({ mobile, onClose }: SidebarProps) {
   const user = session?.user;
   const roleConfig = user?.role ? SIDEBAR_ROLE_CONFIG[user.role] ?? null : null;
 
-  // Close mobile sidebar on route change
+  // Close mobile sidebar on route change (skip initial mount)
+  const mountRef = useRef(true);
   useEffect(() => {
+    if (mountRef.current) {
+      mountRef.current = false;
+      return;
+    }
     if (mobile && onClose) {
       onClose();
     }
