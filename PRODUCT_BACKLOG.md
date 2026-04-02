@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. All ready items are P4 Low code cleanup (Delivery Agent). No critical or high-priority work pending.
+**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. No ready items remain. All P4 Low cleanup tasks (PB-176, PB-177, PB-178) completed 2026-04-02. PB-180 and PB-181 (Experience Agent) also completed. No critical or high-priority work pending.
 
 ## Status Definitions
 
@@ -31,45 +31,33 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **ID:** PB-176
 - **Title:** Verplaats COMPARE_COLORS naar module scope en constants
-- **Problem / opportunity:** `COMPARE_COLORS` is defined inside the `CapacityChart` component function, creating a new array reference on every render. Also uses hardcoded hex values without referencing design tokens.
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** Trivial fix that improves render stability and centralizes color definitions. Combines two related recommendations.
-- **Scope notes:** Move `COMPARE_COLORS` outside the component to module scope. Add comments referencing design token equivalents. Optionally move to `src/domain/constants.ts` if reuse is likely.
-- **Dependencies:** None.
-- **Definition of done:** `COMPARE_COLORS` is at module scope (not inside the component function). Hex values have comments referencing tokens. Verify passes.
-- **Implementation note:** Combines DE-REC-047 and DE-REC-014.
+- **Status:** Completed
+- **Completed:** 2026-04-02
+- **Summary:** Moved `COMPARE_COLORS` from inside the `CapacityChart` component function to `src/domain/constants.ts` as a module-scope `readonly` constant. Added comments referencing design token equivalents for all three hex values. `CapacityChart.tsx` now imports from `@/domain/constants`.
 - **Source:** DE-REC-047 + DE-REC-014
 
 ### PB-177: Verwijder ongebruikte type-exports uit domain/types.ts
 
 - **ID:** PB-177
 - **Title:** Verwijder ongebruikte type-exports uit domain/types.ts
-- **Problem / opportunity:** `PlanningEntryOptions` and `UserContext` are defined but never imported anywhere. Dead code creates confusion.
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** Quick cleanup. No risk.
-- **Scope notes:** Remove only types confirmed unused via grep. Do not remove types that may be used indirectly.
-- **Dependencies:** None.
-- **Definition of done:** Unused types removed. Verify passes. No other files affected.
-- **Implementation note:** See DE-REC-041.
+- **Status:** Completed
+- **Completed:** 2026-04-02
+- **Summary:** Removed `PlanningEntryOptions` and `UserContext` from `src/domain/types.ts`. Confirmed via grep that neither type was imported anywhere. Verify passes.
 - **Source:** DE-REC-041
 
 ### PB-178: Opruimen ongebruikte mobiele CSS-klassen
 
 - **ID:** PB-178
 - **Title:** Opruimen ongebruikte mobiele CSS-klassen
-- **Problem / opportunity:** `mobile-nav-overlay` and `mobile-nav-panel` CSS classes in globals.css are no longer used after the mobile navigation overhaul removed the hamburger menu.
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** Dead CSS from the mobile redesign. Quick cleanup.
-- **Scope notes:** Confirm classes are unused via grep, then remove from globals.css. Do not remove any CSS class that is still referenced.
-- **Dependencies:** None.
-- **Definition of done:** Unused mobile-nav CSS classes removed. Verify passes.
-- **Implementation note:** Flagged in Experience Agent risks/watch-outs.
+- **Status:** Completed
+- **Completed:** 2026-04-02
+- **Summary:** Removed `.mobile-nav-overlay`, `.mobile-nav-panel`, `@keyframes fade-in`, and `@keyframes slide-in-left` from `globals.css`. Also removed the empty "Mobile Navigation" section comment. Confirmed via grep that none were referenced in any `.tsx` file. Verify passes.
 - **Source:** EX-REC risks
 
 ### PB-180: StamtabelManager en SkillManager — visuele verhoging lijstitems

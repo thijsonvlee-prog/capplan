@@ -71,6 +71,12 @@ export const GROUP_BY_LABELS: Record<GroupByField, string> = {
   employmentType: "Dienstverband",
 };
 
+// === Chart Constants ===
+
+/** Comparison scenario line colors for CapacityChart (Recharts requires hex strings).
+ *  Orange (#f97316 ~ warning-500), Cyan (#06b6d4 ~ brand-400 equivalent), Purple (#8b5cf6 ~ accent). */
+export const COMPARE_COLORS = ["#f97316", "#06b6d4", "#8b5cf6"] as const;
+
 // === UI Constants ===
 
 export const DAY_LABELS = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"] as const;

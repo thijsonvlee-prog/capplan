@@ -6,9 +6,22 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-163 and PB-164 (deduplication consolidation) were completed this cycle. The codebase is stable with clean verify output. All remaining recommendations are P4 Low priority — no critical or high-priority improvements identified. The codebase is in good shape with consistent patterns, proper error handling, and no hardcoded colors in components.
+PB-176, PB-177, and PB-178 (code cleanup batch) were completed this cycle. COMPARE_COLORS is centralized in constants.ts, unused types removed, and dead mobile-nav CSS cleaned up. The codebase is stable with clean verify output. A fresh scan identified one new recommendation (date parsing deduplication). All remaining recommendations are P4 Low — no critical or high-priority improvements identified.
 
 ## Recommended Next Improvements
+
+### DE-REC-071: Extract duplicate date parsing logic to shared utility
+
+- **Title:** Deduplicate date list parsing across planning API routes
+- **Problem:** Three planning API routes (`/api/planning/route.ts`, `/api/planning/capacity/route.ts`, `/api/planning/for-range/route.ts`) contain identical date parsing and validation logic: `dates.split(",").map(d => d.trim()).filter(Boolean)` with the same Dutch error message. If the parsing logic or error message needs to change, three files must be updated.
+- **Proposed improvement:** Extract a `parseDateList(dates: string)` utility function to `api-route-utils.ts` that returns the parsed array or throws/returns a standardized error response.
+- **Expected product/technical value:** Eliminates ~15 lines of duplication. Single point of change for date parsing behavior.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Quick deduplication following the same pattern as PB-163/PB-164.
 
 ### DE-REC-070: Deduplicate VALID_TARGET_ENTITIES in ImportSourceManager.tsx (client-side)
 
@@ -75,32 +88,6 @@ PB-163 and PB-164 (deduplication consolidation) were completed this cycle. The c
 - **Suggested owner:** Delivery Agent
 - **Why now:** Quick optimization.
 
-### DE-REC-047: Move COMPARE_COLORS outside CapacityChart component
-
-- **Title:** Hoist COMPARE_COLORS array to module scope in CapacityChart
-- **Problem:** `COMPARE_COLORS` is defined inside the `CapacityChart` component function, creating a new array reference on every render. This breaks referential stability for child `<Area>` components.
-- **Proposed improvement:** Move `const COMPARE_COLORS = [...]` outside the component function to module scope.
-- **Expected product/technical value:** Minor render optimization; follows established pattern (other constants like STATUS_COLORS are module-scoped).
-- **Priority:** P4 Low
-- **Effort:** Small (one-line move)
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Trivial fix.
-
-### DE-REC-041: Remove unused type exports from domain/types.ts
-
-- **Title:** Clean up dead type definitions in types.ts
-- **Problem:** `PlanningEntryOptions` and `UserContext` are defined but never imported anywhere.
-- **Proposed improvement:** Remove unused types.
-- **Expected product/technical value:** Reduces confusion for developers reading the types file.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick cleanup.
-
 ### DE-REC-030: Extract hardcoded constants and API limits to centralized config
 
 - **Title:** Centralize magic numbers in API routes to `constants.ts`
@@ -126,19 +113,6 @@ PB-163 and PB-164 (deduplication consolidation) were completed this cycle. The c
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Natural follow-up to API Phase 1 for better API compatibility.
-
-### DE-REC-014: Move hardcoded comparison chart colors to constants
-
-- **Title:** Extract COMPARE_COLORS from CapacityChart to constants
-- **Problem:** `CapacityChart.tsx` defines `COMPARE_COLORS` inline with hardcoded hex values.
-- **Proposed improvement:** Move to `src/domain/constants.ts` with comments referencing design token equivalents.
-- **Expected product/technical value:** Centralizes color definitions.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** Can be combined with DE-REC-047
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick compliance fix.
 
 ### DE-REC-031: Add PerformanceEvent table cleanup
 
@@ -178,7 +152,7 @@ PB-163 and PB-164 (deduplication consolidation) were completed this cycle. The c
 - **Replace `any` types broadly:** ~20+ instances are internal and well-contained. Fix opportunistically.
 - **Translate console.error messages:** Server-facing logging should remain in English.
 - **Split DriverForm.tsx (~475 lines):** Well-structured with tab-based organization.
-- **Other `.find()` calls in render paths:** ScenarioSelector, RosterAssigner, etc. operate on small arrays (<10 items). PlanningGrid line 502 uses `.find()` on DRIVER_COLUMNS (~5 items) — negligible.
+- **Other `.find()` calls in render paths:** ScenarioSelector, RosterAssigner, etc. operate on small arrays (<10 items). PlanningGrid line 502 uses `.find()` on DRIVER_COLUMNS (~8 items) — negligible.
 - **Wrap DELETE routes in transactions:** Theoretical race condition at current concurrency.
 - **Add React.memo to settings list items:** Small lists, infrequent renders.
 - **Add missing foreign key indexes:** Not bottlenecks at current data volumes.
@@ -213,6 +187,7 @@ PB-163 and PB-164 (deduplication consolidation) were completed this cycle. The c
 - **Add error states to capacity/planning components:** These components receive data from parent pages that already handle loading/error states. Adding redundant error handling at the child level would be defensive coding without real benefit.
 - **Extract useDebounce to custom hook:** Only used in DriverList with a simple inline implementation. Extraction for a single consumer adds indirection without benefit.
 - **Add aria-labels to chart visualizations:** Recharts manages its own accessibility. Adding custom aria attributes would conflict with the library's internal handling.
+- **Batch FK validation in driver creation:** Driver POST route validates FKs individually via `Promise.all()`. A batch query would be marginally faster but adds complexity for a low-frequency operation.
 
 ## Recommendation Rules
 
