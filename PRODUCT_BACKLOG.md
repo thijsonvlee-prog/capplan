@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. All ready items are P4 Low — a mix of code cleanup and visual polish. No critical or high-priority work pending.
+**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. All ready items are P4 Low code cleanup (Delivery Agent). No critical or high-priority work pending.
 
 ## Status Definitions
 
@@ -76,30 +76,22 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **ID:** PB-180
 - **Title:** StamtabelManager en SkillManager — visuele verhoging lijstitems
-- **Problem / opportunity:** StamtabelManager and SkillManager list items use basic `divide-y` separator with flat `hover:bg-surface-secondary`. Inline editing is functional but feels generic compared to composed headers, cards, and surfaces elsewhere. These shared components propagate their feel across 4+ stamtabel instances and skills.
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** Low-risk refinement with broad propagation. Settings screens should match the premium feel of planning and capacity screens.
-- **Scope notes:** Add subtle hover elevation (shadow-xs), improve row spacing, add light left-accent border on active/editing row, refine action icon spacing. Keep inline edit pattern. Use existing design tokens only.
-- **Dependencies:** None.
-- **Definition of done:** StamtabelManager and SkillManager rows feel visually elevated. Hover states and editing states are visually distinct. Verify passes. No regressions on stamtabel or skills screens.
-- **Implementation note:** From EX-REC-054.
+- **Status:** Completed
+- **Completed:** 2026-04-02
+- **Summary:** Replaced divide-y separator with padded container. Rows now have rounded-md shape, hover:shadow-xs elevation, and transition-all animation. Editing state has brand-50 background, brand-600 left accent border, and shadow-xs — clearly distinct from idle rows. Action icon gap widened from 1 to 1.5. Applied consistently to both StamtabelManager and SkillManager.
 - **Source:** EX-REC-054
 
 ### PB-181: Capaciteitspagina — vergelijkingsknoppen visuele verbetering
 
 - **ID:** PB-181
 - **Title:** Capaciteitspagina — vergelijkingsknoppen visuele verbetering
-- **Problem / opportunity:** Scenario comparison buttons on the capacity page use basic padding/color styling. They lack visual weight and don't clearly communicate toggled state.
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** Quick visual polish on the second most important screen. Low risk.
-- **Scope notes:** Restyle as badge-style pills with subtle borders when inactive and solid fill when active. Add transition on toggle. Ensure selected state has clear visual distinction. Use existing design tokens only.
-- **Dependencies:** None.
-- **Definition of done:** Comparison buttons have clear active/inactive states with badge-style treatment. Verify passes. No regressions on capacity page.
-- **Implementation note:** From EX-REC-055.
+- **Status:** Completed
+- **Completed:** 2026-04-02
+- **Summary:** Comparison buttons restyled as pill-shaped badges (rounded-full) with border. Inactive state: white background, border-default, text-secondary. Hover: border transitions to brand-300 and text to brand-700. Active state: solid brand-600 fill with inverse text. Transition-all for smooth toggle feedback.
 - **Source:** EX-REC-055
 
 ---

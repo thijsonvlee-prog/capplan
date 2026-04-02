@@ -84,7 +84,7 @@ export function SkillManager({ readOnly }: { readOnly?: boolean }) {
         </>
       )}
 
-      <div className="divide-y divide-border-subtle">
+      <div className="p-1.5">
         {loading && (
           <div className="p-6 flex justify-center">
             <div className="spinner" />
@@ -97,7 +97,14 @@ export function SkillManager({ readOnly }: { readOnly?: boolean }) {
           </div>
         )}
         {!loading && skills.map((skill) => (
-          <div key={skill.id} className="flex items-center justify-between p-3 hover:bg-surface-secondary">
+          <div
+            key={skill.id}
+            className={`flex items-center justify-between px-3 py-2.5 rounded-md transition-all duration-150 ${
+              editingId === skill.id
+                ? "bg-brand-50 border-l-2 border-brand-600 shadow-xs pl-2.5"
+                : "hover:bg-surface-secondary hover:shadow-xs"
+            }`}
+          >
             {editingId === skill.id ? (
               <div className="flex items-center gap-2 flex-1">
                 <input
@@ -119,7 +126,7 @@ export function SkillManager({ readOnly }: { readOnly?: boolean }) {
               <>
                 <span className="text-sm text-text-primary">{skill.name}</span>
                 {!readOnly && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <button onClick={() => startEdit(skill.id, skill.name)} className="btn-icon" aria-label="Bewerken">
                       <Pencil className="w-4 h-4" />
                     </button>

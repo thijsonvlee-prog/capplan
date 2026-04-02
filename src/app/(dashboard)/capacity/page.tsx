@@ -131,10 +131,10 @@ export default function CapacityPage() {
                     <button
                       key={s.id}
                       onClick={() => toggleCompare(s.id)}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-all duration-150 border ${
                         compareIds.includes(s.id)
-                          ? "bg-brand-50 text-brand-700 shadow-xs"
-                          : "bg-surface-primary text-text-secondary hover:bg-surface-secondary shadow-xs"
+                          ? "bg-brand-600 text-text-inverse border-brand-600 shadow-xs"
+                          : "bg-surface-primary text-text-secondary border-border-default hover:border-brand-300 hover:text-brand-700"
                       }`}
                     >
                       {s.name}

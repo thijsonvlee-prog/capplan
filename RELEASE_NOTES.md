@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-02 — Visuele verfijning instellingen en capaciteitspagina
+
+#### UX / design verbeteringen
+
+- **Instellingen lijstitems:** StamtabelManager en SkillManager rijen hebben nu subtiele hover-elevatie, afgeronde vormen en vloeiende overgangen. Bewerkmodus is visueel duidelijk onderscheiden met merkkleur-accentrand en achtergrond. Verbetert de premium uitstraling over alle stamtabel- en vaardigheidssecties.
+- **Capaciteit vergelijkingsknoppen:** Scenario-vergelijkingsknoppen zijn omgestyled naar pilvormige badges met duidelijke actief/inactief-staten. Actieve staat toont merkkleur-vulling, inactieve staat heeft subtiele rand met hover-feedback.
+
 ### 2026-04-01 — Mobiele navigatie hersteld
 
 #### Bugfixes
