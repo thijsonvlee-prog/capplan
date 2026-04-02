@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. No ready items remain. All P4 Low cleanup tasks (PB-176, PB-177, PB-178) completed 2026-04-02. PB-180 and PB-181 (Experience Agent) also completed. No critical or high-priority work pending.
+**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. One new P3 Medium item (PB-182, CapacityTable tonal layering) is ready for the next cycle. One new P4 Low item (PB-183, date parsing deduplication) is also ready. No critical or high-priority work pending.
 
 ## Status Definitions
 
@@ -27,60 +27,35 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-176: Verplaats COMPARE_COLORS naar module scope en constants
+### PB-182: CapacityTable — tonale lagen refactor
 
-- **ID:** PB-176
-- **Title:** Verplaats COMPARE_COLORS naar module scope en constants
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-02
-- **Summary:** Moved `COMPARE_COLORS` from inside the `CapacityChart` component function to `src/domain/constants.ts` as a module-scope `readonly` constant. Added comments referencing design token equivalents for all three hex values. `CapacityChart.tsx` now imports from `@/domain/constants`.
-- **Source:** DE-REC-047 + DE-REC-014
-
-### PB-177: Verwijder ongebruikte type-exports uit domain/types.ts
-
-- **ID:** PB-177
-- **Title:** Verwijder ongebruikte type-exports uit domain/types.ts
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-02
-- **Summary:** Removed `PlanningEntryOptions` and `UserContext` from `src/domain/types.ts`. Confirmed via grep that neither type was imported anywhere. Verify passes.
-- **Source:** DE-REC-041
-
-### PB-178: Opruimen ongebruikte mobiele CSS-klassen
-
-- **ID:** PB-178
-- **Title:** Opruimen ongebruikte mobiele CSS-klassen
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-02
-- **Summary:** Removed `.mobile-nav-overlay`, `.mobile-nav-panel`, `@keyframes fade-in`, and `@keyframes slide-in-left` from `globals.css`. Also removed the empty "Mobile Navigation" section comment. Confirmed via grep that none were referenced in any `.tsx` file. Verify passes.
-- **Source:** EX-REC risks
-
-### PB-180: StamtabelManager en SkillManager — visuele verhoging lijstitems
-
-- **ID:** PB-180
-- **Title:** StamtabelManager en SkillManager — visuele verhoging lijstitems
+- **ID:** PB-182
+- **Title:** CapacityTable — tonale lagen refactor
+- **Problem / opportunity:** De capaciteitstabel gebruikt 1px randen overal en afwisselende rijtinten, wat een spreadsheet-achtig uiterlijk geeft. Dit is in strijd met DESIGN.md §4.1 (No-Line Rule) en §7.4. Het verschil in kwaliteit tussen de geëleveerde KPI/chart-secties en de generieke tabel eronder is merkbaar.
 - **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-02
-- **Summary:** Replaced divide-y separator with padded container. Rows now have rounded-md shape, hover:shadow-xs elevation, and transition-all animation. Editing state has brand-50 background, brand-600 left accent border, and shadow-xs — clearly distinct from idle rows. Action icon gap widened from 1 to 1.5. Applied consistently to both StamtabelManager and SkillManager.
-- **Source:** EX-REC-054
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** De capaciteitspagina is het op één na belangrijkste scherm. Na de recente visuele verbeteringen aan KPI's en vergelijkingsknoppen valt de generieke tabel meer op.
+- **Scope notes:** Vervang 1px rij-randen door tonale oppervlaktecontrasten. Gebruik surface-tertiary voor header-rij, surface-primary voor datarijen met subtiele spacing tussen groepen. Verwijder de meeste interne randen en vertrouw op spacing en tonaal contrast voor structuur. Geen functionele wijzigingen.
+- **Dependencies:** Geen.
+- **Definition of done:** CapacityTable gebruikt tonale lagen in plaats van 1px randen. Verify slaagt. Visuele consistentie met de rest van de capaciteitspagina.
+- **Implementation note:** Refereer aan StamtabelManager (PB-180) voor het patroon van tonale lagen en hover-elevatie.
+- **Source:** EX-REC-056
 
-### PB-181: Capaciteitspagina — vergelijkingsknoppen visuele verbetering
+### PB-183: Dedupliceer date-parsing logica in planning API routes
 
-- **ID:** PB-181
-- **Title:** Capaciteitspagina — vergelijkingsknoppen visuele verbetering
-- **Owner:** Experience Agent
+- **ID:** PB-183
+- **Title:** Dedupliceer date-parsing logica in planning API routes
+- **Problem / opportunity:** Drie planning API-routes bevatten identieke date-parsing en validatielogica: `dates.split(",").map(d => d.trim()).filter(Boolean)` met dezelfde Nederlandse foutmelding. Bij een wijziging moeten drie bestanden worden aangepast.
+- **Owner:** Delivery Agent
 - **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-02
-- **Summary:** Comparison buttons restyled as pill-shaped badges (rounded-full) with border. Inactive state: white background, border-default, text-secondary. Hover: border transitions to brand-300 and text to brand-700. Active state: solid brand-600 fill with inverse text. Transition-all for smooth toggle feedback.
-- **Source:** EX-REC-055
+- **Status:** Ready
+- **Why this matters now:** Snelle deduplicatie die het patroon van PB-163/PB-164 volgt. Kleine verbetering van de codekwaliteit.
+- **Scope notes:** Extraheer een `parseDateList(dates: string)` utility-functie naar `api-route-utils.ts`. Elimineer ~15 regels duplicatie.
+- **Dependencies:** Geen.
+- **Definition of done:** Eén gedeelde `parseDateList` functie in `api-route-utils.ts`. Alle drie routes importeren en gebruiken deze. Verify slaagt.
+- **Implementation note:** Volg het patroon van `resolveUserId` en `validateApiFields` extractie.
+- **Source:** DE-REC-071
 
 ---
 
@@ -102,33 +77,40 @@ _No items currently in progress._
 
 ## Completed Recently
 
-### PB-179: Fix mobiele navigatie — planning en instellingen knoppen werken niet
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-- **Summary:** Root cause: React useState functional updater bug in `useMobileTitle` hook. `setMobileBackAction(fn)` was interpreted as a functional updater, immediately executing the back action instead of storing it. Fixed by wrapping: `setMobileBackAction(() => fn)`. One-line fix in `src/hooks/useHeaderSubtitle.tsx`.
-
-### PB-175: Mobiele chauffeurspagina — visuele opfrisbeurt
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-- **Summary:** Entrance animation and improved card spacing on mobile drivers page.
-
-### PB-170–174: Mobiele app-ervaring compleet
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-01
-- **Summary:** Mobile planning nav (PB-170), capacity view (PB-171), settings view (PB-172), transitions/polish (PB-173), release notes page (PB-174). Full mobile initiative delivered.
-
-### PB-163–164: Deduplicatie consolidatie
+### PB-176: Verplaats COMPARE_COLORS naar module scope en constants
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
-- **Completed:** 2026-04-01
-- **Summary:** resolveUserId (PB-163) and validateApiFields (PB-164) deduplicated to shared modules.
+- **Completed:** 2026-04-02
+- **Summary:** Moved `COMPARE_COLORS` to `src/domain/constants.ts`. Hex values documented with design token equivalents.
+
+### PB-177: Verwijder ongebruikte type-exports uit domain/types.ts
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-02
+- **Summary:** Removed `PlanningEntryOptions` and `UserContext` — neither was imported anywhere.
+
+### PB-178: Opruimen ongebruikte mobiele CSS-klassen
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-02
+- **Summary:** Removed dead `.mobile-nav-overlay`, `.mobile-nav-panel` and related keyframes from `globals.css`.
+
+### PB-180: StamtabelManager en SkillManager — visuele verhoging lijstitems
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-02
+- **Summary:** Hover elevation, rounded rows, smooth transitions, and distinct editing state with brand accent.
+
+### PB-181: Capaciteitspagina — vergelijkingsknoppen visuele verbetering
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-02
+- **Summary:** Comparison buttons restyled as pill badges with clear active/inactive states.
 
 ---
 
@@ -255,7 +237,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-182.
+- Backlog IDs are sequential and never reused. Next available: PB-184.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.
