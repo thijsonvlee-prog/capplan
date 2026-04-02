@@ -1,23 +1,28 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useRef } from "react";
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 
 const HeaderSubtitleContext = createContext<{
   subtitle: string;
   setSubtitle: (value: string) => void;
   mobileTitle: string;
   setMobileTitle: (value: string) => void;
-  mobileBackAction: (() => void) | null;
-  setMobileBackAction: (action: (() => void) | null) => void;
-}>({ subtitle: "", setSubtitle: () => {}, mobileTitle: "", setMobileTitle: () => {}, mobileBackAction: null, setMobileBackAction: () => {} });
+  mobileBackActionRef: RefObject<(() => void) | null>;
+}>({
+  subtitle: "",
+  setSubtitle: () => {},
+  mobileTitle: "",
+  setMobileTitle: () => {},
+  mobileBackActionRef: { current: null },
+});
 
 export function HeaderSubtitleProvider({ children }: { children: ReactNode }) {
   const [subtitle, setSubtitle] = useState("");
   const [mobileTitle, setMobileTitle] = useState("");
-  const [mobileBackAction, setMobileBackAction] = useState<(() => void) | null>(null);
+  const mobileBackActionRef = useRef<(() => void) | null>(null);
   return (
-    <HeaderSubtitleContext.Provider value={{ subtitle, setSubtitle, mobileTitle, setMobileTitle, mobileBackAction, setMobileBackAction }}>
+    <HeaderSubtitleContext.Provider value={{ subtitle, setSubtitle, mobileTitle, setMobileTitle, mobileBackActionRef }}>
       {children}
     </HeaderSubtitleContext.Provider>
   );
@@ -37,25 +42,16 @@ export function useHeaderSubtitleValue() {
 
 /** Set a mobile-only title override with an optional back action callback. */
 export function useMobileTitle(value: string, backAction?: () => void) {
-  const { setMobileTitle, setMobileBackAction } = useContext(HeaderSubtitleContext);
-  const backActionRef = useRef(backAction);
-
-  useEffect(() => {
-    backActionRef.current = backAction;
-  }, [backAction]);
+  const { setMobileTitle, mobileBackActionRef } = useContext(HeaderSubtitleContext);
 
   useEffect(() => {
     setMobileTitle(value);
-    if (value) {
-      setMobileBackAction(() => backActionRef.current?.());
-    } else {
-      setMobileBackAction(null);
-    }
+    mobileBackActionRef.current = value ? (backAction ?? null) : null;
     return () => {
       setMobileTitle("");
-      setMobileBackAction(null);
+      mobileBackActionRef.current = null;
     };
-  }, [value, setMobileTitle, setMobileBackAction]);
+  }, [value, backAction, setMobileTitle, mobileBackActionRef]);
 }
 
 export function useMobileTitleValue() {
@@ -63,5 +59,5 @@ export function useMobileTitleValue() {
 }
 
 export function useMobileBackAction() {
-  return useContext(HeaderSubtitleContext).mobileBackAction;
+  return useContext(HeaderSubtitleContext).mobileBackActionRef;
 }
