@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 
 const HeaderSubtitleContext = createContext<{
@@ -25,33 +25,37 @@ export function HeaderSubtitleProvider({ children }: { children: ReactNode }) {
 
 export function useHeaderSubtitle(value: string) {
   const { setSubtitle } = useContext(HeaderSubtitleContext);
-  const stableSet = useCallback((v: string) => setSubtitle(v), [setSubtitle]);
   useEffect(() => {
-    stableSet(value);
-    return () => stableSet("");
-  }, [value, stableSet]);
+    setSubtitle(value);
+    return () => setSubtitle("");
+  }, [value, setSubtitle]);
 }
 
 export function useHeaderSubtitleValue() {
   return useContext(HeaderSubtitleContext).subtitle;
 }
 
-/** Set a mobile-only title override. When set, the header shows this title
- *  with a back arrow instead of branding, even on the "home" route.
- *  Optionally provide a back action callback (used instead of Link navigation). */
+/** Set a mobile-only title override with an optional back action callback. */
 export function useMobileTitle(value: string, backAction?: () => void) {
   const { setMobileTitle, setMobileBackAction } = useContext(HeaderSubtitleContext);
-  const stableSetTitle = useCallback((v: string) => setMobileTitle(v), [setMobileTitle]);
-  const stableSetBack = useCallback((a: (() => void) | null) => setMobileBackAction(() => a), [setMobileBackAction]);
+  const backActionRef = useRef(backAction);
+
   useEffect(() => {
-    stableSetTitle(value);
-    // Only set the back action when the title is actually active
-    stableSetBack(value ? (backAction ?? null) : null);
+    backActionRef.current = backAction;
+  }, [backAction]);
+
+  useEffect(() => {
+    setMobileTitle(value);
+    if (value) {
+      setMobileBackAction(() => backActionRef.current?.());
+    } else {
+      setMobileBackAction(null);
+    }
     return () => {
-      stableSetTitle("");
-      stableSetBack(null);
+      setMobileTitle("");
+      setMobileBackAction(null);
     };
-  }, [value, backAction, stableSetTitle, stableSetBack]);
+  }, [value, setMobileTitle, setMobileBackAction]);
 }
 
 export function useMobileTitleValue() {
