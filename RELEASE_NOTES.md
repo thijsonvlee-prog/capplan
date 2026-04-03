@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-03 — Capaciteitstabel visuele verbetering
+
+#### UX / design verbeteringen
+
+- **Capaciteitstabel tonale lagen:** De capaciteitstabel op de capaciteitspagina gebruikt nu tonale oppervlaktecontrasten in plaats van 1px randen en afwisselende rijtinten. Header- en samenvattingsrijen (Beschikbaar, Totaal ingepland) onderscheiden zich door oppervlaktekleur (surface-tertiary en surface-inset). Datarijen zijn borderless met subtiele hover-feedback. De tabel sluit nu visueel aan bij de KPI-kaarten en grafiek erboven.
+
 ### 2026-04-02 — Visuele verfijning, instellingen en code-opruiming
 
 #### UX / design verbeteringen

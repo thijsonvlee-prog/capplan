@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. One new P3 Medium item (PB-182, CapacityTable tonal layering) is ready for the next cycle. One new P4 Low item (PB-183, date parsing deduplication) is also ready. No critical or high-priority work pending.
+**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. PB-182 (CapacityTable tonal layering) completed 2026-04-03. One P4 Low item (PB-183, date parsing deduplication) is ready for the next cycle. No critical or high-priority work pending.
 
 ## Status Definitions
 
@@ -26,21 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-182: CapacityTable — tonale lagen refactor
-
-- **ID:** PB-182
-- **Title:** CapacityTable — tonale lagen refactor
-- **Problem / opportunity:** De capaciteitstabel gebruikt 1px randen overal en afwisselende rijtinten, wat een spreadsheet-achtig uiterlijk geeft. Dit is in strijd met DESIGN.md §4.1 (No-Line Rule) en §7.4. Het verschil in kwaliteit tussen de geëleveerde KPI/chart-secties en de generieke tabel eronder is merkbaar.
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** De capaciteitspagina is het op één na belangrijkste scherm. Na de recente visuele verbeteringen aan KPI's en vergelijkingsknoppen valt de generieke tabel meer op.
-- **Scope notes:** Vervang 1px rij-randen door tonale oppervlaktecontrasten. Gebruik surface-tertiary voor header-rij, surface-primary voor datarijen met subtiele spacing tussen groepen. Verwijder de meeste interne randen en vertrouw op spacing en tonaal contrast voor structuur. Geen functionele wijzigingen.
-- **Dependencies:** Geen.
-- **Definition of done:** CapacityTable gebruikt tonale lagen in plaats van 1px randen. Verify slaagt. Visuele consistentie met de rest van de capaciteitspagina.
-- **Implementation note:** Refereer aan StamtabelManager (PB-180) voor het patroon van tonale lagen en hover-elevatie.
-- **Source:** EX-REC-056
 
 ### PB-183: Dedupliceer date-parsing logica in planning API routes
 
@@ -76,6 +61,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-182: CapacityTable — tonale lagen refactor
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-03
+- **Summary:** Replaced 1px row borders and alternating row tints with tonal surface layering. Header and summary rows use surface-tertiary/surface-inset. Data rows use surface-primary with hover transition. Moved summary rows to semantic `<tfoot>`. All borders removed in favor of tonal contrast. Verify passes.
 
 ### PB-176: Verplaats COMPARE_COLORS naar module scope en constants
 
