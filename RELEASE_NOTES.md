@@ -6,6 +6,29 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-03 — Capaciteitstabel visuele verbetering en code-onderhoud
+
+#### UX / design verbeteringen
+
+- **Capaciteitstabel tonale lagen:** De capaciteitstabel op de capaciteitspagina gebruikt nu tonale oppervlaktecontrasten in plaats van 1px randen en afwisselende rijtinten. Header- en samenvattingsrijen (Beschikbaar, Totaal ingepland) onderscheiden zich door oppervlaktekleur (surface-tertiary en surface-inset). Datarijen zijn borderless met subtiele hover-feedback. De tabel sluit nu visueel aan bij de KPI-kaarten en grafiek erboven.
+
+#### Onderhoud
+
+- **Date-parsing geconsolideerd:** Gedupliceerde date-parsing en validatielogica uit drie planning API-routes geëxtraheerd naar een gedeelde `parseDateList()` functie in `api-route-utils.ts`. Eén centraal punt voor het splitsen, lege-check, maximale-lengte controle en datumformaatvalidatie van komma-gescheiden datumlijsten. Elimineert ~30 regels duplicatie.
+
+### 2026-04-02 — Visuele verfijning, instellingen en code-opruiming
+
+#### UX / design verbeteringen
+
+- **Instellingen lijstitems:** StamtabelManager en SkillManager rijen hebben nu subtiele hover-elevatie, afgeronde vormen en vloeiende overgangen. Bewerkmodus is visueel duidelijk onderscheiden met merkkleur-accentrand en achtergrond. Verbetert de premium uitstraling over alle stamtabel- en vaardigheidssecties.
+- **Capaciteit vergelijkingsknoppen:** Scenario-vergelijkingsknoppen zijn omgestyled naar pilvormige badges met duidelijke actief/inactief-staten. Actieve staat toont merkkleur-vulling, inactieve staat heeft subtiele rand met hover-feedback.
+
+#### Onderhoud
+
+- **COMPARE_COLORS gecentraliseerd:** Vergelijkingskleuren voor de capaciteitsgrafiek verplaatst van een inline-definitie in de component naar `src/domain/constants.ts`. Hex-waarden zijn voorzien van commentaar met design token equivalenten. Verbetert render-stabiliteit en centraliseert kleurenbeheer.
+- **Ongebruikte types verwijderd:** `PlanningEntryOptions` en `UserContext` verwijderd uit `domain/types.ts`. Beide types werden nergens geïmporteerd.
+- **Ongebruikte mobiele CSS opgeruimd:** `.mobile-nav-overlay`, `.mobile-nav-panel` en bijbehorende keyframe-animaties verwijderd uit `globals.css`. Deze waren overbodig na de mobiele navigatie-herziening.
+
 ### 2026-04-01 — Mobiele navigatie hersteld
 
 #### Bugfixes

@@ -2,52 +2,36 @@
 
 ## Summary
 
-**This cycle (2026-04-01, run 17):** No Experience Agent tasks were in the backlog. Performed a fresh UX/design audit of all key screens and components against the DESIGN.md standard.
+**This cycle (2026-04-03, run 19):** Completed PB-182 (CapacityTable tonal layering refactor).
 
 **What was improved:**
-- No code changes this cycle. All Experience Agent backlog items are either completed or deferred.
+- CapacityTable replaced 1px row borders and alternating row tints with tonal surface layering. Header uses surface-tertiary, data rows use clean surface-primary with hover transitions, summary rows use surface-tertiary (Beschikbaar) and surface-inset (Totaal ingepland) for clear visual hierarchy. Summary rows moved to semantic `<tfoot>`. All internal borders removed — structure comes from tonal contrast and spacing.
 
 **Current design alignment with DESIGN.md:**
 - **Overall product quality: 8/10.** The application exceeds generic admin UI across all screens. Design tokens are comprehensive (~55 tokens), typography hierarchy is strong (Manrope display + Inter body), and surface layering is consistently applied.
-- **Planning grid:** Well-aligned (sections 7.4, 9). Toolbar organized into four zones (Period, Filter, View, Status). Tonal row striping with hover effects. Status cells with color indicator dots.
-- **Capacity page:** Well-aligned (sections 7.1, 7.3, 8.3). KPI summary module, grouped toolbar with subtle dividers, chart + table sections clearly separated.
-- **Settings page (desktop):** Well-aligned (sections 2.5, 7.1). Tab navigation with icon + badge counts, color-coded tab groups, section intros.
-- **Settings page (mobile):** Well-aligned (sections 2.5, 7.3). Card-based section picker with colored icon backgrounds.
-- **Drivers page:** Well-aligned (sections 3.2, 7.3). Composed page header, integrated search, tonal row alternation. Mobile card view.
+- **Planning grid:** Well-aligned (sections 7.4, 9). Toolbar organized into four zones. Tonal row striping with hover effects.
+- **Capacity page:** Well-aligned (sections 7.1, 7.3, 8.3). KPI summary module, grouped toolbar with comparison pills, chart + table sections clearly separated. Table now uses tonal layering consistent with the rest of the page.
+- **Settings page:** Well-aligned (sections 2.5, 7.1). StamtabelManager and SkillManager rows use tonal layering with hover elevation and brand accent editing state.
+- **Drivers page:** Well-aligned (sections 3.2, 7.3). Composed page header, integrated search, tonal row alternation.
 - **Mobile experience:** Well-aligned across all screens. Consistent header pattern, entrance animations, touch-friendly targets.
 - **Sidebar:** Well-aligned (section 7.8). Dark premium surface, clear active states.
-- **Toast & ConfirmDialog:** Product-grade. Proper icon treatment, modal backdrop, accessibility.
 
 **Where design quality is still below target:**
 - Recharts default tooltip/axis styling remains the most visible desktop integration gap.
-- StamtabelManager/SkillManager list items feel utilitarian (basic hover:bg, divide-y pattern). Below the premium feel of other screens.
-- RosterProfileEditor 28-day grid lacks visual refinement compared to the planning grid.
-- Capacity comparison buttons feel flat — basic padding/color without badge-style treatment.
-- Form validation messaging lacks entrance animation or visual hierarchy.
+- RosterProfileEditor 28-day grid is flat and mechanical — no tonal layering or visual rhythm.
 
 ## Recommended Next Improvements
 
-### EX-REC-054: StamtabelManager en SkillManager — visuele verhoging lijstitems
+### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
-- **Problem:** StamtabelManager and SkillManager list items use a basic `divide-y` separator with flat `hover:bg-surface-secondary`. Inline editing with Check/X icons is functional but feels generic compared to the composed headers, cards, and surfaces used elsewhere in the app.
-- **Proposed improvement:** Add subtle hover elevation (shadow-xs on hover), improve row spacing, add a light left-accent border on the active/editing row, and refine the action icon spacing. Keep the inline edit pattern but make it feel more intentional.
-- **Expected user value:** Settings screens feel as polished as the planning and capacity screens. Consistent premium feel across the full app.
+- **Problem:** The Recharts AreaChart uses default tooltip and axis styling. The default Recharts tooltip feels generic compared to the rest of the product-grade capacity page. The CartesianGrid uses a plain dashed pattern. Now that both the KPIs above and the table below use the design system consistently, the chart is the most visible remaining gap on this screen.
+- **Proposed improvement:** Add a custom tooltip component with the app's design tokens (surface-primary background, shadow-dropdown, text tokens). Style axis ticks with text-text-secondary color. Consider refining grid line opacity.
+- **Expected user value:** The chart feels fully integrated with the design system instead of an embedded third-party widget.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Low-risk refinement. These components are shared across 4+ stamtabel instances and skills, so improvements propagate broadly.
-
-### EX-REC-055: Capaciteitspagina — vergelijkingsknoppen visuele verbetering
-
-- **Problem:** The scenario comparison buttons on the capacity page use basic `px-2.5 py-1` styling with flat color fills. They lack visual weight differentiation from surrounding text and don't communicate their interactive/toggled state clearly enough.
-- **Proposed improvement:** Restyle as badge-style pills with subtle borders when inactive and solid fill when active. Add a small transition on toggle. Ensure selected state has clear visual distinction.
-- **Expected user value:** Faster recognition of comparison state. The toolbar feels more cohesive and intentional.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Quick visual polish on the second most important screen.
+- **Why now:** After PB-182 the capacity table is aligned. The chart is now the only element on the capacity page that still uses default third-party styling.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -70,17 +54,6 @@
 - **Dependencies:** PB-169 (completed)
 - **Suggested owner:** Experience Agent
 - **Why now:** Low effort enhancement that could be combined with any future mobile work.
-
-### EX-REC-049: Capacity chart — custom tooltip and axis styling
-
-- **Problem:** The Recharts AreaChart uses default tooltip and axis styling. The default Recharts tooltip feels generic compared to the rest of the product-grade capacity page.
-- **Proposed improvement:** Add a custom tooltip component with the app's design tokens (surface-primary background, shadow-dropdown, text tokens). Style axis ticks with text-text-secondary color.
-- **Expected user value:** The chart feels fully integrated with the design system instead of an embedded third-party widget.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Most visible remaining integration gap on desktop. Low risk.
 
 ### EX-REC-038: Extend Manrope to section titles and modal headers
 
@@ -140,12 +113,10 @@
 ## Risks / Watch-outs
 
 - **Mobile planning is read-only.** Planners must use desktop to make schedule changes. Monitor user demand for mobile edit capability (EX-REC-052).
-- **Recharts default styling.** The capacity chart's tooltip/axis styling is still Recharts default. See EX-REC-049.
-- **Settings tab count growth.** The desktop settings page has 7 tabs. The mobile card list handles this well, but adding more tabs on desktop may need a different navigation pattern.
-- **Release notes page data maintenance.** Release notes are embedded as a structured data array. Consider markdown parsing if update frequency becomes burdensome.
+- **Recharts default styling.** The capacity chart's tooltip/axis styling is still Recharts default. Now the most visible remaining integration gap on the capacity page. See EX-REC-049.
+- **RosterProfileEditor grid.** Flat, mechanical 28-day grid with stark status colors. Below DESIGN.md standard but low-traffic screen. Not yet recommended for immediate work.
+- **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
 - **Mobile capacity scenario compare hidden.** The compare feature is desktop-only. May need mobile treatment if multi-scenario comparison is a common mobile use case.
-- **Unused mobile-nav CSS classes.** `mobile-nav-overlay` and `mobile-nav-panel` classes in globals.css are no longer used. Tracked as PB-178 for Delivery Agent cleanup.
-- **StamtabelManager/SkillManager below premium standard.** These shared components propagate their generic feel across 5+ settings sections. Tracked as EX-REC-054.
 
 ## Items Intentionally Not Recommended
 
@@ -164,8 +135,8 @@
 - **FormField wrapper component:** Reduces repetition but adds abstraction risk.
 - **Skeleton loaders:** Spinner pattern works. Skeleton loaders add complexity without strong user demand.
 - **Status legend popover collapse:** Inline legend provides constant reference.
-- **Capacity page structural redesign:** PB-131 brought the page to product-grade quality.
-- **Broad StamtabelManager No-Line refactor:** Borders serve usability here. Subtle refinement via EX-REC-054 is the right approach.
+- **Capacity page structural redesign:** PB-131 brought the page to product-grade quality. PB-182 further aligned the table.
+- **Broad StamtabelManager No-Line refactor:** Borders serve usability in the card header/form. Row area now uses tonal layering (PB-180).
 - **Full mobile-first redesign of all screens:** ESC-013 decided Option B. Only key screens need mobile optimization.
 - **Mobile planning edit in v1:** Deliberately deferred to v2. Read-only flow validated first.
 - **Mobile homescreen route rename:** `/planning` is functionally clean for both homescreen and planning.
@@ -173,6 +144,8 @@
 - **Mobile drivers page visual refresh:** Completed (PB-175). No further work needed.
 - **Form validation entrance animation:** Minor polish. Current inline error display is functional and clear.
 - **Toast micro-interactions (stagger, exit):** Current slide-in is sufficient. Over-animating risks feeling unserious.
+- **CapacityKPIs card redesign:** Current cards are functional. Elevating them would require establishing a new KPI card pattern — not justified without stronger need.
+- **CapacityTable further redesign:** PB-182 brought the table to tonal layering standard. Current state is aligned with DESIGN.md §4.1 and §7.4. No further work needed.
 
 ## Recommendation Rules
 

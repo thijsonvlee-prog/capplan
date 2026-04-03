@@ -23,54 +23,58 @@ export function CapacityTable({ capacityData, columnHeaders }: Props) {
 
   return (
     <div className="overflow-x-auto bg-surface-primary rounded-lg shadow-card">
-      <table className="w-full border-collapse text-sm">
+      <table className="w-full border-separate border-spacing-0 text-sm">
         <thead>
-          <tr className="bg-surface-tertiary border-b border-border-subtle">
-            <th className="text-left p-2 text-label font-semibold min-w-[140px]">Status</th>
-            {columnHeaders.map((col) => (
-              <th key={col.key} className="p-2 text-center text-label font-medium min-w-[50px]">
+          <tr className="bg-surface-tertiary">
+            <th className="text-left px-3 py-2.5 text-label font-semibold min-w-[140px] first:rounded-tl-lg">Status</th>
+            {columnHeaders.map((col, i) => (
+              <th key={col.key} className={cn(
+                "px-2 py-2.5 text-center text-label font-medium min-w-[50px]",
+                i === columnHeaders.length - 1 && "rounded-tr-lg"
+              )}>
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {ALL_STATUSES.map((status, idx) => (
-            <tr key={status} className={cn(
-              "hover:bg-surface-secondary transition-colors",
-              idx % 2 === 1 && "bg-surface-secondary/50",
-              idx < ALL_STATUSES.length - 1 && "border-b border-border-subtle"
-            )}>
-              <td className="p-2">
+          {ALL_STATUSES.map((status) => (
+            <tr key={status} className="hover:bg-surface-secondary/60 transition-colors">
+              <td className="px-3 py-2">
                 <span className={cn("status-chip-compact", STATUS_COLORS[status])}>
                   <span className={cn("status-dot", STATUS_DOT_COLORS[status])} aria-hidden="true" />
                   {STATUS_LABELS[status]}
                 </span>
               </td>
               {columnHeaders.map((col) => (
-                <td key={col.key} className="p-2 text-center text-xs text-text-secondary">
+                <td key={col.key} className="px-2 py-2 text-center text-xs text-text-secondary">
                   {capacityData[col.key]?.[status] || 0}
                 </td>
               ))}
             </tr>
           ))}
-          <tr className="bg-surface-tertiary border-t border-border-default">
-            <td className="p-2 text-xs font-semibold text-text-primary">Beschikbaar</td>
+        </tbody>
+        <tfoot>
+          <tr className="bg-surface-tertiary">
+            <td className="px-3 py-2.5 text-xs font-semibold text-text-primary">Beschikbaar</td>
             {columnHeaders.map((col) => (
-              <td key={col.key} className="p-2 text-center text-xs font-semibold text-success-700">
+              <td key={col.key} className="px-2 py-2.5 text-center text-xs font-semibold text-success-700">
                 {availableDrivers(col.key)}
               </td>
             ))}
           </tr>
-          <tr className="bg-surface-tertiary border-t border-border-subtle">
-            <td className="p-2 text-xs font-semibold text-text-primary">Totaal ingepland</td>
-            {columnHeaders.map((col) => (
-              <td key={col.key} className="p-2 text-center text-xs font-semibold text-text-primary">
+          <tr className="bg-surface-inset">
+            <td className="px-3 py-2.5 text-xs font-semibold text-text-primary first:rounded-bl-lg">Totaal ingepland</td>
+            {columnHeaders.map((col, i) => (
+              <td key={col.key} className={cn(
+                "px-2 py-2.5 text-center text-xs font-semibold text-text-primary",
+                i === columnHeaders.length - 1 && "rounded-br-lg"
+              )}>
                 {totalDrivers(col.key)}
               </td>
             ))}
           </tr>
-        </tbody>
+        </tfoot>
       </table>
     </div>
   );

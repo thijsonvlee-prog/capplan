@@ -19,11 +19,10 @@ export function Header() {
   const pathname = usePathname();
   const subtitle = useHeaderSubtitleValue();
   const mobileTitle = useMobileTitleValue();
-  const mobileBackAction = useMobileBackAction();
+  const mobileBackActionRef = useMobileBackAction();
   const { data: session } = useSession();
   const title = Object.entries(PAGE_TITLES).find(([path]) => pathname.startsWith(path))?.[1];
   const isHome = pathname === "/planning" || pathname === "/";
-  // When a mobile title override is set, treat the page as non-home on mobile
   const showMobileBack = !isHome || !!mobileTitle;
   const mobileDisplayTitle = mobileTitle || title;
 
@@ -32,9 +31,9 @@ export function Header() {
       <div className="flex items-center gap-2">
         {/* Mobile: back button on non-home routes or when mobile title is set */}
         {showMobileBack && (
-          mobileBackAction ? (
+          mobileTitle ? (
             <button
-              onClick={mobileBackAction}
+              onClick={() => mobileBackActionRef.current?.()}
               className="mobile-menu-btn md:hidden"
               aria-label="Terug naar startscherm"
             >

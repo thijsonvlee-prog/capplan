@@ -2,20 +2,11 @@
 
 import { useState } from "react";
 import type { PlanningStatus } from "@/domain/enums";
-import { ALL_PLANNING_STATUSES, STATUS_LABELS } from "@/domain/constants";
+import { ALL_PLANNING_STATUSES, STATUS_LABELS, STATUS_DOT_COLORS } from "@/domain/constants";
 import { useApiData } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Check, ChevronRight, ChevronLeft } from "lucide-react";
-
-/** Dot color per status — maps to design token bg classes */
-const STATUS_DOT_COLORS: Record<PlanningStatus, string> = {
-  ROSTER_FREE: "bg-surface-inset",
-  BASE_ROSTER: "bg-success-700",
-  AVAILABLE_EXTRA: "bg-success-300",
-  LEAVE: "bg-warning-300",
-  SICK: "bg-danger-500",
-};
 
 type Props = {
   currentStatus?: PlanningStatus;

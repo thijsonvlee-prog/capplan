@@ -5,8 +5,8 @@ import { Search, X, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { useApiData, useApiDataWithLoading } from "@/hooks/useApi";
 import { api } from "@/lib/api";
 import { useHeaderSubtitle } from "@/hooks/useHeaderSubtitle";
-import { getDateRange, cn } from "@/lib/utils";
-import { STATUS_LABELS, DAY_LABELS, MONTH_SHORT } from "@/domain/constants";
+import { cn } from "@/lib/utils";
+import { STATUS_LABELS, STATUS_DOT_COLORS, DAY_LABELS, MONTH_SHORT } from "@/domain/constants";
 import type { PlanningEntry, Driver } from "@/domain/types";
 import type { PlanningStatus } from "@/domain/enums";
 import { addDays, addMonths, subMonths, parseISO, getISOWeek, startOfMonth, endOfMonth, getDay } from "date-fns";
@@ -421,36 +421,31 @@ export function MobilePlanningView() {
 // --- Sub-components & helpers ---
 
 function getStatusDotColor(status: PlanningStatus): string {
-  const map: Record<PlanningStatus, string> = {
-    ROSTER_FREE: "bg-surface-inset",
-    BASE_ROSTER: "bg-success-700",
-    AVAILABLE_EXTRA: "bg-success-300",
-    LEAVE: "bg-warning-300",
-    SICK: "bg-danger-500",
-  };
-  return map[status] || "bg-surface-inset";
+  return STATUS_DOT_COLORS[status];
 }
+
+const STATUS_ACCENT_COLORS: Record<PlanningStatus, string> = {
+  ROSTER_FREE: "border-l-surface-inset",
+  BASE_ROSTER: "border-l-success-600",
+  AVAILABLE_EXTRA: "border-l-success-400",
+  LEAVE: "border-l-warning-400",
+  SICK: "border-l-danger-500",
+};
 
 function getStatusAccentColor(status: PlanningStatus): string {
-  const map: Record<PlanningStatus, string> = {
-    ROSTER_FREE: "border-l-surface-inset",
-    BASE_ROSTER: "border-l-success-600",
-    AVAILABLE_EXTRA: "border-l-success-400",
-    LEAVE: "border-l-warning-400",
-    SICK: "border-l-danger-500",
-  };
-  return map[status] || "border-l-surface-inset";
+  return STATUS_ACCENT_COLORS[status];
 }
 
+const STATUS_BG_COLORS: Record<PlanningStatus, string> = {
+  ROSTER_FREE: "bg-surface-tertiary",
+  BASE_ROSTER: "bg-success-50",
+  AVAILABLE_EXTRA: "bg-success-50",
+  LEAVE: "bg-warning-50",
+  SICK: "bg-danger-50",
+};
+
 function getStatusBgColor(status: PlanningStatus): string {
-  const map: Record<PlanningStatus, string> = {
-    ROSTER_FREE: "bg-surface-tertiary",
-    BASE_ROSTER: "bg-success-50",
-    AVAILABLE_EXTRA: "bg-success-50",
-    LEAVE: "bg-warning-50",
-    SICK: "bg-danger-50",
-  };
-  return map[status] || "bg-surface-tertiary";
+  return STATUS_BG_COLORS[status];
 }
 
 type DayDetailPanelProps = {

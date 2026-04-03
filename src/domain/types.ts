@@ -72,12 +72,6 @@ export type Driver = {
 
 // === Planning Domain ===
 
-export type PlanningEntryOptions = {
-  leaveTypeId?: string;
-  sickPercentage?: number;
-  notes?: string;
-};
-
 export type PlanningEntry = {
   id: string;
   driverId: string;
@@ -154,11 +148,6 @@ export type UserPreference = {
   key: string;
   value: string;
   updatedAt: string;
-};
-
-export type UserContext = {
-  userId: string;
-  role: UserRole;
 };
 
 // === Import Source Domain ===

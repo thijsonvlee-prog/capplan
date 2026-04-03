@@ -44,19 +44,23 @@ export async function logAudit(
 }
 
 const DEFAULT_RETENTION_DAYS = 90;
+const CLEANUP_THROTTLE_MS = 60 * 60 * 1000; // 1 hour
+let lastCleanupTime = 0;
 
 /**
  * Delete audit log entries older than the specified retention period.
- *
- * This is fire-and-forget: cleanup failures are logged but never
- * prevent the calling operation from succeeding.
+ * Throttled to run at most once per hour to avoid redundant DB work.
  *
  * @param retentionDays  Number of days to keep (default 90)
- * @returns Number of deleted entries, or 0 on failure
+ * @returns Number of deleted entries, or 0 if skipped/failed
  */
 export async function cleanupOldAuditLogs(
   retentionDays = DEFAULT_RETENTION_DAYS
 ): Promise<number> {
+  const now = Date.now();
+  if (now - lastCleanupTime < CLEANUP_THROTTLE_MS) return 0;
+  lastCleanupTime = now;
+
   try {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - retentionDays);

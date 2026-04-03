@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { PlanningStatus } from "@/domain/enums";
-import { STATUS_LABELS, STATUS_CHART_COLORS } from "@/domain/constants";
+import { STATUS_LABELS, STATUS_CHART_COLORS, COMPARE_COLORS } from "@/domain/constants";
 
 const CHART_STATUSES: PlanningStatus[] = [
   "BASE_ROSTER", "AVAILABLE_EXTRA", "ROSTER_FREE", "LEAVE", "SICK",
@@ -50,8 +50,6 @@ export const CapacityChart = memo(function CapacityChart({ capacityData, columnH
 
     return row;
   }), [columnHeaders, capacityData, compareData]);
-
-  const COMPARE_COLORS = ["#f97316", "#06b6d4", "#8b5cf6"];
 
   return (
     <div className="bg-surface-primary rounded-lg shadow-card p-3 md:p-5">
