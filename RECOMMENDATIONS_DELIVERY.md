@@ -6,9 +6,89 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-183 (date parsing deduplication) was completed this cycle, following PB-176/177/178 (code cleanup). `parseDateList()` now centralizes comma-separated date parsing, empty/max-length checks, and format validation across all three planning API routes. The codebase is stable with clean verify output. All remaining recommendations are P4 Low — no critical or high-priority improvements identified.
+PB-183 (date parsing deduplication) was completed this cycle, following PB-176/177/178 (code cleanup). `parseDateList()` now centralizes comma-separated date parsing, empty/max-length checks, and format validation across all three planning API routes. The codebase is stable with clean verify output.
+
+A fresh codebase scan identified one **P2 High** bug (scenario DELETE hardcodes userId, silently corrupting per-user preferences when auth is enabled) and five new **P3 Medium** issues including missing auth on several GET endpoints, unvalidated date inputs on sub-record routes, and redundant session lookups on high-frequency planning routes.
 
 ## Recommended Next Improvements
+
+### DE-REC-072: Fix scenario DELETE preference cleanup for authenticated users
+
+- **Title:** Scenario DELETE hardcodes userId "default" — stale preferences persist for real users
+- **Problem:** `/api/scenarios/[id]/route.ts` line 29 searches for the active scenario preference with hardcoded `userId: "default"`. When auth is enabled, real users have their actual UUID as userId. The cleanup query never matches, so deleted scenario IDs persist in the preferences table. On next load, the UI requests planning data for a non-existent scenario and silently receives empty results.
+- **Proposed improvement:** Replace the single `findFirst` with a `deleteMany` that matches `key: "activeScenario", value: id` regardless of userId. This cleans up the stale preference for all users who had the deleted scenario active.
+- **Expected product/technical value:** Prevents silent data loss when scenarios are deleted in auth-enabled deployments.
+- **Priority:** P2 High
+- **Effort:** Small (one query change)
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** This is a real bug that causes silent user-facing data loss in production with auth enabled.
+
+### DE-REC-073: Add auth checks to unauthenticated GET endpoints
+
+- **Title:** Several GET API endpoints have no authentication check
+- **Problem:** `GET /api/scenarios`, `GET /api/roster-profiles`, and driver sub-record GET handlers (`employment`, `functions`, `roster-assignments`) call neither `requireRole` nor any session check. The middleware only protects dashboard page routes, not API routes directly. In a public deployment, scenario names and driver sub-record data are publicly readable.
+- **Proposed improvement:** Add `requireRole("VIEWER")` to these GET handlers, matching the permission matrix in CLAUDE.md (VIEWER = read-only on all GET endpoints).
+- **Expected product/technical value:** Closes information disclosure gap. Enforces the stated permission model consistently.
+- **Priority:** P3 Medium
+- **Effort:** Small (add one line per handler)
+- **Risk:** Low (no behavior change when auth is not configured, since requireRole skips enforcement without NEXTAUTH_SECRET)
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Security gap that should be closed before any public-facing deployment.
+
+### DE-REC-074: Validate date formats on sub-record routes before range comparison
+
+- **Title:** Sub-record startDate/endDate comparison uses new Date() on unvalidated strings
+- **Problem:** Employment, function, and roster-assignment POST/PUT handlers (6 route files) compare `endDate < startDate` via `new Date(endDate)` without first validating date format. When an invalid string is passed, `new Date("not-a-date")` returns `Invalid Date`, the comparison silently passes, and Prisma throws an opaque 500 error.
+- **Proposed improvement:** Call `validateDateFormat()` (already exists in `api-route-utils.ts`) on both `startDate` and `endDate` before the range comparison. Return a clear 400 with Dutch error message on invalid format.
+- **Expected product/technical value:** Produces clear validation errors instead of 500s on malformed date input.
+- **Priority:** P3 Medium
+- **Effort:** Small (add validation calls before existing comparison in 6 files)
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Real validation gap that produces opaque errors on bad input.
+
+### DE-REC-075: Reduce redundant getServerSession calls on planning routes
+
+- **Title:** Double session lookup on routes that use both requireRole and getAllowedDepartmentIds
+- **Problem:** `requireRole()` and `getAllowedDepartmentIds()` both independently call `getServerSession(authOptions)`. On planning POST, bulk, and DELETE routes, this means two DB round-trips for session lookup per request. On Neon serverless, each adds ~50-100ms latency.
+- **Proposed improvement:** Add an optional `session` parameter to `getAllowedDepartmentIds()` so it can accept a pre-fetched session from `requireRole()`, or create a combined utility that fetches the session once.
+- **Expected product/technical value:** Saves ~50-100ms on every authenticated planning mutation. Most impactful on the bulk update path.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Easy optimization on the highest-frequency routes.
+
+### DE-REC-076: Add audit logging to driver sub-record mutations
+
+- **Title:** Employment, function, and roster-assignment mutations have no audit trail
+- **Problem:** All POST, PUT, and DELETE handlers for driver sub-records (employment, functions, roster-assignments) never call `logAudit()`. The driver entity itself is audited, but individual sub-record changes leave no trace. The audit log cannot answer "when was this driver's department changed?" or "who deleted the employment record?".
+- **Proposed improvement:** Add `logAudit()` calls following the existing pattern used in skills, settings, and scenario routes.
+- **Expected product/technical value:** Completes audit trail coverage for all mutable entities. Important for compliance.
+- **Priority:** P3 Medium
+- **Effort:** Medium (6 route files, ~4 lines per handler, 12-15 handlers total)
+- **Risk:** Low (fire-and-forget pattern, audit failures don't block mutations)
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Audit trail is incomplete for a category of frequently-changed records.
+
+### DE-REC-077: Validate scenario ID exists before creating planning entries
+
+- **Title:** Planning POST/bulk accept invalid scenario IDs, producing 500 instead of 400
+- **Problem:** `resolveScenarioId()` normalizes "default" to null but passes any other string through without verifying the scenario exists. If the scenario ID is deleted or random, Prisma's FK constraint rejects with a constraint violation (500) instead of a helpful 400 response.
+- **Proposed improvement:** Add `validateOptionalForeignKey(resolvedScenarioId, prisma.scenario, "scenario")` in planning POST and bulk handlers after resolving the scenario ID.
+- **Expected product/technical value:** Better error messages on invalid scenario references.
+- **Priority:** P3 Medium
+- **Effort:** Small (one check in 2 files)
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Produces unhelpful 500 errors on a realistic user error path (deleted scenario still selected).
 
 ### DE-REC-070: Deduplicate VALID_TARGET_ENTITIES in ImportSourceManager.tsx (client-side)
 
@@ -177,6 +257,10 @@ PB-183 (date parsing deduplication) was completed this cycle, following PB-176/1
 - **Batch FK validation in driver creation:** Driver POST route validates FKs individually via `Promise.all()`. A batch query would be marginally faster but adds complexity for a low-frequency operation.
 - **Deduplicate date-parsing logic:** Completed as PB-183. `parseDateList()` now centralizes this in `api-route-utils.ts`.
 - **Move COMPARE_COLORS / remove unused types / clean mobile CSS:** Completed as PB-176/177/178.
+- **Preferences `key` field length cap:** Same category as DE-REC-058 (value field). Near-zero risk since keys are hardcoded strings in the frontend.
+- **useApi cache key uses Function.toString():** Theoretically fragile under minification, but in practice different arrow functions produce different minified strings because URL strings differ. React Query-style explicit keys would be cleaner but a significant refactor for a working system.
+- **Import logs route sequential queries:** Two sequential queries instead of parallel. P4 Low, same category as DE-REC-059.
+- **autoCloseOpenRecords UTC dependency:** The `new Date()` + `toISOString()` pattern is correct because `toISOString()` always returns UTC. A clarifying comment would help but is not a defect.
 
 ## Recommendation Rules
 
