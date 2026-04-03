@@ -6,22 +6,9 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-176, PB-177, and PB-178 (code cleanup batch) were completed this cycle. COMPARE_COLORS is centralized in constants.ts, unused types removed, and dead mobile-nav CSS cleaned up. The codebase is stable with clean verify output. A fresh scan identified one new recommendation (date parsing deduplication). All remaining recommendations are P4 Low — no critical or high-priority improvements identified.
+PB-183 (date parsing deduplication) was completed this cycle, following PB-176/177/178 (code cleanup). `parseDateList()` now centralizes comma-separated date parsing, empty/max-length checks, and format validation across all three planning API routes. The codebase is stable with clean verify output. All remaining recommendations are P4 Low — no critical or high-priority improvements identified.
 
 ## Recommended Next Improvements
-
-### DE-REC-071: Extract duplicate date parsing logic to shared utility
-
-- **Title:** Deduplicate date list parsing across planning API routes
-- **Problem:** Three planning API routes (`/api/planning/route.ts`, `/api/planning/capacity/route.ts`, `/api/planning/for-range/route.ts`) contain identical date parsing and validation logic: `dates.split(",").map(d => d.trim()).filter(Boolean)` with the same Dutch error message. If the parsing logic or error message needs to change, three files must be updated.
-- **Proposed improvement:** Extract a `parseDateList(dates: string)` utility function to `api-route-utils.ts` that returns the parsed array or throws/returns a standardized error response.
-- **Expected product/technical value:** Eliminates ~15 lines of duplication. Single point of change for date parsing behavior.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Quick deduplication following the same pattern as PB-163/PB-164.
 
 ### DE-REC-070: Deduplicate VALID_TARGET_ENTITIES in ImportSourceManager.tsx (client-side)
 
@@ -188,6 +175,8 @@ PB-176, PB-177, and PB-178 (code cleanup batch) were completed this cycle. COMPA
 - **Extract useDebounce to custom hook:** Only used in DriverList with a simple inline implementation. Extraction for a single consumer adds indirection without benefit.
 - **Add aria-labels to chart visualizations:** Recharts manages its own accessibility. Adding custom aria attributes would conflict with the library's internal handling.
 - **Batch FK validation in driver creation:** Driver POST route validates FKs individually via `Promise.all()`. A batch query would be marginally faster but adds complexity for a low-frequency operation.
+- **Deduplicate date-parsing logic:** Completed as PB-183. `parseDateList()` now centralizes this in `api-route-utils.ts`.
+- **Move COMPARE_COLORS / remove unused types / clean mobile CSS:** Completed as PB-176/177/178.
 
 ## Recommendation Rules
 

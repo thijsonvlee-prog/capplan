@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, parseJsonBody, validateDateFormat, validateDateFormats, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, parseJsonBody, validateDateFormat, parseDateList, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { PlanningStatus } from "@/domain/enums";
 
 const MAX_NOTES_LENGTH = 500;
@@ -34,18 +34,11 @@ export const GET = withPerfLogging(
     }
 
     if (dates) {
-      const dateList = dates.split(",").map((d) => d.trim()).filter(Boolean);
-      if (dateList.length > 366) {
-        return NextResponse.json(
-          { error: "Maximaal 366 datums per verzoek" },
-          { status: 400 }
-        );
+      const parsed = parseDateList(dates, 366);
+      if ("error" in parsed) {
+        return NextResponse.json({ error: parsed.error }, { status: 400 });
       }
-      const dateError = validateDateFormats(dateList);
-      if (dateError) {
-        return NextResponse.json({ error: dateError }, { status: 400 });
-      }
-      where.date = { in: dateList };
+      where.date = { in: parsed.dateList };
     }
 
     if (driverId) {

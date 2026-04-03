@@ -385,6 +385,33 @@ export async function validateOptionalForeignKey(
 
 // === Date validation utilities ===
 
+/**
+ * Parse a comma-separated date string into a validated array of date strings.
+ * Performs splitting, trimming, empty check, max length check, and format validation.
+ * Returns { dateList } on success, or { error } with a Dutch error message on failure.
+ */
+export function parseDateList(
+  dates: string,
+  maxLength: number = 366
+): { dateList: string[]; error?: never } | { dateList?: never; error: string } {
+  const dateList = dates.split(",").map((d) => d.trim()).filter(Boolean);
+
+  if (dateList.length === 0) {
+    return { error: "Minimaal één geldige datum is verplicht" };
+  }
+
+  if (dateList.length > maxLength) {
+    return { error: `Maximaal ${maxLength} datums per verzoek` };
+  }
+
+  const formatError = validateDateFormats(dateList);
+  if (formatError) {
+    return { error: formatError };
+  }
+
+  return { dateList };
+}
+
 const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 /**

@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. PB-182 (CapacityTable tonal layering) completed 2026-04-03. One P4 Low item (PB-183, date parsing deduplication) is ready for the next cycle. No critical or high-priority work pending.
+**Current direction:** Desktop homescreen (SMI-026) is escalated as ESC-014, awaiting Scrum Master scope decision. PB-182 (CapacityTable tonal layering) completed 2026-04-03. PB-183 (date parsing deduplication) completed 2026-04-03. No critical or high-priority work pending.
 
 ## Status Definitions
 
@@ -27,20 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-183: Dedupliceer date-parsing logica in planning API routes
-
-- **ID:** PB-183
-- **Title:** Dedupliceer date-parsing logica in planning API routes
-- **Problem / opportunity:** Drie planning API-routes bevatten identieke date-parsing en validatielogica: `dates.split(",").map(d => d.trim()).filter(Boolean)` met dezelfde Nederlandse foutmelding. Bij een wijziging moeten drie bestanden worden aangepast.
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** Snelle deduplicatie die het patroon van PB-163/PB-164 volgt. Kleine verbetering van de codekwaliteit.
-- **Scope notes:** Extraheer een `parseDateList(dates: string)` utility-functie naar `api-route-utils.ts`. Elimineer ~15 regels duplicatie.
-- **Dependencies:** Geen.
-- **Definition of done:** Eén gedeelde `parseDateList` functie in `api-route-utils.ts`. Alle drie routes importeren en gebruiken deze. Verify slaagt.
-- **Implementation note:** Volg het patroon van `resolveUserId` en `validateApiFields` extractie.
-- **Source:** DE-REC-071
+_No items ready for next cycle._
 
 ---
 
@@ -61,6 +48,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-183: Dedupliceer date-parsing logica in planning API routes
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-03
+- **Summary:** Extracted `parseDateList()` utility to `api-route-utils.ts`. All three planning routes (`/api/planning`, `/api/planning/capacity`, `/api/planning/for-range`) now use the shared function. Eliminates ~30 lines of duplicate splitting, empty-check, max-length, and format validation logic. Verify passes.
 
 ### PB-182: CapacityTable — tonale lagen refactor
 
