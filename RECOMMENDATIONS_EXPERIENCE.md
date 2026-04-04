@@ -2,36 +2,60 @@
 
 ## Summary
 
-**This cycle (2026-04-03, run 19):** Completed PB-182 (CapacityTable tonal layering refactor).
+**This cycle (2026-04-04, run 20):** No Experience Agent tasks were assigned in the backlog. Performed a fresh design scan of the full application.
 
 **What was improved:**
-- CapacityTable replaced 1px row borders and alternating row tints with tonal surface layering. Header uses surface-tertiary, data rows use clean surface-primary with hover transitions, summary rows use surface-tertiary (Beschikbaar) and surface-inset (Totaal ingepland) for clear visual hierarchy. Summary rows moved to semantic `<tfoot>`. All internal borders removed — structure comes from tonal contrast and spacing.
+- No code changes this cycle. All "Ready for Next Cycle" items in the backlog are assigned to the Delivery Agent.
 
 **Current design alignment with DESIGN.md:**
 - **Overall product quality: 8/10.** The application exceeds generic admin UI across all screens. Design tokens are comprehensive (~55 tokens), typography hierarchy is strong (Manrope display + Inter body), and surface layering is consistently applied.
 - **Planning grid:** Well-aligned (sections 7.4, 9). Toolbar organized into four zones. Tonal row striping with hover effects.
-- **Capacity page:** Well-aligned (sections 7.1, 7.3, 8.3). KPI summary module, grouped toolbar with comparison pills, chart + table sections clearly separated. Table now uses tonal layering consistent with the rest of the page.
+- **Capacity page:** Well-aligned (sections 7.1, 7.3, 8.3). KPI summary module, grouped toolbar with comparison pills, chart + table sections clearly separated. Table uses tonal layering. **Chart remains the gap** — default Recharts tooltip/axis styling.
 - **Settings page:** Well-aligned (sections 2.5, 7.1). StamtabelManager and SkillManager rows use tonal layering with hover elevation and brand accent editing state.
 - **Drivers page:** Well-aligned (sections 3.2, 7.3). Composed page header, integrated search, tonal row alternation.
 - **Mobile experience:** Well-aligned across all screens. Consistent header pattern, entrance animations, touch-friendly targets.
 - **Sidebar:** Well-aligned (section 7.8). Dark premium surface, clear active states.
+- **Release notes page:** Well-composed with expandable sections and category badges. Content is out of sync with RELEASE_NOTES.md (missing April 2-3 entries).
 
 **Where design quality is still below target:**
 - Recharts default tooltip/axis styling remains the most visible desktop integration gap.
-- RosterProfileEditor 28-day grid is flat and mechanical — no tonal layering or visual rhythm.
+- RosterProfileEditor 28-day grid is flat and mechanical — no tonal layering, no weekend differentiation, no visual rhythm.
+- Release notes page has hardcoded content that drifts from RELEASE_NOTES.md.
 
 ## Recommended Next Improvements
+
+### EX-REC-054: Release notes page — sync hardcoded content with RELEASE_NOTES.md
+
+- **Problem:** The release notes page (`src/app/(dashboard)/documentatie/page.tsx`) uses a hardcoded `RELEASES` array that only contains entries up to April 1, 2026. The April 2 and April 3 entries from `RELEASE_NOTES.md` are missing. Every time new release notes are written, someone must manually add them to the component. This content drift means users see outdated information.
+- **Proposed improvement:** Add the missing April 2-3 entries to the hardcoded array. Longer-term, consider making the page read from a shared data source or at minimum document the sync requirement.
+- **Expected user value:** Users see accurate, up-to-date release information when they visit the Releasenotes page.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Content is already 2-3 days stale. Every cycle without sync increases the gap.
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
 - **Problem:** The Recharts AreaChart uses default tooltip and axis styling. The default Recharts tooltip feels generic compared to the rest of the product-grade capacity page. The CartesianGrid uses a plain dashed pattern. Now that both the KPIs above and the table below use the design system consistently, the chart is the most visible remaining gap on this screen.
-- **Proposed improvement:** Add a custom tooltip component with the app's design tokens (surface-primary background, shadow-dropdown, text tokens). Style axis ticks with text-text-secondary color. Consider refining grid line opacity.
+- **Proposed improvement:** Add a custom tooltip component with the app's design tokens (surface-primary background, shadow-dropdown, text tokens). Style axis ticks with text-text-secondary color. Refine grid line opacity.
 - **Expected user value:** The chart feels fully integrated with the design system instead of an embedded third-party widget.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** After PB-182 the capacity table is aligned. The chart is now the only element on the capacity page that still uses default third-party styling.
+
+### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
+
+- **Problem:** The 28-day roster profile grid uses a plain HTML table with minimal styling. All days look identical regardless of weekday/weekend. No tonal contrast between weeks. Status cells are small (32px) with no visual rhythm. The grid feels flat and mechanical compared to the rest of the settings page, which uses tonal layering and hover elevation. Below DESIGN.md §7.4 standard (avoid harsh grid-line visuals, use spacing and tonal contrast).
+- **Proposed improvement:** Add alternating week-row tonal layering (surface-secondary for even weeks). Visually distinguish weekend columns (Za/Zo) with a subtle background tint. Slightly increase cell size for touch friendliness. Add subtle rounded corners to the grid container.
+- **Expected user value:** The roster profile editor feels intentionally designed rather than a raw grid. Weekday/weekend distinction helps planners quickly validate patterns.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Low-traffic screen but visible gap in settings page quality. All other settings sections are now at design system standard.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -112,9 +136,10 @@
 
 ## Risks / Watch-outs
 
+- **Release notes content drift.** The hardcoded release notes page is already 2-3 days behind RELEASE_NOTES.md. This will worsen each cycle. See EX-REC-054.
 - **Mobile planning is read-only.** Planners must use desktop to make schedule changes. Monitor user demand for mobile edit capability (EX-REC-052).
 - **Recharts default styling.** The capacity chart's tooltip/axis styling is still Recharts default. Now the most visible remaining integration gap on the capacity page. See EX-REC-049.
-- **RosterProfileEditor grid.** Flat, mechanical 28-day grid with stark status colors. Below DESIGN.md standard but low-traffic screen. Not yet recommended for immediate work.
+- **RosterProfileEditor grid.** Flat, mechanical 28-day grid with stark status colors. Below DESIGN.md standard but low-traffic screen. See EX-REC-055.
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
 - **Mobile capacity scenario compare hidden.** The compare feature is desktop-only. May need mobile treatment if multi-scenario comparison is a common mobile use case.
 
