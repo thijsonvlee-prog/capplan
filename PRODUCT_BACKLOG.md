@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** One real bug (PB-184, scenario DELETE preference cleanup) and one security gap (PB-185, missing auth on GET endpoints) are the top priorities for the next cycle. Additional validation improvements (PB-186 through PB-189) fill remaining capacity. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
+**Current direction:** PB-184 through PB-189 completed in the 2026-04-04 cycle. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision. New recommendations available in RECOMMENDATIONS_DELIVERY.md.
 
 ## Status Definitions
 
@@ -27,89 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-184: Fix scenario DELETE preference cleanup voor ingelogde gebruikers
-
-- **ID:** PB-184
-- **Title:** Scenario DELETE hardcodes userId "default" — stale preferences bij echte gebruikers
-- **Problem / opportunity:** `/api/scenarios/[id]/route.ts` line 29 zoekt de actieve scenario-voorkeur met hardcoded `userId: "default"`. Bij ingelogde gebruikers matcht dit nooit, waardoor verwijderde scenario-ID's in de preferences-tabel blijven staan. Bij volgende laadbeurt vraagt de UI planning-data op voor een niet-bestaand scenario en krijgt stil lege resultaten.
-- **Owner:** Delivery Agent
-- **Priority:** P1 Critical
-- **Status:** Ready
-- **Why this matters now:** Dit is een echte bug die stille dataverlies veroorzaakt bij productie met authenticatie ingeschakeld.
-- **Scope notes:** Vervang de `findFirst` met `deleteMany` die matcht op `key: "activeScenario", value: id` ongeacht userId. Eén querywijziging.
-- **Dependencies:** Geen
-- **Definition of done:** Na het verwijderen van een scenario wordt de bijbehorende voorkeur opgeruimd voor alle gebruikers. Verify slaagt.
-- **Implementation note:** Bron: DE-REC-072.
-
-### PB-185: Voeg auth-checks toe aan onbeschermde GET endpoints
-
-- **ID:** PB-185
-- **Title:** Meerdere GET API-endpoints missen authenticatiecontrole
-- **Problem / opportunity:** `GET /api/scenarios`, `GET /api/roster-profiles`, en driver sub-record GET handlers (employment, functions, roster-assignments) roepen geen `requireRole` aan. Bij een publieke deployment zijn scenario-namen en chauffeur-subrecorddata openbaar leesbaar. Dit schendt de permissiematrix in CLAUDE.md (VIEWER = lees-toegang op alle GET endpoints).
-- **Owner:** Delivery Agent
-- **Priority:** P2 High
-- **Status:** Ready
-- **Why this matters now:** Beveiligingsgat dat gedicht moet worden vóór publieke deployment.
-- **Scope notes:** Voeg `requireRole("VIEWER")` toe aan deze GET handlers. Geen gedragswijziging wanneer auth niet geconfigureerd is (requireRole slaat enforcement over zonder NEXTAUTH_SECRET).
-- **Dependencies:** Geen
-- **Definition of done:** Alle GET endpoints hebben minimaal VIEWER role check. Verify slaagt.
-- **Implementation note:** Bron: DE-REC-073.
-
-### PB-186: Valideer datumformaten op sub-record routes
-
-- **ID:** PB-186
-- **Title:** Sub-record startDate/endDate vergelijking op ongevalideerde strings
-- **Problem / opportunity:** Employment, function en roster-assignment POST/PUT handlers (6 route-bestanden) vergelijken `endDate < startDate` via `new Date()` zonder eerst het datumformaat te valideren. Bij ongeldige invoer retourneert Prisma een onduidelijke 500-fout.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Productiefout bij ongeldige datuminvoer levert onduidelijke foutmelding op.
-- **Scope notes:** Roep `validateDateFormat()` (bestaat al in `api-route-utils.ts`) aan op startDate en endDate vóór de range-vergelijking in 6 bestanden. Retourneer duidelijke 400 met Nederlandse foutmelding.
-- **Dependencies:** Geen
-- **Definition of done:** Ongeldige datumstrings retourneren 400 met duidelijke foutmelding. Verify slaagt.
-- **Implementation note:** Bron: DE-REC-074.
-
-### PB-187: Valideer scenario-ID voordat planning entries worden aangemaakt
-
-- **ID:** PB-187
-- **Title:** Planning POST/bulk accepteert ongeldige scenario-ID's met 500 in plaats van 400
-- **Problem / opportunity:** `resolveScenarioId()` controleert niet of een niet-standaard scenario-ID daadwerkelijk bestaat. Bij een verwijderd of willekeurig ID geeft Prisma's FK-constraint een 500-fout in plaats van een helpende 400.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Realistisch gebruikersfoutpad (verwijderd scenario nog geselecteerd) levert onduidelijke fouten.
-- **Scope notes:** Voeg `validateOptionalForeignKey()` toe na `resolveScenarioId()` in planning POST en bulk handlers.
-- **Dependencies:** Geen
-- **Definition of done:** Ongeldige scenario-ID retourneert 400 met duidelijke foutmelding. Verify slaagt.
-- **Implementation note:** Bron: DE-REC-077.
-
-### PB-188: Verminder dubbele sessie-lookups op planning routes
-
-- **ID:** PB-188
-- **Title:** Dubbele getServerSession calls op routes met requireRole + getAllowedDepartmentIds
-- **Problem / opportunity:** `requireRole()` en `getAllowedDepartmentIds()` doen beide onafhankelijk `getServerSession(authOptions)`. Op planning POST, bulk en DELETE routes betekent dit twee DB round-trips per request (~50-100ms extra op Neon serverless).
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Makkelijke optimalisatie op de hoogst-gebruikte routes.
-- **Scope notes:** Voeg optionele `session`-parameter toe aan `getAllowedDepartmentIds()` zodat een pre-fetched sessie van `requireRole()` hergebruikt kan worden.
-- **Dependencies:** Geen
-- **Definition of done:** Planning mutatie-routes doen maximaal één sessie-lookup. Verify slaagt.
-- **Implementation note:** Bron: DE-REC-075.
-
-### PB-189: Voeg audit logging toe aan driver sub-record mutaties
-
-- **ID:** PB-189
-- **Title:** Employment, function en roster-assignment mutaties missen audit trail
-- **Problem / opportunity:** Alle POST, PUT en DELETE handlers voor driver sub-records roepen nooit `logAudit()` aan. De driver zelf wordt geaudit, maar individuele sub-record wijzigingen laten geen spoor na.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Audit trail is incompleet voor een categorie vaak-gewijzigde records. Belangrijk voor compliance.
-- **Scope notes:** Voeg `logAudit()` calls toe in 6 route-bestanden (~4 regels per handler, 12-15 handlers). Volg bestaand fire-and-forget patroon.
-- **Dependencies:** Geen
-- **Definition of done:** Alle sub-record mutaties genereren audit log entries. Verify slaagt.
-- **Implementation note:** Bron: DE-REC-076.
+_No items currently ready. See RECOMMENDATIONS_DELIVERY.md for new proposals._
 
 ---
 
@@ -130,6 +48,48 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-184: Fix scenario DELETE preference cleanup voor ingelogde gebruikers
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-04
+- **Summary:** Replaced hardcoded `userId: "default"` findFirst+delete with `deleteMany` matching on `key: "activeScenario", value: id` regardless of userId. Stale preferences are now cleaned up for all users when a scenario is deleted.
+
+### PB-185: Voeg auth-checks toe aan onbeschermde GET endpoints
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-04
+- **Summary:** Added `requireRole("VIEWER")` to GET handlers on scenarios, roster-profiles, employment, functions, and roster-assignments. No behavior change when auth is not configured.
+
+### PB-186: Valideer datumformaten op sub-record routes
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-04
+- **Summary:** Added `validateDateFormat()` calls on startDate and endDate before the range comparison in all 6 sub-record route files (employment, functions, roster-assignments POST and PUT). Invalid dates now return 400 with Dutch error message instead of 500.
+
+### PB-187: Valideer scenario-ID voordat planning entries worden aangemaakt
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-04
+- **Summary:** Added `validateOptionalForeignKey()` for scenario ID in planning POST and bulk handlers. Invalid/deleted scenario IDs now return 400 with Dutch error message instead of FK constraint 500.
+
+### PB-188: Verminder dubbele sessie-lookups op planning routes
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-04
+- **Summary:** Added `requireRoleWithSession()` to `api-route-utils.ts` and optional `session` parameter to `getAllowedDepartmentIds()`. Planning POST, bulk, and DELETE routes now perform a single session lookup per request, saving ~50-100ms on authenticated requests.
+
+### PB-189: Voeg audit logging toe aan driver sub-record mutaties
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-04
+- **Summary:** Added `logAudit()` calls to all 9 mutation handlers across employment, functions, and roster-assignments routes (3 POST + 3 PUT + 3 DELETE). Follows existing fire-and-forget pattern.
 
 ### PB-183: Dedupliceer date-parsing logica in planning API routes
 

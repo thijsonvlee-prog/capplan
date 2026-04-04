@@ -23,20 +23,13 @@ export async function DELETE(
         where: { id },
       });
 
-      // If this was the active scenario, reset to default
-      const activePref = await tx.userPreference.findFirst({
+      // Clean up active scenario preferences for all users
+      await tx.userPreference.deleteMany({
         where: {
-          userId: "default",
           key: "activeScenario",
           value: id,
         },
       });
-
-      if (activePref) {
-        await tx.userPreference.delete({
-          where: { id: activePref.id },
-        });
-      }
     });
 
     const userId = await getAuditUserId();

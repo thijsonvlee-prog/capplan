@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, validateDateFormat, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authError = await requireRole("VIEWER");
+    if (authError) return authError;
+
     const { id } = await params;
     const records = await prisma.driverFunctionRecord.findMany({
       where: { driverId: id },
@@ -60,6 +64,17 @@ export async function POST(
       );
     }
 
+    const startDateError = validateDateFormat(String(startDate));
+    if (startDateError) {
+      return NextResponse.json({ error: startDateError }, { status: 400 });
+    }
+    if (endDate) {
+      const endDateError = validateDateFormat(String(endDate));
+      if (endDateError) {
+        return NextResponse.json({ error: endDateError }, { status: 400 });
+      }
+    }
+
     if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
       return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
     }
@@ -93,6 +108,9 @@ export async function POST(
         },
       });
     });
+
+    const userId = await getAuditUserId();
+    logAudit("DriverFunctionRecord", record.id, "CREATE", null, { driverId: id, startDate, endDate: endDate || null, position, locationId: locationId || null, departmentId: departmentId || null, manager: manager || null }, userId);
 
     return NextResponse.json(record, { status: 201 });
   } catch (error) {

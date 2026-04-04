@@ -5,6 +5,9 @@ import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET() {
   try {
+    const authError = await requireRole("VIEWER");
+    if (authError) return authError;
+
     const profiles = await prisma.rosterProfile.findMany({
       include: { days: { orderBy: { dayOffset: "asc" } } },
     });

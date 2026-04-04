@@ -5,6 +5,9 @@ import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET() {
   try {
+    const authError = await requireRole("VIEWER");
+    if (authError) return authError;
+
     const scenarios = await prisma.scenario.findMany({
       orderBy: { createdAt: "asc" },
     });

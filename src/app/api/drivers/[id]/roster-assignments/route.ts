@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, validateDateFormat, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export const GET = withPerfLogging(
   "GET /api/drivers/[id]/roster-assignments",
@@ -10,6 +11,9 @@ export const GET = withPerfLogging(
     context?: any
   ) => {
     try {
+      const authError = await requireRole("VIEWER");
+      if (authError) return authError;
+
       const { id } = await context.params;
       const records = await prisma.driverRosterAssignment.findMany({
         where: { driverId: id },
@@ -57,6 +61,17 @@ export const POST = withPerfLogging(
       ]);
       if (validationError) {
         return NextResponse.json({ error: validationError }, { status: 400 });
+      }
+
+      const startDateError = validateDateFormat(String(startDate));
+      if (startDateError) {
+        return NextResponse.json({ error: startDateError }, { status: 400 });
+      }
+      if (endDate) {
+        const endDateError = validateDateFormat(String(endDate));
+        if (endDateError) {
+          return NextResponse.json({ error: endDateError }, { status: 400 });
+        }
       }
 
       if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
@@ -172,6 +187,9 @@ export const POST = withPerfLogging(
 
         return created;
       });
+
+      const userId = await getAuditUserId();
+      logAudit("DriverRosterAssignment", record.id, "CREATE", null, { driverId, startDate, endDate: endDate || null, rosterProfileId, weeklyHours: weeklyHours ?? null }, userId);
 
       return NextResponse.json(record, { status: 201 });
     } catch (error) {

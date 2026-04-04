@@ -53,29 +53,46 @@ const ROLE_HIERARCHY: Record<string, number> = {
 export async function requireRole(
   minimumRole: UserRole
 ): Promise<NextResponse | null> {
+  const result = await requireRoleWithSession(minimumRole);
+  return result.error;
+}
+
+/**
+ * Like requireRole, but also returns the session for reuse by downstream
+ * helpers (e.g. getAllowedDepartmentIds) to avoid redundant DB lookups.
+ */
+export async function requireRoleWithSession(
+  minimumRole: UserRole
+): Promise<{ error: NextResponse | null; session: any }> {
   // Skip enforcement when auth is not configured
-  if (!process.env.NEXTAUTH_SECRET) return null;
+  if (!process.env.NEXTAUTH_SECRET) return { error: null, session: null };
 
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    return NextResponse.json(
-      { error: "Niet ingelogd. Log in om deze actie uit te voeren." },
-      { status: 401 }
-    );
+    return {
+      error: NextResponse.json(
+        { error: "Niet ingelogd. Log in om deze actie uit te voeren." },
+        { status: 401 }
+      ),
+      session: null,
+    };
   }
 
   const userLevel = ROLE_HIERARCHY[session.user.role] ?? 0;
   const requiredLevel = ROLE_HIERARCHY[minimumRole] ?? 0;
 
   if (userLevel < requiredLevel) {
-    return NextResponse.json(
-      { error: "Onvoldoende rechten om deze actie uit te voeren." },
-      { status: 403 }
-    );
+    return {
+      error: NextResponse.json(
+        { error: "Onvoldoende rechten om deze actie uit te voeren." },
+        { status: 403 }
+      ),
+      session,
+    };
   }
 
-  return null;
+  return { error: null, session };
 }
 
 // === User group department filtering ===
@@ -89,10 +106,10 @@ export async function requireRole(
  *
  * Returns a string[] of department IDs if the user belongs to a group.
  */
-export async function getAllowedDepartmentIds(): Promise<string[] | null> {
+export async function getAllowedDepartmentIds(existingSession?: any): Promise<string[] | null> {
   if (!process.env.NEXTAUTH_SECRET) return null;
 
-  const session = await getServerSession(authOptions);
+  const session = existingSession ?? await getServerSession(authOptions);
   if (!session?.user?.id) return null;
 
   const user = await prisma.user.findUnique({

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRole, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { requireRoleWithSession, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authError = await requireRole("PLANNER");
+    const { error: authError, session } = await requireRoleWithSession("PLANNER");
     if (authError) return authError;
 
     const { id } = await params;
@@ -24,7 +24,7 @@ export async function DELETE(
       );
     }
 
-    const allowedDepts = await getAllowedDepartmentIds();
+    const allowedDepts = await getAllowedDepartmentIds(session);
     if (allowedDepts !== null) {
       const driverInScope = await prisma.driver.count({
         where: { id: entry.driverId, ...driverDepartmentFilter(allowedDepts) },

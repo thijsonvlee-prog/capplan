@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, validateOptionalForeignKey, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { validateRequired, validateOptionalForeignKey, validateDateFormat, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function PUT(
   request: NextRequest,
@@ -21,6 +22,17 @@ export async function PUT(
     ]);
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+
+    const startDateError = validateDateFormat(String(body.startDate));
+    if (startDateError) {
+      return NextResponse.json({ error: startDateError }, { status: 400 });
+    }
+    if (body.endDate) {
+      const endDateError = validateDateFormat(String(body.endDate));
+      if (endDateError) {
+        return NextResponse.json({ error: endDateError }, { status: 400 });
+      }
     }
 
     if (body.endDate && body.startDate && new Date(body.endDate) < new Date(body.startDate)) {
@@ -58,6 +70,9 @@ export async function PUT(
       return NextResponse.json({ error: "Record niet gevonden" }, { status: 404 });
     }
 
+    const userId = await getAuditUserId();
+    logAudit("DriverRosterAssignment", recordId, "UPDATE", null, { startDate: body.startDate, endDate: body.endDate, rosterProfileId: body.rosterProfileId, weeklyHours: body.weeklyHours }, userId);
+
     return NextResponse.json(record);
   } catch (error) {
     console.error("Error updating roster assignment:", error instanceof Error ? error.message : "Unknown error");
@@ -89,6 +104,9 @@ export async function DELETE(
     await prisma.driverRosterAssignment.delete({
       where: { id: recordId },
     });
+
+    const userId = await getAuditUserId();
+    logAudit("DriverRosterAssignment", recordId, "DELETE", existing, null, userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

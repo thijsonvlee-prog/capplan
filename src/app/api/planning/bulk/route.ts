@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, validateOptionalForeignKey, requireRole, parseJsonBody, validateDateFormats, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { resolveScenarioId, validateOptionalForeignKey, requireRoleWithSession, parseJsonBody, validateDateFormats, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { PlanningStatus } from "@/domain/enums";
 
 const MAX_NOTES_LENGTH = 500;
@@ -12,7 +12,7 @@ export const POST = withPerfLogging(
   "POST /api/planning/bulk",
   async (request: NextRequest) => {
     try {
-      const authError = await requireRole("PLANNER");
+      const { error: authError, session } = await requireRoleWithSession("PLANNER");
       if (authError) return authError;
 
       const parsed = await parseJsonBody(request);
@@ -61,7 +61,7 @@ export const POST = withPerfLogging(
       }
 
       // Verify the driver is within the user's allowed departments
-      const allowedDepts = await getAllowedDepartmentIds();
+      const allowedDepts = await getAllowedDepartmentIds(session);
       if (allowedDepts !== null) {
         const driverInScope = await prisma.driver.count({
           where: { id: driverId, ...driverDepartmentFilter(allowedDepts) },
@@ -75,6 +75,11 @@ export const POST = withPerfLogging(
       }
 
       const resolvedScenarioId = resolveScenarioId(scenarioId);
+
+      const scenarioError = await validateOptionalForeignKey(resolvedScenarioId, prisma.scenario, "scenario");
+      if (scenarioError) {
+        return NextResponse.json({ error: scenarioError }, { status: 400 });
+      }
 
       const fkError = await validateOptionalForeignKey(leaveTypeId, prisma.leaveType, "verloftype");
       if (fkError) {

@@ -6,6 +6,29 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-04 — Bugfix, beveiliging, validatie, prestaties en audittrail
+
+#### Bugfixes
+
+- **Scenario-voorkeur opschoning:** Bij het verwijderen van een scenario worden nu de actieve scenario-voorkeuren van alle gebruikers opgeruimd, niet alleen van de standaardgebruiker. Voorheen bleven voorkeuren staan bij ingelogde gebruikers, wat leidde tot een leeg planningsscherm na het verwijderen van het actieve scenario.
+
+#### Beveiliging
+
+- **Auth-checks op GET endpoints:** Scenario's, roosterprofielen, en chauffeur sub-records (dienstverbanden, functies, roostertoewijzingen) GET-endpoints vereisen nu minimaal de VIEWER-rol. Geen gedragswijziging in omgevingen zonder authenticatie.
+
+#### Betrouwbaarheid
+
+- **Datumvalidatie op sub-records:** Dienstverband, functie en roostertoewijzing POST/PUT-routes valideren nu het datumformaat (JJJJ-MM-DD) vóór de startdatum/einddatum-vergelijking. Ongeldige datums retourneren een duidelijke 400-fout in plaats van een onduidelijke 500.
+- **Scenario-ID validatie:** Plannings POST en bulk-routes valideren nu of het opgegeven scenario-ID bestaat. Verwijderde of ongeldige scenario-ID's retourneren een duidelijke 400-fout.
+
+#### Prestaties
+
+- **Sessie-hergebruik op planning routes:** Planning POST, bulk en DELETE routes doen nu maximaal één sessie-lookup per request in plaats van twee. Bespaart ~50-100ms per geauthenticeerd verzoek op Neon serverless.
+
+#### Onderhoud
+
+- **Audittrail voor sub-records compleet:** Alle mutaties op dienstverbanden, functies en roostertoewijzingen (aanmaken, bijwerken, verwijderen) worden nu vastgelegd in de auditlog. Volgt het bestaande fire-and-forget patroon.
+
 ### 2026-04-03 — Capaciteitstabel visuele verbetering en code-onderhoud
 
 #### UX / design verbeteringen
