@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** PB-184 through PB-189 completed in the 2026-04-04 cycle. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision. New recommendations available in RECOMMENDATIONS_DELIVERY.md.
+**Current direction:** PB-184 through PB-189 completed in the 2026-04-04 cycle. Two new P3 items promoted from recommendations. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
 
 ## Status Definitions
 
@@ -27,7 +27,33 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready. See RECOMMENDATIONS_DELIVERY.md for new proposals._
+### PB-190: Voeg auth-checks toe aan settings GET endpoints
+
+- **ID:** PB-190
+- **Title:** Settings en skills GET endpoints missen authenticatie
+- **Problem / opportunity:** `GET /api/settings/[type]` en `GET /api/settings/skills` hebben geen `requireRole` aanroep. Alle andere GET endpoints vereisen nu minimaal VIEWER (PB-185). Deze twee zijn gemist in de oorspronkelijke scope.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Directe follow-up van PB-185. Maakt auth-enforcement op 100% van GET endpoints compleet. Twee regels code.
+- **Scope notes:** Voeg `requireRole("VIEWER")` toe aan de GET handler in `src/app/api/settings/[type]/route.ts` en `src/app/api/settings/skills/route.ts`. Geen gedragswijziging zonder NEXTAUTH_SECRET.
+- **Dependencies:** None
+- **Definition of done:** Beide GET handlers hebben `requireRole("VIEWER")`. `npm run verify` slaagt.
+- **Implementation note:** Eén regel per handler, identiek patroon als PB-185. Bron: DE-REC-078.
+
+### PB-191: Releasenotes-pagina synchroniseren met RELEASE_NOTES.md
+
+- **ID:** PB-191
+- **Title:** Hardcoded releasenotes missen april 2-4 entries
+- **Problem / opportunity:** De releasenotes-pagina (`src/app/(dashboard)/documentatie/page.tsx`) gebruikt een hardcoded `RELEASES` array die stopt bij 1 april 2026. De entries van 2-4 april uit `RELEASE_NOTES.md` ontbreken. Gebruikers zien verouderde informatie.
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Content is al 3 dagen achter. Elke cyclus zonder sync vergroot het gat.
+- **Scope notes:** Voeg de ontbrekende april 2, 3 en 4 entries toe aan de hardcoded `RELEASES` array. Gebruik de inhoud uit `RELEASE_NOTES.md` als bron. Behoud het bestaande format (datum, titel, categoriebadges, items).
+- **Dependencies:** None
+- **Definition of done:** De pagina toont alle entries tot en met 4 april 2026. Content komt overeen met `RELEASE_NOTES.md`. `npm run verify` slaagt.
+- **Implementation note:** Bron: EX-REC-054.
 
 ---
 
@@ -68,7 +94,7 @@ _No items currently in progress._
 - **Status:** Completed
 - **Owner:** Delivery Agent
 - **Completed:** 2026-04-04
-- **Summary:** Added `validateDateFormat()` calls on startDate and endDate before the range comparison in all 6 sub-record route files (employment, functions, roster-assignments POST and PUT). Invalid dates now return 400 with Dutch error message instead of 500.
+- **Summary:** Added `validateDateFormat()` calls on startDate and endDate before the range comparison in all 6 sub-record route files. Invalid dates now return 400 with Dutch error message instead of 500.
 
 ### PB-187: Valideer scenario-ID voordat planning entries worden aangemaakt
 
@@ -91,23 +117,16 @@ _No items currently in progress._
 - **Completed:** 2026-04-04
 - **Summary:** Added `logAudit()` calls to all 9 mutation handlers across employment, functions, and roster-assignments routes (3 POST + 3 PUT + 3 DELETE). Follows existing fire-and-forget pattern.
 
-### PB-183: Dedupliceer date-parsing logica in planning API routes
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-03
-- **Summary:** Extracted `parseDateList()` utility to `api-route-utils.ts`. All three planning routes now use the shared function. Eliminates ~30 lines of duplicate logic.
-
-### PB-182: CapacityTable — tonale lagen refactor
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-03
-- **Summary:** Replaced 1px row borders and alternating row tints with tonal surface layering. Summary rows moved to semantic `<tfoot>`. Verify passes.
-
 ---
 
 ## Deferred
+
+### EX-REC-055: RosterProfileEditor — tonale lagen en weekendonderscheid
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Low-traffic screen. All other settings sections are at design system standard. Pick up when capacity allows.
 
 ### EX-REC-052: Mobiele planning — bewerkingsmogelijkheid (v2)
 
@@ -230,7 +249,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-190.
+- Backlog IDs are sequential and never reused. Next available: PB-192.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.
