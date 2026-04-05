@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** PB-190 completed in the 2026-04-05 cycle (Delivery Agent). PB-191 completed in the 2026-04-05 cycle (Experience Agent). All GET endpoints now have auth enforcement. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision. No critical or high-priority Delivery items pending.
+**Current direction:** Auth enforcement is 100% complete across all API routes. Two new P3 validation improvements promoted from Delivery Agent recommendations (DE-REC-079, DE-REC-080). Release notes sync process promoted from Experience Agent (EX-REC-056). Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
 
 ## Status Definitions
 
@@ -27,7 +27,47 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready for Delivery Agent._
+### PB-192: Valideer sickPercentage type in bulk planning endpoint
+
+- **ID:** PB-192
+- **Title:** Valideer sickPercentage type in bulk planning endpoint
+- **Problem / opportunity:** `POST /api/planning/bulk` controleert het bereik van sickPercentage maar niet het type. Een string-waarde passeert de bereichscontrole (NaN faalt beide vergelijkingen) en bereikt Prisma, wat een onduidelijke 500-fout oplevert in plaats van een duidelijke 400.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Completeert de validatiedekking op het enige numerieke veld zonder typecontrole. Triviale fix.
+- **Scope notes:** Voeg `typeof sickPercentage !== "number"` check toe vóór de bereichsvalidatie in `src/app/api/planning/bulk/route.ts`.
+- **Dependencies:** None
+- **Definition of done:** Typecontrole toegevoegd, ongeldige types retourneren 400 met Nederlandse foutmelding, `npm run verify` slaagt.
+- **Implementation note:** Eén extra conditie in bestaande validatieblok. Bron: DE-REC-079.
+
+### PB-193: Valideer scenario-bestaan bij actief scenario instellen
+
+- **ID:** PB-193
+- **Title:** Valideer scenario-bestaan bij actief scenario instellen
+- **Problem / opportunity:** `PUT /api/scenarios/active` slaat een willekeurig `activeId` op als voorkeur zonder te controleren of het scenario bestaat. Een niet-bestaand scenario-ID leidt tot een leeg planningsrooster zonder duidelijke foutmelding.
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Natuurlijke opvolging van PB-187 (scenario-ID validatie op planning routes). Zelfde patroon, zelfde rationale.
+- **Scope notes:** Voeg `prisma.scenario.findUnique()` check toe in `src/app/api/scenarios/active/route.ts` vóór de upsert. Retourneer 404 met Nederlandse fout als scenario niet bestaat. Sla validatie over voor `activeId === "default"`.
+- **Dependencies:** None
+- **Definition of done:** Validatie toegevoegd, niet-bestaand scenario retourneert 404, "default" wordt overgeslagen, `npm run verify` slaagt.
+- **Implementation note:** 3-4 regels. Consistent met PB-187 patroon. Bron: DE-REC-080.
+
+### PB-194: Releasenotes sync-proces vastleggen
+
+- **ID:** PB-194
+- **Title:** Releasenotes sync-proces vastleggen
+- **Problem / opportunity:** De releasenotes-pagina gebruikt een hardcoded `RELEASES` array die elke cyclus handmatig gesynchroniseerd moet worden met `RELEASE_NOTES.md`. Drift is al twee keer opgetreden (PB-191 was nodig om 3 dagen achterstand bij te werken). Zonder procesafspraak herhaalt dit probleem zich elke cyclus.
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Recurrend probleem. Eenvoudig op te lossen met een procesregel of gedeeld dataformaat.
+- **Scope notes:** Kies aanpak: (a) voeg een verplichte sync-stap toe aan `CLAUDE.md` agentregels zodat de Experience Agent altijd synchroniseert na het schrijven van releasenotes, of (b) extraheer releasedata naar een gedeeld JSON-bestand. Optie (a) is zero-effort, optie (b) is robuuster. Start met optie (a).
+- **Dependencies:** None
+- **Definition of done:** Een vastgelegde procesregel of technische oplossing die voorkomt dat de releasenotes-pagina achterloopt op `RELEASE_NOTES.md`.
+- **Implementation note:** Begin met optie (a): voeg een regel toe aan `CLAUDE.md` onder agent collaboration rules. Bron: EX-REC-056.
 
 ---
 
@@ -62,48 +102,6 @@ _No items currently in progress._
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-05
 - **Summary:** Added April 2, 3, and 4 entries to the hardcoded `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx`. Content sourced from `RELEASE_NOTES.md`. Existing format preserved (date, title, category badges with items).
-
-### PB-184: Fix scenario DELETE preference cleanup voor ingelogde gebruikers
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-04
-- **Summary:** Replaced hardcoded `userId: "default"` findFirst+delete with `deleteMany` matching on `key: "activeScenario", value: id` regardless of userId. Stale preferences are now cleaned up for all users when a scenario is deleted.
-
-### PB-185: Voeg auth-checks toe aan onbeschermde GET endpoints
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-04
-- **Summary:** Added `requireRole("VIEWER")` to GET handlers on scenarios, roster-profiles, employment, functions, and roster-assignments. No behavior change when auth is not configured.
-
-### PB-186: Valideer datumformaten op sub-record routes
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-04
-- **Summary:** Added `validateDateFormat()` calls on startDate and endDate before the range comparison in all 6 sub-record route files. Invalid dates now return 400 with Dutch error message instead of 500.
-
-### PB-187: Valideer scenario-ID voordat planning entries worden aangemaakt
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-04
-- **Summary:** Added `validateOptionalForeignKey()` for scenario ID in planning POST and bulk handlers. Invalid/deleted scenario IDs now return 400 with Dutch error message instead of FK constraint 500.
-
-### PB-188: Verminder dubbele sessie-lookups op planning routes
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-04
-- **Summary:** Added `requireRoleWithSession()` to `api-route-utils.ts` and optional `session` parameter to `getAllowedDepartmentIds()`. Planning POST, bulk, and DELETE routes now perform a single session lookup per request, saving ~50-100ms on authenticated requests.
-
-### PB-189: Voeg audit logging toe aan driver sub-record mutaties
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-04
-- **Summary:** Added `logAudit()` calls to all 9 mutation handlers across employment, functions, and roster-assignments routes (3 POST + 3 PUT + 3 DELETE). Follows existing fire-and-forget pattern.
 
 ---
 
@@ -237,7 +235,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-192.
+- Backlog IDs are sequential and never reused. Next available: PB-195.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

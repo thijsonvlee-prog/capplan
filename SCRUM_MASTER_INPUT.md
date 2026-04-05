@@ -31,7 +31,7 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **Original input:** "maak ook voor desktop een homescreen."
 - **Analysis:** Currently the app redirects `/` to `/planning` on desktop. On mobile there is already a card-based homescreen. The desktop version needs scope definition: what content to show, whether it replaces the redirect or becomes a new route, and how it integrates with the existing sidebar navigation.
 - **Escalation linkage:** ESC-014
-- **PO note (2026-04-03):** ESC-014 remains open. No Scrum Master decision yet. Backlog item blocked until a scope option is chosen.
+- **PO note (2026-04-05):** ESC-014 remains open. No Scrum Master decision yet. Backlog item blocked until a scope option is chosen. Three new P3 items (PB-192, PB-193, PB-194) promoted this cycle from agent recommendations.
 
 ## Closed Inputs
 
