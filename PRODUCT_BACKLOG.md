@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** PB-184 through PB-189 completed in the 2026-04-04 cycle. Two new P3 items promoted from recommendations. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
+**Current direction:** PB-184 through PB-189 completed in the 2026-04-04 cycle. PB-191 completed in the 2026-04-05 cycle (Experience Agent). PB-190 remains ready for Delivery Agent. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
 
 ## Status Definitions
 
@@ -41,20 +41,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** Beide GET handlers hebben `requireRole("VIEWER")`. `npm run verify` slaagt.
 - **Implementation note:** Eén regel per handler, identiek patroon als PB-185. Bron: DE-REC-078.
 
-### PB-191: Releasenotes-pagina synchroniseren met RELEASE_NOTES.md
-
-- **ID:** PB-191
-- **Title:** Hardcoded releasenotes missen april 2-4 entries
-- **Problem / opportunity:** De releasenotes-pagina (`src/app/(dashboard)/documentatie/page.tsx`) gebruikt een hardcoded `RELEASES` array die stopt bij 1 april 2026. De entries van 2-4 april uit `RELEASE_NOTES.md` ontbreken. Gebruikers zien verouderde informatie.
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Content is al 3 dagen achter. Elke cyclus zonder sync vergroot het gat.
-- **Scope notes:** Voeg de ontbrekende april 2, 3 en 4 entries toe aan de hardcoded `RELEASES` array. Gebruik de inhoud uit `RELEASE_NOTES.md` als bron. Behoud het bestaande format (datum, titel, categoriebadges, items).
-- **Dependencies:** None
-- **Definition of done:** De pagina toont alle entries tot en met 4 april 2026. Content komt overeen met `RELEASE_NOTES.md`. `npm run verify` slaagt.
-- **Implementation note:** Bron: EX-REC-054.
-
 ---
 
 ## In Progress
@@ -74,6 +60,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-191: Releasenotes-pagina synchroniseren met RELEASE_NOTES.md
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-05
+- **Summary:** Added April 2, 3, and 4 entries to the hardcoded `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx`. Content sourced from `RELEASE_NOTES.md`. Existing format preserved (date, title, category badges with items).
 
 ### PB-184: Fix scenario DELETE preference cleanup voor ingelogde gebruikers
 

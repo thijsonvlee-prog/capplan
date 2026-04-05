@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-05 — Releasenotes-pagina bijgewerkt
+
+#### UX / design verbeteringen
+
+- **Releasenotes-pagina gesynchroniseerd:** De ontbrekende entries van 2, 3 en 4 april 2026 zijn toegevoegd aan de releasenotes-pagina. Gebruikers zien nu alle recente wijzigingen.
+
 ### 2026-04-04 — Bugfix, beveiliging, validatie, prestaties en audittrail
 
 #### Bugfixes

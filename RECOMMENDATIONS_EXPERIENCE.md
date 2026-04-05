@@ -2,10 +2,10 @@
 
 ## Summary
 
-**This cycle (2026-04-04, run 20):** No Experience Agent tasks were assigned in the backlog. Performed a fresh design scan of the full application.
+**This cycle (2026-04-05):** Completed PB-191 — synced the release notes page with RELEASE_NOTES.md by adding the missing April 2, 3, and 4 entries.
 
 **What was improved:**
-- No code changes this cycle. All "Ready for Next Cycle" items in the backlog are assigned to the Delivery Agent.
+- The release notes page (`src/app/(dashboard)/documentatie/page.tsx`) now shows all entries through April 4, 2026. Content matches `RELEASE_NOTES.md`.
 
 **Current design alignment with DESIGN.md:**
 - **Overall product quality: 8/10.** The application exceeds generic admin UI across all screens. Design tokens are comprehensive (~55 tokens), typography hierarchy is strong (Manrope display + Inter body), and surface layering is consistently applied.
@@ -15,25 +15,25 @@
 - **Drivers page:** Well-aligned (sections 3.2, 7.3). Composed page header, integrated search, tonal row alternation.
 - **Mobile experience:** Well-aligned across all screens. Consistent header pattern, entrance animations, touch-friendly targets.
 - **Sidebar:** Well-aligned (section 7.8). Dark premium surface, clear active states.
-- **Release notes page:** Well-composed with expandable sections and category badges. Content is out of sync with RELEASE_NOTES.md (missing April 2-3 entries).
+- **Release notes page:** Well-composed with expandable sections and category badges. Now fully synced with RELEASE_NOTES.md.
 
 **Where design quality is still below target:**
 - Recharts default tooltip/axis styling remains the most visible desktop integration gap.
 - RosterProfileEditor 28-day grid is flat and mechanical — no tonal layering, no weekend differentiation, no visual rhythm.
-- Release notes page has hardcoded content that drifts from RELEASE_NOTES.md.
+- Release notes content will drift again next cycle unless a sync process is established.
 
 ## Recommended Next Improvements
 
-### EX-REC-054: Release notes page — sync hardcoded content with RELEASE_NOTES.md
+### EX-REC-056: Release notes content sync process
 
-- **Problem:** The release notes page (`src/app/(dashboard)/documentatie/page.tsx`) uses a hardcoded `RELEASES` array that only contains entries up to April 1, 2026. The April 2 and April 3 entries from `RELEASE_NOTES.md` are missing. Every time new release notes are written, someone must manually add them to the component. This content drift means users see outdated information.
-- **Proposed improvement:** Add the missing April 2-3 entries to the hardcoded array. Longer-term, consider making the page read from a shared data source or at minimum document the sync requirement.
-- **Expected user value:** Users see accurate, up-to-date release information when they visit the Releasenotes page.
+- **Problem:** The release notes page uses a hardcoded `RELEASES` array that must be manually updated each cycle. This has already caused 3-day content drift (PB-191). The problem will recur every cycle.
+- **Proposed improvement:** Either (a) document a mandatory sync step in `CLAUDE.md` agent rules so the Experience Agent always syncs after release notes are written, or (b) extract release data to a shared JSON file that both the page and `RELEASE_NOTES.md` reference. Option (a) is zero-effort, option (b) is more robust.
+- **Expected user value:** Users always see up-to-date release information without manual intervention.
 - **Priority:** P3 Medium
 - **Effort:** Small
 - **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Content is already 2-3 days stale. Every cycle without sync increases the gap.
+- **Suggested owner:** Product Owner (process decision) + Experience Agent (implementation)
+- **Why now:** Drift has occurred twice already. Without a process fix, it will happen every cycle.
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -136,7 +136,7 @@
 
 ## Risks / Watch-outs
 
-- **Release notes content drift.** The hardcoded release notes page is already 2-3 days behind RELEASE_NOTES.md. This will worsen each cycle. See EX-REC-054.
+- **Release notes content drift.** The hardcoded release notes page will go out of sync again next cycle unless a process is established. See EX-REC-056.
 - **Mobile planning is read-only.** Planners must use desktop to make schedule changes. Monitor user demand for mobile edit capability (EX-REC-052).
 - **Recharts default styling.** The capacity chart's tooltip/axis styling is still Recharts default. Now the most visible remaining integration gap on the capacity page. See EX-REC-049.
 - **RosterProfileEditor grid.** Flat, mechanical 28-day grid with stark status colors. Below DESIGN.md standard but low-traffic screen. See EX-REC-055.

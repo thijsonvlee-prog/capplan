@@ -17,6 +17,81 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    date: "4 april 2026",
+    title: "Bugfix, beveiliging, validatie, prestaties en audittrail",
+    groups: [
+      {
+        heading: "Bugfixes",
+        items: [
+          "Scenario-voorkeur opschoning: bij het verwijderen van een scenario worden nu de actieve scenario-voorkeuren van alle gebruikers opgeruimd, niet alleen van de standaardgebruiker.",
+        ],
+      },
+      {
+        heading: "Beveiliging",
+        items: [
+          "Auth-checks op GET endpoints: scenario\u2019s, roosterprofielen en chauffeur sub-records vereisen nu minimaal de VIEWER-rol.",
+        ],
+      },
+      {
+        heading: "Functioneel",
+        items: [
+          "Datumvalidatie op sub-records: ongeldige datums retourneren een duidelijke 400-fout in plaats van een onduidelijke 500.",
+          "Scenario-ID validatie: verwijderde of ongeldige scenario-ID\u2019s retourneren een duidelijke 400-fout bij het aanmaken van planningsitems.",
+        ],
+      },
+      {
+        heading: "Prestaties",
+        items: [
+          "Sessie-hergebruik op planning routes: maximaal \u00e9\u00e9n sessie-lookup per request. Bespaart ~50-100ms per geauthenticeerd verzoek.",
+        ],
+      },
+      {
+        heading: "Onderhoud",
+        items: [
+          "Audittrail voor sub-records compleet: alle mutaties op dienstverbanden, functies en roostertoewijzingen worden nu vastgelegd.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "3 april 2026",
+    title: "Capaciteitstabel visuele verbetering en code-onderhoud",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "Capaciteitstabel tonale lagen: de tabel gebruikt nu oppervlaktecontrasten in plaats van 1px randen. Header- en samenvattingsrijen onderscheiden zich door oppervlaktekleur. Datarijen zijn borderless met subtiele hover-feedback.",
+        ],
+      },
+      {
+        heading: "Onderhoud",
+        items: [
+          "Date-parsing geconsolideerd: gedupliceerde logica uit drie planning API-routes ge\u00ebtraheerd naar een gedeelde functie. Elimineert ~30 regels duplicatie.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "2 april 2026",
+    title: "Visuele verfijning, instellingen en code-opruiming",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "Instellingen lijstitems: StamtabelManager en SkillManager rijen hebben nu subtiele hover-elevatie, afgeronde vormen en vloeiende overgangen. Bewerkmodus met merkkleur-accentrand.",
+          "Capaciteit vergelijkingsknoppen: omgestyled naar pilvormige badges met duidelijke actief/inactief-staten.",
+        ],
+      },
+      {
+        heading: "Onderhoud",
+        items: [
+          "COMPARE_COLORS gecentraliseerd naar constants.ts.",
+          "Ongebruikte types en mobiele CSS opgeruimd.",
+        ],
+      },
+    ],
+  },
+  {
     date: "1 april 2026",
     title: "Mobiel startscherm, navigatie en releasenotes",
     groups: [
