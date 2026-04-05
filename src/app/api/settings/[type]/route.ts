@@ -7,6 +7,9 @@ export async function GET(
   { params }: { params: Promise<{ type: string }> }
 ) {
   try {
+    const authError = await requireRole("VIEWER");
+    if (authError) return authError;
+
     const { type } = await params;
     const model = getSettingsModel(type);
 

@@ -6,30 +6,37 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-All 6 backlog items (PB-184 through PB-189) were completed in the 2026-04-04 cycle:
-- **PB-184** (P1): Scenario DELETE preference cleanup now works for all users (not just "default").
-- **PB-185** (P2): Auth checks added to 5 previously unprotected GET endpoints.
-- **PB-186** (P3): Date format validation added to all 6 sub-record POST/PUT handlers.
-- **PB-187** (P3): Scenario ID validated before planning entry creation.
-- **PB-188** (P3): Session reuse eliminates double DB lookups on planning mutation routes.
-- **PB-189** (P3): Audit logging added to all 9 driver sub-record mutation handlers.
+PB-190 completed in the 2026-04-05 cycle: auth checks added to the two remaining unprotected GET endpoints (`/api/settings/[type]` and `/api/settings/skills`). **All GET endpoints now enforce minimum VIEWER role.** Auth enforcement coverage is now 100% across all API routes.
 
-A fresh codebase scan identified two new **P3 Medium** issues (settings GET endpoints missing auth, Prisma `existing` type handling) and confirms the existing P4 Low items remain valid.
+A fresh codebase scan identified two new **P3 Medium** recommendations (sickPercentage type validation, active scenario existence check) and confirms the existing P4 Low items remain valid. The codebase is in good shape with no critical or high-priority technical debt.
 
 ## Recommended Next Improvements
 
-### DE-REC-078: Add auth checks to settings GET endpoints
+### DE-REC-079: Validate sickPercentage type in bulk planning endpoint
 
-- **Title:** Settings and skills GET endpoints have no authentication check
-- **Problem:** `GET /api/settings/[type]` and `GET /api/settings/skills` have no `requireRole` call. While these endpoints return non-sensitive master data (employers, departments, locations, leave types, skills), they are inconsistent with the permission model established by PB-185 where all GET endpoints require at minimum VIEWER role.
-- **Proposed improvement:** Add `requireRole("VIEWER")` to both GET handlers.
-- **Expected product/technical value:** Completes the auth enforcement pattern across 100% of GET endpoints. Prevents information disclosure in public deployments.
+- **Title:** Add explicit type check for sickPercentage in planning bulk route
+- **Problem:** `POST /api/planning/bulk` checks `sickPercentage < 0 || sickPercentage > 99` but does not verify the value is a number. If a string like `"abc"` is sent, JavaScript coerces it to `NaN`, which fails both comparisons, allowing invalid data through to Prisma. Prisma may reject it, but with an opaque 500 instead of a clear 400.
+- **Proposed improvement:** Add `typeof sickPercentage !== "number"` check before the range validation in `src/app/api/planning/bulk/route.ts`.
+- **Expected product/technical value:** Prevents invalid data types from reaching the database. Returns a clear Dutch error message.
 - **Priority:** P3 Medium
-- **Effort:** Small (one line per handler)
-- **Risk:** Low (no behavior change without NEXTAUTH_SECRET)
+- **Effort:** Small (one additional condition)
+- **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Natural follow-up to PB-185. Two endpoints were missed in the original scope.
+- **Why now:** Completes validation coverage on the only numeric field without a type check. Trivial fix.
+
+### DE-REC-080: Validate scenario existence in active scenario PUT endpoint
+
+- **Title:** Check scenario exists before setting as active preference
+- **Problem:** `PUT /api/scenarios/active` stores an arbitrary `activeId` string as a user preference without verifying the scenario exists. If a non-existent scenario ID is set (via API manipulation), the frontend fetches empty planning data with no clear error, leading to a confusing blank planning grid.
+- **Proposed improvement:** Add a `prisma.scenario.findUnique()` check in `src/app/api/scenarios/active/route.ts` before the upsert, returning 404 with a Dutch error if the scenario doesn't exist. Skip validation for `activeId === "default"` (base scenario).
+- **Expected product/technical value:** Prevents silent failures from invalid active scenario. Consistent with PB-187 (scenario ID validation on planning routes).
+- **Priority:** P3 Medium
+- **Effort:** Small (3-4 lines)
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Natural follow-up to PB-187. Same validation pattern, same rationale.
 
 ### DE-REC-070: Deduplicate VALID_TARGET_ENTITIES in ImportSourceManager.tsx (client-side)
 
@@ -146,6 +153,7 @@ A fresh codebase scan identified two new **P3 Medium** issues (settings GET endp
 - **useUserRole grants full permissions during session loading:** When session is loading or auth is not configured, the UI hook returns `isAdmin: true`.
 - **No database-level length constraints:** All text field length validation is application-level only.
 - **Audit log fire-and-forget pattern:** `logAudit()` silently catches errors. Audit entries may be dropped if the database connection fails. By design (audit failures must not block mutations).
+- **Skill duplicate check race condition:** The findFirst-then-create pattern in `/api/settings/skills` POST can allow duplicate names under concurrent requests. Low likelihood at current traffic, but a unique DB constraint would be more robust.
 
 ## Items Intentionally Not Recommended
 
@@ -207,6 +215,15 @@ A fresh codebase scan identified two new **P3 Medium** issues (settings GET endp
 - **Scenario ID validation on planning POST/bulk:** Completed as PB-187.
 - **Double session lookup on planning routes:** Completed as PB-188.
 - **Audit logging on driver sub-record mutations:** Completed as PB-189.
+- **Auth checks on settings/skills GET endpoints:** Completed as PB-190.
+- **Department scope check outside transaction in bulk route:** TOCTOU risk is theoretical at current concurrency. The Prisma transaction provides write consistency.
+- **Rate limiting on import execute endpoint:** Requires middleware infrastructure. ADMIN-only endpoint limits exposure.
+- **useApiData unbounded cache growth:** Browser sessions are short-lived. Cache entries are few (one per unique query). Not a practical concern.
+- **Bulk delete endpoint for planning entries:** Current single-delete is adequate. Bulk delete is not a user workflow.
+- **Inconsistent pagination behavior across endpoints:** Changing this is a breaking API contract change.
+- **Missing preference audit logging:** Preferences store UI state (active scenario), not business data. Audit overhead not justified.
+- **Scenario count limits:** No evidence of unbounded scenario creation. Low risk.
+- **No whitespace validation on driver name PUT:** Minor. Prisma stores whatever is sent. Frontend already trims.
 
 ## Recommendation Rules
 

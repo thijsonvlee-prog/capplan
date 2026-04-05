@@ -6,7 +6,11 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-04-05 — Releasenotes-pagina bijgewerkt
+### 2026-04-05 — Auth-enforcement compleet, releasenotes bijgewerkt
+
+#### Beveiliging
+
+- **Auth-checks op settings endpoints:** `GET /api/settings/[type]` en `GET /api/settings/skills` vereisen nu minimaal de VIEWER-rol. Hiermee is auth-enforcement op 100% van alle GET-endpoints bereikt. Geen gedragswijziging in omgevingen zonder authenticatie.
 
 #### UX / design verbeteringen
 

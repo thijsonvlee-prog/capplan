@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** PB-184 through PB-189 completed in the 2026-04-04 cycle. PB-191 completed in the 2026-04-05 cycle (Experience Agent). PB-190 remains ready for Delivery Agent. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
+**Current direction:** PB-190 completed in the 2026-04-05 cycle (Delivery Agent). PB-191 completed in the 2026-04-05 cycle (Experience Agent). All GET endpoints now have auth enforcement. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision. No critical or high-priority Delivery items pending.
 
 ## Status Definitions
 
@@ -27,19 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-190: Voeg auth-checks toe aan settings GET endpoints
-
-- **ID:** PB-190
-- **Title:** Settings en skills GET endpoints missen authenticatie
-- **Problem / opportunity:** `GET /api/settings/[type]` en `GET /api/settings/skills` hebben geen `requireRole` aanroep. Alle andere GET endpoints vereisen nu minimaal VIEWER (PB-185). Deze twee zijn gemist in de oorspronkelijke scope.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Directe follow-up van PB-185. Maakt auth-enforcement op 100% van GET endpoints compleet. Twee regels code.
-- **Scope notes:** Voeg `requireRole("VIEWER")` toe aan de GET handler in `src/app/api/settings/[type]/route.ts` en `src/app/api/settings/skills/route.ts`. Geen gedragswijziging zonder NEXTAUTH_SECRET.
-- **Dependencies:** None
-- **Definition of done:** Beide GET handlers hebben `requireRole("VIEWER")`. `npm run verify` slaagt.
-- **Implementation note:** Eén regel per handler, identiek patroon als PB-185. Bron: DE-REC-078.
+_No items currently ready for Delivery Agent._
 
 ---
 
@@ -60,6 +48,13 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-190: Voeg auth-checks toe aan settings GET endpoints
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-05
+- **Summary:** Added `requireRole("VIEWER")` to GET handlers in `src/app/api/settings/[type]/route.ts` and `src/app/api/settings/skills/route.ts`. All GET endpoints now enforce minimum VIEWER role. No behavior change without NEXTAUTH_SECRET.
 
 ### PB-191: Releasenotes-pagina synchroniseren met RELEASE_NOTES.md
 
