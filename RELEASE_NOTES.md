@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-06 — Releasenotes sync-proces en drift-fix
+
+#### Onderhoud
+
+- **Verplichte sync-regel in CLAUDE.md:** Elke agent die `RELEASE_NOTES.md` aanvult moet in dezelfde commit ook de in-app releasenotes-pagina (`src/app/(dashboard)/documentatie/page.tsx`) bijwerken. Hiermee wordt voorkomen dat de in-app releasenotes achterlopen op het hoofdlogbestand (PB-194).
+- **Drift hersteld:** De ontbrekende entry van 5 april 2026 is toegevoegd aan de in-app releasenotes-pagina.
+
 ### 2026-04-05 — Auth-enforcement compleet, releasenotes bijgewerkt
 
 #### Beveiliging

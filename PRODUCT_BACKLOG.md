@@ -62,7 +62,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Problem / opportunity:** De releasenotes-pagina gebruikt een hardcoded `RELEASES` array die elke cyclus handmatig gesynchroniseerd moet worden met `RELEASE_NOTES.md`. Drift is al twee keer opgetreden (PB-191 was nodig om 3 dagen achterstand bij te werken). Zonder procesafspraak herhaalt dit probleem zich elke cyclus.
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
+- **Status:** Completed (2026-04-06) — Optie (a) toegepast: verplichte sync-regel toegevoegd aan `CLAUDE.md` sectie 11 (Agent Collaboration Rules → After Finishing). Regel stelt dat elke agent die `RELEASE_NOTES.md` aanvult ook in dezelfde commit het `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx` moet bijwerken. Bij de verificatie bleek het releasenotes-scherm al drift te vertonen voor 5 april — de ontbrekende entry is meteen toegevoegd.
 - **Why this matters now:** Recurrend probleem. Eenvoudig op te lossen met een procesregel of gedeeld dataformaat.
 - **Scope notes:** Kies aanpak: (a) voeg een verplichte sync-stap toe aan `CLAUDE.md` agentregels zodat de Experience Agent altijd synchroniseert na het schrijven van releasenotes, of (b) extraheer releasedata naar een gedeeld JSON-bestand. Optie (a) is zero-effort, optie (b) is robuuster. Start met optie (a).
 - **Dependencies:** None

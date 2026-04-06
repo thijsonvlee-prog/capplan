@@ -17,6 +17,37 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    date: "6 april 2026",
+    title: "Releasenotes sync-proces en drift-fix",
+    groups: [
+      {
+        heading: "Onderhoud",
+        items: [
+          "Verplichte sync-regel toegevoegd aan CLAUDE.md: elke agent die RELEASE_NOTES.md bijwerkt moet in dezelfde commit ook deze in-app releasenotes-pagina bijwerken.",
+          "Drift hersteld: de ontbrekende entry van 5 april 2026 is toegevoegd aan de in-app releasenotes.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "5 april 2026",
+    title: "Auth-enforcement compleet, releasenotes bijgewerkt",
+    groups: [
+      {
+        heading: "Beveiliging",
+        items: [
+          "Auth-checks op settings GET endpoints: GET /api/settings/[type] en GET /api/settings/skills vereisen nu minimaal de VIEWER-rol. Auth-enforcement is nu 100% dekking op GET-endpoints.",
+        ],
+      },
+      {
+        heading: "UX / design",
+        items: [
+          "Releasenotes-pagina gesynchroniseerd: de ontbrekende entries van 2, 3 en 4 april 2026 zijn toegevoegd aan de in-app releasenotes.",
+        ],
+      },
+    ],
+  },
+  {
     date: "4 april 2026",
     title: "Bugfix, beveiliging, validatie, prestaties en audittrail",
     groups: [

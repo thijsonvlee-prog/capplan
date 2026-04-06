@@ -252,6 +252,7 @@ Multiple scheduled agents (Product Owner, UX/Design, Technical/Functional) opera
 
 ### After Finishing
 - Run `npm run verify` and confirm 0 errors.
+- **Release notes sync (mandatory):** Whenever you append an entry to `RELEASE_NOTES.md`, you MUST also add the same entry to the hardcoded `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx` in the same commit. The in-app release notes page is driven by that array and will drift otherwise. This rule applies to every agent (Product Owner, Experience, Delivery) and is non-negotiable — the two sources must always match.
 
 ### Conflict Prevention
 - Do not rewrite files that another agent is likely working on simultaneously.
