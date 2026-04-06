@@ -18,6 +18,19 @@ interface Release {
 const RELEASES: Release[] = [
   {
     date: "6 april 2026",
+    title: "Validatieverbeteringen op planning- en scenario-endpoints",
+    groups: [
+      {
+        heading: "Validatie",
+        items: [
+          "Type-controle ziektepercentage: POST /api/planning/bulk weigert nu non-numerieke waarden voor sickPercentage met een 400-fout in plaats van een onduidelijke 500.",
+          "Bestaanscontrole actief scenario: PUT /api/scenarios/active controleert nu of het opgegeven scenario bestaat voordat het als voorkeur wordt opgeslagen. Niet-bestaande IDs retourneren 404.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "6 april 2026",
     title: "Releasenotes sync-proces en drift-fix",
     groups: [
       {

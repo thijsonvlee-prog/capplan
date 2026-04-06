@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-06 — Validatieverbeteringen op planning- en scenario-endpoints
+
+#### Validatie
+
+- **Type-controle ziektepercentage:** `POST /api/planning/bulk` weigert nu non-numerieke waarden voor `sickPercentage` met een 400-fout in plaats van een onduidelijke 500. Completeert de validatiedekking op het enige numerieke veld zonder typecontrole (PB-192).
+- **Bestaanscontrole actief scenario:** `PUT /api/scenarios/active` controleert nu of het opgegeven scenario bestaat voordat het als voorkeur wordt opgeslagen. Niet-bestaande IDs retourneren 404 met Nederlandse foutmelding; `"default"` blijft toegestaan zonder check (PB-193).
+
 ### 2026-04-06 — Releasenotes sync-proces en drift-fix
 
 #### Onderhoud

@@ -34,7 +34,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Problem / opportunity:** `POST /api/planning/bulk` controleert het bereik van sickPercentage maar niet het type. Een string-waarde passeert de bereichscontrole (NaN faalt beide vergelijkingen) en bereikt Prisma, wat een onduidelijke 500-fout oplevert in plaats van een duidelijke 400.
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
+- **Status:** Completed (2026-04-06) — `typeof sickPercentage !== "number"` check toegevoegd vóór bereichsvalidatie. Non-numerieke waarden retourneren 400 met Nederlandse foutmelding. `npm run verify` slaagt.
 - **Why this matters now:** Completeert de validatiedekking op het enige numerieke veld zonder typecontrole. Triviale fix.
 - **Scope notes:** Voeg `typeof sickPercentage !== "number"` check toe vóór de bereichsvalidatie in `src/app/api/planning/bulk/route.ts`.
 - **Dependencies:** None
@@ -48,7 +48,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Problem / opportunity:** `PUT /api/scenarios/active` slaat een willekeurig `activeId` op als voorkeur zonder te controleren of het scenario bestaat. Een niet-bestaand scenario-ID leidt tot een leeg planningsrooster zonder duidelijke foutmelding.
 - **Owner:** Delivery Agent
 - **Priority:** P3 Medium
-- **Status:** Ready
+- **Status:** Completed (2026-04-06) — `prisma.scenario.findUnique()` check toegevoegd vóór de upsert. Niet-bestaand scenario retourneert 404, `"default"` wordt overgeslagen. `npm run verify` slaagt.
 - **Why this matters now:** Natuurlijke opvolging van PB-187 (scenario-ID validatie op planning routes). Zelfde patroon, zelfde rationale.
 - **Scope notes:** Voeg `prisma.scenario.findUnique()` check toe in `src/app/api/scenarios/active/route.ts` vóór de upsert. Retourneer 404 met Nederlandse fout als scenario niet bestaat. Sla validatie over voor `activeId === "default"`.
 - **Dependencies:** None

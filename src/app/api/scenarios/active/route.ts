@@ -49,6 +49,19 @@ export async function PUT(request: NextRequest) {
 
     const { activeId } = body;
 
+    if (activeId !== "default") {
+      const scenarioExists = await prisma.scenario.findUnique({
+        where: { id: activeId },
+        select: { id: true },
+      });
+      if (!scenarioExists) {
+        return NextResponse.json(
+          { error: "Scenario niet gevonden" },
+          { status: 404 }
+        );
+      }
+    }
+
     if (activeId === "default") {
       await prisma.userPreference.deleteMany({
         where: {

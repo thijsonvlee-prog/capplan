@@ -6,37 +6,11 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-PB-190 completed in the 2026-04-05 cycle: auth checks added to the two remaining unprotected GET endpoints (`/api/settings/[type]` and `/api/settings/skills`). **All GET endpoints now enforce minimum VIEWER role.** Auth enforcement coverage is now 100% across all API routes.
+PB-192 and PB-193 shipped in the 2026-04-06 cycle: `POST /api/planning/bulk` rejects non-numeric `sickPercentage` with a 400 (Dutch), and `PUT /api/scenarios/active` validates scenario existence before persisting the preference (404 if missing, `"default"` skipped). Validation coverage on numeric fields and scenario references is now complete on planning and scenario write paths.
 
-A fresh codebase scan identified two new **P3 Medium** recommendations (sickPercentage type validation, active scenario existence check) and confirms the existing P4 Low items remain valid. The codebase is in good shape with no critical or high-priority technical debt.
+A fresh codebase scan finds no critical or high-priority technical debt. Remaining items are P4 Low maintenance/optimization opportunities. The codebase is in a healthy state.
 
 ## Recommended Next Improvements
-
-### DE-REC-079: Validate sickPercentage type in bulk planning endpoint
-
-- **Title:** Add explicit type check for sickPercentage in planning bulk route
-- **Problem:** `POST /api/planning/bulk` checks `sickPercentage < 0 || sickPercentage > 99` but does not verify the value is a number. If a string like `"abc"` is sent, JavaScript coerces it to `NaN`, which fails both comparisons, allowing invalid data through to Prisma. Prisma may reject it, but with an opaque 500 instead of a clear 400.
-- **Proposed improvement:** Add `typeof sickPercentage !== "number"` check before the range validation in `src/app/api/planning/bulk/route.ts`.
-- **Expected product/technical value:** Prevents invalid data types from reaching the database. Returns a clear Dutch error message.
-- **Priority:** P3 Medium
-- **Effort:** Small (one additional condition)
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Completes validation coverage on the only numeric field without a type check. Trivial fix.
-
-### DE-REC-080: Validate scenario existence in active scenario PUT endpoint
-
-- **Title:** Check scenario exists before setting as active preference
-- **Problem:** `PUT /api/scenarios/active` stores an arbitrary `activeId` string as a user preference without verifying the scenario exists. If a non-existent scenario ID is set (via API manipulation), the frontend fetches empty planning data with no clear error, leading to a confusing blank planning grid.
-- **Proposed improvement:** Add a `prisma.scenario.findUnique()` check in `src/app/api/scenarios/active/route.ts` before the upsert, returning 404 with a Dutch error if the scenario doesn't exist. Skip validation for `activeId === "default"` (base scenario).
-- **Expected product/technical value:** Prevents silent failures from invalid active scenario. Consistent with PB-187 (scenario ID validation on planning routes).
-- **Priority:** P3 Medium
-- **Effort:** Small (3-4 lines)
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Natural follow-up to PB-187. Same validation pattern, same rationale.
 
 ### DE-REC-070: Deduplicate VALID_TARGET_ENTITIES in ImportSourceManager.tsx (client-side)
 
@@ -216,6 +190,8 @@ A fresh codebase scan identified two new **P3 Medium** recommendations (sickPerc
 - **Double session lookup on planning routes:** Completed as PB-188.
 - **Audit logging on driver sub-record mutations:** Completed as PB-189.
 - **Auth checks on settings/skills GET endpoints:** Completed as PB-190.
+- **sickPercentage type validation in bulk planning route:** Completed as PB-192.
+- **Active scenario existence validation:** Completed as PB-193.
 - **Department scope check outside transaction in bulk route:** TOCTOU risk is theoretical at current concurrency. The Prisma transaction provides write consistency.
 - **Rate limiting on import execute endpoint:** Requires middleware infrastructure. ADMIN-only endpoint limits exposure.
 - **useApiData unbounded cache growth:** Browser sessions are short-lived. Cache entries are few (one per unique query). Not a practical concern.

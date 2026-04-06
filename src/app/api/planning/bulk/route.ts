@@ -34,6 +34,13 @@ export const POST = withPerfLogging(
         );
       }
 
+      if (sickPercentage !== undefined && sickPercentage !== null && typeof sickPercentage !== "number") {
+        return NextResponse.json(
+          { error: "Ziektepercentage moet een getal zijn" },
+          { status: 400 }
+        );
+      }
+
       if (sickPercentage !== undefined && sickPercentage !== null && (sickPercentage < 0 || sickPercentage > 99)) {
         return NextResponse.json(
           { error: "Ziektepercentage moet tussen 0 en 99 liggen" },
