@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** Auth enforcement is 100% complete across all API routes. Two new P3 validation improvements promoted from Delivery Agent recommendations (DE-REC-079, DE-REC-080). Release notes sync process promoted from Experience Agent (EX-REC-056). Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
+**Current direction:** PB-192, PB-193 and PB-194 shipped successfully. Validation coverage and the release-notes sync rule are now in place. The codebase is in a healthy state with no critical or high-priority debt. One new P3 item promoted from EX-REC-058 to harden the release-notes sync with a single source of truth (follow-up to PB-194). Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
 
 ## Status Definitions
 
@@ -27,47 +27,19 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-192: Valideer sickPercentage type in bulk planning endpoint
+### PB-195: Releasenotes single source-of-truth module
 
-- **ID:** PB-192
-- **Title:** Valideer sickPercentage type in bulk planning endpoint
-- **Problem / opportunity:** `POST /api/planning/bulk` controleert het bereik van sickPercentage maar niet het type. Een string-waarde passeert de bereichscontrole (NaN faalt beide vergelijkingen) en bereikt Prisma, wat een onduidelijke 500-fout oplevert in plaats van een duidelijke 400.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Completed (2026-04-06) — `typeof sickPercentage !== "number"` check toegevoegd vóór bereichsvalidatie. Non-numerieke waarden retourneren 400 met Nederlandse foutmelding. `npm run verify` slaagt.
-- **Why this matters now:** Completeert de validatiedekking op het enige numerieke veld zonder typecontrole. Triviale fix.
-- **Scope notes:** Voeg `typeof sickPercentage !== "number"` check toe vóór de bereichsvalidatie in `src/app/api/planning/bulk/route.ts`.
-- **Dependencies:** None
-- **Definition of done:** Typecontrole toegevoegd, ongeldige types retourneren 400 met Nederlandse foutmelding, `npm run verify` slaagt.
-- **Implementation note:** Eén extra conditie in bestaande validatieblok. Bron: DE-REC-079.
-
-### PB-193: Valideer scenario-bestaan bij actief scenario instellen
-
-- **ID:** PB-193
-- **Title:** Valideer scenario-bestaan bij actief scenario instellen
-- **Problem / opportunity:** `PUT /api/scenarios/active` slaat een willekeurig `activeId` op als voorkeur zonder te controleren of het scenario bestaat. Een niet-bestaand scenario-ID leidt tot een leeg planningsrooster zonder duidelijke foutmelding.
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Completed (2026-04-06) — `prisma.scenario.findUnique()` check toegevoegd vóór de upsert. Niet-bestaand scenario retourneert 404, `"default"` wordt overgeslagen. `npm run verify` slaagt.
-- **Why this matters now:** Natuurlijke opvolging van PB-187 (scenario-ID validatie op planning routes). Zelfde patroon, zelfde rationale.
-- **Scope notes:** Voeg `prisma.scenario.findUnique()` check toe in `src/app/api/scenarios/active/route.ts` vóór de upsert. Retourneer 404 met Nederlandse fout als scenario niet bestaat. Sla validatie over voor `activeId === "default"`.
-- **Dependencies:** None
-- **Definition of done:** Validatie toegevoegd, niet-bestaand scenario retourneert 404, "default" wordt overgeslagen, `npm run verify` slaagt.
-- **Implementation note:** 3-4 regels. Consistent met PB-187 patroon. Bron: DE-REC-080.
-
-### PB-194: Releasenotes sync-proces vastleggen
-
-- **ID:** PB-194
-- **Title:** Releasenotes sync-proces vastleggen
-- **Problem / opportunity:** De releasenotes-pagina gebruikt een hardcoded `RELEASES` array die elke cyclus handmatig gesynchroniseerd moet worden met `RELEASE_NOTES.md`. Drift is al twee keer opgetreden (PB-191 was nodig om 3 dagen achterstand bij te werken). Zonder procesafspraak herhaalt dit probleem zich elke cyclus.
+- **ID:** PB-195
+- **Title:** Releasenotes verplaatsen naar gedeelde module als single source-of-truth
+- **Problem / opportunity:** PB-194 introduceerde een procesregel die agenten verplicht `RELEASE_NOTES.md` en de hardcoded `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx` samen bij te werken. Procesregels leunen op discipline. Drift is al twee keer opgetreden. Een gedeelde gegevensbron elimineert de drift structureel.
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
-- **Status:** Completed (2026-04-06) — Optie (a) toegepast: verplichte sync-regel toegevoegd aan `CLAUDE.md` sectie 11 (Agent Collaboration Rules → After Finishing). Regel stelt dat elke agent die `RELEASE_NOTES.md` aanvult ook in dezelfde commit het `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx` moet bijwerken. Bij de verificatie bleek het releasenotes-scherm al drift te vertonen voor 5 april — de ontbrekende entry is meteen toegevoegd.
-- **Why this matters now:** Recurrend probleem. Eenvoudig op te lossen met een procesregel of gedeeld dataformaat.
-- **Scope notes:** Kies aanpak: (a) voeg een verplichte sync-stap toe aan `CLAUDE.md` agentregels zodat de Experience Agent altijd synchroniseert na het schrijven van releasenotes, of (b) extraheer releasedata naar een gedeeld JSON-bestand. Optie (a) is zero-effort, optie (b) is robuuster. Start met optie (a).
-- **Dependencies:** None
-- **Definition of done:** Een vastgelegde procesregel of technische oplossing die voorkomt dat de releasenotes-pagina achterloopt op `RELEASE_NOTES.md`.
-- **Implementation note:** Begin met optie (a): voeg een regel toe aan `CLAUDE.md` onder agent collaboration rules. Bron: EX-REC-056.
+- **Status:** Ready
+- **Why this matters now:** Recurrend probleem dat met één kleine refactor permanent kan worden opgelost. Volgt natuurlijk op PB-194.
+- **Scope notes:** Maak `src/domain/releases.ts` met een typed array van releases (datum, titel, categorieën met items). Render `documentatie/page.tsx` rechtstreeks uit deze module. `RELEASE_NOTES.md` blijft bestaan als menselijk leesbare mirror — werk de CLAUDE.md sync-regel bij om te verwijzen naar de module als bron van waarheid en de markdown als afgeleide. Geen wijziging in UI-vormgeving van de releasenotes-pagina.
+- **Dependencies:** None. Volgt op PB-194 (completed).
+- **Definition of done:** Releases worden uit één typed module geladen, `documentatie/page.tsx` bevat geen hardcoded array meer, CLAUDE.md regel bijgewerkt, `npm run verify` slaagt, releasenotes-pagina toont alle bestaande entries identiek aan voorheen.
+- **Implementation note:** Klein. Houd het type compatibel met de bestaande structuur (date, title, categories[{type, items[]}]). Bron: EX-REC-058.
 
 ---
 
@@ -83,25 +55,32 @@ _No items currently in progress._
 
 - **Status:** Blocked — awaiting Scrum Master scope decision
 - **Escalation:** ESC-014
-- **Summary:** Scrum Master wil een desktop startscherm. Scope en aanpak moeten gekozen worden voordat dit gepland kan worden. Zie ESC-014 voor de opties.
+- **Summary:** Scrum Master wil een desktop startscherm. Scope en aanpak moeten gekozen worden voordat dit gepland kan worden. Zie ESC-014 voor de opties (A operationeel dashboard, B kaartoverzicht, C kaarten + lichte KPI's, D niet doen). Aanbeveling: Option C.
 
 ---
 
 ## Completed Recently
 
-### PB-190: Voeg auth-checks toe aan settings GET endpoints
+### PB-192: Valideer sickPercentage type in bulk planning endpoint
 
 - **Status:** Completed
 - **Owner:** Delivery Agent
-- **Completed:** 2026-04-05
-- **Summary:** Added `requireRole("VIEWER")` to GET handlers in `src/app/api/settings/[type]/route.ts` and `src/app/api/settings/skills/route.ts`. All GET endpoints now enforce minimum VIEWER role. No behavior change without NEXTAUTH_SECRET.
+- **Completed:** 2026-04-06
+- **Summary:** `typeof sickPercentage !== "number"` check toegevoegd in `POST /api/planning/bulk` vóór bereichsvalidatie. Non-numerieke waarden retourneren nu 400 met Nederlandse foutmelding in plaats van een onduidelijke 500.
 
-### PB-191: Releasenotes-pagina synchroniseren met RELEASE_NOTES.md
+### PB-193: Valideer scenario-bestaan bij actief scenario instellen
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-06
+- **Summary:** `PUT /api/scenarios/active` controleert nu via `prisma.scenario.findUnique()` of het opgegeven scenario bestaat. Niet-bestaand ID retourneert 404 met Nederlandse foutmelding; `"default"` blijft toegestaan zonder check. Consistent met PB-187 patroon.
+
+### PB-194: Releasenotes sync-proces vastleggen
 
 - **Status:** Completed
 - **Owner:** Experience Agent
-- **Completed:** 2026-04-05
-- **Summary:** Added April 2, 3, and 4 entries to the hardcoded `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx`. Content sourced from `RELEASE_NOTES.md`. Existing format preserved (date, title, category badges with items).
+- **Completed:** 2026-04-06
+- **Summary:** Verplichte sync-regel toegevoegd aan `CLAUDE.md` sectie 11: elke agent die `RELEASE_NOTES.md` aanvult moet in dezelfde commit ook het `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx` bijwerken. Bestaande drift voor 5 april 2026 hersteld in dezelfde cyclus.
 
 ---
 
@@ -235,7 +214,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-195.
+- Backlog IDs are sequential and never reused. Next available: PB-196.
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.
