@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** PB-192, PB-193 and PB-194 shipped successfully. Validation coverage and the release-notes sync rule are now in place. The codebase is in a healthy state with no critical or high-priority debt. One new P3 item promoted from EX-REC-058 to harden the release-notes sync with a single source of truth (follow-up to PB-194). Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
+**Current direction:** PB-195 shipped — release notes now have a typed single source of truth (`src/domain/releases.ts`), eliminating drift structurally. No critical or high-priority debt. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
 
 ## Status Definitions
 
@@ -27,19 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-195: Releasenotes single source-of-truth module
-
-- **ID:** PB-195
-- **Title:** Releasenotes verplaatsen naar gedeelde module als single source-of-truth
-- **Problem / opportunity:** PB-194 introduceerde een procesregel die agenten verplicht `RELEASE_NOTES.md` en de hardcoded `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx` samen bij te werken. Procesregels leunen op discipline. Drift is al twee keer opgetreden. Een gedeelde gegevensbron elimineert de drift structureel.
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Recurrend probleem dat met één kleine refactor permanent kan worden opgelost. Volgt natuurlijk op PB-194.
-- **Scope notes:** Maak `src/domain/releases.ts` met een typed array van releases (datum, titel, categorieën met items). Render `documentatie/page.tsx` rechtstreeks uit deze module. `RELEASE_NOTES.md` blijft bestaan als menselijk leesbare mirror — werk de CLAUDE.md sync-regel bij om te verwijzen naar de module als bron van waarheid en de markdown als afgeleide. Geen wijziging in UI-vormgeving van de releasenotes-pagina.
-- **Dependencies:** None. Volgt op PB-194 (completed).
-- **Definition of done:** Releases worden uit één typed module geladen, `documentatie/page.tsx` bevat geen hardcoded array meer, CLAUDE.md regel bijgewerkt, `npm run verify` slaagt, releasenotes-pagina toont alle bestaande entries identiek aan voorheen.
-- **Implementation note:** Klein. Houd het type compatibel met de bestaande structuur (date, title, categories[{type, items[]}]). Bron: EX-REC-058.
+_No Ready items. PB-195 completed this cycle._
 
 ---
 
@@ -74,6 +62,13 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Completed:** 2026-04-06
 - **Summary:** `PUT /api/scenarios/active` controleert nu via `prisma.scenario.findUnique()` of het opgegeven scenario bestaat. Niet-bestaand ID retourneert 404 met Nederlandse foutmelding; `"default"` blijft toegestaan zonder check. Consistent met PB-187 patroon.
+
+### PB-195: Releasenotes single source-of-truth module
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-07
+- **Summary:** Releasedata verplaatst naar `src/domain/releases.ts` als typed single source-of-truth. `documentatie/page.tsx` importeert nu `RELEASES` uit de module; de hardcoded array is verwijderd. `RELEASE_NOTES.md` blijft een menselijk leesbare mirror. CLAUDE.md sync-regel bijgewerkt om naar de module als bron te verwijzen. `npm run verify` slaagt; releasenotes-pagina toont alle bestaande entries ongewijzigd.
 
 ### PB-194: Releasenotes sync-proces vastleggen
 
@@ -215,6 +210,7 @@ _No items currently in progress._
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
 - Backlog IDs are sequential and never reused. Next available: PB-196.
+
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
 - Remove stale items that are no longer relevant.

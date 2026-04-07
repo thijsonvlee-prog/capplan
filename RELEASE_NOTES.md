@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-07 — Releasenotes single source-of-truth
+
+#### Onderhoud
+
+- **Releasenotes structureel gesynchroniseerd (PB-195):** Release-data is verplaatst naar een typed module `src/domain/releases.ts`. De in-app releasenotes-pagina (`documentatie/page.tsx`) importeert nu direct uit deze module; de hardcoded array is verwijderd. `RELEASE_NOTES.md` blijft een menselijk leesbare mirror. De CLAUDE.md sync-regel is bijgewerkt om de module als bron van waarheid te benoemen. Elimineert de terugkerende drift tussen markdown en in-app pagina structureel.
+
 ### 2026-04-06 — Validatieverbeteringen op planning- en scenario-endpoints
 
 #### Validatie

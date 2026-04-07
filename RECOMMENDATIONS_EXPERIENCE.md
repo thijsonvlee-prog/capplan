@@ -2,11 +2,11 @@
 
 ## Summary
 
-**This cycle (2026-04-06):** Completed PB-194 — release notes sync process. Added a mandatory sync rule to `CLAUDE.md` section 11 (After Finishing) stating that every agent appending to `RELEASE_NOTES.md` must also update the `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx` in the same commit. Verified the current sync state and fixed drift: the 5 april 2026 entry was missing from the in-app page and has been added.
+**This cycle (2026-04-07):** Completed PB-195 — release notes single source-of-truth. Created `src/domain/releases.ts` as a typed module containing all release data. Refactored `documentatie/page.tsx` to import `RELEASES` directly; the hardcoded inline array is removed. Updated the CLAUDE.md sync rule to point to the module as the source of truth, with `RELEASE_NOTES.md` as a human-readable mirror. `npm run verify` passes.
 
 **What was improved:**
-- `CLAUDE.md` now carries an explicit, non-negotiable sync rule binding on all agents. This closes the recurring drift loop rather than patching it each cycle.
-- In-app releasenotes page is back in sync with `RELEASE_NOTES.md` through 6 april 2026.
+- Release notes drift is now eliminated structurally: one typed module feeds the in-app page, and the markdown mirror can never silently diverge from the UI rendering path. No more "hardcoded array" to forget updating.
+- Agents have a clearer mental model: edit `releases.ts` first, mirror into `RELEASE_NOTES.md`.
 
 **Current design alignment with DESIGN.md:**
 - **Overall product quality: 8/10.** The application exceeds generic admin UI across all screens. Design tokens are comprehensive (~55 tokens), typography hierarchy is strong (Manrope display + Inter body), and surface layering is consistently applied.
@@ -21,20 +21,11 @@
 **Where design quality is still below target:**
 - Recharts default tooltip/axis styling remains the most visible desktop integration gap.
 - RosterProfileEditor 28-day grid is flat and mechanical — no tonal layering, no weekend differentiation, no visual rhythm.
-- Release notes drift risk is now mitigated by the CLAUDE.md rule (PB-194). Long-term, option (b) — single source-of-truth JSON — would be more robust and could be revisited if the rule is ignored.
+- Release notes drift risk is now structurally eliminated via PB-195. No further action needed on this front.
 
 ## Recommended Next Improvements
 
-### EX-REC-058: Release notes single source-of-truth (follow-up to PB-194)
-
-- **Problem:** PB-194 applied option (a) — a procedural CLAUDE.md rule. Process rules rely on agent discipline. A robust fix would extract release data to a shared source that both `RELEASE_NOTES.md` and the in-app page consume.
-- **Proposed improvement:** Move releases into a typed TS/JSON module (e.g. `src/domain/releases.ts`) and either generate `RELEASE_NOTES.md` from it or render the in-app page from the module and keep `RELEASE_NOTES.md` as a mirror written by a simple script.
-- **Expected user value:** Users always see up-to-date release information without manual intervention.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Product Owner (process decision) + Experience Agent (implementation)
-- **Why now:** Drift has occurred twice already. Without a process fix, it will happen every cycle.
+_EX-REC-058 delivered as PB-195 on 2026-04-07 and removed from this list._
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
