@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** PB-195 shipped — release notes now have a typed single source of truth (`src/domain/releases.ts`), eliminating drift structurally. No critical or high-priority debt. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
+**Current direction:** No P1/P2 debt. This cycle promotes two paired P3 validation-consolidation items (PB-196, PB-197) surfaced by the Delivery Agent's fresh codebase scan — both are pure refactors that eliminate ~33 duplicated validation blocks and unblock cleaner future write routes. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
 
 ## Status Definitions
 
@@ -27,7 +27,49 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No Ready items. PB-195 completed this cycle._
+### PB-196: `validateMaxLength` helper — eliminate ~27 duplicated length checks
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Source:** DE-REC-071 (also closes DE-REC-058 and DE-REC-073 as natural side-effects)
+- **Problem:** ~27 API write routes contain the same inline pattern: `if (typeof field === "string" && field.length > N) return NextResponse.json({ error: "<Label> mag maximaal N tekens bevatten" }, { status: 400 });`. Spread across drivers, scenarios, import-sources, user-groups, roster-profiles, settings (skills, stamtabel) and driver sub-records. Labels and limits drift if the pattern is reused without discipline. Scenario duplicate POST and preferences PUT also lack the cap entirely (DE-REC-073, DE-REC-058).
+- **Why this matters now:** Highest-value duplication currently visible. Aligns with the CLAUDE.md rule "Do not duplicate logic that already exists there." Adding new write routes compounds the debt.
+- **Scope notes:**
+  - Add `validateMaxLength(value, maxLength, label)` helper in `src/lib/api-route-utils.ts`. Returns `null` on valid (or non-string skip) or a Dutch message `"<Label> mag maximaal N tekens bevatten"`.
+  - Optionally expose a `validateMaxLengths(checks)` that returns the first error for multi-field routes.
+  - Replace all ~27 instances with helper calls. Preserve exact Dutch error strings and 400 status codes.
+  - Apply the helper to `POST /api/scenarios/[id]/duplicate` (currently missing the cap — DE-REC-073).
+  - Apply the helper to `PUT /api/preferences` with a 500-char cap on `value` (DE-REC-058).
+- **Dependencies:** None.
+- **Definition of done:**
+  - Helper exists in `api-route-utils.ts` with TypeScript types.
+  - All ~27 inline length checks replaced.
+  - Scenario duplicate route enforces 200-char name cap.
+  - Preferences PUT enforces 500-char value cap.
+  - `npm run verify` passes.
+  - No behavior change for valid inputs; same error messages and status codes for invalid ones.
+- **Implementation note:** Pure refactor. Use a single commit. Spot-check at least 3 routes after the replace to confirm message phrasing is preserved.
+
+### PB-197: `validateDateRange` helper — consolidate 6 duplicated start/end date checks
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Source:** DE-REC-072
+- **Problem:** Employment, function, and roster-assignment routes (POST on `/route.ts` and PUT on `/[recordId]/route.ts`) contain the same block 6 times: `if (endDate && startDate && new Date(endDate) < new Date(startDate)) return ... "Einddatum mag niet voor de startdatum liggen"`.
+- **Why this matters now:** Pairs cleanly with PB-196 as a single validation-consolidation cycle. After PB-186 the date format is guaranteed before this check, so a lexicographic comparison on the already-validated `YYYY-MM-DD` strings is safe and cheaper.
+- **Scope notes:**
+  - Add `validateDateRange(startDate, endDate)` in `src/lib/api-route-utils.ts`. Returns `null` or the Dutch message.
+  - Use lexicographic compare on the ISO strings (no `new Date()` allocation).
+  - Replace 6 occurrences in: employment POST/PUT, function POST/PUT, roster-assignment POST/PUT.
+- **Dependencies:** None. Can ship together with PB-196 or separately.
+- **Definition of done:**
+  - Helper exists with TypeScript types.
+  - All 6 inline date-range checks replaced.
+  - `npm run verify` passes.
+  - Behavior unchanged for any valid or invalid input.
+- **Implementation note:** Trivial refactor. Verify the existing test path (date format validated first) still holds at every call site.
 
 ---
 
@@ -49,33 +91,12 @@ _No items currently in progress._
 
 ## Completed Recently
 
-### PB-192: Valideer sickPercentage type in bulk planning endpoint
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-06
-- **Summary:** `typeof sickPercentage !== "number"` check toegevoegd in `POST /api/planning/bulk` vóór bereichsvalidatie. Non-numerieke waarden retourneren nu 400 met Nederlandse foutmelding in plaats van een onduidelijke 500.
-
-### PB-193: Valideer scenario-bestaan bij actief scenario instellen
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-06
-- **Summary:** `PUT /api/scenarios/active` controleert nu via `prisma.scenario.findUnique()` of het opgegeven scenario bestaat. Niet-bestaand ID retourneert 404 met Nederlandse foutmelding; `"default"` blijft toegestaan zonder check. Consistent met PB-187 patroon.
-
 ### PB-195: Releasenotes single source-of-truth module
 
 - **Status:** Completed
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-07
 - **Summary:** Releasedata verplaatst naar `src/domain/releases.ts` als typed single source-of-truth. `documentatie/page.tsx` importeert nu `RELEASES` uit de module; de hardcoded array is verwijderd. `RELEASE_NOTES.md` blijft een menselijk leesbare mirror. CLAUDE.md sync-regel bijgewerkt om naar de module als bron te verwijzen. `npm run verify` slaagt; releasenotes-pagina toont alle bestaande entries ongewijzigd.
-
-### PB-194: Releasenotes sync-proces vastleggen
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-06
-- **Summary:** Verplichte sync-regel toegevoegd aan `CLAUDE.md` sectie 11: elke agent die `RELEASE_NOTES.md` aanvult moet in dezelfde commit ook het `RELEASES` array in `src/app/(dashboard)/documentatie/page.tsx` bijwerken. Bestaande drift voor 5 april 2026 hersteld in dezelfde cyclus.
 
 ---
 
@@ -130,6 +151,13 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Current field mapping editor is functional. Desktop-only concern.
 
+### DE-REC-074: Batch FK validation in driver POST nested records
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Cleaner code and fewer DB round trips on driver bulk creation, but `Promise.all()` already parallelizes the per-record FK calls. No user-visible impact at current volumes.
+
 ### DE-REC-070: Align client-side TARGET_ENTITIES met server-side constante
 
 - **Owner:** Delivery Agent
@@ -150,13 +178,6 @@ _No items currently in progress._
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** Trivial validation gap on a single numeric field. Near-zero risk.
-
-### DE-REC-058: Cap value length on preferences PUT route
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Only remaining route without text field length cap. Near-zero risk.
 
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route
 
@@ -209,7 +230,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-196.
+- Backlog IDs are sequential and never reused. Next available: PB-198.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.

@@ -41,6 +41,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 - **Trade-offs:** Option A biedt de meeste waarde maar vereist nieuwe API-endpoints en is 2-3 cycli werk. Option B is het snelst (1 cyclus) maar voegt weinig informatie toe boven de sidebar. Option C biedt een goede middenweg met hergebruik van bestaande data. Option D is het veiligst maar negeert de Scrum Master-wens.
 - **What the Scrum Master must do:** Place `(X)` next to exactly one option.
 - **Product Owner action after choice:** Create 1-2 backlog items for the chosen approach and assign to Experience Agent (UI) with possible Delivery Agent support (API endpoints if Option A/C).
+- **PO note (2026-04-07):** Still unmarked after 6 cycles. SMI-026 remains blocked. If no choice is made next cycle the Product Owner Agent will consider downgrading the blocker to Deferred and removing it from active scope tracking until the Scrum Master revisits it.
 
 ---
 
