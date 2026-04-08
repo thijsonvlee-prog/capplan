@@ -26,14 +26,15 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 ### SMI-026: Desktop homescreen
 
 - **Type:** Feature request / initiative
-- **Status:** Escalated
+- **Status:** Escalated (deferred — awaiting Scrum Master decision)
 - **Date:** 2026-04-01
 - **Original input:** "maak ook voor desktop een homescreen."
 - **Analysis:** Currently the app redirects `/` to `/planning` on desktop. On mobile there is already a card-based homescreen. The desktop version needs scope definition: what content to show, whether it replaces the redirect or becomes a new route, and how it integrates with the existing sidebar navigation.
-- **Escalation linkage:** ESC-014
+- **Escalation linkage:** ESC-014 (remains Open)
 - **PO note (2026-04-05):** ESC-014 remains open. No Scrum Master decision yet. Backlog item blocked until a scope option is chosen. Three new P3 items (PB-192, PB-193, PB-194) promoted this cycle from agent recommendations.
 - **PO note (2026-04-06):** ESC-014 still open — no Scrum Master decision marked yet. PB-192, PB-193 and PB-194 all shipped. Item remains blocked.
 - **PO note (2026-04-07):** ESC-014 still open — no Scrum Master decision marked yet. PB-195 shipped (releasenotes single source-of-truth). Item remains blocked. No further action possible without a scope choice.
+- **PO note (2026-04-08):** ESC-014 still unmarked after 7 cycles. Per the warning in the 2026-04-07 PO note, the active blocker has been removed from scope tracking and moved to the Deferred section of `PRODUCT_BACKLOG.md`. ESC-014 remains Open — the Scrum Master can revive this initiative at any time by placing `(X)` next to one of the four options, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ## Closed Inputs
 

@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2 debt. PB-196 and PB-197 were completed this cycle — the two paired validation-consolidation refactors now use shared helpers in `api-route-utils.ts`, eliminating ~34 duplicated validation blocks and closing the last two open length-cap gaps (scenario duplicate + preferences PUT). Experience Agent run 18 (2026-04-08) found no Experience items in `Ready`, did a fresh scan, shipped a small header-structure fix directly (EX-REC-057, duplicate page title on desktop), and logged two new P4 recommendations (EX-REC-059 StatusSelector color semantics, EX-REC-060 SubTable empty state/row alternation). Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
+**Current direction:** No P1/P2/P3 work outstanding. The validation-consolidation track (PB-196, PB-197) and the header duplicate-title fix (EX-REC-057) all shipped on 2026-04-08. With the Ready queue empty and both specialist agents returning small P4-Low polish items from their fresh scans, this cycle promotes four well-scoped P4 items — two UX cleanups (StatusSelector color semantics, SubTable empty state + row alternation) and two Delivery consolidations (enum/constants extraction, sub-record ownership helper). ESC-014 (desktop homescreen) remains unmarked after 7 cycles; per the warning in the last cycle PO note, SMI-026 is now downgraded to Deferred until the Scrum Master revisits it.
 
 ## Status Definitions
 
@@ -27,7 +27,89 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready. The Delivery Agent's fresh scan did not surface new P1/P2/P3 work after completing PB-196/PB-197 — see `RECOMMENDATIONS_DELIVERY.md` for P4-level carry-overs._
+### PB-198: StatusSelector "Bevestigen" button — drop danger color override
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Source:** EX-REC-059
+- **Problem:** `src/components/planning/StatusSelector.tsx:141` renders the sick-percentage confirm button as `className="btn-primary w-full justify-center bg-danger-500 hover:bg-danger-600"`. The `bg-danger-*` override produces a red CTA on a non-destructive confirm action, violating DESIGN.md §4.2 (danger red is reserved for destructive/error states). It also weakens the semantic color system by visually competing with real delete affordances elsewhere.
+- **Why this matters now:** One-line fix surfaced during the fresh UX scan. Low risk, removes a bad pattern precedent before it can spread.
+- **Scope notes:** Remove the two `bg-danger-*` classes only. Do not touch button copy, layout, or the sick-percentage input. The SICK context is already conveyed by the modal title and the sick-percentage field above the button.
+- **Dependencies:** None.
+- **Definition of done:**
+  - `StatusSelector.tsx:141` button is `className="btn-primary w-full justify-center"` (no danger override).
+  - Visual check: confirm button renders in brand color, not red.
+  - `npm run verify` passes.
+  - Release note entry added in `src/domain/releases.ts` AND `RELEASE_NOTES.md` (per CLAUDE.md §11).
+
+### PB-199: SubTable — actionable empty state and clean row alternation
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Source:** EX-REC-060
+- **Problem:** `src/components/drivers/SubTable.tsx` has two quality gaps:
+  1. Default `emptyMessage = "Geen records"` (line 29) violates CLAUDE.md §6 — it uses the banned word "records" and provides no next-step guidance. Call sites (employment, functions, roster-assignment) pass Dutch entity labels but still lack a next-step hint.
+  2. Row alternation uses `bg-surface-secondary/50` (line 86), producing a muddy tonal value instead of the clean surface layering used in StamtabelManager and SkillManager.
+- **Why this matters now:** Visible in every driver edit flow. Tiny, safe cleanup that closes the last empty-state gap against CLAUDE.md §6.
+- **Scope notes:**
+  - Change the default `emptyMessage` to an actionable Dutch fallback (e.g. `"Nog geen gegevens. Gebruik 'Toevoegen' om iets vast te leggen."`).
+  - Update the three caller sites in `DriverForm.tsx` (dienstverbanden, functies, roostertoewijzingen) to pass next-step hints in the same sentence pattern (e.g. `"Nog geen dienstverbanden voor deze chauffeur. Gebruik 'Toevoegen' om een dienstverband vast te leggen."`).
+  - Replace `bg-surface-secondary/50` with solid `bg-surface-secondary` for odd rows. Do not touch the `bg-success-50` "Actief" row highlight.
+- **Dependencies:** None.
+- **Definition of done:**
+  - `SubTable.tsx` default empty message no longer contains the word "records" and suggests the next step.
+  - All three SubTable call sites in `DriverForm.tsx` pass entity-specific empty messages with a next-step hint.
+  - Row alternation uses a solid surface token; no `/50` opacity modifier.
+  - `npm run verify` passes.
+  - Release note entry added to `src/domain/releases.ts` AND `RELEASE_NOTES.md`.
+
+### PB-200: Centralize enum validation arrays and `MAX_NOTES_LENGTH`
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Source:** DE-REC-075 + DE-REC-077 (merged — same validation-consolidation theme, same target files, single commit is cleaner)
+- **Problem:**
+  1. `const VALID_STATUSES = Object.values(PlanningStatus)` is duplicated in `src/app/api/planning/route.ts:9` and `src/app/api/planning/bulk/route.ts:9`.
+  2. `const validEmploymentTypes = Object.values(EmploymentType)` is duplicated in `src/app/api/drivers/[id]/employment/route.ts:53` and `src/app/api/drivers/[id]/employment/[recordId]/route.ts:28`.
+  3. `MAX_NOTES_LENGTH = 500` is defined identically in `src/app/api/planning/route.ts:7` and `src/app/api/planning/bulk/route.ts:7`.
+- **Why this matters now:** Natural follow-through on the PB-196/PB-197 consolidation theme while the surface is still fresh. Same phrasing, same locations.
+- **Scope notes:**
+  - Add exported constants in `src/lib/api-route-utils.ts` (or `src/domain/constants.ts` — choose whichever keeps callers cleanest): `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, and `MAX_NOTES_LENGTH`.
+  - Replace all 4 inline enum-array definitions and both `MAX_NOTES_LENGTH` definitions with the shared imports.
+  - Do NOT introduce a generic `validateEnumValue` helper this cycle — keep the existing inline check pattern. Adding the helper would be a separate, larger consolidation.
+  - Pure refactor: no behavior change, same error phrasing, same status codes.
+- **Dependencies:** None.
+- **Definition of done:**
+  - No duplicate `Object.values(PlanningStatus)` or `Object.values(EmploymentType)` in API routes.
+  - No duplicate `MAX_NOTES_LENGTH` literal in API routes.
+  - All affected routes still return identical 400 messages for the existing invalid-input cases.
+  - `npm run verify` passes.
+  - Release note entry (single Onderhoud bullet) added to `src/domain/releases.ts` AND `RELEASE_NOTES.md`.
+
+### PB-201: `verifyRecordOwnership` helper for driver sub-record PUT/DELETE
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Source:** DE-REC-076
+- **Problem:** All three driver sub-record `[recordId]/route.ts` files (employment, functions, roster-assignments) contain the same `findFirst({ where: { id: recordId, driverId: id } })` ownership check twice each — once inside the PUT transaction, once before the DELETE. Six copies total. Any future tightening of authorization on sub-records would require six edits.
+- **Why this matters now:** The only consolidation opportunity from the fresh scan that touches authorization-adjacent code. Small, same spirit as PB-196/197.
+- **Scope notes:**
+  - Add a helper in `src/lib/api-route-utils.ts`. Recommended shape: `verifyRecordOwnership(model, recordId, driverId): Promise<boolean>` returning whether the row exists and is owned by that driver. Keep it read-only.
+  - Replace all 6 inline blocks in `employment/[recordId]/route.ts`, `functions/[recordId]/route.ts`, and `roster-assignments/[recordId]/route.ts`.
+  - The helper may be called either inside or outside the PUT `$transaction` — keep the existing placement so the transactional shape is unchanged. Only the inline duplication goes away.
+  - Preserve the existing 404 Dutch error messages verbatim.
+  - Pure refactor: no behavior change.
+- **Dependencies:** None. Independent of PB-200; they touch different files and can ship in parallel.
+- **Definition of done:**
+  - Helper defined once in `api-route-utils.ts`.
+  - All 6 inline ownership-check blocks replaced.
+  - Same 404 responses for non-owned records.
+  - `npm run verify` passes.
+  - Release note entry (single Onderhoud bullet) added to `src/domain/releases.ts` AND `RELEASE_NOTES.md`.
 
 ---
 
@@ -39,11 +121,7 @@ _No items currently in progress._
 
 ## Blocked / Needs Decision
 
-### Desktop homescreen (SMI-026)
-
-- **Status:** Blocked — awaiting Scrum Master scope decision
-- **Escalation:** ESC-014
-- **Summary:** Scrum Master wil een desktop startscherm. Scope en aanpak moeten gekozen worden voordat dit gepland kan worden. Zie ESC-014 voor de opties (A operationeel dashboard, B kaartoverzicht, C kaarten + lichte KPI's, D niet doen). Aanbeveling: Option C.
+_No items currently blocked. SMI-026 / ESC-014 was downgraded to Deferred this cycle after 7 cycles without a Scrum Master decision — see Deferred section._
 
 ---
 
@@ -68,34 +146,35 @@ _No items currently in progress._
 - **Status:** Completed (direct Experience Agent fix, no PB number)
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-08
-- **Summary:** `Header.tsx` rendered `<h1 class="text-page-title">` for every route in `PAGE_TITLES` while Capaciteit, Chauffeurs, and Instellingen ALSO render their own composed page-header with the same Manrope title — producing two identical titles on desktop. Added a `DESKTOP_PAGES_WITH_OWN_TITLE` exception set so the header bar suppresses its title only on those three routes, only on desktop. Mobile behaviour and the title display on Planning/Releasenotes are unchanged. Directly moves header structure toward DESIGN.md §2.5 (one clear title anchor per composed screen). `npm run verify` passes.
-
-### PB-195: Releasenotes single source-of-truth module
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-07
-- **Summary:** Releasedata verplaatst naar `src/domain/releases.ts` als typed single source-of-truth. `documentatie/page.tsx` importeert nu `RELEASES` uit de module; de hardcoded array is verwijderd. `RELEASE_NOTES.md` blijft een menselijk leesbare mirror. CLAUDE.md sync-regel bijgewerkt om naar de module als bron te verwijzen. `npm run verify` slaagt; releasenotes-pagina toont alle bestaande entries ongewijzigd.
+- **Summary:** `Header.tsx` rendered `<h1 class="text-page-title">` for every route in `PAGE_TITLES` while Capaciteit, Chauffeurs, and Instellingen ALSO render their own composed page-header with the same Manrope title — producing two identical titles on desktop. Added a `DESKTOP_PAGES_WITH_OWN_TITLE` exception set so the header bar suppresses its title only on those three routes, only on desktop. Mobile behaviour and the title display on Planning/Releasenotes are unchanged. Moves header structure toward DESIGN.md §2.5 (one clear title anchor per composed screen). `npm run verify` passes.
 
 ---
 
 ## Deferred
 
-### EX-REC-055: RosterProfileEditor — tonale lagen en weekendonderscheid
+### SMI-026: Desktop homescreen (was Blocked, now Deferred)
+
+- **Owner:** Product Owner Agent (coordination)
+- **Priority:** N/A (scope unresolved)
+- **Status:** Deferred
+- **Escalation:** ESC-014 (remains Open for future revisit)
+- **Reason:** ESC-014 has been Open and unmarked for 7 consecutive cycles. Per the previous cycle's PO note warning, the active blocker is now removed from scope tracking. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+
+### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** Low-traffic screen. All other settings sections are at design system standard. Pick up when capacity allows.
 
-### EX-REC-052: Mobiele planning — bewerkingsmogelijkheid (v2)
+### EX-REC-052: Mobile planning — edit capability (v2)
 
 - **Owner:** Experience Agent
 - **Priority:** P3 Medium
 - **Status:** Deferred
 - **Reason:** Natural next step after mobile initiative is complete. The read-only planning flow should be validated with user feedback first.
 
-### EX-REC-053: Mobiel startscherm — begroeting en scenario-context
+### EX-REC-053: Mobile homescreen — greeting and scenario context
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
@@ -137,7 +216,7 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Cleaner code and fewer DB round trips on driver bulk creation, but `Promise.all()` already parallelizes the per-record FK calls. No user-visible impact at current volumes.
 
-### DE-REC-070: Align client-side TARGET_ENTITIES met server-side constante
+### DE-REC-070: Align client-side TARGET_ENTITIES with server-side constant
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
@@ -172,7 +251,14 @@ _No items currently in progress._
 - **Status:** Deferred
 - **Reason:** Natural Phase 1 follow-up but not blocking.
 
-### PB-061: Add PerformanceEvent table cleanup mechanism
+### DE-REC-030: Centralize magic numbers in `API_LIMITS`
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Broader initiative. PB-200 takes the first increment (`MAX_NOTES_LENGTH`). Revisit if more duplicated limits surface.
+
+### PB-061: Add PerformanceEvent table cleanup mechanism (DE-REC-031)
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
@@ -209,7 +295,7 @@ _No items currently in progress._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-198.
+- Backlog IDs are sequential and never reused. Next available: PB-202.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.

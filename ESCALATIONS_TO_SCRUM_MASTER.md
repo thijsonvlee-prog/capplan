@@ -42,6 +42,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 - **What the Scrum Master must do:** Place `(X)` next to exactly one option.
 - **Product Owner action after choice:** Create 1-2 backlog items for the chosen approach and assign to Experience Agent (UI) with possible Delivery Agent support (API endpoints if Option A/C).
 - **PO note (2026-04-07):** Still unmarked after 6 cycles. SMI-026 remains blocked. If no choice is made next cycle the Product Owner Agent will consider downgrading the blocker to Deferred and removing it from active scope tracking until the Scrum Master revisits it.
+- **PO note (2026-04-08):** 7 cycles unmarked. SMI-026 has been moved from `Blocked / Needs Decision` to the `Deferred` section of `PRODUCT_BACKLOG.md`. This escalation stays Open so the decision remains visible for future cycles — as soon as an option is marked with `(X)`, the Product Owner Agent will translate it back into active backlog items and re-activate SMI-026.
 
 ---
 
