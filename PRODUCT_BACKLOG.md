@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2 debt. PB-196 and PB-197 were completed this cycle — the two paired validation-consolidation refactors now use shared helpers in `api-route-utils.ts`, eliminating ~34 duplicated validation blocks and closing the last two open length-cap gaps (scenario duplicate + preferences PUT). Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
+**Current direction:** No P1/P2 debt. PB-196 and PB-197 were completed this cycle — the two paired validation-consolidation refactors now use shared helpers in `api-route-utils.ts`, eliminating ~34 duplicated validation blocks and closing the last two open length-cap gaps (scenario duplicate + preferences PUT). Experience Agent run 18 (2026-04-08) found no Experience items in `Ready`, did a fresh scan, shipped a small header-structure fix directly (EX-REC-057, duplicate page title on desktop), and logged two new P4 recommendations (EX-REC-059 StatusSelector color semantics, EX-REC-060 SubTable empty state/row alternation). Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
 
 ## Status Definitions
 
@@ -62,6 +62,13 @@ _No items currently in progress._
 - **Owner:** Delivery Agent
 - **Completed:** 2026-04-08
 - **Summary:** Added `validateDateRange(startDate, endDate)` helper in `src/lib/api-route-utils.ts` using lexicographic comparison on the already-validated `YYYY-MM-DD` strings. Replaced 6 inline checks in employment POST/PUT, function POST/PUT, and roster-assignment POST/PUT routes. Same Dutch error message preserved; no behavior change. `npm run verify` passes.
+
+### EX-REC-057: Duplicate page title on desktop — removed
+
+- **Status:** Completed (direct Experience Agent fix, no PB number)
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-08
+- **Summary:** `Header.tsx` rendered `<h1 class="text-page-title">` for every route in `PAGE_TITLES` while Capaciteit, Chauffeurs, and Instellingen ALSO render their own composed page-header with the same Manrope title — producing two identical titles on desktop. Added a `DESKTOP_PAGES_WITH_OWN_TITLE` exception set so the header bar suppresses its title only on those three routes, only on desktop. Mobile behaviour and the title display on Planning/Releasenotes are unchanged. Directly moves header structure toward DESIGN.md §2.5 (one clear title anchor per composed screen). `npm run verify` passes.
 
 ### PB-195: Releasenotes single source-of-truth module
 

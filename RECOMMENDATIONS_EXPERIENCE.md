@@ -2,30 +2,30 @@
 
 ## Summary
 
-**This cycle (2026-04-07):** Completed PB-195 — release notes single source-of-truth. Created `src/domain/releases.ts` as a typed module containing all release data. Refactored `documentatie/page.tsx` to import `RELEASES` directly; the hardcoded inline array is removed. Updated the CLAUDE.md sync rule to point to the module as the source of truth, with `RELEASE_NOTES.md` as a human-readable mirror. `npm run verify` passes.
+**This cycle (2026-04-08):** Experience Agent run 18. No Experience Agent items were in the `Ready` section of `PRODUCT_BACKLOG.md` (the only ready items, PB-196/PB-197, are Delivery Agent validation-consolidation refactors). Cycle was therefore used for a fresh UX/design scan plus one small, focused header-structure fix surfaced during the scan.
 
-**What was improved:**
-- Release notes drift is now eliminated structurally: one typed module feeds the in-app page, and the markdown mirror can never silently diverge from the UI rendering path. No more "hardcoded array" to forget updating.
-- Agents have a clearer mental model: edit `releases.ts` first, mirror into `RELEASE_NOTES.md`.
+**What was improved this cycle:**
+- **Duplicate page title on desktop eliminated (EX-REC-057).** `Header.tsx` was rendering `<h1 class="text-page-title">` for every route in `PAGE_TITLES`, and three screens (Capaciteit, Chauffeurs, Instellingen) ALSO render their own composed page-header with the same title — producing two identical Manrope headings on the same desktop view, which directly violates DESIGN.md §2.5 (composed screens with one clear title anchor). Added a `DESKTOP_PAGES_WITH_OWN_TITLE` exception set to `Header.tsx` so the header bar suppresses its title only on those three routes, only on desktop. Mobile behaviour is unchanged (those pages hide their in-body title on small screens, so the header bar is still their sole title source). Planning and Releasenotes continue to rely on the header bar because they have no composed page-header of their own. `npm run verify` passes.
 
 **Current design alignment with DESIGN.md:**
 - **Overall product quality: 8/10.** The application exceeds generic admin UI across all screens. Design tokens are comprehensive (~55 tokens), typography hierarchy is strong (Manrope display + Inter body), and surface layering is consistently applied.
+- **Header structure:** Now aligned with DESIGN.md §2.5 (composed screens with one clear title anchor). Desktop no longer duplicates the page title on the three screens with their own composed page-header.
 - **Planning grid:** Well-aligned (sections 7.4, 9). Toolbar organized into four zones. Tonal row striping with hover effects.
-- **Capacity page:** Well-aligned (sections 7.1, 7.3, 8.3). KPI summary module, grouped toolbar with comparison pills, chart + table sections clearly separated. Table uses tonal layering. **Chart remains the gap** — default Recharts tooltip/axis styling.
+- **Capacity page:** Well-aligned (sections 7.1, 7.3, 8.3). KPI summary module, grouped toolbar with comparison pills, chart + table sections clearly separated. **Chart remains the gap** — default Recharts tooltip/axis styling.
 - **Settings page:** Well-aligned (sections 2.5, 7.1). StamtabelManager and SkillManager rows use tonal layering with hover elevation and brand accent editing state.
 - **Drivers page:** Well-aligned (sections 3.2, 7.3). Composed page header, integrated search, tonal row alternation.
 - **Mobile experience:** Well-aligned across all screens. Consistent header pattern, entrance animations, touch-friendly targets.
 - **Sidebar:** Well-aligned (section 7.8). Dark premium surface, clear active states.
-- **Release notes page:** Well-composed with expandable sections and category badges. Now fully synced with RELEASE_NOTES.md.
+- **Release notes page:** Well-composed with expandable sections and category badges. Title now renders cleanly once via the header bar (no duplication).
 
 **Where design quality is still below target:**
-- Recharts default tooltip/axis styling remains the most visible desktop integration gap.
-- RosterProfileEditor 28-day grid is flat and mechanical — no tonal layering, no weekend differentiation, no visual rhythm.
-- Release notes drift risk is now structurally eliminated via PB-195. No further action needed on this front.
+- Recharts default tooltip/axis styling remains the most visible desktop integration gap (EX-REC-049).
+- RosterProfileEditor 28-day grid is flat and mechanical — no tonal layering, no weekend differentiation, no visual rhythm (EX-REC-055).
+- StatusSelector "Bevestigen" button for ziek overrides `btn-primary` with `bg-danger-500` — semantically wrong, a confirm is not a destructive action (EX-REC-059, new).
 
 ## Recommended Next Improvements
 
-_EX-REC-058 delivered as PB-195 on 2026-04-07 and removed from this list._
+_EX-REC-057 shipped directly this cycle (duplicate page title on desktop) and is recorded in the release notes as the 8 april 2026 entry._
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -48,6 +48,28 @@ _EX-REC-058 delivered as PB-195 on 2026-04-07 and removed from this list._
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-traffic screen but visible gap in settings page quality. All other settings sections are now at design system standard.
+
+### EX-REC-059: StatusSelector "Bevestigen" button uses danger color override
+
+- **Problem:** `src/components/planning/StatusSelector.tsx:141` renders the sick-percentage confirm button as `className="btn-primary w-full justify-center bg-danger-500 hover:bg-danger-600"`. The `bg-danger-*` classes override `btn-primary`'s brand background, producing a red CTA on a non-destructive action. Per DESIGN.md §4.2, color must be functional and intentional — danger red is reserved for destructive and error states. Confirming a sick percentage is a neutral planning action, not a destructive one. The red button also visually competes with the actual delete affordances elsewhere in the product, weakening the semantic system.
+- **Proposed improvement:** Drop the `bg-danger-500 hover:bg-danger-600` override and let the button render as standard `btn-primary w-full justify-center`. The SICK context is already conveyed by the modal title/flow and the sick-percentage input above the button.
+- **Expected user value:** Consistent, trustable button semantics; the red-for-destructive rule stays intact.
+- **Priority:** P4 Low
+- **Effort:** Trivial (1-line change)
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Single-line fix surfaced by this cycle's fresh scan. Low risk and low friction; can be bundled with any future StatusSelector work.
+
+### EX-REC-060: SubTable default empty state and row alternation
+
+- **Problem:** `src/components/drivers/SubTable.tsx:61` renders a generic default empty message `"Geen records"` as plain grey text with no guidance. Per CLAUDE.md §6, empty states must provide guidance on what the user can do next and must not use the word "records". Most callers pass a meaningful `emptyMessage` prop (e.g. `"Geen dienstverbanden"`), but those values also lack a next-step hint and the default fallback is silently incorrect. In addition, alternating data rows use `bg-surface-secondary/50` (opacity trick on line 86), which creates a muddy tonal value instead of the clean surface layering used in StamtabelManager and SkillManager.
+- **Proposed improvement:** (1) Replace the default empty string with an actionable Dutch fallback and update the caller sites (employment, functie, roosterassignment) to include a next-step hint pattern ("Nog geen X voor deze chauffeur. Gebruik 'Toevoegen' om een X vast te leggen."). (2) Change row alternation to solid `surface-primary` / `surface-secondary` without the `/50` modifier.
+- **Expected user value:** Empty sub-tables tell planners what to do instead of looking broken; row striping reads cleaner and aligns with the rest of the driver form.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Low-traffic but visible in every driver edit flow. Tiny, safe cleanup.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -128,10 +150,11 @@ _EX-REC-058 delivered as PB-195 on 2026-04-07 and removed from this list._
 
 ## Risks / Watch-outs
 
-- **Release notes content drift.** The hardcoded release notes page will go out of sync again next cycle unless a process is established. See EX-REC-056.
+- **Header title source coupling.** The duplicate-title fix introduces an exception set (`DESKTOP_PAGES_WITH_OWN_TITLE`) in `Header.tsx`. Any future page that adds its own composed page-header must also be added to that set, otherwise the title will duplicate again. Mitigation: the inline comment in `Header.tsx` documents the contract; the set is trivially discoverable.
 - **Mobile planning is read-only.** Planners must use desktop to make schedule changes. Monitor user demand for mobile edit capability (EX-REC-052).
 - **Recharts default styling.** The capacity chart's tooltip/axis styling is still Recharts default. Now the most visible remaining integration gap on the capacity page. See EX-REC-049.
 - **RosterProfileEditor grid.** Flat, mechanical 28-day grid with stark status colors. Below DESIGN.md standard but low-traffic screen. See EX-REC-055.
+- **Semantic color drift in StatusSelector.** The "Bevestigen" button on the sick modal uses `bg-danger-500` override. Low blast radius but a bad pattern precedent. See EX-REC-059.
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
 - **Mobile capacity scenario compare hidden.** The compare feature is desktop-only. May need mobile treatment if multi-scenario comparison is a common mobile use case.
 
@@ -163,6 +186,7 @@ _EX-REC-058 delivered as PB-195 on 2026-04-07 and removed from this list._
 - **Toast micro-interactions (stagger, exit):** Current slide-in is sufficient. Over-animating risks feeling unserious.
 - **CapacityKPIs card redesign:** Current cards are functional. Elevating them would require establishing a new KPI card pattern — not justified without stronger need.
 - **CapacityTable further redesign:** PB-182 brought the table to tonal layering standard. Current state is aligned with DESIGN.md §4.1 and §7.4. No further work needed.
+- **DocumentatiePage in-body title:** The release notes page relies on the header bar for its title. This is consistent with the header-bar-only pattern for pages without their own composed page-header (same as Planning). No duplication risk.
 
 ## Recommendation Rules
 

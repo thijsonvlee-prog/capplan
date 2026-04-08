@@ -6,7 +6,11 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-04-08 — Validatie-consolidatie op API-schrijfroutes
+### 2026-04-08 — Header-titel dubbel opgelost en validatie-consolidatie
+
+#### UX / design verbeteringen
+
+- **Geen dubbele paginatitel meer op desktop (EX-REC-057):** Op de schermen Capaciteit, Chauffeurs en Instellingen werd de Manrope-paginatitel tweemaal getoond — één keer in de bovenbalk (via `Header.tsx`) en één keer in de samengestelde paginakop eronder. De bovenbalk onderdrukt zijn titel nu op deze drie routes, zodat de paginakop met contextbadges (actief scenario, aantal chauffeurs, etc.) de enige titelanker blijft. Op mobiel en op de schermen Planning en Releasenotes is het gedrag ongewijzigd; die vertrouwen nog steeds op de bovenbalk omdat zij geen eigen samengestelde paginakop hebben.
 
 #### Onderhoud
 

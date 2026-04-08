@@ -15,13 +15,24 @@ const PAGE_TITLES: Record<string, string> = {
   "/documentatie": "Releasenotes",
 };
 
+// Pages that render their own composed page-header with a large title on desktop.
+// The header bar suppresses its title on these routes to avoid duplication.
+// Mobile still uses the header-bar title because those pages hide their in-body title on small screens.
+const DESKTOP_PAGES_WITH_OWN_TITLE = new Set<string>([
+  "/capacity",
+  "/drivers",
+  "/settings",
+]);
+
 export function Header() {
   const pathname = usePathname();
   const subtitle = useHeaderSubtitleValue();
   const mobileTitle = useMobileTitleValue();
   const mobileBackActionRef = useMobileBackAction();
   const { data: session } = useSession();
-  const title = Object.entries(PAGE_TITLES).find(([path]) => pathname.startsWith(path))?.[1];
+  const matchedPath = Object.keys(PAGE_TITLES).find((path) => pathname.startsWith(path));
+  const title = matchedPath ? PAGE_TITLES[matchedPath] : undefined;
+  const desktopTitle = matchedPath && DESKTOP_PAGES_WITH_OWN_TITLE.has(matchedPath) ? undefined : title;
   const isHome = pathname === "/planning" || pathname === "/";
   const showMobileBack = !isHome || !!mobileTitle;
   const mobileDisplayTitle = mobileTitle || title;
@@ -66,9 +77,9 @@ export function Header() {
           ) : null}
         </div>
 
-        {/* Desktop: page title with subtitle (unchanged) */}
+        {/* Desktop: title only on pages without their own composed page-header; subtitle still shown when set */}
         <div className="hidden md:flex items-baseline gap-3">
-          {title && <h1 className="text-page-title">{title}</h1>}
+          {desktopTitle && <h1 className="text-page-title">{desktopTitle}</h1>}
           {subtitle && (
             <span className="text-caption">{subtitle}</span>
           )}

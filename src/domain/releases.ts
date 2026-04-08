@@ -22,8 +22,14 @@ export interface Release {
 export const RELEASES: Release[] = [
   {
     date: "8 april 2026",
-    title: "Validatie-consolidatie op API-schrijfroutes",
+    title: "Header-titel dubbel opgelost en validatie-consolidatie",
     groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "Geen dubbele paginatitel meer op desktop: op de schermen Capaciteit, Chauffeurs en Instellingen werd de Manrope-paginatitel tweemaal getoond (één keer in de bovenbalk en één keer in de paginakop eronder). De bovenbalk onderdrukt zijn titel nu op deze drie routes, waardoor de samengestelde paginakop met contextbadges de enige titelanker blijft. Op mobiel en op Planning/Releasenotes is het gedrag ongewijzigd.",
+        ],
+      },
       {
         heading: "Onderhoud",
         items: [
