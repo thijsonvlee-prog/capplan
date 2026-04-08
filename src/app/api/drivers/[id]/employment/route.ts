@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, validateDateFormat, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 import { EmploymentType } from "@/domain/enums";
 
@@ -69,8 +69,9 @@ export async function POST(
       }
     }
 
-    if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
-      return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
+    const dateRangeError = validateDateRange(startDate, endDate);
+    if (dateRangeError) {
+      return NextResponse.json({ error: dateRangeError }, { status: 400 });
     }
 
     const fkError = await validateOptionalForeignKey(employerId, prisma.employer, "werkgever");

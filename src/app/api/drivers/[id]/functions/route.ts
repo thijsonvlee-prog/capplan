@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, validateDateFormat, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateMaxLengths, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET(
@@ -50,18 +50,12 @@ export async function POST(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    if (position && typeof position === "string" && position.length > 200) {
-      return NextResponse.json(
-        { error: "Functie mag maximaal 200 tekens bevatten" },
-        { status: 400 }
-      );
-    }
-
-    if (manager && typeof manager === "string" && manager.length > 200) {
-      return NextResponse.json(
-        { error: "Leidinggevende mag maximaal 200 tekens bevatten" },
-        { status: 400 }
-      );
+    const lengthError = validateMaxLengths([
+      { value: position, maxLength: 200, label: "Functie" },
+      { value: manager, maxLength: 200, label: "Leidinggevende" },
+    ]);
+    if (lengthError) {
+      return NextResponse.json({ error: lengthError }, { status: 400 });
     }
 
     const startDateError = validateDateFormat(String(startDate));
@@ -75,8 +69,9 @@ export async function POST(
       }
     }
 
-    if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
-      return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
+    const dateRangeError = validateDateRange(startDate, endDate);
+    if (dateRangeError) {
+      return NextResponse.json({ error: dateRangeError }, { status: 400 });
     }
 
     const fkErrors = await Promise.all([

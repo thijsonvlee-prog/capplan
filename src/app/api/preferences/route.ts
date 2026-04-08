@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, parseJsonBody, resolveUserId } from "@/lib/api-route-utils";
+import { validateRequired, validateMaxLength, parseJsonBody, resolveUserId } from "@/lib/api-route-utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,6 +49,11 @@ export async function PUT(request: NextRequest) {
     }
 
     const { key, value } = body;
+
+    const valueLengthError = validateMaxLength(value, 500, "Waarde");
+    if (valueLengthError) {
+      return NextResponse.json({ error: valueLengthError }, { status: 400 });
+    }
 
     const resolved = await resolveUserId();
     if ("error" in resolved) return resolved.error;

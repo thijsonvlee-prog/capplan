@@ -6,78 +6,70 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-No Delivery items were Ready in the backlog this cycle — the backlog direction is "No critical or high-priority debt". I verified baseline (`npm run verify` passes cleanly) and ran a fresh codebase scan for new concrete opportunities.
+This cycle I executed the two P3 items that were Ready in the backlog:
 
-The scan surfaced one genuinely new consolidation theme that did not exist in prior recommendations: **two validation patterns are duplicated at scale across API routes** (string length check — 27 instances; start/end date comparison — 6 instances), each with identical Dutch error messages copy-pasted across files. These are safe consolidations into `api-route-utils.ts` and are the highest-value Delivery work currently visible. Everything else is P4 Low maintenance or already captured.
+- **PB-196 — `validateMaxLength` helper.** Added `validateMaxLength` and `validateMaxLengths` to `src/lib/api-route-utils.ts` and replaced ~28 inline `field.length > N` checks across every write route (drivers, scenarios, import-sources, user-groups, roster-profiles, settings stamtabel + skills, driver sub-records, and both planning notes routes). Error phrasing and 400 status codes preserved verbatim. Also closed the two lingering length-cap gaps: scenario duplicate POST now enforces the 200-char name cap (DE-REC-073), preferences PUT now enforces a 500-char value cap (DE-REC-058).
+- **PB-197 — `validateDateRange` helper.** Added `validateDateRange` using lexicographic comparison on the already-validated `YYYY-MM-DD` strings and replaced all 6 inline checks in employment / function / roster-assignment POST + PUT routes.
+
+Both changes are pure refactors: no behavior change for valid input, no change to error messages or status codes for invalid input. `npm run verify` passes.
+
+After shipping those, I ran a fresh scan across `src/app/api/` and `src/lib/`. Three small new consolidation opportunities surfaced that were not in any previous recommendations file, plus a handful of carry-overs that are still valid. Everything else is already captured or P4 Low noise.
 
 ## Recommended Next Improvements
 
-### DE-REC-071: Centralize string length validation helper in `api-route-utils.ts`
+### DE-REC-075: Centralize enum value arrays for request validation
 
-- **Title:** Extract `validateMaxLength` helper to eliminate ~27 duplicated length checks
-- **Problem:** ~27 API write routes contain the same inline pattern: `if (typeof field === "string" && field.length > N) return NextResponse.json({ error: "<Label> mag maximaal N tekens bevatten" }, { status: 400 });`. Spread across drivers, scenarios, import-sources, user-groups, roster-profiles, settings (skills, stamtabel), driver sub-records. Labels and limits drift if the pattern is reused without discipline, and the duplication hides the fact that every route is re-enforcing the same invariant.
-- **Proposed improvement:** Add a `validateMaxLength(value, maxLength, label)` helper in `api-route-utils.ts` that returns `null` on valid (including skip on non-string) or a Dutch message `"<Label> mag maximaal N tekens bevatten"`. Replace all ~27 instances. Optionally expose a `validateMaxLengths(checks)` that returns the first error for multi-field routes. Pure refactor, no behavior change.
-- **Expected product/technical value:** Eliminates ~27 copy-pasted blocks, enforces a single error-message phrasing, and reduces the cost of adding new write routes. Aligns with the CLAUDE.md rule: "Do not duplicate logic that already exists there."
-- **Priority:** P3 Medium
-- **Effort:** Small (one helper + mechanical replace)
-- **Risk:** Low (refactor preserves exact Dutch error strings and status codes)
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Highest-value duplication currently present. Any new write route being added compounds the debt. Also closes DE-REC-058 as a natural side effect (apply helper to preferences PUT).
-
-### DE-REC-072: Extract `validateDateRange` for start/end date comparison
-
-- **Title:** Consolidate 6 duplicated `endDate < startDate` checks in sub-record routes
-- **Problem:** Employment, function, and roster-assignment routes (both POST on `/route.ts` and PUT on `/[recordId]/route.ts`) contain exactly the same block:
-  ```ts
-  if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
-    return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
-  }
-  ```
-  6 identical occurrences. Also slightly inefficient: for already-validated `YYYY-MM-DD` strings a lexicographic comparison is equivalent and cheaper.
-- **Proposed improvement:** Add `validateDateRange(startDate, endDate)` in `api-route-utils.ts`, return `null` or Dutch message. Lexicographic comparison on already-formatted ISO date strings (datum validation now runs first per PB-186). Replace 6 instances.
-- **Expected product/technical value:** Eliminates 6 duplicated blocks, enforces a single rule. Reduces drift risk if a product decision ever allows same-day end.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low (after PB-186 date format is guaranteed at the point of comparison, so lex compare is safe)
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Cleanly pairs with DE-REC-071 as a single validation-consolidation cycle.
-
-### DE-REC-073: Missing name length cap on scenario duplicate route
-
-- **Title:** Scenario duplicate POST does not enforce `name.length <= 200`
-- **Problem:** `POST /api/scenarios/[id]/duplicate` validates `name` presence (trim non-empty) but, unlike `POST /api/scenarios`, never enforces the 200-char max. A 10_000-char name would succeed and create a driftful scenario record.
-- **Proposed improvement:** Add the same length check as the main scenarios route (ideally via the new `validateMaxLength` helper from DE-REC-071).
-- **Expected product/technical value:** Closes a single validation gap with an identical rule already applied to sibling routes.
-- **Priority:** P4 Low
-- **Effort:** Small (one check)
-- **Risk:** Low
-- **Dependencies:** Fits naturally alongside DE-REC-071
-- **Suggested owner:** Delivery Agent
-- **Why now:** Only scenario-related write endpoint without the cap. Trivial to close.
-
-### DE-REC-074: Batch FK validation in driver POST nested records
-
-- **Title:** Collapse per-record `validateOptionalForeignKey` loops into one batched `validateForeignKeys` call
-- **Problem:** `POST /api/drivers` (lines ~120–135) loops over nested `employmentRecords`, `functionRecords`, and `rosterAssignments` and pushes one `validateOptionalForeignKey` promise per record per FK field. A driver with 10 function records generates 20 FK count queries. They run in parallel via `Promise.all()` so it's not an N+1 over network, but it does flood the DB with identical per-id count calls when 3–5 batched queries would suffice.
-- **Proposed improvement:** Collect unique IDs per model into sets, then call `validateForeignKeys([{ ids: [...employerIds], model: prisma.employer, label: "werkgever" }, ...])`. One query per FK-typed field instead of one per record.
-- **Expected product/technical value:** Fewer DB round trips on driver bulk creation. Cleaner code. Matches the existing pattern already used for `skillIds`.
+- **Title:** Extract `VALID_PLANNING_STATUSES` and `VALID_EMPLOYMENT_TYPES` into `api-route-utils.ts`
+- **Problem:** `const VALID_STATUSES = Object.values(PlanningStatus)` is duplicated in `src/app/api/planning/route.ts:9` and `src/app/api/planning/bulk/route.ts:9`. `const validEmploymentTypes = Object.values(EmploymentType)` is duplicated in `src/app/api/drivers/[id]/employment/route.ts:53` and `src/app/api/drivers/[id]/employment/[recordId]/route.ts:28`. Minor but recurring pattern: every new route enforcing an enum re-computes the same array and re-writes the same Dutch error string.
+- **Proposed improvement:** Add `VALID_PLANNING_STATUSES` and `VALID_EMPLOYMENT_TYPES` as exported constants in `api-route-utils.ts` (or `src/domain/constants.ts`). Optionally add a small `validateEnumValue(value, validValues, label)` helper that returns the existing Dutch "Ongeldige <label>..." message. Pure refactor; no behavior change.
+- **Expected product/technical value:** Consistent validation phrasing, one place to update when an enum changes, removes 4 duplicate definitions. Matches the spirit of PB-196/197.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Discovered during this cycle's scan. Not urgent but clean win.
+- **Why now:** Cheapest follow-through on the validation-consolidation theme while the surface is fresh.
+
+### DE-REC-076: Extract `verifyRecordOwnership` helper for sub-record PUT/DELETE routes
+
+- **Title:** Deduplicate the `findFirst({ id, driverId })` ownership check across sub-record routes
+- **Problem:** All three driver sub-record `[recordId]/route.ts` files (employment, functions, roster-assignments) contain exactly the same pattern twice each — once inside the PUT transaction, once before the DELETE. Six occurrences total of `findFirst({ where: { id: recordId, driverId: id } })` followed by a 404 return. The PUT variant wraps it in a transaction + null-return-then-404 dance that's particularly verbose.
+- **Proposed improvement:** Add a small helper in `api-route-utils.ts`, e.g. `verifyRecordOwnership(model, { recordId, driverId })` that returns the row or throws/returns a sentinel. Or keep it simpler as `isRecordOwnedBy(model, recordId, driverId): Promise<boolean>`. Replace the 6 inline blocks. Behavior and status codes unchanged.
+- **Expected product/technical value:** Removes 6 copy-pasted blocks, makes future ownership-check changes (e.g. tightening authorization) a one-file edit, matches PB-196/197 consolidation approach.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low (pure refactor; the helper can be kept outside the transaction boundary to avoid reshaping the existing flow — the ownership check is read-only)
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Only consolidation surfaced by the fresh scan that touches authorization-adjacent code. Small enough to ship in a single cycle.
+
+### DE-REC-077: Move `MAX_NOTES_LENGTH` constant into shared constants module
+
+- **Title:** Deduplicate `MAX_NOTES_LENGTH = 500` across planning routes
+- **Problem:** Defined identically in `src/app/api/planning/route.ts:7` and `src/app/api/planning/bulk/route.ts:7`. If the product ever tunes the cap, both files must change in sync. Natural fit for `src/domain/constants.ts` which already holds other shared limits.
+- **Proposed improvement:** Export `MAX_NOTES_LENGTH` (or better, an `API_LIMITS` object if promoting DE-REC-030 alongside) from `src/domain/constants.ts`. Update both imports.
+- **Expected product/technical value:** Removes a two-line drift risk. Tiny but clean.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None. Would be a natural first step toward DE-REC-030 (centralize all `API_LIMITS`).
+- **Suggested owner:** Delivery Agent
+- **Why now:** Trivial and removes an obvious duplicate discovered during the validation-consolidation scan.
+
+### DE-REC-074: Batch FK validation in driver POST nested records (carried over)
+
+- **Problem:** `POST /api/drivers` loops over nested `employmentRecords`, `functionRecords`, and `rosterAssignments` and pushes one `validateOptionalForeignKey` promise per record per FK field. A driver with 10 function records generates 20 FK count queries. They run in parallel via `Promise.all()` so it's not an N+1 over network, but it does flood the DB with identical per-id count calls when 3–5 batched queries would suffice.
+- **Proposed improvement:** Collect unique IDs per model into sets, then call `validateForeignKeys([...])` once per FK-typed field instead of once per record.
+- **Expected value:** Fewer DB round trips on driver bulk creation. Cleaner code.
+- **Priority:** P4 Low · **Effort:** Small · **Risk:** Low
+- **Suggested owner:** Delivery Agent
 
 ### DE-REC-070: Align client-side `TARGET_ENTITIES` with server-side `VALID_TARGET_ENTITIES` (carried over)
 
 - **Problem:** `ImportSourceManager.tsx` defines its own `TARGET_ENTITIES` array while `api-import-helpers.ts` exports `VALID_TARGET_ENTITIES` separately. Silent drift risk.
 - **Proposed improvement:** Export a typed `TARGET_ENTITY_OPTIONS` (value + Dutch label) from a shared location and have both sides consume it, or at minimum add a code comment + runtime assertion.
-- **Expected value:** Prevents silent divergence.
 - **Priority:** P4 Low · **Effort:** Small · **Risk:** Low
 - **Suggested owner:** Delivery Agent
-- **Why now:** Still valid, unchanged since last cycle.
 
 ### DE-REC-062: Parallelize `autoCloseOpenRecords` + `getNextSequenceNumber` inside sub-record transactions (carried over)
 
@@ -90,14 +82,7 @@ The scan surfaced one genuinely new consolidation theme that did not exist in pr
 ### DE-REC-063: Validate `weeklyHours` range (0–168) on roster assignment POST/PUT (carried over)
 
 - **Problem:** `weeklyHours` stored without bounds validation.
-- **Proposed improvement:** Add `if (weeklyHours != null && (weeklyHours < 0 || weeklyHours > 168))` with Dutch message.
-- **Priority:** P4 Low · **Effort:** Small · **Risk:** Low
-- **Suggested owner:** Delivery Agent
-
-### DE-REC-058: Cap `value` length on preferences PUT (carried over)
-
-- **Problem:** `/api/preferences` PUT accepts an unbounded `value` string. The only remaining write route without a length cap.
-- **Proposed improvement:** Add a 500-char cap (ideally via the new `validateMaxLength` helper from DE-REC-071).
+- **Proposed improvement:** Add `if (weeklyHours != null && (weeklyHours < 0 || weeklyHours > 168))` with Dutch message. Would also be a natural consumer of a future `validateNumericRange` helper.
 - **Priority:** P4 Low · **Effort:** Small · **Risk:** Low
 - **Suggested owner:** Delivery Agent
 
@@ -111,7 +96,7 @@ The scan surfaced one genuinely new consolidation theme that did not exist in pr
 ### DE-REC-030: Centralize magic numbers in `API_LIMITS` (carried over)
 
 - **Problem:** `MAX_FILE_SIZE`, `MAX_NOTES_LENGTH`, `MAX_ROW_COUNT`, and several other numeric limits are duplicated or inline across routes.
-- **Proposed improvement:** `API_LIMITS` object in `src/domain/constants.ts`.
+- **Proposed improvement:** `API_LIMITS` object in `src/domain/constants.ts`. DE-REC-077 above is a natural first increment.
 - **Priority:** P4 Low · **Effort:** Small · **Risk:** Low
 - **Suggested owner:** Delivery Agent
 
@@ -138,10 +123,11 @@ The scan surfaced one genuinely new consolidation theme that did not exist in pr
 - **PlanningGrid optimistic updates are fire-and-forget:** `handleUpdate` / `handleBulkSelect` do not roll back on failed API calls.
 - **Auth env vars required for deployment:** Without `NEXTAUTH_SECRET`, auth is inactive and role enforcement is silently skipped.
 - **`useUserRole` grants full permissions during session loading:** UI hook returns `isAdmin: true` while session is loading or when auth is not configured.
-- **No database-level length constraints:** All text field length validation is application-level only.
+- **No database-level length constraints:** All text field length validation is application-level only. PB-196 does not change this — it only centralizes the app-level checks.
 - **Audit log fire-and-forget:** `logAudit()` silently catches errors. By design (audit failures must not block mutations).
 - **Skill duplicate check race condition:** The `findFirst` → `create` pattern in `/api/settings/skills` POST can allow duplicate names under concurrent requests. Low likelihood at current traffic; a unique DB constraint would be more robust.
-- **Execute route internal duplication:** `executeApiImport` and `executeCsvImport` in `src/app/api/import-sources/[id]/execute/route.ts` share significant flow (target→source map, required-field check, importDrivers/importStamtabel dispatch, importLog write). A shared `runImport(rows, source, mode)` helper would reduce ~80 lines, but this is held back for now because the route is already flagged for careful handling and touching it is cross-cutting. Revisit if execute logic changes again.
+- **Execute route internal duplication:** `executeApiImport` and `executeCsvImport` in `src/app/api/import-sources/[id]/execute/route.ts` share significant flow (target→source map, required-field check, importDrivers/importStamtabel dispatch, importLog write). A shared `runImport(rows, source, mode)` helper would reduce ~80 lines, but this is held back because the route is already flagged for careful handling. Revisit if execute logic changes again.
+- **Roster assignment POST fetches `rosterProfile` inside the transaction:** The FK was already validated up front via `validateOptionalForeignKey`, so the in-transaction `findUnique` adds nothing safety-wise. Moving it out of the transaction is a marginal optimization and not worth a separate recommendation yet.
 
 ## Items Intentionally Not Recommended
 
@@ -186,7 +172,9 @@ The scan surfaced one genuinely new consolidation theme that did not exist in pr
 - Extract `useDebounce` (one consumer).
 - Add aria-labels to chart visualizations (Recharts manages).
 - Batch FK validation in driver creation — partially done (skillIds), see DE-REC-074 for the nested-record extension.
-- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195. Do not re-recommend.
+- Move roster-assignment POST `rosterProfile` fetch outside the transaction (marginal; keeping the transaction self-contained has its own readability value).
+- Rename `MAX_NOTES_LENGTH` to a more generic constant (current name is correct for the use).
+- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197. Do not re-recommend.
 - Preferences `key` field length cap (keys are hardcoded strings from the frontend).
 - `useApi` cache key uses `Function.toString()` (theoretically fragile under minification; different arrow functions produce different minified strings due to URL content).
 - Import logs route sequential queries (same category as DE-REC-059).
@@ -199,12 +187,13 @@ The scan surfaced one genuinely new consolidation theme that did not exist in pr
 - Missing preference audit logging (UI state, not business data).
 - Scenario count limits.
 - Whitespace validation on driver name PUT.
+- DE-REC-058 and DE-REC-073 closed this cycle as part of PB-196.
 
 ## Recommendation Rules
 
 - Recommendations are written by the Delivery Agent after reviewing the codebase and deployment behavior.
 - Each recommendation must include all required fields.
-- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-075.
+- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-078.
 - Approved recommendations are moved to `PRODUCT_BACKLOG.md` by the Product Owner Agent.
 - Rejected recommendations are moved to `Items Intentionally Not Recommended` with a brief reason.
 - This file is the only place the Delivery Agent writes recommendations. Do not scatter suggestions across other files.

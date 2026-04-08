@@ -21,6 +21,20 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "8 april 2026",
+    title: "Validatie-consolidatie op API-schrijfroutes",
+    groups: [
+      {
+        heading: "Onderhoud",
+        items: [
+          "Lengte-validatie gecentraliseerd: ~28 gedupliceerde inline lengtechecks in schrijfroutes zijn vervangen door de nieuwe helpers validateMaxLength en validateMaxLengths in api-route-utils (PB-196). Dezelfde Nederlandse foutmeldingen en 400-statuscodes; geen gedragswijziging voor geldige invoer.",
+          "Datumbereik-validatie gecentraliseerd: 6 identieke einddatum-vóór-startdatum checks in dienstverband-, functie- en roostertoewijzingsroutes zijn vervangen door de nieuwe helper validateDateRange (PB-197). Vergelijking gebeurt lexicografisch op het al gevalideerde JJJJ-MM-DD formaat.",
+          "Ontbrekende lengte-caps gesloten: POST /api/scenarios/[id]/duplicate dwingt nu dezelfde 200-tekens limiet af als de hoofdroute, en PUT /api/preferences begrenst het value-veld op 500 tekens.",
+        ],
+      },
+    ],
+  },
+  {
     date: "7 april 2026",
     title: "Releasenotes single source-of-truth",
     groups: [

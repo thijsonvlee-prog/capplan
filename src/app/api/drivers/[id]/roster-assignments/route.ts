@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, validateDateFormat, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { resolveScenarioId, autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export const GET = withPerfLogging(
@@ -74,8 +74,9 @@ export const POST = withPerfLogging(
         }
       }
 
-      if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
-        return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
+      const dateRangeError = validateDateRange(startDate, endDate);
+      if (dateRangeError) {
+        return NextResponse.json({ error: dateRangeError }, { status: 400 });
       }
 
       const fkError = await validateOptionalForeignKey(rosterProfileId, prisma.rosterProfile, "roosterprofiel");

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSettingsModel, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { getSettingsModel, requireRole, parseJsonBody, validateMaxLengths } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET(
@@ -64,18 +64,12 @@ export async function POST(
       );
     }
 
-    if (code.length > 100) {
-      return NextResponse.json(
-        { error: "Code mag maximaal 100 tekens bevatten" },
-        { status: 400 }
-      );
-    }
-
-    if (description && typeof description === "string" && description.length > 500) {
-      return NextResponse.json(
-        { error: "Omschrijving mag maximaal 500 tekens bevatten" },
-        { status: 400 }
-      );
+    const lengthError = validateMaxLengths([
+      { value: code, maxLength: 100, label: "Code" },
+      { value: description, maxLength: 500, label: "Omschrijving" },
+    ]);
+    if (lengthError) {
+      return NextResponse.json({ error: lengthError }, { status: 400 });
     }
 
     const record = await model.create({

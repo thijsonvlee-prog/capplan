@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2 debt. This cycle promotes two paired P3 validation-consolidation items (PB-196, PB-197) surfaced by the Delivery Agent's fresh codebase scan — both are pure refactors that eliminate ~33 duplicated validation blocks and unblock cleaner future write routes. Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
+**Current direction:** No P1/P2 debt. PB-196 and PB-197 were completed this cycle — the two paired validation-consolidation refactors now use shared helpers in `api-route-utils.ts`, eliminating ~34 duplicated validation blocks and closing the last two open length-cap gaps (scenario duplicate + preferences PUT). Desktop homescreen (SMI-026) remains blocked on ESC-014 awaiting Scrum Master scope decision.
 
 ## Status Definitions
 
@@ -27,49 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-196: `validateMaxLength` helper — eliminate ~27 duplicated length checks
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Source:** DE-REC-071 (also closes DE-REC-058 and DE-REC-073 as natural side-effects)
-- **Problem:** ~27 API write routes contain the same inline pattern: `if (typeof field === "string" && field.length > N) return NextResponse.json({ error: "<Label> mag maximaal N tekens bevatten" }, { status: 400 });`. Spread across drivers, scenarios, import-sources, user-groups, roster-profiles, settings (skills, stamtabel) and driver sub-records. Labels and limits drift if the pattern is reused without discipline. Scenario duplicate POST and preferences PUT also lack the cap entirely (DE-REC-073, DE-REC-058).
-- **Why this matters now:** Highest-value duplication currently visible. Aligns with the CLAUDE.md rule "Do not duplicate logic that already exists there." Adding new write routes compounds the debt.
-- **Scope notes:**
-  - Add `validateMaxLength(value, maxLength, label)` helper in `src/lib/api-route-utils.ts`. Returns `null` on valid (or non-string skip) or a Dutch message `"<Label> mag maximaal N tekens bevatten"`.
-  - Optionally expose a `validateMaxLengths(checks)` that returns the first error for multi-field routes.
-  - Replace all ~27 instances with helper calls. Preserve exact Dutch error strings and 400 status codes.
-  - Apply the helper to `POST /api/scenarios/[id]/duplicate` (currently missing the cap — DE-REC-073).
-  - Apply the helper to `PUT /api/preferences` with a 500-char cap on `value` (DE-REC-058).
-- **Dependencies:** None.
-- **Definition of done:**
-  - Helper exists in `api-route-utils.ts` with TypeScript types.
-  - All ~27 inline length checks replaced.
-  - Scenario duplicate route enforces 200-char name cap.
-  - Preferences PUT enforces 500-char value cap.
-  - `npm run verify` passes.
-  - No behavior change for valid inputs; same error messages and status codes for invalid ones.
-- **Implementation note:** Pure refactor. Use a single commit. Spot-check at least 3 routes after the replace to confirm message phrasing is preserved.
-
-### PB-197: `validateDateRange` helper — consolidate 6 duplicated start/end date checks
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Source:** DE-REC-072
-- **Problem:** Employment, function, and roster-assignment routes (POST on `/route.ts` and PUT on `/[recordId]/route.ts`) contain the same block 6 times: `if (endDate && startDate && new Date(endDate) < new Date(startDate)) return ... "Einddatum mag niet voor de startdatum liggen"`.
-- **Why this matters now:** Pairs cleanly with PB-196 as a single validation-consolidation cycle. After PB-186 the date format is guaranteed before this check, so a lexicographic comparison on the already-validated `YYYY-MM-DD` strings is safe and cheaper.
-- **Scope notes:**
-  - Add `validateDateRange(startDate, endDate)` in `src/lib/api-route-utils.ts`. Returns `null` or the Dutch message.
-  - Use lexicographic compare on the ISO strings (no `new Date()` allocation).
-  - Replace 6 occurrences in: employment POST/PUT, function POST/PUT, roster-assignment POST/PUT.
-- **Dependencies:** None. Can ship together with PB-196 or separately.
-- **Definition of done:**
-  - Helper exists with TypeScript types.
-  - All 6 inline date-range checks replaced.
-  - `npm run verify` passes.
-  - Behavior unchanged for any valid or invalid input.
-- **Implementation note:** Trivial refactor. Verify the existing test path (date format validated first) still holds at every call site.
+_No items currently ready. The Delivery Agent's fresh scan did not surface new P1/P2/P3 work after completing PB-196/PB-197 — see `RECOMMENDATIONS_DELIVERY.md` for P4-level carry-overs._
 
 ---
 
@@ -90,6 +48,20 @@ _No items currently in progress._
 ---
 
 ## Completed Recently
+
+### PB-196: `validateMaxLength` helper — eliminate duplicated length checks
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-08
+- **Summary:** Added `validateMaxLength(value, maxLength, label)` and `validateMaxLengths(checks)` helpers in `src/lib/api-route-utils.ts`. Replaced ~28 inline length checks across drivers, scenarios, import-sources, user-groups, roster-profiles, settings (stamtabel + skills), driver sub-records (employment, functions, roster-assignments) and planning notes (POST + bulk). Same Dutch error phrasing and 400 status codes preserved. Scenario duplicate POST now enforces the 200-char name cap (DE-REC-073) and preferences PUT now enforces a 500-char value cap (DE-REC-058). `npm run verify` passes.
+
+### PB-197: `validateDateRange` helper — consolidate start/end date checks
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-08
+- **Summary:** Added `validateDateRange(startDate, endDate)` helper in `src/lib/api-route-utils.ts` using lexicographic comparison on the already-validated `YYYY-MM-DD` strings. Replaced 6 inline checks in employment POST/PUT, function POST/PUT, and roster-assignment POST/PUT routes. Same Dutch error message preserved; no behavior change. `npm run verify` passes.
 
 ### PB-195: Releasenotes single source-of-truth module
 

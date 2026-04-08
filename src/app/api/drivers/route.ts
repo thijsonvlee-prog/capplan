@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateOptionalForeignKey, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateOptionalForeignKey, validateMaxLengths, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export const GET = withPerfLogging(
@@ -99,17 +99,16 @@ export const POST = withPerfLogging(
     if (!firstName || typeof firstName !== "string" || firstName.trim().length === 0) {
       return NextResponse.json({ error: "Voornaam is verplicht" }, { status: 400 });
     }
-    if (typeof firstName === "string" && firstName.length > 100) {
-      return NextResponse.json({ error: "Voornaam mag maximaal 100 tekens bevatten" }, { status: 400 });
-    }
     if (!lastName || typeof lastName !== "string" || lastName.trim().length === 0) {
       return NextResponse.json({ error: "Achternaam is verplicht" }, { status: 400 });
     }
-    if (typeof lastName === "string" && lastName.length > 100) {
-      return NextResponse.json({ error: "Achternaam mag maximaal 100 tekens bevatten" }, { status: 400 });
-    }
-    if (employeeNumber && typeof employeeNumber === "string" && employeeNumber.length > 50) {
-      return NextResponse.json({ error: "Personeelsnummer mag maximaal 50 tekens bevatten" }, { status: 400 });
+    const lengthError = validateMaxLengths([
+      { value: firstName, maxLength: 100, label: "Voornaam" },
+      { value: lastName, maxLength: 100, label: "Achternaam" },
+      { value: employeeNumber, maxLength: 50, label: "Personeelsnummer" },
+    ]);
+    if (lengthError) {
+      return NextResponse.json({ error: lengthError }, { status: 400 });
     }
 
     // Validate all FK references in nested records

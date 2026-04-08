@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { transformDriver, driverInclude, validateForeignKeys, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, validateForeignKeys, validateMaxLengths, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET(
@@ -50,14 +50,13 @@ export async function PUT(
     const body = parsed.data;
     const { skillIds, ...driverData } = body;
 
-    if (driverData.firstName !== undefined && typeof driverData.firstName === "string" && driverData.firstName.length > 100) {
-      return NextResponse.json({ error: "Voornaam mag maximaal 100 tekens bevatten" }, { status: 400 });
-    }
-    if (driverData.lastName !== undefined && typeof driverData.lastName === "string" && driverData.lastName.length > 100) {
-      return NextResponse.json({ error: "Achternaam mag maximaal 100 tekens bevatten" }, { status: 400 });
-    }
-    if (driverData.employeeNumber !== undefined && typeof driverData.employeeNumber === "string" && driverData.employeeNumber.length > 50) {
-      return NextResponse.json({ error: "Personeelsnummer mag maximaal 50 tekens bevatten" }, { status: 400 });
+    const lengthError = validateMaxLengths([
+      { value: driverData.firstName, maxLength: 100, label: "Voornaam" },
+      { value: driverData.lastName, maxLength: 100, label: "Achternaam" },
+      { value: driverData.employeeNumber, maxLength: 50, label: "Personeelsnummer" },
+    ]);
+    if (lengthError) {
+      return NextResponse.json({ error: lengthError }, { status: 400 });
     }
 
     const oldDriver = await prisma.driver.findUnique({

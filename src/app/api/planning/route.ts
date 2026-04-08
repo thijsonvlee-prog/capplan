@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, requireRole, requireRoleWithSession, parseJsonBody, validateDateFormat, parseDateList, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformPlanningEntry, validateOptionalForeignKey, validateMaxLength, requireRole, requireRoleWithSession, parseJsonBody, validateDateFormat, parseDateList, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { PlanningStatus } from "@/domain/enums";
 
 const MAX_NOTES_LENGTH = 500;
@@ -104,11 +104,9 @@ export const POST = withPerfLogging(
       );
     }
 
-    if (notes && typeof notes === "string" && notes.length > MAX_NOTES_LENGTH) {
-      return NextResponse.json(
-        { error: `Notitie mag maximaal ${MAX_NOTES_LENGTH} tekens bevatten` },
-        { status: 400 }
-      );
+    const notesLengthError = validateMaxLength(notes, MAX_NOTES_LENGTH, "Notitie");
+    if (notesLengthError) {
+      return NextResponse.json({ error: notesLengthError }, { status: 400 });
     }
 
     const dateError = validateDateFormat(String(date));

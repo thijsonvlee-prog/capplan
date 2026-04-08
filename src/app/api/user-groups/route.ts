@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRole, validateRequired, parseJsonBody } from "@/lib/api-route-utils";
+import { requireRole, validateRequired, validateMaxLength, parseJsonBody } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 /**
@@ -63,8 +63,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    if (typeof body.name === "string" && body.name.length > 200) {
-      return NextResponse.json({ error: "Naam mag maximaal 200 tekens bevatten" }, { status: 400 });
+    const lengthError = validateMaxLength(body.name, 200, "Naam");
+    if (lengthError) {
+      return NextResponse.json({ error: lengthError }, { status: 400 });
     }
 
     const departmentIds: string[] = Array.isArray(body.departmentIds) ? body.departmentIds : [];

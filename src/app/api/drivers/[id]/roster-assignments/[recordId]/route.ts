@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, validateOptionalForeignKey, validateDateFormat, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { validateRequired, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function PUT(
@@ -35,8 +35,9 @@ export async function PUT(
       }
     }
 
-    if (body.endDate && body.startDate && new Date(body.endDate) < new Date(body.startDate)) {
-      return NextResponse.json({ error: "Einddatum mag niet voor de startdatum liggen" }, { status: 400 });
+    const dateRangeError = validateDateRange(body.startDate, body.endDate);
+    if (dateRangeError) {
+      return NextResponse.json({ error: dateRangeError }, { status: 400 });
     }
 
     if (body.rosterProfileId !== undefined) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { requireRole, parseJsonBody, validateMaxLength } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export const POST = withPerfLogging(
@@ -25,6 +25,11 @@ export const POST = withPerfLogging(
           { error: "Naam is verplicht" },
           { status: 400 }
         );
+      }
+
+      const lengthError = validateMaxLength(name, 200, "Naam");
+      if (lengthError) {
+        return NextResponse.json({ error: lengthError }, { status: 400 });
       }
 
       // Determine source scenarioId filter

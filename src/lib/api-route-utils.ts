@@ -341,6 +341,59 @@ export function validateRequired(
   return null;
 }
 
+/**
+ * Validate that a string value does not exceed `maxLength` characters.
+ * Non-string values are skipped (treated as valid) so callers can pass through
+ * optional fields without an explicit pre-check. Empty values are also skipped.
+ * Returns a Dutch error message on violation, or null if valid.
+ */
+export function validateMaxLength(
+  value: unknown,
+  maxLength: number,
+  label: string
+): string | null {
+  if (typeof value !== "string" || value.length === 0) return null;
+  if (value.length > maxLength) {
+    return `${label} mag maximaal ${maxLength} tekens bevatten`;
+  }
+  return null;
+}
+
+/**
+ * Validate multiple string length caps at once. Returns the first violation,
+ * or null if all checks pass. Preserves the exact error phrasing of
+ * validateMaxLength, so it is safe to use as a drop-in replacement for
+ * multiple inline checks.
+ */
+export function validateMaxLengths(
+  checks: { value: unknown; maxLength: number; label: string }[]
+): string | null {
+  for (const { value, maxLength, label } of checks) {
+    const error = validateMaxLength(value, maxLength, label);
+    if (error) return error;
+  }
+  return null;
+}
+
+/**
+ * Validate that an end date is not before a start date.
+ * Performs a lexicographic comparison on YYYY-MM-DD strings, which is safe
+ * because the date format is validated up-front at every call site (PB-186).
+ * Skips the check if either bound is missing.
+ * Returns a Dutch error message on violation, or null if valid.
+ */
+export function validateDateRange(
+  startDate: unknown,
+  endDate: unknown
+): string | null {
+  if (typeof startDate !== "string" || typeof endDate !== "string") return null;
+  if (!startDate || !endDate) return null;
+  if (endDate < startDate) {
+    return "Einddatum mag niet voor de startdatum liggen";
+  }
+  return null;
+}
+
 // === Driver status utilities ===
 
 /**

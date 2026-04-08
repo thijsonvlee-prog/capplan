@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSettingsModel, validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { getSettingsModel, validateRequired, validateMaxLengths, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function PUT(
@@ -32,18 +32,12 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    if (code && typeof code === "string" && code.length > 100) {
-      return NextResponse.json(
-        { error: "Code mag maximaal 100 tekens bevatten" },
-        { status: 400 }
-      );
-    }
-
-    if (description && typeof description === "string" && description.length > 500) {
-      return NextResponse.json(
-        { error: "Omschrijving mag maximaal 500 tekens bevatten" },
-        { status: 400 }
-      );
+    const lengthError = validateMaxLengths([
+      { value: code, maxLength: 100, label: "Code" },
+      { value: description, maxLength: 500, label: "Omschrijving" },
+    ]);
+    if (lengthError) {
+      return NextResponse.json({ error: lengthError }, { status: 400 });
     }
 
     const oldRecord = await model.findUnique({

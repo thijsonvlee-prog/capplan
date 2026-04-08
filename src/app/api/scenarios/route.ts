@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { validateRequired, validateMaxLengths, requireRole, parseJsonBody } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET() {
@@ -39,11 +39,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    if (typeof name === "string" && name.length > 200) {
-      return NextResponse.json({ error: "Naam mag maximaal 200 tekens bevatten" }, { status: 400 });
-    }
-    if (description && typeof description === "string" && description.length > 500) {
-      return NextResponse.json({ error: "Omschrijving mag maximaal 500 tekens bevatten" }, { status: 400 });
+    const lengthError = validateMaxLengths([
+      { value: name, maxLength: 200, label: "Naam" },
+      { value: description, maxLength: 500, label: "Omschrijving" },
+    ]);
+    if (lengthError) {
+      return NextResponse.json({ error: lengthError }, { status: 400 });
     }
 
     const scenario = await prisma.scenario.create({

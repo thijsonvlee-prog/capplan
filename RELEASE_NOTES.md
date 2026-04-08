@@ -6,6 +6,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-08 — Validatie-consolidatie op API-schrijfroutes
+
+#### Onderhoud
+
+- **Lengte-validatie gecentraliseerd (PB-196):** ~28 gedupliceerde inline lengtechecks in schrijfroutes (drivers, scenarios, import-sources, user-groups, roster-profiles, settings, skills, sub-records, planning notes) zijn vervangen door de nieuwe helpers `validateMaxLength` en `validateMaxLengths` in `api-route-utils.ts`. Dezelfde Nederlandse foutmeldingen en 400-statuscodes; geen gedragswijziging voor geldige invoer.
+- **Datumbereik-validatie gecentraliseerd (PB-197):** 6 identieke "einddatum vóór startdatum" checks in dienstverband-, functie- en roostertoewijzingsroutes (POST + PUT) zijn vervangen door de nieuwe helper `validateDateRange` in `api-route-utils.ts`. Vergelijking gebeurt lexicografisch op het al gevalideerde `JJJJ-MM-DD` formaat, wat goedkoper is dan `new Date()` allocaties.
+- **Ontbrekende lengte-caps gesloten:** `POST /api/scenarios/[id]/duplicate` dwingt nu dezelfde 200-tekens limiet af als de hoofdroute (DE-REC-073), en `PUT /api/preferences` begrenst het `value`-veld op 500 tekens (DE-REC-058). Beide waren eerder de enige schrijfroutes zonder cap.
+
 ### 2026-04-07 — Releasenotes single source-of-truth
 
 #### Onderhoud
