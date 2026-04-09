@@ -2,30 +2,31 @@
 
 ## Summary
 
-**This cycle (2026-04-08):** Experience Agent run 18. No Experience Agent items were in the `Ready` section of `PRODUCT_BACKLOG.md` (the only ready items, PB-196/PB-197, are Delivery Agent validation-consolidation refactors). Cycle was therefore used for a fresh UX/design scan plus one small, focused header-structure fix surfaced during the scan.
+**This cycle (2026-04-09):** Experience Agent run 19. Executed both Experience Agent items from the `Ready` section: PB-198 (StatusSelector danger color override) and PB-199 (SubTable empty state + row alternation). Post-implementation fresh scan of the driver form area, StatusSelector, DayCell, and driver list page.
 
 **What was improved this cycle:**
-- **Duplicate page title on desktop eliminated (EX-REC-057).** `Header.tsx` was rendering `<h1 class="text-page-title">` for every route in `PAGE_TITLES`, and three screens (Capaciteit, Chauffeurs, Instellingen) ALSO render their own composed page-header with the same title — producing two identical Manrope headings on the same desktop view, which directly violates DESIGN.md §2.5 (composed screens with one clear title anchor). Added a `DESKTOP_PAGES_WITH_OWN_TITLE` exception set to `Header.tsx` so the header bar suppresses its title only on those three routes, only on desktop. Mobile behaviour is unchanged (those pages hide their in-body title on small screens, so the header bar is still their sole title source). Planning and Releasenotes continue to rely on the header bar because they have no composed page-header of their own. `npm run verify` passes.
+- **StatusSelector "Bevestigen" button (PB-198):** Removed the `bg-danger-500 hover:bg-danger-600` override on the sick-percentage confirm button. The button now renders in standard brand color, preserving the danger-red-for-destructive rule defined in DESIGN.md §4.2.
+- **SubTable empty state (PB-199):** Default empty message changed from "Geen records" to an actionable Dutch fallback with next-step guidance. All three caller sites (dienstverbanden, functies, roostertoewijzingen) updated with entity-specific messages. Closes the last CLAUDE.md §6 empty-state gap in driver sub-tables.
+- **SubTable row alternation (PB-199):** Replaced `bg-surface-secondary/50` opacity trick with solid `bg-surface-secondary`, consistent with tonal layering in StamtabelManager and SkillManager.
 
 **Current design alignment with DESIGN.md:**
-- **Overall product quality: 8/10.** The application exceeds generic admin UI across all screens. Design tokens are comprehensive (~55 tokens), typography hierarchy is strong (Manrope display + Inter body), and surface layering is consistently applied.
-- **Header structure:** Now aligned with DESIGN.md §2.5 (composed screens with one clear title anchor). Desktop no longer duplicates the page title on the three screens with their own composed page-header.
-- **Planning grid:** Well-aligned (sections 7.4, 9). Toolbar organized into four zones. Tonal row striping with hover effects.
-- **Capacity page:** Well-aligned (sections 7.1, 7.3, 8.3). KPI summary module, grouped toolbar with comparison pills, chart + table sections clearly separated. **Chart remains the gap** — default Recharts tooltip/axis styling.
-- **Settings page:** Well-aligned (sections 2.5, 7.1). StamtabelManager and SkillManager rows use tonal layering with hover elevation and brand accent editing state.
-- **Drivers page:** Well-aligned (sections 3.2, 7.3). Composed page header, integrated search, tonal row alternation.
-- **Mobile experience:** Well-aligned across all screens. Consistent header pattern, entrance animations, touch-friendly targets.
-- **Sidebar:** Well-aligned (section 7.8). Dark premium surface, clear active states.
-- **Release notes page:** Well-composed with expandable sections and category badges. Title now renders cleanly once via the header bar (no duplication).
+- **Overall product quality: 8/10.** Design tokens, typography hierarchy, and surface layering are comprehensive and consistently applied across all major screens.
+- **Planning grid:** Well-aligned (§7.4, §9). Toolbar in four zones, tonal row striping. StatusSelector button semantics now correct.
+- **Driver form:** Well-aligned (§7.3, §7.7). Sub-table empty states now actionable. Row alternation clean. Some minor quality gaps remain (tab system duplication, skill/license toggle color inconsistency, computed fields token choice).
+- **Capacity page:** Well-aligned (§7.1, §7.3, §8.3). Chart tooltip/axis styling remains the gap (EX-REC-049).
+- **Settings page:** Well-aligned (§2.5, §7.1).
+- **Sidebar:** Well-aligned (§7.8).
+- **Mobile:** Well-aligned across all screens.
 
 **Where design quality is still below target:**
-- Recharts default tooltip/axis styling remains the most visible desktop integration gap (EX-REC-049).
-- RosterProfileEditor 28-day grid is flat and mechanical — no tonal layering, no weekend differentiation, no visual rhythm (EX-REC-055).
-- StatusSelector "Bevestigen" button for ziek overrides `btn-primary` with `bg-danger-500` — semantically wrong, a confirm is not a destructive action (EX-REC-059, new).
+- Recharts default tooltip/axis styling on capacity page (EX-REC-049).
+- RosterProfileEditor 28-day grid remains flat (EX-REC-055).
+- DriverForm tab bar duplicates `.settings-tabs` system with a slightly different active color (EX-REC-061, new).
+- DayCell lacks aria-labels and has incomplete tooltip coverage (EX-REC-062, new).
 
 ## Recommended Next Improvements
 
-_EX-REC-057 shipped directly this cycle (duplicate page title on desktop) and is recorded in the release notes as the 8 april 2026 entry._
+_EX-REC-059 and EX-REC-060 shipped as PB-198 and PB-199 this cycle._
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -49,27 +50,27 @@ _EX-REC-057 shipped directly this cycle (duplicate page title on desktop) and is
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-traffic screen but visible gap in settings page quality. All other settings sections are now at design system standard.
 
-### EX-REC-059: StatusSelector "Bevestigen" button uses danger color override
+### EX-REC-061: DriverForm tab bar — adopt shared settings-tabs system
 
-- **Problem:** `src/components/planning/StatusSelector.tsx:141` renders the sick-percentage confirm button as `className="btn-primary w-full justify-center bg-danger-500 hover:bg-danger-600"`. The `bg-danger-*` classes override `btn-primary`'s brand background, producing a red CTA on a non-destructive action. Per DESIGN.md §4.2, color must be functional and intentional — danger red is reserved for destructive and error states. Confirming a sick percentage is a neutral planning action, not a destructive one. The red button also visually competes with the actual delete affordances elsewhere in the product, weakening the semantic system.
-- **Proposed improvement:** Drop the `bg-danger-500 hover:bg-danger-600` override and let the button render as standard `btn-primary w-full justify-center`. The SICK context is already conveyed by the modal title/flow and the sick-percentage input above the button.
-- **Expected user value:** Consistent, trustable button semantics; the red-for-destructive rule stays intact.
+- **Problem:** `DriverForm.tsx:114-129` uses hand-rolled inline Tailwind classes for the tab bar (`border-b-2`, `px-4 py-2`, `border-brand-600`, etc.). The design system already defines `.settings-tabs` and `.settings-tab` in `globals.css` with the same visual contract, including `data-active` attribute support. The DriverForm active state uses `text-brand-600` while `.settings-tab` uses `text-brand-700` — a subtle color inconsistency. Adopting the shared system would eliminate ~15 lines of inline styling and ensure tab-bar consistency across all screens.
+- **Proposed improvement:** Replace the inline tab classes with `.settings-tabs` / `.settings-tab` and `data-active` attributes. Rename the CSS classes to a more generic name (e.g. `.tab-bar` / `.tab-item`) if needed, since "settings" in the name may be misleading when used in driver forms.
+- **Expected user value:** Tab bars look and behave identically across settings and driver forms. Consistent active color.
 - **Priority:** P4 Low
-- **Effort:** Trivial (1-line change)
+- **Effort:** Trivial
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Single-line fix surfaced by this cycle's fresh scan. Low risk and low friction; can be bundled with any future StatusSelector work.
+- **Why now:** Surfaced during the fresh scan. Simple consistency fix.
 
-### EX-REC-060: SubTable default empty state and row alternation
+### EX-REC-062: DayCell accessibility — aria-labels and tooltip coverage
 
-- **Problem:** `src/components/drivers/SubTable.tsx:61` renders a generic default empty message `"Geen records"` as plain grey text with no guidance. Per CLAUDE.md §6, empty states must provide guidance on what the user can do next and must not use the word "records". Most callers pass a meaningful `emptyMessage` prop (e.g. `"Geen dienstverbanden"`), but those values also lack a next-step hint and the default fallback is silently incorrect. In addition, alternating data rows use `bg-surface-secondary/50` (opacity trick on line 86), which creates a muddy tonal value instead of the clean surface layering used in StamtabelManager and SkillManager.
-- **Proposed improvement:** (1) Replace the default empty string with an actionable Dutch fallback and update the caller sites (employment, functie, roosterassignment) to include a next-step hint pattern ("Nog geen X voor deze chauffeur. Gebruik 'Toevoegen' om een X vast te leggen."). (2) Change row alternation to solid `surface-primary` / `surface-secondary` without the `/50` modifier.
-- **Expected user value:** Empty sub-tables tell planners what to do instead of looking broken; row striping reads cleaner and aligns with the rest of the driver form.
+- **Problem:** `DayCell.tsx:84-97` renders a `<button>` that opens the status selector but has no `aria-label`. Screen readers read only the opaque StatusBadge content or a middle-dot character. Additionally, `title` tooltips are only generated for BASE_ROSTER, LEAVE, and SICK statuses — other statuses (AVAILABLE_EXTRA, DAY_OFF) produce no tooltip. This means users lose hover context on those cells.
+- **Proposed improvement:** Add `aria-label` combining driver name, date, and current status label. Extend the `title` builder to cover all statuses using `STATUS_LABELS` from constants.
+- **Expected user value:** Better accessibility for screen reader users. Consistent hover tooltips across all planning statuses.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Low-traffic but visible in every driver edit flow. Tiny, safe cleanup.
+- **Why now:** Accessibility gap on the core product surface. Low risk to fix.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -150,13 +151,13 @@ _EX-REC-057 shipped directly this cycle (duplicate page title on desktop) and is
 
 ## Risks / Watch-outs
 
-- **Header title source coupling.** The duplicate-title fix introduces an exception set (`DESKTOP_PAGES_WITH_OWN_TITLE`) in `Header.tsx`. Any future page that adds its own composed page-header must also be added to that set, otherwise the title will duplicate again. Mitigation: the inline comment in `Header.tsx` documents the contract; the set is trivially discoverable.
+- **Header title source coupling.** The duplicate-title fix introduces an exception set (`DESKTOP_PAGES_WITH_OWN_TITLE`) in `Header.tsx`. Any future page that adds its own composed page-header must also be added to that set, otherwise the title will duplicate again.
 - **Mobile planning is read-only.** Planners must use desktop to make schedule changes. Monitor user demand for mobile edit capability (EX-REC-052).
 - **Recharts default styling.** The capacity chart's tooltip/axis styling is still Recharts default. Now the most visible remaining integration gap on the capacity page. See EX-REC-049.
 - **RosterProfileEditor grid.** Flat, mechanical 28-day grid with stark status colors. Below DESIGN.md standard but low-traffic screen. See EX-REC-055.
-- **Semantic color drift in StatusSelector.** The "Bevestigen" button on the sick modal uses `bg-danger-500` override. Low blast radius but a bad pattern precedent. See EX-REC-059.
+- **DriverForm tab bar divergence.** The driver form uses a hand-rolled tab bar that is almost but not quite identical to the settings tab system. This could grow into a wider consistency issue if more tab-based views are added. See EX-REC-061.
+- **DayCell accessibility.** The planning grid's core interactive element (the day cell button) has no aria-labels and incomplete tooltips. This is the most impactful accessibility gap on the primary product surface. See EX-REC-062.
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
-- **Mobile capacity scenario compare hidden.** The compare feature is desktop-only. May need mobile treatment if multi-scenario comparison is a common mobile use case.
 
 ## Items Intentionally Not Recommended
 
@@ -187,6 +188,9 @@ _EX-REC-057 shipped directly this cycle (duplicate page title on desktop) and is
 - **CapacityKPIs card redesign:** Current cards are functional. Elevating them would require establishing a new KPI card pattern — not justified without stronger need.
 - **CapacityTable further redesign:** PB-182 brought the table to tonal layering standard. Current state is aligned with DESIGN.md §4.1 and §7.4. No further work needed.
 - **DocumentatiePage in-body title:** The release notes page relies on the header bar for its title. This is consistent with the header-bar-only pattern for pages without their own composed page-header (same as Planning). No duplication risk.
+- **SubTable "Actief" chip treatment:** The plain `text-success-600` text for active records could be upgraded to a chip badge for stronger visual signaling, but the current treatment is functional and readable. The endDate column clearly conveys the information. Elevating this is cosmetic.
+- **DriverForm skill/license toggle color unification:** Skills use success-600 and licenses use brand-600 as selected colors. While technically inconsistent, the color difference helps users distinguish the two toggle groups in the same form. Unifying could reduce scanability.
+- **DriverForm computed fields token upgrade (surface-tertiary → surface-inset):** The computed section already reads as distinct from editable fields. The surface-tertiary vs surface-inset distinction is subtle (~4 shade steps) and unlikely to improve user comprehension meaningfully.
 
 ## Recommendation Rules
 

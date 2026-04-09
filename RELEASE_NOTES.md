@@ -6,6 +6,14 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-09 — StatusSelector kleursemantiek en SubTable lege-staat verbeteringen
+
+#### UX / design verbeteringen
+
+- **StatusSelector bevestigknop (PB-198):** De 'Bevestigen'-knop bij het instellen van een ziektepercentage gebruikte een rode (danger) achtergrond, wat ten onrechte een destructieve actie suggereerde. De knop toont nu de standaard merkkleur, consistent met alle andere bevestigacties in de applicatie.
+- **SubTable lege-staat verbeterd (PB-199):** Lege subtabellen (dienstverbanden, functies, roostertoewijzingen) tonen nu een actiegerichte boodschap met een hint om 'Toevoegen' te gebruiken, in plaats van een kale melding zonder context. Het woord 'records' is verwijderd uit de standaardtekst.
+- **SubTable rijafwisseling (PB-199):** De afwisselende rijkleuring in subtabellen gebruikt nu een solide oppervlaktekleur in plaats van een halftransparante waarde, wat zorgt voor een schonere tonale laag consistent met de rest van de applicatie.
+
 ### 2026-04-08 — Header-titel dubbel opgelost en validatie-consolidatie
 
 #### UX / design verbeteringen

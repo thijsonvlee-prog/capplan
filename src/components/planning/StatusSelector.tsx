@@ -138,7 +138,7 @@ export function StatusSelector({ currentStatus, currentLeaveTypeId, currentSickP
             </div>
             <button
               onClick={handleSickConfirm}
-              className="btn-primary w-full justify-center bg-danger-500 hover:bg-danger-600"
+              className="btn-primary w-full justify-center"
             >
               Bevestigen
             </button>

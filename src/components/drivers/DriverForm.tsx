@@ -244,7 +244,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           ]}
           onAdd={(data) => mutate(() => api.drivers.addEmploymentRecord(initialData.id, data)).then(() => showToast("Dienstverband toegevoegd")).catch(() => showToast("Er ging iets mis.", "error"))}
           onDelete={(id) => mutate(() => api.drivers.deleteEmploymentRecord(initialData.id, id)).then(() => showToast("Dienstverband verwijderd")).catch(() => showToast("Er ging iets mis.", "error"))}
-          emptyMessage="Geen dienstverbanden"
+          emptyMessage="Nog geen dienstverbanden voor deze chauffeur. Gebruik 'Toevoegen' om een dienstverband vast te leggen."
           entityName="het dienstverband"
           renderForm={(onSubmit, onCancel) => (
             <EmploymentForm employers={employers} onSubmit={onSubmit} onCancel={onCancel} />
@@ -264,7 +264,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           ]}
           onAdd={(data) => mutate(() => api.drivers.addFunctionRecord(initialData.id, data)).then(() => showToast("Functiegegevens toegevoegd")).catch(() => showToast("Er ging iets mis.", "error"))}
           onDelete={(id) => mutate(() => api.drivers.deleteFunctionRecord(initialData.id, id)).then(() => showToast("Functiegegevens verwijderd")).catch(() => showToast("Er ging iets mis.", "error"))}
-          emptyMessage="Geen functiegegevens"
+          emptyMessage="Nog geen functiegegevens voor deze chauffeur. Gebruik 'Toevoegen' om functiegegevens vast te leggen."
           entityName="de functiegegevens"
           renderForm={(onSubmit, onCancel) => (
             <PositionForm departments={departments} locations={locations} onSubmit={onSubmit} onCancel={onCancel} />
@@ -282,7 +282,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
           ]}
           onAdd={(data) => mutate(() => api.drivers.addRosterAssignment(initialData.id, { ...data, scenarioId: activeScenarioId === "default" ? undefined : activeScenarioId })).then(() => showToast("Roostertoewijzing toegevoegd")).catch(() => showToast("Er ging iets mis.", "error"))}
           onDelete={(id) => mutate(() => api.drivers.deleteRosterAssignment(initialData.id, id)).then(() => showToast("Roostertoewijzing verwijderd")).catch(() => showToast("Er ging iets mis.", "error"))}
-          emptyMessage="Geen roostergegevens"
+          emptyMessage="Nog geen roostertoewijzingen voor deze chauffeur. Gebruik 'Toevoegen' om een roostertoewijzing vast te leggen."
           entityName="de roostertoewijzing"
           renderForm={(onSubmit, onCancel) => (
             <RosterForm profiles={profiles} onSubmit={onSubmit} onCancel={onCancel} />

@@ -31,39 +31,19 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
-- **Status:** Ready
+- **Status:** Completed
+- **Completed:** 2026-04-09
 - **Source:** EX-REC-059
-- **Problem:** `src/components/planning/StatusSelector.tsx:141` renders the sick-percentage confirm button as `className="btn-primary w-full justify-center bg-danger-500 hover:bg-danger-600"`. The `bg-danger-*` override produces a red CTA on a non-destructive confirm action, violating DESIGN.md §4.2 (danger red is reserved for destructive/error states). It also weakens the semantic color system by visually competing with real delete affordances elsewhere.
-- **Why this matters now:** One-line fix surfaced during the fresh UX scan. Low risk, removes a bad pattern precedent before it can spread.
-- **Scope notes:** Remove the two `bg-danger-*` classes only. Do not touch button copy, layout, or the sick-percentage input. The SICK context is already conveyed by the modal title and the sick-percentage field above the button.
-- **Dependencies:** None.
-- **Definition of done:**
-  - `StatusSelector.tsx:141` button is `className="btn-primary w-full justify-center"` (no danger override).
-  - Visual check: confirm button renders in brand color, not red.
-  - `npm run verify` passes.
-  - Release note entry added in `src/domain/releases.ts` AND `RELEASE_NOTES.md` (per CLAUDE.md §11).
+- **Summary:** Removed `bg-danger-500 hover:bg-danger-600` override from the sick-percentage confirm button in `StatusSelector.tsx`. Button now renders as standard `btn-primary` in brand color. `npm run verify` passes. Release note added.
 
 ### PB-199: SubTable — actionable empty state and clean row alternation
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
-- **Status:** Ready
+- **Status:** Completed
+- **Completed:** 2026-04-09
 - **Source:** EX-REC-060
-- **Problem:** `src/components/drivers/SubTable.tsx` has two quality gaps:
-  1. Default `emptyMessage = "Geen records"` (line 29) violates CLAUDE.md §6 — it uses the banned word "records" and provides no next-step guidance. Call sites (employment, functions, roster-assignment) pass Dutch entity labels but still lack a next-step hint.
-  2. Row alternation uses `bg-surface-secondary/50` (line 86), producing a muddy tonal value instead of the clean surface layering used in StamtabelManager and SkillManager.
-- **Why this matters now:** Visible in every driver edit flow. Tiny, safe cleanup that closes the last empty-state gap against CLAUDE.md §6.
-- **Scope notes:**
-  - Change the default `emptyMessage` to an actionable Dutch fallback (e.g. `"Nog geen gegevens. Gebruik 'Toevoegen' om iets vast te leggen."`).
-  - Update the three caller sites in `DriverForm.tsx` (dienstverbanden, functies, roostertoewijzingen) to pass next-step hints in the same sentence pattern (e.g. `"Nog geen dienstverbanden voor deze chauffeur. Gebruik 'Toevoegen' om een dienstverband vast te leggen."`).
-  - Replace `bg-surface-secondary/50` with solid `bg-surface-secondary` for odd rows. Do not touch the `bg-success-50` "Actief" row highlight.
-- **Dependencies:** None.
-- **Definition of done:**
-  - `SubTable.tsx` default empty message no longer contains the word "records" and suggests the next step.
-  - All three SubTable call sites in `DriverForm.tsx` pass entity-specific empty messages with a next-step hint.
-  - Row alternation uses a solid surface token; no `/50` opacity modifier.
-  - `npm run verify` passes.
-  - Release note entry added to `src/domain/releases.ts` AND `RELEASE_NOTES.md`.
+- **Summary:** Updated `SubTable.tsx` default empty message to an actionable Dutch fallback with next-step hint. Updated all three caller sites in `DriverForm.tsx` (dienstverbanden, functies, roostertoewijzingen) with entity-specific empty messages. Replaced `bg-surface-secondary/50` with solid `bg-surface-secondary` for row alternation. `npm run verify` passes. Release note added.
 
 ### PB-200: Centralize enum validation arrays and `MAX_NOTES_LENGTH`
 

@@ -26,7 +26,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
   onAdd,
   onDelete,
   renderForm,
-  emptyMessage = "Geen records",
+  emptyMessage = "Nog geen gegevens. Gebruik 'Toevoegen' om iets vast te leggen.",
   entityName = "het record",
 }: SubTableProps<T>) {
   const [showForm, setShowForm] = useState(false);
@@ -83,7 +83,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
                     !row.endDate
                       ? "bg-success-50"
                       : idx % 2 === 1
-                        ? "bg-surface-secondary/50"
+                        ? "bg-surface-secondary"
                         : ""
                   }`}
                 >
