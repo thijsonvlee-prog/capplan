@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PlanningStatus, EmploymentType } from "@/domain/enums";
 import type { UserRole } from "@/domain/enums";
 
 // === User identity resolution ===
@@ -322,6 +323,17 @@ export function getSettingsModel(type: string) {
   return (prisma as any)[modelName];
 }
 
+// === Shared validation constants ===
+
+/** Valid planning status values for request validation */
+export const VALID_PLANNING_STATUSES = Object.values(PlanningStatus);
+
+/** Valid employment type values for request validation */
+export const VALID_EMPLOYMENT_TYPES = Object.values(EmploymentType);
+
+/** Maximum character length for planning entry notes */
+export const MAX_NOTES_LENGTH = 500;
+
 // === Validation utilities ===
 
 /**
@@ -518,6 +530,21 @@ export function validateDateFormats(dates: string[]): string | null {
 }
 
 // === Sub-record utilities ===
+
+/**
+ * Verify that a sub-record (employment, function, roster assignment) belongs to
+ * the specified driver. Returns the record if owned, or null if not found.
+ * Works with both the main Prisma client and transaction delegates.
+ */
+export async function verifyRecordOwnership(
+  model: { findFirst: (args: any) => Promise<any> },
+  recordId: string,
+  driverId: string
+) {
+  return model.findFirst({
+    where: { id: recordId, driverId },
+  });
+}
 
 /**
  * Auto-close open-ended records by setting their endDate to the day before the new startDate.

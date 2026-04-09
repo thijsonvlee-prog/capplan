@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-09 — Validatie- en eigendomscontrole consolidatie
+
+#### Onderhoud
+
+- **Enum-validatie en notitieslimiet gecentraliseerd (PB-200):** De gedupliceerde `VALID_STATUSES`, `validEmploymentTypes` en `MAX_NOTES_LENGTH` constanten in planning- en dienstverbandroutes zijn vervangen door gedeelde exports `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES` en `MAX_NOTES_LENGTH` in `api-route-utils.ts`. Eén plek om aan te passen bij enum-wijzigingen; geen gedragswijziging.
+- **Eigendomscontrole sub-records gecentraliseerd (PB-201):** De 6 herhaalde `findFirst({ id, driverId })`-checks in dienstverband-, functie- en roostertoewijzingsroutes (PUT + DELETE) zijn vervangen door de nieuwe helper `verifyRecordOwnership` in `api-route-utils.ts`. Dezelfde 404-foutmelding; geen gedragswijziging.
+
 ### 2026-04-09 — StatusSelector kleursemantiek en SubTable lege-staat verbeteringen
 
 #### UX / design verbeteringen

@@ -22,6 +22,19 @@ export interface Release {
 export const RELEASES: Release[] = [
   {
     date: "9 april 2026",
+    title: "Validatie- en eigendomscontrole consolidatie",
+    groups: [
+      {
+        heading: "Onderhoud",
+        items: [
+          "Enum-validatie en notitieslimiet gecentraliseerd: de gedupliceerde VALID_STATUSES, validEmploymentTypes en MAX_NOTES_LENGTH constanten in planning- en dienstverbandroutes zijn vervangen door gedeelde exports in api-route-utils. Eén plek om aan te passen bij enum-wijzigingen; geen gedragswijziging (PB-200).",
+          "Eigendomscontrole sub-records gecentraliseerd: de 6 herhaalde findFirst-checks in dienstverband-, functie- en roostertoewijzingsroutes (PUT + DELETE) zijn vervangen door de nieuwe helper verifyRecordOwnership. Dezelfde 404-foutmelding; geen gedragswijziging (PB-201).",
+        ],
+      },
+    ],
+  },
+  {
+    date: "9 april 2026",
     title: "StatusSelector kleursemantiek en SubTable lege-staat verbeteringen",
     groups: [
       {

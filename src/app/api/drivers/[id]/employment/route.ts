@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { autoCloseOpenRecords, getNextSequenceNumber, validateRequired, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody, VALID_EMPLOYMENT_TYPES } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
-import { EmploymentType } from "@/domain/enums";
 
 export async function GET(
   request: NextRequest,
@@ -50,10 +49,9 @@ export async function POST(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    const validEmploymentTypes = Object.values(EmploymentType);
-    if (!validEmploymentTypes.includes(employmentType)) {
+    if (!VALID_EMPLOYMENT_TYPES.includes(employmentType)) {
       return NextResponse.json(
-        { error: `Ongeldig type dienstverband. Geldige waarden: ${validEmploymentTypes.join(", ")}` },
+        { error: `Ongeldig type dienstverband. Geldige waarden: ${VALID_EMPLOYMENT_TYPES.join(", ")}` },
         { status: 400 }
       );
     }

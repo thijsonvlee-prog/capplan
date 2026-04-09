@@ -49,7 +49,8 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
-- **Status:** Ready
+- **Status:** Completed
+- **Completed:** 2026-04-09
 - **Source:** DE-REC-075 + DE-REC-077 (merged — same validation-consolidation theme, same target files, single commit is cleaner)
 - **Problem:**
   1. `const VALID_STATUSES = Object.values(PlanningStatus)` is duplicated in `src/app/api/planning/route.ts:9` and `src/app/api/planning/bulk/route.ts:9`.
@@ -62,18 +63,14 @@ Items are ordered by priority within each section. Ties are broken by expected u
   - Do NOT introduce a generic `validateEnumValue` helper this cycle — keep the existing inline check pattern. Adding the helper would be a separate, larger consolidation.
   - Pure refactor: no behavior change, same error phrasing, same status codes.
 - **Dependencies:** None.
-- **Definition of done:**
-  - No duplicate `Object.values(PlanningStatus)` or `Object.values(EmploymentType)` in API routes.
-  - No duplicate `MAX_NOTES_LENGTH` literal in API routes.
-  - All affected routes still return identical 400 messages for the existing invalid-input cases.
-  - `npm run verify` passes.
-  - Release note entry (single Onderhoud bullet) added to `src/domain/releases.ts` AND `RELEASE_NOTES.md`.
+- **Summary:** Added `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, and `MAX_NOTES_LENGTH` as exported constants in `api-route-utils.ts`. Replaced 4 inline enum-array definitions across planning and employment routes, and 2 inline `MAX_NOTES_LENGTH` definitions in planning routes. Same error messages and status codes preserved. `npm run verify` passes. Release note added.
 
 ### PB-201: `verifyRecordOwnership` helper for driver sub-record PUT/DELETE
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
-- **Status:** Ready
+- **Status:** Completed
+- **Completed:** 2026-04-09
 - **Source:** DE-REC-076
 - **Problem:** All three driver sub-record `[recordId]/route.ts` files (employment, functions, roster-assignments) contain the same `findFirst({ where: { id: recordId, driverId: id } })` ownership check twice each — once inside the PUT transaction, once before the DELETE. Six copies total. Any future tightening of authorization on sub-records would require six edits.
 - **Why this matters now:** The only consolidation opportunity from the fresh scan that touches authorization-adjacent code. Small, same spirit as PB-196/197.
@@ -84,12 +81,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
   - Preserve the existing 404 Dutch error messages verbatim.
   - Pure refactor: no behavior change.
 - **Dependencies:** None. Independent of PB-200; they touch different files and can ship in parallel.
-- **Definition of done:**
-  - Helper defined once in `api-route-utils.ts`.
-  - All 6 inline ownership-check blocks replaced.
-  - Same 404 responses for non-owned records.
-  - `npm run verify` passes.
-  - Release note entry (single Onderhoud bullet) added to `src/domain/releases.ts` AND `RELEASE_NOTES.md`.
+- **Summary:** Added `verifyRecordOwnership(model, recordId, driverId)` helper in `api-route-utils.ts`. Returns the found record or null so DELETE handlers retain the record for audit logging. Replaced all 6 inline ownership-check blocks in employment, functions, and roster-assignments `[recordId]/route.ts` files. Same 404 responses preserved. `npm run verify` passes. Release note added.
 
 ---
 

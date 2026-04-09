@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { validateRequired, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody, VALID_EMPLOYMENT_TYPES, verifyRecordOwnership } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
-import { EmploymentType } from "@/domain/enums";
 
 export async function PUT(
   request: NextRequest,
@@ -25,10 +24,9 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    const validEmploymentTypes = Object.values(EmploymentType);
-    if (!validEmploymentTypes.includes(body.employmentType)) {
+    if (!VALID_EMPLOYMENT_TYPES.includes(body.employmentType)) {
       return NextResponse.json(
-        { error: `Ongeldig type dienstverband. Geldige waarden: ${validEmploymentTypes.join(", ")}` },
+        { error: `Ongeldig type dienstverband. Geldige waarden: ${VALID_EMPLOYMENT_TYPES.join(", ")}` },
         { status: 400 }
       );
     }
@@ -57,13 +55,8 @@ export async function PUT(
     }
 
     const record = await prisma.$transaction(async (tx) => {
-      // Verify the record belongs to the specified driver
-      const existing = await tx.driverEmploymentRecord.findFirst({
-        where: { id: recordId, driverId: id },
-      });
-      if (!existing) {
-        return null;
-      }
+      const existing = await verifyRecordOwnership(tx.driverEmploymentRecord, recordId, id);
+      if (!existing) return null;
 
       return tx.driverEmploymentRecord.update({
         where: { id: recordId },
@@ -103,10 +96,7 @@ export async function DELETE(
 
     const { id, recordId } = await params;
 
-    // Verify the record belongs to the specified driver
-    const existing = await prisma.driverEmploymentRecord.findFirst({
-      where: { id: recordId, driverId: id },
-    });
+    const existing = await verifyRecordOwnership(prisma.driverEmploymentRecord, recordId, id);
     if (!existing) {
       return NextResponse.json({ error: "Record niet gevonden" }, { status: 404 });
     }

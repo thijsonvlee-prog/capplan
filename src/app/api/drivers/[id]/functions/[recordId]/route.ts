@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { validateRequired, validateMaxLengths, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { validateRequired, validateMaxLengths, validateOptionalForeignKey, validateDateFormat, validateDateRange, requireRole, parseJsonBody, verifyRecordOwnership } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function PUT(
@@ -64,13 +64,8 @@ export async function PUT(
     }
 
     const record = await prisma.$transaction(async (tx) => {
-      // Verify the record belongs to the specified driver
-      const existing = await tx.driverFunctionRecord.findFirst({
-        where: { id: recordId, driverId: id },
-      });
-      if (!existing) {
-        return null;
-      }
+      const existing = await verifyRecordOwnership(tx.driverFunctionRecord, recordId, id);
+      if (!existing) return null;
 
       return tx.driverFunctionRecord.update({
         where: { id: recordId },
@@ -112,10 +107,7 @@ export async function DELETE(
 
     const { id, recordId } = await params;
 
-    // Verify the record belongs to the specified driver
-    const existing = await prisma.driverFunctionRecord.findFirst({
-      where: { id: recordId, driverId: id },
-    });
+    const existing = await verifyRecordOwnership(prisma.driverFunctionRecord, recordId, id);
     if (!existing) {
       return NextResponse.json({ error: "Record niet gevonden" }, { status: 404 });
     }

@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, validateOptionalForeignKey, validateMaxLength, requireRoleWithSession, parseJsonBody, validateDateFormats, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
-import { PlanningStatus } from "@/domain/enums";
-
-const MAX_NOTES_LENGTH = 500;
-
-const VALID_STATUSES = Object.values(PlanningStatus);
+import { resolveScenarioId, validateOptionalForeignKey, validateMaxLength, requireRoleWithSession, parseJsonBody, validateDateFormats, getAllowedDepartmentIds, driverDepartmentFilter, VALID_PLANNING_STATUSES, MAX_NOTES_LENGTH } from "@/lib/api-route-utils";
 
 export const POST = withPerfLogging(
   "POST /api/planning/bulk",
@@ -27,9 +22,9 @@ export const POST = withPerfLogging(
         );
       }
 
-      if (!VALID_STATUSES.includes(status)) {
+      if (!VALID_PLANNING_STATUSES.includes(status)) {
         return NextResponse.json(
-          { error: `Ongeldige status "${status}". Geldige waarden: ${VALID_STATUSES.join(", ")}` },
+          { error: `Ongeldige status "${status}". Geldige waarden: ${VALID_PLANNING_STATUSES.join(", ")}` },
           { status: 400 }
         );
       }
