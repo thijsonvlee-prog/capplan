@@ -6,20 +6,18 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
-### 2026-04-09 — Validatie- en eigendomscontrole consolidatie
-
-#### Onderhoud
-
-- **Enum-validatie en notitieslimiet gecentraliseerd (PB-200):** De gedupliceerde `VALID_STATUSES`, `validEmploymentTypes` en `MAX_NOTES_LENGTH` constanten in planning- en dienstverbandroutes zijn vervangen door gedeelde exports `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES` en `MAX_NOTES_LENGTH` in `api-route-utils.ts`. Eén plek om aan te passen bij enum-wijzigingen; geen gedragswijziging.
-- **Eigendomscontrole sub-records gecentraliseerd (PB-201):** De 6 herhaalde `findFirst({ id, driverId })`-checks in dienstverband-, functie- en roostertoewijzingsroutes (PUT + DELETE) zijn vervangen door de nieuwe helper `verifyRecordOwnership` in `api-route-utils.ts`. Dezelfde 404-foutmelding; geen gedragswijziging.
-
-### 2026-04-09 — StatusSelector kleursemantiek en SubTable lege-staat verbeteringen
+### 2026-04-09 — UX-verfijningen en validatie-consolidatie
 
 #### UX / design verbeteringen
 
 - **StatusSelector bevestigknop (PB-198):** De 'Bevestigen'-knop bij het instellen van een ziektepercentage gebruikte een rode (danger) achtergrond, wat ten onrechte een destructieve actie suggereerde. De knop toont nu de standaard merkkleur, consistent met alle andere bevestigacties in de applicatie.
 - **SubTable lege-staat verbeterd (PB-199):** Lege subtabellen (dienstverbanden, functies, roostertoewijzingen) tonen nu een actiegerichte boodschap met een hint om 'Toevoegen' te gebruiken, in plaats van een kale melding zonder context. Het woord 'records' is verwijderd uit de standaardtekst.
 - **SubTable rijafwisseling (PB-199):** De afwisselende rijkleuring in subtabellen gebruikt nu een solide oppervlaktekleur in plaats van een halftransparante waarde, wat zorgt voor een schonere tonale laag consistent met de rest van de applicatie.
+
+#### Onderhoud
+
+- **Enum-validatie en notitieslimiet gecentraliseerd (PB-200):** De gedupliceerde `VALID_STATUSES`, `validEmploymentTypes` en `MAX_NOTES_LENGTH` constanten in planning- en dienstverbandroutes zijn vervangen door gedeelde exports `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES` en `MAX_NOTES_LENGTH` in `api-route-utils.ts`. Eén plek om aan te passen bij enum-wijzigingen; geen gedragswijziging.
+- **Eigendomscontrole sub-records gecentraliseerd (PB-201):** De 6 herhaalde `findFirst({ id, driverId })`-checks in dienstverband-, functie- en roostertoewijzingsroutes (PUT + DELETE) zijn vervangen door de nieuwe helper `verifyRecordOwnership` in `api-route-utils.ts`. Dezelfde 404-foutmelding; geen gedragswijziging.
 
 ### 2026-04-08 — Header-titel dubbel opgelost en validatie-consolidatie
 

@@ -22,20 +22,7 @@ export interface Release {
 export const RELEASES: Release[] = [
   {
     date: "9 april 2026",
-    title: "Validatie- en eigendomscontrole consolidatie",
-    groups: [
-      {
-        heading: "Onderhoud",
-        items: [
-          "Enum-validatie en notitieslimiet gecentraliseerd: de gedupliceerde VALID_STATUSES, validEmploymentTypes en MAX_NOTES_LENGTH constanten in planning- en dienstverbandroutes zijn vervangen door gedeelde exports in api-route-utils. Eén plek om aan te passen bij enum-wijzigingen; geen gedragswijziging (PB-200).",
-          "Eigendomscontrole sub-records gecentraliseerd: de 6 herhaalde findFirst-checks in dienstverband-, functie- en roostertoewijzingsroutes (PUT + DELETE) zijn vervangen door de nieuwe helper verifyRecordOwnership. Dezelfde 404-foutmelding; geen gedragswijziging (PB-201).",
-        ],
-      },
-    ],
-  },
-  {
-    date: "9 april 2026",
-    title: "StatusSelector kleursemantiek en SubTable lege-staat verbeteringen",
+    title: "UX-verfijningen en validatie-consolidatie",
     groups: [
       {
         heading: "UX / design",
@@ -43,6 +30,13 @@ export const RELEASES: Release[] = [
           "StatusSelector bevestigknop: de 'Bevestigen'-knop bij het instellen van een ziektepercentage gebruikte een rode (danger) achtergrond, wat ten onrechte een destructieve actie suggereerde. De knop toont nu de standaard merkkleur, consistent met alle andere bevestigacties in de applicatie (PB-198).",
           "SubTable lege-staat verbeterd: lege subtabellen (dienstverbanden, functies, roostertoewijzingen) tonen nu een actiegerichte boodschap met een hint om 'Toevoegen' te gebruiken, in plaats van een kale melding zonder context. Het woord 'records' is verwijderd uit de standaardtekst (PB-199).",
           "SubTable rijafwisseling: de afwisselende rijkleuring in subtabellen gebruikt nu een solide oppervlaktekleur in plaats van een halftransparante waarde, wat zorgt voor een schonere tonale laag consistent met de rest van de applicatie (PB-199).",
+        ],
+      },
+      {
+        heading: "Onderhoud",
+        items: [
+          "Enum-validatie en notitieslimiet gecentraliseerd: de gedupliceerde VALID_STATUSES, validEmploymentTypes en MAX_NOTES_LENGTH constanten in planning- en dienstverbandroutes zijn vervangen door gedeelde exports in api-route-utils. Eén plek om aan te passen bij enum-wijzigingen; geen gedragswijziging (PB-200).",
+          "Eigendomscontrole sub-records gecentraliseerd: de 6 herhaalde findFirst-checks in dienstverband-, functie- en roostertoewijzingsroutes (PUT + DELETE) zijn vervangen door de nieuwe helper verifyRecordOwnership. Dezelfde 404-foutmelding; geen gedragswijziging (PB-201).",
         ],
       },
     ],

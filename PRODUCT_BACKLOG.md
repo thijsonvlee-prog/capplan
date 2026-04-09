@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. The validation-consolidation track (PB-196, PB-197) and the header duplicate-title fix (EX-REC-057) all shipped on 2026-04-08. With the Ready queue empty and both specialist agents returning small P4-Low polish items from their fresh scans, this cycle promotes four well-scoped P4 items — two UX cleanups (StatusSelector color semantics, SubTable empty state + row alternation) and two Delivery consolidations (enum/constants extraction, sub-record ownership helper). ESC-014 (desktop homescreen) remains unmarked after 7 cycles; per the warning in the last cycle PO note, SMI-026 is now downgraded to Deferred until the Scrum Master revisits it.
+**Current direction:** No P1/P2/P3 work outstanding. The validation-consolidation track is fully complete (PB-196 through PB-201). Both specialist agents returned small P4 items from their fresh scans. This cycle promotes four well-scoped P4 items: DayCell accessibility improvements and DriverForm tab bar consistency (Experience), plus weeklyHours range validation and sub-record transaction parallelization (Delivery). ESC-014 (desktop homescreen) remains unmarked and deferred.
 
 ## Status Definitions
 
@@ -27,61 +27,65 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-198: StatusSelector "Bevestigen" button — drop danger color override
+### PB-202: DayCell accessibility — aria-labels and tooltip coverage
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-09
-- **Source:** EX-REC-059
-- **Summary:** Removed `bg-danger-500 hover:bg-danger-600` override from the sick-percentage confirm button in `StatusSelector.tsx`. Button now renders as standard `btn-primary` in brand color. `npm run verify` passes. Release note added.
-
-### PB-199: SubTable — actionable empty state and clean row alternation
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-09
-- **Source:** EX-REC-060
-- **Summary:** Updated `SubTable.tsx` default empty message to an actionable Dutch fallback with next-step hint. Updated all three caller sites in `DriverForm.tsx` (dienstverbanden, functies, roostertoewijzingen) with entity-specific empty messages. Replaced `bg-surface-secondary/50` with solid `bg-surface-secondary` for row alternation. `npm run verify` passes. Release note added.
-
-### PB-200: Centralize enum validation arrays and `MAX_NOTES_LENGTH`
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-09
-- **Source:** DE-REC-075 + DE-REC-077 (merged — same validation-consolidation theme, same target files, single commit is cleaner)
-- **Problem:**
-  1. `const VALID_STATUSES = Object.values(PlanningStatus)` is duplicated in `src/app/api/planning/route.ts:9` and `src/app/api/planning/bulk/route.ts:9`.
-  2. `const validEmploymentTypes = Object.values(EmploymentType)` is duplicated in `src/app/api/drivers/[id]/employment/route.ts:53` and `src/app/api/drivers/[id]/employment/[recordId]/route.ts:28`.
-  3. `MAX_NOTES_LENGTH = 500` is defined identically in `src/app/api/planning/route.ts:7` and `src/app/api/planning/bulk/route.ts:7`.
-- **Why this matters now:** Natural follow-through on the PB-196/PB-197 consolidation theme while the surface is still fresh. Same phrasing, same locations.
+- **Status:** Ready
+- **Source:** EX-REC-062
+- **Problem:** `DayCell.tsx` renders a `<button>` that opens the status selector but has no `aria-label`. Screen readers read only the opaque StatusBadge content or a middle-dot character. Additionally, `title` tooltips are only generated for BASE_ROSTER, LEAVE, and SICK statuses — AVAILABLE_EXTRA and DAY_OFF produce no tooltip.
+- **Why this matters now:** Accessibility gap on the core product surface. Low risk to fix. The planning grid is the primary user interface — every interactive cell should be screen-reader friendly.
 - **Scope notes:**
-  - Add exported constants in `src/lib/api-route-utils.ts` (or `src/domain/constants.ts` — choose whichever keeps callers cleanest): `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, and `MAX_NOTES_LENGTH`.
-  - Replace all 4 inline enum-array definitions and both `MAX_NOTES_LENGTH` definitions with the shared imports.
-  - Do NOT introduce a generic `validateEnumValue` helper this cycle — keep the existing inline check pattern. Adding the helper would be a separate, larger consolidation.
-  - Pure refactor: no behavior change, same error phrasing, same status codes.
+  - Add `aria-label` combining driver name, date, and current status label to the day cell button.
+  - Extend the `title` builder to cover all statuses using `STATUS_LABELS` from constants.
+  - Do NOT restructure DayCell or change its memoization. Purely additive accessibility attributes.
 - **Dependencies:** None.
-- **Summary:** Added `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, and `MAX_NOTES_LENGTH` as exported constants in `api-route-utils.ts`. Replaced 4 inline enum-array definitions across planning and employment routes, and 2 inline `MAX_NOTES_LENGTH` definitions in planning routes. Same error messages and status codes preserved. `npm run verify` passes. Release note added.
+- **Definition of done:** All day cell buttons have meaningful `aria-label`. All planning statuses produce a hover tooltip. `npm run verify` passes.
 
-### PB-201: `verifyRecordOwnership` helper for driver sub-record PUT/DELETE
+### PB-203: DriverForm tab bar — adopt shared settings-tabs system
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Source:** EX-REC-061
+- **Problem:** `DriverForm.tsx:114-129` uses hand-rolled inline Tailwind classes for the tab bar. The design system already defines `.settings-tabs` and `.settings-tab` in `globals.css` with the same visual contract. The DriverForm active state uses `text-brand-600` while `.settings-tab` uses `text-brand-700` — a subtle color inconsistency.
+- **Why this matters now:** Trivial effort consistency fix. Eliminates ~15 lines of inline styling and ensures tab bars look identical across settings and driver forms.
+- **Scope notes:**
+  - Replace the inline tab classes with `.settings-tabs` / `.settings-tab` and `data-active` attributes.
+  - If the "settings-" prefix is misleading when used in driver forms, consider renaming to a generic name (e.g. `.tab-bar` / `.tab-item`) — but only if the rename touches no more than 2-3 files.
+  - Do NOT change tab behavior or state management. Visual-only refactor.
+- **Dependencies:** None.
+- **Definition of done:** DriverForm uses the shared tab CSS classes. Active color matches settings tabs. `npm run verify` passes.
+
+### PB-204: Validate `weeklyHours` range (0-168) on roster assignment POST/PUT
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-09
-- **Source:** DE-REC-076
-- **Problem:** All three driver sub-record `[recordId]/route.ts` files (employment, functions, roster-assignments) contain the same `findFirst({ where: { id: recordId, driverId: id } })` ownership check twice each — once inside the PUT transaction, once before the DELETE. Six copies total. Any future tightening of authorization on sub-records would require six edits.
-- **Why this matters now:** The only consolidation opportunity from the fresh scan that touches authorization-adjacent code. Small, same spirit as PB-196/197.
+- **Status:** Ready
+- **Source:** DE-REC-063
+- **Problem:** `weeklyHours` is stored without bounds validation on roster assignment routes. Could accept negative values or values exceeding hours in a week (168).
+- **Why this matters now:** Last remaining un-validated numeric field in sub-record routes. Defensive improvement aligned with the validation-consolidation track.
 - **Scope notes:**
-  - Add a helper in `src/lib/api-route-utils.ts`. Recommended shape: `verifyRecordOwnership(model, recordId, driverId): Promise<boolean>` returning whether the row exists and is owned by that driver. Keep it read-only.
-  - Replace all 6 inline blocks in `employment/[recordId]/route.ts`, `functions/[recordId]/route.ts`, and `roster-assignments/[recordId]/route.ts`.
-  - The helper may be called either inside or outside the PUT `$transaction` — keep the existing placement so the transactional shape is unchanged. Only the inline duplication goes away.
-  - Preserve the existing 404 Dutch error messages verbatim.
-  - Pure refactor: no behavior change.
-- **Dependencies:** None. Independent of PB-200; they touch different files and can ship in parallel.
-- **Summary:** Added `verifyRecordOwnership(model, recordId, driverId)` helper in `api-route-utils.ts`. Returns the found record or null so DELETE handlers retain the record for audit logging. Replaced all 6 inline ownership-check blocks in employment, functions, and roster-assignments `[recordId]/route.ts` files. Same 404 responses preserved. `npm run verify` passes. Release note added.
+  - Add `if (weeklyHours != null && (weeklyHours < 0 || weeklyHours > 168))` with Dutch error message in both POST and PUT handlers.
+  - Same 400 response pattern as existing validation.
+  - Do NOT add validation for other fields in the same routes — keep the change minimal.
+- **Dependencies:** None.
+- **Definition of done:** Negative and >168 values are rejected with a 400 response and Dutch error message. `npm run verify` passes.
+
+### PB-205: Parallelize `autoCloseOpenRecords` + `getNextSequenceNumber` in sub-record transactions
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Source:** DE-REC-062
+- **Problem:** Employment, function, and roster-assignment POST handlers await `autoCloseOpenRecords` and `getNextSequenceNumber` sequentially inside `$transaction`. These are independent reads.
+- **Why this matters now:** Saves one DB round trip per sub-record creation (~50-100ms on Neon serverless). Same transaction shape, just parallel reads.
+- **Scope notes:**
+  - Wrap the two sequential calls in `Promise.all()` inside the existing `$transaction` blocks.
+  - Touch only the POST handlers in employment, functions, and roster-assignments.
+  - Do NOT change the transaction boundaries or the order of subsequent writes.
+- **Dependencies:** None.
+- **Definition of done:** Both helpers run in parallel inside the transaction. Same transactional behavior. `npm run verify` passes.
 
 ---
 
@@ -93,32 +97,39 @@ _No items currently in progress._
 
 ## Blocked / Needs Decision
 
-_No items currently blocked. SMI-026 / ESC-014 was downgraded to Deferred this cycle after 7 cycles without a Scrum Master decision — see Deferred section._
+_No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred section._
 
 ---
 
 ## Completed Recently
 
-### PB-196: `validateMaxLength` helper — eliminate duplicated length checks
+### PB-198: StatusSelector "Bevestigen" button — drop danger color override
 
 - **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-08
-- **Summary:** Added `validateMaxLength(value, maxLength, label)` and `validateMaxLengths(checks)` helpers in `src/lib/api-route-utils.ts`. Replaced ~28 inline length checks across drivers, scenarios, import-sources, user-groups, roster-profiles, settings (stamtabel + skills), driver sub-records (employment, functions, roster-assignments) and planning notes (POST + bulk). Same Dutch error phrasing and 400 status codes preserved. Scenario duplicate POST now enforces the 200-char name cap (DE-REC-073) and preferences PUT now enforces a 500-char value cap (DE-REC-058). `npm run verify` passes.
-
-### PB-197: `validateDateRange` helper — consolidate start/end date checks
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-08
-- **Summary:** Added `validateDateRange(startDate, endDate)` helper in `src/lib/api-route-utils.ts` using lexicographic comparison on the already-validated `YYYY-MM-DD` strings. Replaced 6 inline checks in employment POST/PUT, function POST/PUT, and roster-assignment POST/PUT routes. Same Dutch error message preserved; no behavior change. `npm run verify` passes.
-
-### EX-REC-057: Duplicate page title on desktop — removed
-
-- **Status:** Completed (direct Experience Agent fix, no PB number)
 - **Owner:** Experience Agent
-- **Completed:** 2026-04-08
-- **Summary:** `Header.tsx` rendered `<h1 class="text-page-title">` for every route in `PAGE_TITLES` while Capaciteit, Chauffeurs, and Instellingen ALSO render their own composed page-header with the same Manrope title — producing two identical titles on desktop. Added a `DESKTOP_PAGES_WITH_OWN_TITLE` exception set so the header bar suppresses its title only on those three routes, only on desktop. Mobile behaviour and the title display on Planning/Releasenotes are unchanged. Moves header structure toward DESIGN.md §2.5 (one clear title anchor per composed screen). `npm run verify` passes.
+- **Completed:** 2026-04-09
+- **Summary:** Removed `bg-danger-500 hover:bg-danger-600` override from the sick-percentage confirm button. Button now renders as standard `btn-primary` in brand color.
+
+### PB-199: SubTable — actionable empty state and clean row alternation
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-09
+- **Summary:** Updated SubTable default empty message to actionable Dutch text. Updated all three DriverForm caller sites with entity-specific messages. Replaced opacity-based row alternation with solid `bg-surface-secondary`.
+
+### PB-200: Centralize enum validation arrays and `MAX_NOTES_LENGTH`
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-09
+- **Summary:** Added `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, and `MAX_NOTES_LENGTH` as shared constants in `api-route-utils.ts`. Replaced 4 inline enum-array definitions and 2 inline `MAX_NOTES_LENGTH` definitions.
+
+### PB-201: `verifyRecordOwnership` helper for driver sub-record PUT/DELETE
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-09
+- **Summary:** Added `verifyRecordOwnership(model, recordId, driverId)` helper in `api-route-utils.ts`. Replaced all 6 inline ownership-check blocks in employment, functions, and roster-assignments routes.
 
 ---
 
@@ -130,7 +141,7 @@ _No items currently blocked. SMI-026 / ESC-014 was downgraded to Deferred this c
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 7 consecutive cycles. Per the previous cycle's PO note warning, the active blocker is now removed from scope tracking. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 8 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -158,7 +169,7 @@ _No items currently blocked. SMI-026 / ESC-014 was downgraded to Deferred this c
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Most visible remaining desktop integration gap. Low risk but no user demand driving it.
+- **Reason:** Most visible remaining desktop integration gap on the capacity page. Low risk but no user demand driving it.
 
 ### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
@@ -195,20 +206,6 @@ _No items currently blocked. SMI-026 / ESC-014 was downgraded to Deferred this c
 - **Status:** Deferred
 - **Reason:** No user impact. Pick up when capacity allows.
 
-### DE-REC-062: Parallelize autoCloseOpenRecords + getNextSequenceNumber
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Minor optimization. Low urgency.
-
-### DE-REC-063: weeklyHours range validation on roster assignment routes
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Trivial validation gap on a single numeric field. Near-zero risk.
-
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route
 
 - **Owner:** Delivery Agent
@@ -228,7 +225,7 @@ _No items currently blocked. SMI-026 / ESC-014 was downgraded to Deferred this c
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
-- **Reason:** Broader initiative. PB-200 takes the first increment (`MAX_NOTES_LENGTH`). Revisit if more duplicated limits surface.
+- **Reason:** Broader initiative. PB-200 took the first increment (`MAX_NOTES_LENGTH`). Revisit if more duplicated limits surface.
 
 ### PB-061: Add PerformanceEvent table cleanup mechanism (DE-REC-031)
 
@@ -267,7 +264,7 @@ _No items currently blocked. SMI-026 / ESC-014 was downgraded to Deferred this c
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-202.
+- Backlog IDs are sequential and never reused. Next available: PB-206.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
