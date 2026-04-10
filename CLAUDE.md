@@ -172,7 +172,8 @@ CapPlan aims to be a premium, modern B2B planning product — not a generic admi
 | Layout | `.page-header`, `.page-header-row`, `.page-header-context`, `.count-badge` |
 | Controls | `.control-group`, `.control-group-label` |
 | Planning | `.planning-grid`, `.status-chip-compact`, `.status-dot`, `.grid-sticky-edge` |
-| Settings | `.settings-tabs`, `.settings-tab`, `.settings-tab-badge`, `.settings-section-intro`, `.settings-section-title`, `.settings-section-desc` |
+| Tabs | `.tab-bar`, `.tab-item`, `.tab-item-badge` |
+| Settings | `.settings-section-intro`, `.settings-section-title`, `.settings-section-desc` |
 | Date input | `.date-input-wrapper`, `.date-input-native`, `.date-input-icon` |
 | Feedback | `.spinner`, `.animate-slide-in` |
 | Drivers | `.drivers-form-header` |

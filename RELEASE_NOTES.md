@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-10 — Toegankelijkheid en tabbalk-consistentie
+
+#### UX / design verbeteringen
+
+- **DayCell toegankelijkheid (PB-202):** Alle dagcellen in het planningsrooster hebben nu een `aria-label` met chauffeurnaam, datum en huidige status. Schermlezer-gebruikers krijgen hiermee zinvolle context bij elke interactieve cel. Daarnaast produceren nu alle vijf planningsstatussen een hover-tooltip — voorheen hadden 'Roostervrij' en 'Aanvullend beschikbaar' geen tooltip.
+- **Tabbalk-systeem geünificeerd (PB-203):** De handmatige inline-stijlen voor de tabbalk in het chauffeurformulier zijn vervangen door het gedeelde CSS-systeem (`.tab-bar` / `.tab-item`). De actieve tabkleur is nu consistent (brand-700) over zowel de instellingen- als de chauffeurtabs. De CSS-klassen zijn hernoemd van `settings-tabs` naar generieke namen zodat ze herbruikbaar zijn in alle contexten.
+
 ### 2026-04-09 — UX-verfijningen en validatie-consolidatie
 
 #### UX / design verbeteringen

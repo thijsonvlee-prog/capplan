@@ -111,17 +111,14 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
   return (
     <div className="bg-surface-primary p-6 rounded-lg shadow-card border border-border-subtle space-y-4">
       {/* Tabs */}
-      <div className="flex border-b border-border-default">
+      <div className="tab-bar">
         {TABS.filter((t) => !t.editOnly || isEdit).map((tab) => (
           <button
             key={tab.key}
             type="button"
+            data-active={activeTab === tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? "border-brand-600 text-brand-600"
-                : "border-transparent text-text-secondary hover:text-text-primary hover:border-border-strong"
-            }`}
+            className="tab-item"
           >
             {tab.label}
           </button>

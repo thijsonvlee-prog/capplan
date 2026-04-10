@@ -189,19 +189,19 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <nav className="settings-tabs" role="tablist" aria-label="Instellingencategorieën">
+        <nav className="tab-bar" role="tablist" aria-label="Instellingencategorieën">
           {visibleTabs.map((tab) => (
             <button
               key={tab.key}
               role="tab"
               aria-selected={activeTab === tab.key}
               data-active={activeTab === tab.key}
-              className="settings-tab"
+              className="tab-item"
               onClick={() => setActiveTab(tab.key)}
             >
               {tab.label}
               {tabCounts[tab.key] !== null && (
-                <span className="settings-tab-badge">{tabCounts[tab.key]}</span>
+                <span className="tab-item-badge">{tabCounts[tab.key]}</span>
               )}
             </button>
           ))}

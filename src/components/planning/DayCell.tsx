@@ -3,6 +3,7 @@
 import { memo, useState, useRef } from "react";
 import type { PlanningStatus, DensityLevel } from "@/domain/enums";
 import type { PlanningEntry } from "@/domain/types";
+import { STATUS_LABELS } from "@/domain/constants";
 import { StatusBadge } from "./StatusBadge";
 import { StatusSelector } from "./StatusSelector";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -17,6 +18,7 @@ const DENSITY_HEIGHT: Record<DensityLevel, string> = {
 type Props = {
   entry?: PlanningEntry;
   driverId: string;
+  driverName: string;
   date: string;
   compact?: boolean;
   baseRosterHours?: number;
@@ -30,7 +32,7 @@ const POPUP_WIDTH = 224; // w-56 = 14rem
 const POPUP_MAX_HEIGHT = 280;
 const VIEWPORT_PAD = 8;
 
-export const DayCell = memo(function DayCell({ entry, driverId, date, compact, baseRosterHours, leaveTypeMap, density = "comfortable", readOnly, onUpdate }: Props) {
+export const DayCell = memo(function DayCell({ entry, driverId, driverName, date, compact, baseRosterHours, leaveTypeMap, density = "comfortable", readOnly, onUpdate }: Props) {
   const [showSelector, setShowSelector] = useState(false);
   const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -73,9 +75,15 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
       title = entry.sickPercentage !== undefined && entry.sickPercentage > 0
         ? `Ziek (${entry.sickPercentage}% aanwezig)`
         : "Ziek (0% aanwezig)";
+    } else {
+      title = STATUS_LABELS[entry.status] || "";
     }
     if (entry.notes) title += title ? ` — ${entry.notes}` : entry.notes;
   }
+
+  // Build aria-label for screen readers
+  const statusLabel = entry ? STATUS_LABELS[entry.status] : "Geen status";
+  const ariaLabel = `${driverName}, ${date}: ${statusLabel}`;
 
   const h = DENSITY_HEIGHT[density];
 
@@ -94,6 +102,7 @@ export const DayCell = memo(function DayCell({ entry, driverId, date, compact, b
             : (readOnly ? "bg-surface-secondary/50" : "bg-surface-secondary/50 hover:bg-surface-tertiary")
         )}
         title={title || undefined}
+        aria-label={ariaLabel}
       >
         {entry ? (
           <StatusBadge status={entry.status} compact sickPercentage={entry.sickPercentage} />

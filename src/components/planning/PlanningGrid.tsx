@@ -630,6 +630,7 @@ export function PlanningGrid() {
                                 <DayCell
                                   entry={entry}
                                   driverId={driver.id}
+                                  driverName={`${driver.lastName}${driver.firstName ? `, ${driver.firstName}` : ""}`}
                                   date={date}
                                   compact={isCompact}
                                   leaveTypeMap={leaveTypeMap}

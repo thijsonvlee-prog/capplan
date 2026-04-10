@@ -27,36 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-202: DayCell accessibility — aria-labels and tooltip coverage
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Source:** EX-REC-062
-- **Problem:** `DayCell.tsx` renders a `<button>` that opens the status selector but has no `aria-label`. Screen readers read only the opaque StatusBadge content or a middle-dot character. Additionally, `title` tooltips are only generated for BASE_ROSTER, LEAVE, and SICK statuses — AVAILABLE_EXTRA and DAY_OFF produce no tooltip.
-- **Why this matters now:** Accessibility gap on the core product surface. Low risk to fix. The planning grid is the primary user interface — every interactive cell should be screen-reader friendly.
-- **Scope notes:**
-  - Add `aria-label` combining driver name, date, and current status label to the day cell button.
-  - Extend the `title` builder to cover all statuses using `STATUS_LABELS` from constants.
-  - Do NOT restructure DayCell or change its memoization. Purely additive accessibility attributes.
-- **Dependencies:** None.
-- **Definition of done:** All day cell buttons have meaningful `aria-label`. All planning statuses produce a hover tooltip. `npm run verify` passes.
-
-### PB-203: DriverForm tab bar — adopt shared settings-tabs system
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Source:** EX-REC-061
-- **Problem:** `DriverForm.tsx:114-129` uses hand-rolled inline Tailwind classes for the tab bar. The design system already defines `.settings-tabs` and `.settings-tab` in `globals.css` with the same visual contract. The DriverForm active state uses `text-brand-600` while `.settings-tab` uses `text-brand-700` — a subtle color inconsistency.
-- **Why this matters now:** Trivial effort consistency fix. Eliminates ~15 lines of inline styling and ensures tab bars look identical across settings and driver forms.
-- **Scope notes:**
-  - Replace the inline tab classes with `.settings-tabs` / `.settings-tab` and `data-active` attributes.
-  - If the "settings-" prefix is misleading when used in driver forms, consider renaming to a generic name (e.g. `.tab-bar` / `.tab-item`) — but only if the rename touches no more than 2-3 files.
-  - Do NOT change tab behavior or state management. Visual-only refactor.
-- **Dependencies:** None.
-- **Definition of done:** DriverForm uses the shared tab CSS classes. Active color matches settings tabs. `npm run verify` passes.
-
 ### PB-204: Validate `weeklyHours` range (0-168) on roster assignment POST/PUT
 
 - **Owner:** Delivery Agent
@@ -102,6 +72,20 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 ---
 
 ## Completed Recently
+
+### PB-202: DayCell accessibility — aria-labels and tooltip coverage
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-10
+- **Summary:** Added `driverName` prop to DayCell and `aria-label` combining driver name, date, and status label to every day cell button. Extended the `title` tooltip builder to cover all 5 planning statuses (previously only BASE_ROSTER, LEAVE, SICK had tooltips). Imported `STATUS_LABELS` from constants for the fallback path.
+
+### PB-203: DriverForm tab bar — adopt shared settings-tabs system
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-10
+- **Summary:** Renamed `.settings-tabs` / `.settings-tab` / `.settings-tab-badge` CSS classes to generic `.tab-bar` / `.tab-item` / `.tab-item-badge` in `globals.css`. Updated settings page and DriverForm to use the shared system. DriverForm active tab color now matches settings (brand-700 instead of brand-600). Eliminated ~15 lines of inline Tailwind styling. Updated CLAUDE.md component CSS class reference.
 
 ### PB-198: StatusSelector "Bevestigen" button — drop danger color override
 

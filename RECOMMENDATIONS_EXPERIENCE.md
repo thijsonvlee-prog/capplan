@@ -2,31 +2,28 @@
 
 ## Summary
 
-**This cycle (2026-04-09):** Experience Agent run 19. Executed both Experience Agent items from the `Ready` section: PB-198 (StatusSelector danger color override) and PB-199 (SubTable empty state + row alternation). Post-implementation fresh scan of the driver form area, StatusSelector, DayCell, and driver list page.
+**This cycle (2026-04-10):** Experience Agent run 20. Executed both Experience Agent items from the `Ready` section: PB-202 (DayCell accessibility — aria-labels and tooltip coverage) and PB-203 (DriverForm tab bar — adopt shared tab system). Post-implementation fresh scan of the planning grid, driver form, settings page, and adjacent areas.
 
 **What was improved this cycle:**
-- **StatusSelector "Bevestigen" button (PB-198):** Removed the `bg-danger-500 hover:bg-danger-600` override on the sick-percentage confirm button. The button now renders in standard brand color, preserving the danger-red-for-destructive rule defined in DESIGN.md §4.2.
-- **SubTable empty state (PB-199):** Default empty message changed from "Geen records" to an actionable Dutch fallback with next-step guidance. All three caller sites (dienstverbanden, functies, roostertoewijzingen) updated with entity-specific messages. Closes the last CLAUDE.md §6 empty-state gap in driver sub-tables.
-- **SubTable row alternation (PB-199):** Replaced `bg-surface-secondary/50` opacity trick with solid `bg-surface-secondary`, consistent with tonal layering in StamtabelManager and SkillManager.
+- **DayCell accessibility (PB-202):** Added `aria-label` to every day cell button in the planning grid, combining driver name, date, and current status label (e.g. "De Vries, Jan, 2026-04-10: Basisrooster"). Extended the `title` tooltip builder to cover all 5 planning statuses — previously AVAILABLE_EXTRA and ROSTER_FREE produced no hover tooltip. Imported `STATUS_LABELS` from constants for the fallback path.
+- **Shared tab bar system (PB-203):** Renamed `.settings-tabs` / `.settings-tab` / `.settings-tab-badge` to generic `.tab-bar` / `.tab-item` / `.tab-item-badge` in `globals.css`. Updated the settings page and DriverForm to use the shared system. DriverForm active tab color now matches settings (brand-700 instead of brand-600). Eliminated ~15 lines of inline Tailwind styling. Updated CLAUDE.md component CSS class reference table.
 
 **Current design alignment with DESIGN.md:**
-- **Overall product quality: 8/10.** Design tokens, typography hierarchy, and surface layering are comprehensive and consistently applied across all major screens.
-- **Planning grid:** Well-aligned (§7.4, §9). Toolbar in four zones, tonal row striping. StatusSelector button semantics now correct.
-- **Driver form:** Well-aligned (§7.3, §7.7). Sub-table empty states now actionable. Row alternation clean. Some minor quality gaps remain (tab system duplication, skill/license toggle color inconsistency, computed fields token choice).
+- **Overall product quality: 8/10.** Design tokens, typography hierarchy, and surface layering are comprehensive and consistently applied across all major screens. Tab bars are now unified via a shared CSS system.
+- **Planning grid:** Well-aligned (§7.4, §9). Toolbar in four zones, tonal row striping. All day cells now have aria-labels and complete tooltip coverage.
+- **Driver form:** Well-aligned (§7.3, §7.7). Tab bar now uses the shared `.tab-bar` / `.tab-item` system with consistent active color. Sub-table empty states are actionable. Row alternation is clean.
 - **Capacity page:** Well-aligned (§7.1, §7.3, §8.3). Chart tooltip/axis styling remains the gap (EX-REC-049).
-- **Settings page:** Well-aligned (§2.5, §7.1).
+- **Settings page:** Well-aligned (§2.5, §7.1). Tab system now uses the generic `.tab-bar` / `.tab-item` classes.
 - **Sidebar:** Well-aligned (§7.8).
 - **Mobile:** Well-aligned across all screens.
 
 **Where design quality is still below target:**
 - Recharts default tooltip/axis styling on capacity page (EX-REC-049).
 - RosterProfileEditor 28-day grid remains flat (EX-REC-055).
-- DriverForm tab bar duplicates `.settings-tabs` system with a slightly different active color (EX-REC-061, new).
-- DayCell lacks aria-labels and has incomplete tooltip coverage (EX-REC-062, new).
 
 ## Recommended Next Improvements
 
-_EX-REC-059 and EX-REC-060 shipped as PB-198 and PB-199 this cycle._
+_EX-REC-061 and EX-REC-062 shipped as PB-203 and PB-202 this cycle._
 
 ### EX-REC-049: Capacity chart — custom tooltip and axis styling
 
@@ -49,28 +46,6 @@ _EX-REC-059 and EX-REC-060 shipped as PB-198 and PB-199 this cycle._
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
 - **Why now:** Low-traffic screen but visible gap in settings page quality. All other settings sections are now at design system standard.
-
-### EX-REC-061: DriverForm tab bar — adopt shared settings-tabs system
-
-- **Problem:** `DriverForm.tsx:114-129` uses hand-rolled inline Tailwind classes for the tab bar (`border-b-2`, `px-4 py-2`, `border-brand-600`, etc.). The design system already defines `.settings-tabs` and `.settings-tab` in `globals.css` with the same visual contract, including `data-active` attribute support. The DriverForm active state uses `text-brand-600` while `.settings-tab` uses `text-brand-700` — a subtle color inconsistency. Adopting the shared system would eliminate ~15 lines of inline styling and ensure tab-bar consistency across all screens.
-- **Proposed improvement:** Replace the inline tab classes with `.settings-tabs` / `.settings-tab` and `data-active` attributes. Rename the CSS classes to a more generic name (e.g. `.tab-bar` / `.tab-item`) if needed, since "settings" in the name may be misleading when used in driver forms.
-- **Expected user value:** Tab bars look and behave identically across settings and driver forms. Consistent active color.
-- **Priority:** P4 Low
-- **Effort:** Trivial
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Surfaced during the fresh scan. Simple consistency fix.
-
-### EX-REC-062: DayCell accessibility — aria-labels and tooltip coverage
-
-- **Problem:** `DayCell.tsx:84-97` renders a `<button>` that opens the status selector but has no `aria-label`. Screen readers read only the opaque StatusBadge content or a middle-dot character. Additionally, `title` tooltips are only generated for BASE_ROSTER, LEAVE, and SICK statuses — other statuses (AVAILABLE_EXTRA, DAY_OFF) produce no tooltip. This means users lose hover context on those cells.
-- **Proposed improvement:** Add `aria-label` combining driver name, date, and current status label. Extend the `title` builder to cover all statuses using `STATUS_LABELS` from constants.
-- **Expected user value:** Better accessibility for screen reader users. Consistent hover tooltips across all planning statuses.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Accessibility gap on the core product surface. Low risk to fix.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -155,8 +130,6 @@ _EX-REC-059 and EX-REC-060 shipped as PB-198 and PB-199 this cycle._
 - **Mobile planning is read-only.** Planners must use desktop to make schedule changes. Monitor user demand for mobile edit capability (EX-REC-052).
 - **Recharts default styling.** The capacity chart's tooltip/axis styling is still Recharts default. Now the most visible remaining integration gap on the capacity page. See EX-REC-049.
 - **RosterProfileEditor grid.** Flat, mechanical 28-day grid with stark status colors. Below DESIGN.md standard but low-traffic screen. See EX-REC-055.
-- **DriverForm tab bar divergence.** The driver form uses a hand-rolled tab bar that is almost but not quite identical to the settings tab system. This could grow into a wider consistency issue if more tab-based views are added. See EX-REC-061.
-- **DayCell accessibility.** The planning grid's core interactive element (the day cell button) has no aria-labels and incomplete tooltips. This is the most impactful accessibility gap on the primary product surface. See EX-REC-062.
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
 
 ## Items Intentionally Not Recommended
@@ -187,10 +160,12 @@ _EX-REC-059 and EX-REC-060 shipped as PB-198 and PB-199 this cycle._
 - **Toast micro-interactions (stagger, exit):** Current slide-in is sufficient. Over-animating risks feeling unserious.
 - **CapacityKPIs card redesign:** Current cards are functional. Elevating them would require establishing a new KPI card pattern — not justified without stronger need.
 - **CapacityTable further redesign:** PB-182 brought the table to tonal layering standard. Current state is aligned with DESIGN.md §4.1 and §7.4. No further work needed.
-- **DocumentatiePage in-body title:** The release notes page relies on the header bar for its title. This is consistent with the header-bar-only pattern for pages without their own composed page-header (same as Planning). No duplication risk.
-- **SubTable "Actief" chip treatment:** The plain `text-success-600` text for active records could be upgraded to a chip badge for stronger visual signaling, but the current treatment is functional and readable. The endDate column clearly conveys the information. Elevating this is cosmetic.
-- **DriverForm skill/license toggle color unification:** Skills use success-600 and licenses use brand-600 as selected colors. While technically inconsistent, the color difference helps users distinguish the two toggle groups in the same form. Unifying could reduce scanability.
-- **DriverForm computed fields token upgrade (surface-tertiary → surface-inset):** The computed section already reads as distinct from editable fields. The surface-tertiary vs surface-inset distinction is subtle (~4 shade steps) and unlikely to improve user comprehension meaningfully.
+- **DocumentatiePage in-body title:** The release notes page relies on the header bar for its title. Consistent with the header-bar-only pattern for pages without their own composed page-header.
+- **SubTable "Actief" chip treatment:** The plain `text-success-600` text for active records could be upgraded to a chip badge for stronger visual signaling, but the current treatment is functional and readable.
+- **DriverForm skill/license toggle color unification:** Skills use success-600 and licenses use brand-600 as selected colors. While technically inconsistent, the color difference helps users distinguish the two toggle groups in the same form.
+- **DriverForm computed fields token upgrade (surface-tertiary → surface-inset):** The computed section already reads as distinct from editable fields. The surface-tertiary vs surface-inset distinction is subtle and unlikely to improve user comprehension meaningfully.
+- **DriverForm tab bar divergence:** Resolved (PB-203). Tab bars now use the shared `.tab-bar` / `.tab-item` system.
+- **DayCell accessibility gaps:** Resolved (PB-202). All day cell buttons now have aria-labels and complete tooltip coverage.
 
 ## Recommendation Rules
 

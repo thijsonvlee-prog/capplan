@@ -21,6 +21,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "10 april 2026",
+    title: "Toegankelijkheid en tabbalk-consistentie",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "DayCell toegankelijkheid (PB-202): alle dagcellen in het planningsrooster hebben nu een aria-label met chauffeurnaam, datum en huidige status. Schermlezer-gebruikers krijgen hiermee zinvolle context bij elke interactieve cel. Daarnaast produceren nu alle vijf planningsstatussen een hover-tooltip — voorheen hadden 'Roostervrij' en 'Aanvullend beschikbaar' geen tooltip.",
+          "Tabbalk-systeem geünificeerd (PB-203): de handmatige inline-stijlen voor de tabbalk in het chauffeurformulier zijn vervangen door het gedeelde CSS-systeem (.tab-bar / .tab-item). De actieve tabkleur is nu consistent (brand-700) over zowel de instellingen- als de chauffeurtabs. De CSS-klassen zijn hernoemd van settings-tabs naar generieke namen zodat ze herbruikbaar zijn in alle contexten.",
+        ],
+      },
+    ],
+  },
+  {
     date: "9 april 2026",
     title: "UX-verfijningen en validatie-consolidatie",
     groups: [
