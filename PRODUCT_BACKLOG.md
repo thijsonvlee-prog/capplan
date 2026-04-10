@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. The validation-consolidation track is fully complete (PB-196 through PB-201). Both specialist agents returned small P4 items from their fresh scans. This cycle promotes four well-scoped P4 items: DayCell accessibility improvements and DriverForm tab bar consistency (Experience), plus weeklyHours range validation and sub-record transaction parallelization (Delivery). ESC-014 (desktop homescreen) remains unmarked and deferred.
+**Current direction:** No P1/P2/P3 work outstanding. The codebase is in a clean, consistent state — both the validation-consolidation track and the accessibility/tab-bar consistency work are fully complete. This cycle promotes four well-scoped P4 items: capacity chart design integration and Manrope typographic extension (Experience), plus planning route FK parallelization and driver POST batch FK validation (Delivery). ESC-014 (desktop homescreen) remains unmarked and deferred.
 
 ## Status Definitions
 
@@ -27,7 +27,61 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-206: Capacity chart — custom tooltip and axis styling
+
+- **ID:** PB-206
+- **Title:** Capacity chart — custom tooltip and axis styling
+- **Problem / opportunity:** The Recharts AreaChart on the capacity page uses default tooltip and axis styling. After PB-182 aligned the capacity table and PB-131 brought the page to product-grade, the chart is the most visible remaining element using third-party default styling. The default tooltip feels generic compared to the rest of the product.
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** The chart is the only remaining element on the capacity page not using the design system. All surrounding elements (KPIs, table) are aligned.
+- **Scope notes:** Add a custom tooltip component with design tokens (surface-primary background, shadow-dropdown, text tokens). Style axis ticks with text-text-secondary. Refine grid line opacity. Document any hex values with token references per CLAUDE.md Recharts exception rule.
+- **Dependencies:** None.
+- **Definition of done:** Capacity chart tooltip, axis ticks, and grid lines use design tokens. No hardcoded color values without token comments. `npm run verify` passes.
+- **Implementation note:** Source: EX-REC-049.
+
+### PB-207: Extend Manrope to section titles and modal headers
+
+- **ID:** PB-207
+- **Title:** Extend Manrope to section titles and modal headers
+- **Problem / opportunity:** Manrope (`--font-display`) is applied to page titles but not to section titles or modal headers. This creates a subtle inconsistency in the typographic hierarchy. Extending it strengthens the visual hierarchy within modals and settings sections.
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Low-risk typographic refinement that affects multiple screens (modals, settings sections). Small effort with broad design coherence payoff.
+- **Scope notes:** Evaluate and apply `font-family: var(--font-display)` to modal headers and `.settings-section-title`. Verify that the change works well across all contexts where these classes are used.
+- **Dependencies:** None.
+- **Definition of done:** Modal headers and settings section titles use Manrope. Visual consistency verified across settings, driver form, and any modals. `npm run verify` passes.
+- **Implementation note:** Source: EX-REC-038.
+
+### PB-208: Parallelize independent FK validations in planning POST/bulk routes
+
+- **ID:** PB-208
+- **Title:** Parallelize independent FK validations in planning POST/bulk routes
+- **Problem / opportunity:** `POST /api/planning` and `POST /api/planning/bulk` sequentially await independent FK validation calls (scenarioId, leaveTypeId). These can run concurrently with `Promise.all()`, saving one DB round trip per request on Neon serverless.
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Exact same pattern as the just-completed PB-205. Trivial to apply consistently across planning routes.
+- **Scope notes:** Wrap independent FK validation calls in `Promise.all()` in both planning POST and bulk POST handlers. Ensure `getAllowedDepartmentIds()` result is available before any checks that depend on it.
+- **Dependencies:** None.
+- **Definition of done:** Independent FK checks in planning POST and bulk POST run concurrently. No behavioral change. `npm run verify` passes.
+- **Implementation note:** Source: DE-REC-078.
+
+### PB-209: Batch FK validation in driver POST nested records
+
+- **ID:** PB-209
+- **Title:** Batch FK validation in driver POST nested records
+- **Problem / opportunity:** `POST /api/drivers` loops over nested `employmentRecords`, `functionRecords`, and `rosterAssignments` and pushes one `validateOptionalForeignKey` promise per record per FK field. A driver with 10 function records generates 20 FK count queries. They run in parallel via `Promise.all()` so it's not N+1 over network, but collecting unique IDs per field and validating once per FK-typed field would be cleaner and use fewer DB round trips.
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Why this matters now:** Long-carried optimization with clear scope. Reduces DB round trips on driver bulk creation.
+- **Scope notes:** Collect unique IDs per model into sets, then call `validateForeignKeys([...])` once per FK-typed field instead of once per record. Preserve existing error messages and validation behavior.
+- **Dependencies:** None.
+- **Definition of done:** Driver POST nested record FK validation uses batched queries. Same validation behavior. `npm run verify` passes.
+- **Implementation note:** Source: DE-REC-074.
 
 ---
 
@@ -73,34 +127,6 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Completed:** 2026-04-10
 - **Summary:** Renamed `.settings-tabs` / `.settings-tab` / `.settings-tab-badge` CSS classes to generic `.tab-bar` / `.tab-item` / `.tab-item-badge` in `globals.css`. Updated settings page and DriverForm to use the shared system. DriverForm active tab color now matches settings (brand-700 instead of brand-600). Eliminated ~15 lines of inline Tailwind styling. Updated CLAUDE.md component CSS class reference.
 
-### PB-198: StatusSelector "Bevestigen" button — drop danger color override
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-09
-- **Summary:** Removed `bg-danger-500 hover:bg-danger-600` override from the sick-percentage confirm button. Button now renders as standard `btn-primary` in brand color.
-
-### PB-199: SubTable — actionable empty state and clean row alternation
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-09
-- **Summary:** Updated SubTable default empty message to actionable Dutch text. Updated all three DriverForm caller sites with entity-specific messages. Replaced opacity-based row alternation with solid `bg-surface-secondary`.
-
-### PB-200: Centralize enum validation arrays and `MAX_NOTES_LENGTH`
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-09
-- **Summary:** Added `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, and `MAX_NOTES_LENGTH` as shared constants in `api-route-utils.ts`. Replaced 4 inline enum-array definitions and 2 inline `MAX_NOTES_LENGTH` definitions.
-
-### PB-201: `verifyRecordOwnership` helper for driver sub-record PUT/DELETE
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-09
-- **Summary:** Added `verifyRecordOwnership(model, recordId, driverId)` helper in `api-route-utils.ts`. Replaced all 6 inline ownership-check blocks in employment, functions, and roster-assignments routes.
-
 ---
 
 ## Deferred
@@ -111,7 +137,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 8 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 9 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -134,13 +160,6 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Status:** Deferred
 - **Reason:** Low-effort personalization enhancement. Can be combined with any future mobile work cycle.
 
-### EX-REC-049: Capacity chart — custom tooltip and axis styling
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Most visible remaining desktop integration gap on the capacity page. Low risk but no user demand driving it.
-
 ### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
 - **Owner:** Experience Agent
@@ -148,26 +167,12 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Status:** Deferred
 - **Reason:** Desktop-only concern. Only relevant if narrow desktop viewport usage is reported.
 
-### EX-REC-038: Extend Manrope to section titles and modal headers
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Low-risk typographic refinement.
-
 ### EX-REC-043: Import source manager — visual mapping builder enhancement
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** Current field mapping editor is functional. Desktop-only concern.
-
-### DE-REC-074: Batch FK validation in driver POST nested records
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Cleaner code and fewer DB round trips on driver bulk creation, but `Promise.all()` already parallelizes the per-record FK calls. No user-visible impact at current volumes.
 
 ### DE-REC-070: Align client-side TARGET_ENTITIES with server-side constant
 
@@ -234,7 +239,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-206.
+- Backlog IDs are sequential and never reused. Next available: PB-210.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
