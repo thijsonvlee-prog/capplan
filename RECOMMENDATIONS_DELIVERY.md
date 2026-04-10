@@ -8,12 +8,12 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 This cycle I executed the two P4 items that were Ready in the backlog:
 
-- **PB-200 — Centralize enum validation arrays and `MAX_NOTES_LENGTH`.** Added `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, and `MAX_NOTES_LENGTH` as shared constants in `api-route-utils.ts`. Replaced 4 inline `Object.values()` definitions across planning and employment routes and 2 inline `MAX_NOTES_LENGTH` definitions. All 4 affected route files no longer import from `@/domain/enums` directly. Same error messages and status codes preserved.
-- **PB-201 — `verifyRecordOwnership` helper.** Added `verifyRecordOwnership(model, recordId, driverId)` in `api-route-utils.ts` that returns the found record or null (rather than just boolean) so DELETE handlers retain the record for audit logging. Replaced all 6 inline ownership-check blocks in employment, functions, and roster-assignments `[recordId]/route.ts` files.
+- **PB-204 — Validate `weeklyHours` range (0-168).** Added bounds check to both POST and PUT handlers in roster-assignment routes. Invalid values return 400 with Dutch error message. This completes the validation-consolidation track — all numeric fields in sub-record routes are now validated.
+- **PB-205 — Parallelize `autoCloseOpenRecords` + `getNextSequenceNumber`.** Wrapped the two independent sequential reads in `Promise.all()` inside `$transaction` blocks in all three sub-record POST handlers (employment, functions, roster-assignments). Confirmed safety: `autoCloseOpenRecords` only modifies `endDate` while `getNextSequenceNumber` reads `max(sequenceNumber)` — completely independent fields. Saves one DB round trip (~50-100ms) per sub-record creation.
 
-Both changes are pure refactors: no behavior change. `npm run verify` passes.
+Both changes pass `npm run verify` with 0 errors.
 
-After shipping, the remaining carry-over items from previous cycles are still valid. No major new consolidation opportunities surfaced. The validation-consolidation track that started with PB-196/197 is now complete — all duplicate validation patterns identified in the fresh scans have been addressed.
+The validation-consolidation track (PB-196 through PB-204) is now fully complete. The sub-record performance track (PB-205) is also resolved. All remaining recommendations below are carried-over P4 items with no urgent priority. The codebase is in a clean, consistent state.
 
 ## Recommended Next Improvements
 
@@ -42,30 +42,18 @@ After shipping, the remaining carry-over items from previous cycles are still va
 - **Suggested owner:** Delivery Agent
 - **Why now:** Low-effort shared constant extraction. Same spirit as PB-200.
 
-### DE-REC-062: Parallelize `autoCloseOpenRecords` + `getNextSequenceNumber` inside sub-record transactions (carried over)
+### DE-REC-078: Parallelize independent FK validations in planning POST/bulk routes
 
-- **Title:** Wrap independent sequential reads in `Promise.all()`
-- **Problem:** Employment / function / roster-assignment POST handlers await these two helpers sequentially inside `$transaction`; they are independent reads.
-- **Proposed improvement:** Wrap in `Promise.all()`.
-- **Expected product/technical value:** Saves one DB round trip per sub-record creation (~50-100 ms on Neon serverless).
+- **Title:** Use `Promise.all()` for independent FK checks in planning write routes
+- **Problem:** `POST /api/planning` and `POST /api/planning/bulk` await `getAllowedDepartmentIds()`, then sequentially validate scenarioId and leaveTypeId foreign keys. These FK checks are independent of each other.
+- **Proposed improvement:** Wrap the independent FK validation calls in `Promise.all()` within both planning POST and bulk POST handlers.
+- **Expected product/technical value:** Saves one DB round trip per planning entry creation. Same pattern as PB-205.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Trivial optimization. Same transaction shape, just parallel reads.
-
-### DE-REC-063: Validate `weeklyHours` range (0-168) on roster assignment POST/PUT (carried over)
-
-- **Title:** Add numeric bounds check for `weeklyHours`
-- **Problem:** `weeklyHours` stored without bounds validation. Could accept negative values or values exceeding hours in a week.
-- **Proposed improvement:** Add `if (weeklyHours != null && (weeklyHours < 0 || weeklyHours > 168))` with Dutch message.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Last remaining un-validated numeric field in sub-record routes.
+- **Why now:** Same pattern as the just-completed PB-205. Trivial to apply consistently.
 
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route (carried over)
 
@@ -140,7 +128,7 @@ After shipping, the remaining carry-over items from previous cycles are still va
 - Extending `withPerfLogging` to all routes.
 - Broad `any` type replacement.
 - Translating server-side `console.error` messages.
-- Other `.find()` calls in render paths over small arrays.
+- Other `.find()` calls in render paths over small arrays (DRIVER_COLUMNS is 8 items, scenarios is typically <10).
 - Wrap DELETE routes in transactions (theoretical race at current concurrency).
 - React.memo on settings list items / StatusBadge / StatusSelector / Header / Sidebar / ZoomSelector / CapacityTable / CapacityKPIs.
 - Add missing foreign key indexes (not bottlenecks at current volumes).
@@ -173,7 +161,7 @@ After shipping, the remaining carry-over items from previous cycles are still va
 - Batch FK validation in driver creation - partially done (skillIds), see DE-REC-074 for the nested-record extension.
 - Move roster-assignment POST `rosterProfile` fetch outside the transaction (marginal; keeping the transaction self-contained has its own readability value).
 - Rename `MAX_NOTES_LENGTH` to a more generic constant (current name is correct for the use).
-- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201. Do not re-recommend.
+- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205. Do not re-recommend.
 - Preferences `key` field length cap (keys are hardcoded strings from the frontend).
 - `useApi` cache key uses `Function.toString()` (theoretically fragile under minification; different arrow functions produce different minified strings due to URL content).
 - Import logs route sequential queries (same category as DE-REC-059).
@@ -188,13 +176,16 @@ After shipping, the remaining carry-over items from previous cycles are still va
 - Whitespace validation on driver name PUT.
 - DE-REC-058 and DE-REC-073 closed in PB-196.
 - DE-REC-075, DE-REC-076, DE-REC-077 closed in PB-200/PB-201.
+- DE-REC-062 and DE-REC-063 closed in PB-204/PB-205.
 - `ALL_PLANNING_STATUSES` vs `VALID_PLANNING_STATUSES` overlap (`constants.ts` vs `api-route-utils.ts`) — different type signatures serve different purposes: typed domain constant vs. untyped string array for request validation. Not worth merging.
+- `useApi` doFetch silently catches errors — by design; mutation invalidation is fire-and-forget to avoid blocking the UI. Failed refetches show stale data until next successful fetch.
+- Parallelize `getAllowedDepartmentIds` + FK checks in planning routes (see DE-REC-078, but getAllowedDepartmentIds result is needed before driver ownership check in some paths).
 
 ## Recommendation Rules
 
 - Recommendations are written by the Delivery Agent after reviewing the codebase and deployment behavior.
 - Each recommendation must include all required fields.
-- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-078.
+- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-079.
 - Approved recommendations are moved to `PRODUCT_BACKLOG.md` by the Product Owner Agent.
 - Rejected recommendations are moved to `Items Intentionally Not Recommended` with a brief reason.
 - This file is the only place the Delivery Agent writes recommendations. Do not scatter suggestions across other files.

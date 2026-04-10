@@ -6,6 +6,16 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-10 — Validatie en prestatieverbetering sub-records
+
+#### Betrouwbaarheid
+
+- **weeklyHours bereikvalidatie (PB-204):** Roostertoewijzing POST en PUT routes weigeren nu waarden kleiner dan 0 of groter dan 168 met een duidelijke 400-fout en Nederlandse foutmelding. Dit was het laatste ongevalideerde numerieke veld in sub-record routes.
+
+#### Prestaties
+
+- **Sub-record aanmaak versneld (PB-205):** `autoCloseOpenRecords` en `getNextSequenceNumber` draaien nu parallel (`Promise.all`) in de transacties van dienstverband-, functie- en roostertoewijzingsroutes. Bespaart één DB-roundtrip (~50-100ms) per sub-record aanmaak op Neon serverless. Zelfde transactiegedrag; de twee operaties werken op onafhankelijke velden.
+
 ### 2026-04-10 — Toegankelijkheid en tabbalk-consistentie
 
 #### UX / design verbeteringen

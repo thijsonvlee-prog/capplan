@@ -84,11 +84,11 @@ export async function POST(
     }
 
     const record = await prisma.$transaction(async (tx) => {
-      // Auto-close open-ended records
-      await autoCloseOpenRecords(tx.driverFunctionRecord, id, startDate);
-
-      // Get next sequence number
-      const nextSeq = await getNextSequenceNumber(tx.driverFunctionRecord, id);
+      // Auto-close open-ended records + get next sequence number (independent reads)
+      const [, nextSeq] = await Promise.all([
+        autoCloseOpenRecords(tx.driverFunctionRecord, id, startDate),
+        getNextSequenceNumber(tx.driverFunctionRecord, id),
+      ]);
 
       return tx.driverFunctionRecord.create({
         data: {

@@ -40,6 +40,13 @@ export async function PUT(
       return NextResponse.json({ error: dateRangeError }, { status: 400 });
     }
 
+    if (body.weeklyHours != null && (body.weeklyHours < 0 || body.weeklyHours > 168)) {
+      return NextResponse.json(
+        { error: "Wekelijkse uren moet tussen 0 en 168 liggen" },
+        { status: 400 }
+      );
+    }
+
     if (body.rosterProfileId !== undefined) {
       const fkError = await validateOptionalForeignKey(body.rosterProfileId, prisma.rosterProfile, "roosterprofiel");
       if (fkError) {

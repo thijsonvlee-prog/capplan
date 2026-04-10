@@ -27,35 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-204: Validate `weeklyHours` range (0-168) on roster assignment POST/PUT
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Source:** DE-REC-063
-- **Problem:** `weeklyHours` is stored without bounds validation on roster assignment routes. Could accept negative values or values exceeding hours in a week (168).
-- **Why this matters now:** Last remaining un-validated numeric field in sub-record routes. Defensive improvement aligned with the validation-consolidation track.
-- **Scope notes:**
-  - Add `if (weeklyHours != null && (weeklyHours < 0 || weeklyHours > 168))` with Dutch error message in both POST and PUT handlers.
-  - Same 400 response pattern as existing validation.
-  - Do NOT add validation for other fields in the same routes — keep the change minimal.
-- **Dependencies:** None.
-- **Definition of done:** Negative and >168 values are rejected with a 400 response and Dutch error message. `npm run verify` passes.
-
-### PB-205: Parallelize `autoCloseOpenRecords` + `getNextSequenceNumber` in sub-record transactions
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Source:** DE-REC-062
-- **Problem:** Employment, function, and roster-assignment POST handlers await `autoCloseOpenRecords` and `getNextSequenceNumber` sequentially inside `$transaction`. These are independent reads.
-- **Why this matters now:** Saves one DB round trip per sub-record creation (~50-100ms on Neon serverless). Same transaction shape, just parallel reads.
-- **Scope notes:**
-  - Wrap the two sequential calls in `Promise.all()` inside the existing `$transaction` blocks.
-  - Touch only the POST handlers in employment, functions, and roster-assignments.
-  - Do NOT change the transaction boundaries or the order of subsequent writes.
-- **Dependencies:** None.
-- **Definition of done:** Both helpers run in parallel inside the transaction. Same transactional behavior. `npm run verify` passes.
+_No items currently ready._
 
 ---
 
@@ -72,6 +44,20 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 ---
 
 ## Completed Recently
+
+### PB-204: Validate `weeklyHours` range (0-168) on roster assignment POST/PUT
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-10
+- **Summary:** Added bounds validation (`0 ≤ weeklyHours ≤ 168`) to both POST and PUT handlers in roster-assignment routes. Invalid values return a 400 response with Dutch error message "Wekelijkse uren moet tussen 0 en 168 liggen". Last un-validated numeric field in sub-record routes.
+
+### PB-205: Parallelize `autoCloseOpenRecords` + `getNextSequenceNumber` in sub-record transactions
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-10
+- **Summary:** Wrapped the two independent sequential reads in `Promise.all()` inside `$transaction` blocks in all three sub-record POST handlers (employment, functions, roster-assignments). Same transactional behavior; saves one DB round trip (~50-100ms) per sub-record creation.
 
 ### PB-202: DayCell accessibility — aria-labels and tooltip coverage
 

@@ -79,17 +79,24 @@ export const POST = withPerfLogging(
         return NextResponse.json({ error: dateRangeError }, { status: 400 });
       }
 
+      if (weeklyHours != null && (weeklyHours < 0 || weeklyHours > 168)) {
+        return NextResponse.json(
+          { error: "Wekelijkse uren moet tussen 0 en 168 liggen" },
+          { status: 400 }
+        );
+      }
+
       const fkError = await validateOptionalForeignKey(rosterProfileId, prisma.rosterProfile, "roosterprofiel");
       if (fkError) {
         return NextResponse.json({ error: fkError }, { status: 400 });
       }
 
       const record = await prisma.$transaction(async (tx) => {
-        // Auto-close open-ended records
-        await autoCloseOpenRecords(tx.driverRosterAssignment, driverId, startDate);
-
-        // Get next sequence number
-        const nextSeq = await getNextSequenceNumber(tx.driverRosterAssignment, driverId);
+        // Auto-close open-ended records + get next sequence number (independent reads)
+        const [, nextSeq] = await Promise.all([
+          autoCloseOpenRecords(tx.driverRosterAssignment, driverId, startDate),
+          getNextSequenceNumber(tx.driverRosterAssignment, driverId),
+        ]);
 
         const created = await tx.driverRosterAssignment.create({
           data: {

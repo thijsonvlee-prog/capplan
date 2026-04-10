@@ -22,6 +22,24 @@ export interface Release {
 export const RELEASES: Release[] = [
   {
     date: "10 april 2026",
+    title: "Validatie en prestatieverbetering sub-records",
+    groups: [
+      {
+        heading: "Betrouwbaarheid",
+        items: [
+          "weeklyHours bereikvalidatie (PB-204): roostertoewijzing POST en PUT routes weigeren nu waarden kleiner dan 0 of groter dan 168 met een duidelijke 400-fout. Laatste ongevalideerde numerieke veld in sub-record routes.",
+        ],
+      },
+      {
+        heading: "Prestaties",
+        items: [
+          "Sub-record aanmaak versneld (PB-205): autoCloseOpenRecords en getNextSequenceNumber draaien nu parallel (Promise.all) in de transacties van dienstverband-, functie- en roostertoewijzingsroutes. Bespaart één DB-roundtrip (~50-100ms) per sub-record aanmaak op Neon serverless.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "10 april 2026",
     title: "Toegankelijkheid en tabbalk-consistentie",
     groups: [
       {
