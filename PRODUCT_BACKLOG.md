@@ -27,34 +27,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-206: Capacity chart — custom tooltip and axis styling
-
-- **ID:** PB-206
-- **Title:** Capacity chart — custom tooltip and axis styling
-- **Problem / opportunity:** The Recharts AreaChart on the capacity page uses default tooltip and axis styling. After PB-182 aligned the capacity table and PB-131 brought the page to product-grade, the chart is the most visible remaining element using third-party default styling. The default tooltip feels generic compared to the rest of the product.
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** The chart is the only remaining element on the capacity page not using the design system. All surrounding elements (KPIs, table) are aligned.
-- **Scope notes:** Add a custom tooltip component with design tokens (surface-primary background, shadow-dropdown, text tokens). Style axis ticks with text-text-secondary. Refine grid line opacity. Document any hex values with token references per CLAUDE.md Recharts exception rule.
-- **Dependencies:** None.
-- **Definition of done:** Capacity chart tooltip, axis ticks, and grid lines use design tokens. No hardcoded color values without token comments. `npm run verify` passes.
-- **Implementation note:** Source: EX-REC-049.
-
-### PB-207: Extend Manrope to section titles and modal headers
-
-- **ID:** PB-207
-- **Title:** Extend Manrope to section titles and modal headers
-- **Problem / opportunity:** Manrope (`--font-display`) is applied to page titles but not to section titles or modal headers. This creates a subtle inconsistency in the typographic hierarchy. Extending it strengthens the visual hierarchy within modals and settings sections.
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** Low-risk typographic refinement that affects multiple screens (modals, settings sections). Small effort with broad design coherence payoff.
-- **Scope notes:** Evaluate and apply `font-family: var(--font-display)` to modal headers and `.settings-section-title`. Verify that the change works well across all contexts where these classes are used.
-- **Dependencies:** None.
-- **Definition of done:** Modal headers and settings section titles use Manrope. Visual consistency verified across settings, driver form, and any modals. `npm run verify` passes.
-- **Implementation note:** Source: EX-REC-038.
-
 ### PB-208: Parallelize independent FK validations in planning POST/bulk routes
 
 - **ID:** PB-208
@@ -98,6 +70,20 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 ---
 
 ## Completed Recently
+
+### PB-206: Capacity chart — custom tooltip and axis styling
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-11
+- **Summary:** Replaced the default Recharts tooltip, axis, and grid styling on `CapacityChart.tsx` with a design-system-aligned rendering. A custom `CapacityChartTooltip` renders on `surface-primary` with `shadow-dropdown`, `border-border-subtle`, and a `text-caption` uppercase date label. Each series row combines a colored dot, the series name in `text-text-secondary`, and a right-aligned tabular-nums value in `text-text-primary font-semibold`. A custom `CapacityChartLegend` replaces the stock Recharts legend with a token-colored row of small swatches and `text-text-secondary` labels. Axes use `#9ca3af` tick fill (documented as `--color-text-tertiary`), `#e2e5eb` grid and axis line (documented as `--color-border-default`), the Y-axis line is hidden, the X-axis baseline is soft, and the grid is horizontal-only with a `"2 4"` dash pattern. Tooltip hover cursor uses the same token color at 25% fill so it blends with the grid. All hex strings carry inline design-token comments per the CLAUDE.md Recharts exception rule. `npm run verify` passes.
+
+### PB-207: Extend Manrope to section titles and modal headers
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-11
+- **Summary:** Added `font-family: var(--font-display)` to both `.text-section-title` and `.settings-section-title` in `globals.css`. Aligned both classes at `0.9375rem / 600 / letter-spacing -0.01em` so modal headers (ConfirmDialog, ScenarioSelector, RosterAssigner, PlanningGrid bulk modal) and section titles on settings, capacity, drivers, and planning screens now share a single Manrope-based section-title rhythm. Previously `.text-section-title` was `0.8125rem / 600` with no Manrope — a weak mid-tier between the `.text-page-title` Manrope heading and `.text-label` Inter metadata. The new tier strengthens the three-step hierarchy (page title → section title → label) per DESIGN.md §5.2. `npm run verify` passes.
 
 ### PB-204: Validate `weeklyHours` range (0-168) on roster assignment POST/PUT
 

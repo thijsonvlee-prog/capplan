@@ -6,6 +6,18 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-11 — Capaciteitsgrafiek en typografische verfijning
+
+#### UX / design verbeteringen
+
+- **Capaciteitsgrafiek volledig in de huisstijl (PB-206):** De tooltip, asindeling en rasterlijnen van de capaciteitsgrafiek op de capaciteitspagina gebruikten standaard Recharts-styling en staken daardoor visueel af van de KPI-kaarten en de tabel eromheen. De grafiek heeft nu:
+  - Een eigen `CapacityChartTooltip` op `surface-primary` met `shadow-dropdown`, `border-border-subtle`, een datum-koptekst in `text-caption` uppercase, en per serie een gekleurde stip + seriesnaam + rechts uitgelijnde tabular-nums waarde.
+  - Een eigen `CapacityChartLegend` met kleine afgeronde staaltjes en `text-text-secondary` labels in plaats van de standaard Recharts-balk.
+  - Zachte astonen (`#9ca3af` = `--color-text-tertiary`), horizontale rasterlijnen in `#e2e5eb` (= `--color-border-default`) met een dash-patroon, een verborgen Y-aslijn, en een zachte X-basislijn.
+  - Een hover-cursor die in plaats van een hard grijs blok oplost in het raster (25% dekking op dezelfde token-kleur).
+  - Alle hex-waarden dragen een inline comment met de bijbehorende design-token (per CLAUDE.md Recharts-uitzondering).
+- **Manrope uitgebreid naar sectietitels en modaaltitels (PB-207):** De klassen `.text-section-title` en `.settings-section-title` gebruiken nu beide `font-family: var(--font-display)` (Manrope) op `0.9375rem / 600` met `letter-spacing: -0.01em`. Eerder stonden sectietitels nog in Inter op `0.8125rem`, waardoor ze visueel te dicht bij de labels en ondertitels zaten. Modaaltitels (ConfirmDialog, ScenarioSelector, RosterAssigner, het bulk-statusmodaal van het planningsrooster), instellingensecties en de sectie-koppen op de capaciteitspagina, het chauffeursscherm en elders delen nu één Manrope-gebaseerde sectietitel-ritme. Hierdoor zijn de drie typografische tiers — paginatitel → sectietitel → label — duidelijker van elkaar te onderscheiden, conform DESIGN.md §5.2. Geen gedragswijziging, alleen typografie.
+
 ### 2026-04-10 — Validatie en prestatieverbetering sub-records
 
 #### Betrouwbaarheid

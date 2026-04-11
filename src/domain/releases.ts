@@ -21,6 +21,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "11 april 2026",
+    title: "Capaciteitsgrafiek en typografische verfijning",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "Capaciteitsgrafiek volledig in de huisstijl (PB-206): de tooltip, asindeling en rasterlijnen van de capaciteitsgrafiek gebruikten standaard Recharts-styling en staken daardoor visueel af van de KPI-kaarten en de tabel eromheen. De grafiek heeft nu een eigen tooltip op surface-primary met shadow-dropdown en datum-koptekst, een legenda met tokenkleur-staaltjes, rustige horizontale rasterlijnen (border-default), zachte astonen (text-tertiary) en een hover-cursor die oplost in het raster in plaats van een hard grijs blok. Alle hex-waarden dragen nu een inline verwijzing naar het bijbehorende design-token.",
+          "Manrope uitgebreid naar sectietitels en modaaltitels (PB-207): de paginatitels gebruikten al Manrope, maar sectie-koppen en modaaltitels stonden nog in Inter op een kleinere maat. De klassen .text-section-title en .settings-section-title gebruiken nu beide Manrope op 0.9375rem / 600 met strakkere letter-spacing. Hierdoor zijn de drie tiers — paginatitel → sectietitel → label — duidelijker van elkaar te onderscheiden en voelen modals, instellingenbladen, capaciteitssecties en chauffeur-overzichten consistenter editorial aan. Geen gedragswijziging, alleen typografie.",
+        ],
+      },
+    ],
+  },
+  {
     date: "10 april 2026",
     title: "Validatie en prestatieverbetering sub-records",
     groups: [

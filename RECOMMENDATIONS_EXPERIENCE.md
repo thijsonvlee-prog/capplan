@@ -2,39 +2,42 @@
 
 ## Summary
 
-**This cycle (2026-04-10):** Experience Agent run 20. Executed both Experience Agent items from the `Ready` section: PB-202 (DayCell accessibility — aria-labels and tooltip coverage) and PB-203 (DriverForm tab bar — adopt shared tab system). Post-implementation fresh scan of the planning grid, driver form, settings page, and adjacent areas.
+**This cycle (2026-04-11):** Experience Agent run 21. Both Experience Agent items in the `Ready` section of `PRODUCT_BACKLOG.md` shipped: PB-206 (capacity chart custom tooltip + axis styling) and PB-207 (extend Manrope to section titles and modal headers). Fresh post-implementation UX scan done across the capacity page, settings, drivers, planning, and modal surfaces.
 
 **What was improved this cycle:**
-- **DayCell accessibility (PB-202):** Added `aria-label` to every day cell button in the planning grid, combining driver name, date, and current status label (e.g. "De Vries, Jan, 2026-04-10: Basisrooster"). Extended the `title` tooltip builder to cover all 5 planning statuses — previously AVAILABLE_EXTRA and ROSTER_FREE produced no hover tooltip. Imported `STATUS_LABELS` from constants for the fallback path.
-- **Shared tab bar system (PB-203):** Renamed `.settings-tabs` / `.settings-tab` / `.settings-tab-badge` to generic `.tab-bar` / `.tab-item` / `.tab-item-badge` in `globals.css`. Updated the settings page and DriverForm to use the shared system. DriverForm active tab color now matches settings (brand-700 instead of brand-600). Eliminated ~15 lines of inline Tailwind styling. Updated CLAUDE.md component CSS class reference table.
+
+- **PB-206 — Capaciteitsgrafiek volledig in de huisstijl.** Replaced Recharts' default Tooltip, Legend, axis, and grid rendering on `CapacityChart.tsx` with a design-system-aligned implementation:
+  - **Custom tooltip** (`CapacityChartTooltip`) on `surface-primary` with `shadow-dropdown`, `border-border-subtle`, a `text-caption` uppercase date label, and per-series rows combining a colored dot + series name in `text-text-secondary` + right-aligned `tabular-nums font-semibold` value in `text-text-primary`.
+  - **Custom legend** (`CapacityChartLegend`) with small rounded swatches and `text-text-secondary` labels, replacing the default Recharts legend bar.
+  - **Axes**: `tick={{ fill: "#9ca3af" /* --color-text-tertiary */ }}`, `tickLine={false}`, Y-axis `axisLine={false}`, X-axis baseline in `border-default`.
+  - **Grid**: horizontal-only with a `"2 4"` dash pattern in `border-default` — calmer than the stock `"3 3"` and aligned with DESIGN.md §6.1 ("restrained ambient … only where elevation is genuinely helpful").
+  - **Cursor**: soft `border-default` fill at 25% opacity instead of the default hard grey block, so the hover state dissolves into the grid.
+  - All hex strings carry inline design-token comments per the CLAUDE.md Recharts exception rule.
+- **PB-207 — Manrope uitgebreid naar sectie- en modaaltitels.** Added `font-family: var(--font-display)` to both `.text-section-title` and `.settings-section-title` in `globals.css`, and aligned both at `0.9375rem / 600 / letter-spacing: -0.01em`. Previously `.text-section-title` was `0.8125rem / 600` without Manrope, producing a weak mid-tier between the Manrope page title and the Inter label. The new tier strengthens the 3-step hierarchy (page title → section title → label) across all modals (ConfirmDialog, ScenarioSelector, RosterAssigner, the PlanningGrid bulk-status modal), the settings cards, the capacity page sections, the drivers page sub-sections, and the planning grid sub-section. No behavior change, typography only.
+
+**Cross-check of adjacent areas after implementation:**
+- Swept all `.tsx` files for `from "recharts"` imports — `CapacityChart.tsx` is the only chart in the product, so PB-206's polish covers the entire chart surface. No other Recharts widget needs a second pass.
+- Swept `<h1-h6>` usages. `text-page-title`, `text-section-title`, and `settings-section-title` cover nearly all structural headings. A few inline-styled headings remain (login page brand label, sidebar brand label, mobile homescreen card titles, release note entry titles) — these are deliberately small/plain and are not candidates for Manrope. No unexpected inline section titles surfaced.
+- Verified the new `.text-section-title` size bump (13 → 15px) does not crowd adjacent content in any call site — all 16 usages are standalone h2/h3 elements or label-like div headers with their own vertical rhythm (mb-2 / mb-3). No layout regressions expected.
+- Checked that the capacity chart's `ResponsiveContainer` still operates inside its fixed `.mobile-capacity-chart-container` height (250px mobile, 350px desktop). The margin adjustment is within the existing container.
 
 **Current design alignment with DESIGN.md:**
-- **Overall product quality: 8/10.** Design tokens, typography hierarchy, and surface layering are comprehensive and consistently applied across all major screens. Tab bars are now unified via a shared CSS system.
-- **Planning grid:** Well-aligned (§7.4, §9). Toolbar in four zones, tonal row striping. All day cells now have aria-labels and complete tooltip coverage.
-- **Driver form:** Well-aligned (§7.3, §7.7). Tab bar now uses the shared `.tab-bar` / `.tab-item` system with consistent active color. Sub-table empty states are actionable. Row alternation is clean.
-- **Capacity page:** Well-aligned (§7.1, §7.3, §8.3). Chart tooltip/axis styling remains the gap (EX-REC-049).
-- **Settings page:** Well-aligned (§2.5, §7.1). Tab system now uses the generic `.tab-bar` / `.tab-item` classes.
+- **Overall product quality: 8.5/10.** The capacity page is now fully design-system integrated end-to-end (KPIs → chart → table). Section-title typography is uniform. The remaining gaps are narrow and well-known.
+- **Planning grid:** Well-aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full aria-label coverage, shared tab system on DriverForm.
+- **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart tooltip/legend/axis/grid now use design tokens.
+- **Settings page:** Well-aligned (§2.5, §7.1). Section titles now Manrope.
+- **Drivers page:** Well-aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar.
+- **Modals:** Well-aligned (§7.3). All modal headers now use Manrope section-title typography.
 - **Sidebar:** Well-aligned (§7.8).
-- **Mobile:** Well-aligned across all screens.
+- **Mobile:** Well-aligned.
 
 **Where design quality is still below target:**
-- Recharts default tooltip/axis styling on capacity page (EX-REC-049).
-- RosterProfileEditor 28-day grid remains flat (EX-REC-055).
+- RosterProfileEditor 28-day grid is still flat and mechanical (EX-REC-055, already in Deferred).
+- StamtabelManager card headers visually distinct from the new larger section-title tier — see EX-REC-063 below for a tiny follow-up scan.
 
 ## Recommended Next Improvements
 
-_EX-REC-061 and EX-REC-062 shipped as PB-203 and PB-202 this cycle._
-
-### EX-REC-049: Capacity chart — custom tooltip and axis styling
-
-- **Problem:** The Recharts AreaChart uses default tooltip and axis styling. The default Recharts tooltip feels generic compared to the rest of the product-grade capacity page. The CartesianGrid uses a plain dashed pattern. Now that both the KPIs above and the table below use the design system consistently, the chart is the most visible remaining gap on this screen.
-- **Proposed improvement:** Add a custom tooltip component with the app's design tokens (surface-primary background, shadow-dropdown, text tokens). Style axis ticks with text-text-secondary color. Refine grid line opacity.
-- **Expected user value:** The chart feels fully integrated with the design system instead of an embedded third-party widget.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** After PB-182 the capacity table is aligned. The chart is now the only element on the capacity page that still uses default third-party styling.
+_EX-REC-049 and EX-REC-038 shipped this cycle as PB-206 and PB-207 and are recorded in the 11 april 2026 release notes entry._
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -45,7 +48,18 @@ _EX-REC-061 and EX-REC-062 shipped as PB-203 and PB-202 this cycle._
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Low-traffic screen but visible gap in settings page quality. All other settings sections are now at design system standard.
+- **Why now:** With EX-REC-049 shipped, this is the most visible remaining screen-level gap against DESIGN.md. Low traffic but the last "generic admin table" surface in the product.
+
+### EX-REC-063: SubTable "Actief" marker — chip treatment instead of inline text (new)
+
+- **Problem:** `src/components/drivers/SubTable.tsx:93` renders the active record indicator as plain `text-success-600 text-xs font-medium` text ("Actief") in the Einddatum column. Now that PB-207 has lifted the section-title hierarchy and PB-199 has cleaned up the empty state and row layering, this plain-text marker is the weakest visual element left in the driver form's sub-tables. A small chip/badge would make the active row instantly scannable without over-coloring the table.
+- **Proposed improvement:** Wrap the "Actief" label in a compact success-tone chip (`inline-flex items-center px-1.5 py-0.5 rounded-full bg-success-100 text-success-700 text-[0.6875rem] font-medium uppercase tracking-wide`), and keep the `bg-success-50` row highlight unchanged. One visual change, zero layout impact.
+- **Expected user value:** Driver form sub-tables scan faster — the active row is signaled both by tonal row highlight and by a compact chip in the same row, matching the chip pattern already used in the planning grid.
+- **Priority:** P4 Low
+- **Effort:** Trivial (single JSX edit)
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Natural follow-through on the PB-199 SubTable cleanup. Visible in every driver edit flow. Low risk.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -68,17 +82,6 @@ _EX-REC-061 and EX-REC-062 shipped as PB-203 and PB-202 this cycle._
 - **Dependencies:** PB-169 (completed)
 - **Suggested owner:** Experience Agent
 - **Why now:** Low effort enhancement that could be combined with any future mobile work.
-
-### EX-REC-038: Extend Manrope to section titles and modal headers
-
-- **Problem:** Manrope is applied to page titles but not to section titles or modal headers. Subtle inconsistency in typographic hierarchy.
-- **Proposed improvement:** Evaluate applying `font-family: var(--font-display)` to modal headers and `.settings-section-title`.
-- **Expected user value:** Stronger visual hierarchy within modals and settings sections.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Low-risk typographic refinement.
 
 ### EX-REC-048: Planning grid toolbar — responsive collapse for narrow viewports
 
@@ -126,10 +129,11 @@ _EX-REC-061 and EX-REC-062 shipped as PB-203 and PB-202 this cycle._
 
 ## Risks / Watch-outs
 
-- **Header title source coupling.** The duplicate-title fix introduces an exception set (`DESKTOP_PAGES_WITH_OWN_TITLE`) in `Header.tsx`. Any future page that adds its own composed page-header must also be added to that set, otherwise the title will duplicate again.
-- **Mobile planning is read-only.** Planners must use desktop to make schedule changes. Monitor user demand for mobile edit capability (EX-REC-052).
-- **Recharts default styling.** The capacity chart's tooltip/axis styling is still Recharts default. Now the most visible remaining integration gap on the capacity page. See EX-REC-049.
-- **RosterProfileEditor grid.** Flat, mechanical 28-day grid with stark status colors. Below DESIGN.md standard but low-traffic screen. See EX-REC-055.
+- **Section title size bump.** PB-207 lifted `.text-section-title` from 0.8125rem (13px) to 0.9375rem (15px). All 16 call sites were verified, but any future caller that embeds the class in a tight horizontal layout should double-check the extra height does not push adjacent content. Mitigation: the class comments in `globals.css` now document the intended hierarchy tier.
+- **Recharts hex coupling.** `CapacityChart.tsx` hardcodes four hex values (`#9ca3af`, `#4b5563`, `#e2e5eb`) that mirror design tokens. If any of `--color-text-tertiary`, `--color-text-secondary`, or `--color-border-default` changes in `globals.css`, the inline hex strings must be updated in the same commit. Inline comments document the token binding, but there is no automatic guard.
+- **Custom chart tooltip has no dark-mode story.** The tooltip uses `surface-primary` classes directly, which are currently defined as `#ffffff`. If dark mode is ever introduced, the tooltip will inherit automatically, but the Recharts-side hex strings will not. Out of scope for now.
+- **Mobile planning is read-only.** Monitor user demand for edit capability (EX-REC-052).
+- **RosterProfileEditor grid.** Flat, mechanical 28-day grid. See EX-REC-055.
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
 
 ## Items Intentionally Not Recommended
@@ -149,23 +153,28 @@ _EX-REC-061 and EX-REC-062 shipped as PB-203 and PB-202 this cycle._
 - **FormField wrapper component:** Reduces repetition but adds abstraction risk.
 - **Skeleton loaders:** Spinner pattern works. Skeleton loaders add complexity without strong user demand.
 - **Status legend popover collapse:** Inline legend provides constant reference.
-- **Capacity page structural redesign:** PB-131 brought the page to product-grade quality. PB-182 further aligned the table.
-- **Broad StamtabelManager No-Line refactor:** Borders serve usability in the card header/form. Row area now uses tonal layering (PB-180).
+- **Capacity page structural redesign:** PB-131 brought the page to product-grade quality. PB-182 aligned the table. PB-206 aligned the chart. The page is now fully integrated end-to-end.
+- **Broad StamtabelManager No-Line refactor:** Borders serve usability in the card header/form. Row area uses tonal layering (PB-180).
 - **Full mobile-first redesign of all screens:** ESC-013 decided Option B. Only key screens need mobile optimization.
 - **Mobile planning edit in v1:** Deliberately deferred to v2. Read-only flow validated first.
 - **Mobile homescreen route rename:** `/planning` is functionally clean for both homescreen and planning.
-- **Mobile capacity scenario compare:** Too complex for small screens. Desktop-only is appropriate until user demand exists.
-- **Mobile drivers page visual refresh:** Completed (PB-175). No further work needed.
+- **Mobile capacity scenario compare:** Too complex for small screens.
+- **Mobile drivers page visual refresh:** Completed (PB-175).
 - **Form validation entrance animation:** Minor polish. Current inline error display is functional and clear.
 - **Toast micro-interactions (stagger, exit):** Current slide-in is sufficient. Over-animating risks feeling unserious.
-- **CapacityKPIs card redesign:** Current cards are functional. Elevating them would require establishing a new KPI card pattern — not justified without stronger need.
-- **CapacityTable further redesign:** PB-182 brought the table to tonal layering standard. Current state is aligned with DESIGN.md §4.1 and §7.4. No further work needed.
-- **DocumentatiePage in-body title:** The release notes page relies on the header bar for its title. Consistent with the header-bar-only pattern for pages without their own composed page-header.
-- **SubTable "Actief" chip treatment:** The plain `text-success-600` text for active records could be upgraded to a chip badge for stronger visual signaling, but the current treatment is functional and readable.
-- **DriverForm skill/license toggle color unification:** Skills use success-600 and licenses use brand-600 as selected colors. While technically inconsistent, the color difference helps users distinguish the two toggle groups in the same form.
-- **DriverForm computed fields token upgrade (surface-tertiary → surface-inset):** The computed section already reads as distinct from editable fields. The surface-tertiary vs surface-inset distinction is subtle and unlikely to improve user comprehension meaningfully.
-- **DriverForm tab bar divergence:** Resolved (PB-203). Tab bars now use the shared `.tab-bar` / `.tab-item` system.
-- **DayCell accessibility gaps:** Resolved (PB-202). All day cell buttons now have aria-labels and complete tooltip coverage.
+- **CapacityKPIs card redesign:** Current cards are functional.
+- **CapacityTable further redesign:** PB-182 brought the table to tonal layering standard.
+- **DocumentatiePage in-body title:** The release notes page relies on the header bar for its title.
+- **DriverForm skill/license toggle color unification:** Skills use success-600 and licenses use brand-600. The color difference helps users distinguish the two toggle groups in the same form.
+- **DriverForm computed fields token upgrade (surface-tertiary → surface-inset):** The computed section already reads as distinct from editable fields. Token distinction is subtle.
+- **Manrope on sidebar brand label or mobile homescreen card titles:** These are intentionally small/plain Inter labels. Switching to Manrope would add weight without improving legibility at small sizes.
+- **Capacity chart series color recoloration:** The status chart colors are intentionally semantically stable (green for base/extra, yellow for leave, red for sick). Changing them would break a system-wide convention.
+- **Single-file chart tooltip extraction:** The custom tooltip and legend are local to `CapacityChart.tsx` — they are the only chart in the product and do not need to be extracted into a reusable module yet.
+- **DriverForm tab bar divergence:** Resolved (PB-203).
+- **DayCell accessibility gaps:** Resolved (PB-202).
+- **SubTable default empty state:** Resolved (PB-199).
+- **StatusSelector danger color override:** Resolved (PB-198).
+- **Desktop duplicate page title:** Resolved (EX-REC-057, 2026-04-08).
 
 ## Recommendation Rules
 
