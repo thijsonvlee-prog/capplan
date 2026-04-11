@@ -44,6 +44,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 - **PO note (2026-04-07):** Still unmarked after 6 cycles. SMI-026 remains blocked. If no choice is made next cycle the Product Owner Agent will consider downgrading the blocker to Deferred and removing it from active scope tracking until the Scrum Master revisits it.
 - **PO note (2026-04-08):** 7 cycles unmarked. SMI-026 has been moved from `Blocked / Needs Decision` to the `Deferred` section of `PRODUCT_BACKLOG.md`. This escalation stays Open so the decision remains visible for future cycles — as soon as an option is marked with `(X)`, the Product Owner Agent will translate it back into active backlog items and re-activate SMI-026.
 - **PO note (2026-04-09):** 8 cycles unmarked. Item remains Deferred. No further PO notes will be added until the Scrum Master marks a choice.
+- **PO note (2026-04-11):** 10 cycles unmarked. Item remains Deferred. Keeping this note brief — the escalation will be revived the moment any option is marked with `(X)`.
 
 ---
 

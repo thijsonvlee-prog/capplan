@@ -37,6 +37,7 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **PO note (2026-04-08):** ESC-014 still unmarked after 7 cycles. Per the warning in the 2026-04-07 PO note, the active blocker has been removed from scope tracking and moved to the Deferred section of `PRODUCT_BACKLOG.md`. ESC-014 remains Open — the Scrum Master can revive this initiative at any time by placing `(X)` next to one of the four options, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 - **PO note (2026-04-09):** ESC-014 unmarked for 8 cycles. Item remains Deferred. No further action until the Scrum Master marks a choice.
 - **PO note (2026-04-10):** ESC-014 unmarked for 9 cycles. Item remains Deferred. Four new P4 items promoted (PB-206 through PB-209) from agent recommendations. No SM input to process.
+- **PO note (2026-04-11):** ESC-014 unmarked for 10 cycles. Item remains Deferred. PB-206..PB-209 all shipped in this cycle. Two new P4 close-out items promoted for next cycle (PB-210, PB-211). No SM input to process.
 
 ## Closed Inputs
 
