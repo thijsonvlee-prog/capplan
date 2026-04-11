@@ -76,12 +76,14 @@ export const POST = withPerfLogging(
 
       const resolvedScenarioId = resolveScenarioId(scenarioId);
 
-      const scenarioError = await validateOptionalForeignKey(resolvedScenarioId, prisma.scenario, "scenario");
+      // FK validations are independent — run concurrently to save one round trip on Neon.
+      const [scenarioError, fkError] = await Promise.all([
+        validateOptionalForeignKey(resolvedScenarioId, prisma.scenario, "scenario"),
+        validateOptionalForeignKey(leaveTypeId, prisma.leaveType, "verloftype"),
+      ]);
       if (scenarioError) {
         return NextResponse.json({ error: scenarioError }, { status: 400 });
       }
-
-      const fkError = await validateOptionalForeignKey(leaveTypeId, prisma.leaveType, "verloftype");
       if (fkError) {
         return NextResponse.json({ error: fkError }, { status: 400 });
       }

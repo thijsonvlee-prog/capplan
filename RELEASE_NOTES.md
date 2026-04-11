@@ -6,6 +6,13 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-11 — FK-validatie versneld op planning- en chauffeurroutes
+
+#### Prestaties
+
+- **Planning-routes parallelle FK-validatie (PB-208):** `POST /api/planning` en `POST /api/planning/bulk` controleren `scenarioId` en `leaveTypeId` nu gelijktijdig via `Promise.all()` in plaats van sequentieel. Bespaart één DB-roundtrip per planning-actie op Neon serverless. Zelfde gedrag en zelfde foutmeldingen.
+- **Batch FK-validatie bij chauffeur aanmaken (PB-209):** `POST /api/drivers` verzamelt nu unieke IDs per FK-veld (werkgevers, locaties, afdelingen, roosterprofielen) via een kleine `collectUnique()`-helper en roept `validateForeignKeys()` één keer per veld aan, in plaats van één `validateOptionalForeignKey()` per genest record. Een chauffeur met tien functie-records levert nu maximaal twee count-queries op in plaats van twintig. Zelfde validatiegedrag; foutmeldingen gebruiken nu de meervoudsvorm ("Eén of meer opgegeven locaties bestaan niet").
+
 ### 2026-04-11 — Capaciteitsgrafiek en typografische verfijning
 
 #### UX / design verbeteringen

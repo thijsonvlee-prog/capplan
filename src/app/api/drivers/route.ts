@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateOptionalForeignKey, validateMaxLengths, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateMaxLengths, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export const GET = withPerfLogging(
@@ -111,26 +111,39 @@ export const POST = withPerfLogging(
       return NextResponse.json({ error: lengthError }, { status: 400 });
     }
 
-    // Validate all FK references in nested records
+    // Validate all FK references in nested records.
+    // Collect unique IDs per FK-typed field so each field is validated with a single
+    // batched count query instead of one per nested record.
+    const collectUnique = (records: any[] | undefined, field: string): string[] => {
+      if (!records?.length) return [];
+      const ids = new Set<string>();
+      for (const r of records) {
+        const value = r?.[field];
+        if (typeof value === "string" && value) ids.add(value);
+      }
+      return Array.from(ids);
+    };
+
+    const employerIds = collectUnique(employmentRecords, "employerId");
+    const locationIds = collectUnique(functionRecords, "locationId");
+    const departmentIds = collectUnique(functionRecords, "departmentId");
+    const rosterProfileIds = collectUnique(rosterAssignments, "rosterProfileId");
+
     const fkChecks: Promise<string | null>[] = [];
     if (skillIds?.length) {
       fkChecks.push(validateForeignKeys([{ ids: skillIds, model: prisma.skill, label: "competenties" }]));
     }
-    if (employmentRecords?.length) {
-      for (const r of employmentRecords) {
-        if (r.employerId) fkChecks.push(validateOptionalForeignKey(r.employerId, prisma.employer, "werkgever"));
-      }
+    if (employerIds.length > 0) {
+      fkChecks.push(validateForeignKeys([{ ids: employerIds, model: prisma.employer, label: "werkgevers" }]));
     }
-    if (functionRecords?.length) {
-      for (const r of functionRecords) {
-        if (r.locationId) fkChecks.push(validateOptionalForeignKey(r.locationId, prisma.location, "locatie"));
-        if (r.departmentId) fkChecks.push(validateOptionalForeignKey(r.departmentId, prisma.department, "afdeling"));
-      }
+    if (locationIds.length > 0) {
+      fkChecks.push(validateForeignKeys([{ ids: locationIds, model: prisma.location, label: "locaties" }]));
     }
-    if (rosterAssignments?.length) {
-      for (const r of rosterAssignments) {
-        if (r.rosterProfileId) fkChecks.push(validateOptionalForeignKey(r.rosterProfileId, prisma.rosterProfile, "roosterprofiel"));
-      }
+    if (departmentIds.length > 0) {
+      fkChecks.push(validateForeignKeys([{ ids: departmentIds, model: prisma.department, label: "afdelingen" }]));
+    }
+    if (rosterProfileIds.length > 0) {
+      fkChecks.push(validateForeignKeys([{ ids: rosterProfileIds, model: prisma.rosterProfile, label: "roosterprofielen" }]));
     }
     if (fkChecks.length > 0) {
       const fkErrors = await Promise.all(fkChecks);

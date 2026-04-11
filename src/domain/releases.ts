@@ -22,6 +22,19 @@ export interface Release {
 export const RELEASES: Release[] = [
   {
     date: "11 april 2026",
+    title: "FK-validatie versneld op planning- en chauffeurroutes",
+    groups: [
+      {
+        heading: "Prestaties",
+        items: [
+          "Planning-routes parallelle FK-validatie (PB-208): POST /api/planning en POST /api/planning/bulk controleren scenarioId en leaveTypeId nu gelijktijdig via Promise.all in plaats van sequentieel. Bespaart één DB-roundtrip per planning-actie op Neon serverless. Zelfde gedrag en zelfde foutmeldingen.",
+          "Batch FK-validatie bij chauffeur aanmaken (PB-209): POST /api/drivers verzamelt nu unieke IDs per FK-veld (werkgevers, locaties, afdelingen, roosterprofielen) en roept validateForeignKeys één keer per veld aan, in plaats van één validateOptionalForeignKey per genest record. Een chauffeur met tien functie-records levert nu maximaal twee count-queries op in plaats van twintig.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "11 april 2026",
     title: "Capaciteitsgrafiek en typografische verfijning",
     groups: [
       {

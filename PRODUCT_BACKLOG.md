@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. The codebase is in a clean, consistent state — both the validation-consolidation track and the accessibility/tab-bar consistency work are fully complete. This cycle promotes four well-scoped P4 items: capacity chart design integration and Manrope typographic extension (Experience), plus planning route FK parallelization and driver POST batch FK validation (Delivery). ESC-014 (desktop homescreen) remains unmarked and deferred.
+**Current direction:** No P1/P2/P3 work outstanding. The codebase is in a clean, consistent state. All four P4 items promoted for this cycle have shipped: PB-206 (capacity chart design integration) and PB-207 (Manrope typographic extension) from Experience, PB-208 (planning route FK parallelization) and PB-209 (driver POST batch FK validation) from Delivery. No items currently Ready. ESC-014 (desktop homescreen) remains unmarked and deferred.
 
 ## Status Definitions
 
@@ -27,33 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-208: Parallelize independent FK validations in planning POST/bulk routes
-
-- **ID:** PB-208
-- **Title:** Parallelize independent FK validations in planning POST/bulk routes
-- **Problem / opportunity:** `POST /api/planning` and `POST /api/planning/bulk` sequentially await independent FK validation calls (scenarioId, leaveTypeId). These can run concurrently with `Promise.all()`, saving one DB round trip per request on Neon serverless.
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** Exact same pattern as the just-completed PB-205. Trivial to apply consistently across planning routes.
-- **Scope notes:** Wrap independent FK validation calls in `Promise.all()` in both planning POST and bulk POST handlers. Ensure `getAllowedDepartmentIds()` result is available before any checks that depend on it.
-- **Dependencies:** None.
-- **Definition of done:** Independent FK checks in planning POST and bulk POST run concurrently. No behavioral change. `npm run verify` passes.
-- **Implementation note:** Source: DE-REC-078.
-
-### PB-209: Batch FK validation in driver POST nested records
-
-- **ID:** PB-209
-- **Title:** Batch FK validation in driver POST nested records
-- **Problem / opportunity:** `POST /api/drivers` loops over nested `employmentRecords`, `functionRecords`, and `rosterAssignments` and pushes one `validateOptionalForeignKey` promise per record per FK field. A driver with 10 function records generates 20 FK count queries. They run in parallel via `Promise.all()` so it's not N+1 over network, but collecting unique IDs per field and validating once per FK-typed field would be cleaner and use fewer DB round trips.
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Why this matters now:** Long-carried optimization with clear scope. Reduces DB round trips on driver bulk creation.
-- **Scope notes:** Collect unique IDs per model into sets, then call `validateForeignKeys([...])` once per FK-typed field instead of once per record. Preserve existing error messages and validation behavior.
-- **Dependencies:** None.
-- **Definition of done:** Driver POST nested record FK validation uses batched queries. Same validation behavior. `npm run verify` passes.
-- **Implementation note:** Source: DE-REC-074.
+_No items currently Ready. The four P4 items from the previous cycle (PB-206, PB-207, PB-208, PB-209) have all shipped. Awaiting new recommendations from `RECOMMENDATIONS_EXPERIENCE.md` and `RECOMMENDATIONS_DELIVERY.md`._
 
 ---
 
@@ -70,6 +44,20 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 ---
 
 ## Completed Recently
+
+### PB-208: Parallelize independent FK validations in planning POST/bulk routes
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-11
+- **Summary:** Wrapped the independent `validateOptionalForeignKey` calls for `scenarioId` and `leaveTypeId` in `Promise.all()` in both `POST /api/planning` and `POST /api/planning/bulk` handlers. Saves one DB round trip per planning entry creation on Neon serverless. No behavioral change; the error branches still run in declared order so the same error is returned when multiple FKs are invalid.
+
+### PB-209: Batch FK validation in driver POST nested records
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-11
+- **Summary:** `POST /api/drivers` now collects unique FK IDs per field (employerId, locationId, departmentId, rosterProfileId) via a shared `collectUnique()` helper and runs a single `validateForeignKeys()` check per FK-typed field instead of one `validateOptionalForeignKey()` per nested record. A driver with 10 function records now issues at most 1 location + 1 department count query instead of 20. Labels were updated to plural forms (werkgevers, locaties, afdelingen, roosterprofielen) to fit the batched `validateForeignKeys` error template. The unused `validateOptionalForeignKey` import was removed from the route.
 
 ### PB-206: Capacity chart — custom tooltip and axis styling
 
@@ -98,20 +86,6 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Owner:** Delivery Agent
 - **Completed:** 2026-04-10
 - **Summary:** Wrapped the two independent sequential reads in `Promise.all()` inside `$transaction` blocks in all three sub-record POST handlers (employment, functions, roster-assignments). Same transactional behavior; saves one DB round trip (~50-100ms) per sub-record creation.
-
-### PB-202: DayCell accessibility — aria-labels and tooltip coverage
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-10
-- **Summary:** Added `driverName` prop to DayCell and `aria-label` combining driver name, date, and status label to every day cell button. Extended the `title` tooltip builder to cover all 5 planning statuses (previously only BASE_ROSTER, LEAVE, SICK had tooltips). Imported `STATUS_LABELS` from constants for the fallback path.
-
-### PB-203: DriverForm tab bar — adopt shared settings-tabs system
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-10
-- **Summary:** Renamed `.settings-tabs` / `.settings-tab` / `.settings-tab-badge` CSS classes to generic `.tab-bar` / `.tab-item` / `.tab-item-badge` in `globals.css`. Updated settings page and DriverForm to use the shared system. DriverForm active tab color now matches settings (brand-700 instead of brand-600). Eliminated ~15 lines of inline Tailwind styling. Updated CLAUDE.md component CSS class reference.
 
 ---
 

@@ -6,83 +6,82 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle I executed the two P4 items that were Ready in the backlog:
+This cycle I executed the two Delivery items that were Ready in the backlog:
 
-- **PB-204 — Validate `weeklyHours` range (0-168).** Added bounds check to both POST and PUT handlers in roster-assignment routes. Invalid values return 400 with Dutch error message. This completes the validation-consolidation track — all numeric fields in sub-record routes are now validated.
-- **PB-205 — Parallelize `autoCloseOpenRecords` + `getNextSequenceNumber`.** Wrapped the two independent sequential reads in `Promise.all()` inside `$transaction` blocks in all three sub-record POST handlers (employment, functions, roster-assignments). Confirmed safety: `autoCloseOpenRecords` only modifies `endDate` while `getNextSequenceNumber` reads `max(sequenceNumber)` — completely independent fields. Saves one DB round trip (~50-100ms) per sub-record creation.
+- **PB-208 — Parallelize independent FK validations in planning POST/bulk routes.** Wrapped the `scenarioId` and `leaveTypeId` `validateOptionalForeignKey` calls in `Promise.all()` in both `POST /api/planning` and `POST /api/planning/bulk`. Same pattern as PB-205. Saves one DB round trip per planning entry creation on Neon serverless. Error branches still run in declared order, preserving the exact same error for multi-FK-failure cases.
+- **PB-209 — Batch FK validation in driver POST nested records.** `POST /api/drivers` now collects unique FK IDs per field via a small `collectUnique()` helper and runs one batched `validateForeignKeys()` per FK-typed field. A driver with 10 nested function records drops from 20 individual `count()` queries to 2 batched ones (plus whatever the other fields need). Labels switched to plural forms to fit the batched error template ("Eén of meer opgegeven locaties bestaan niet"). The unused `validateOptionalForeignKey` import was removed from `drivers/route.ts`.
 
-Both changes pass `npm run verify` with 0 errors.
+Both changes pass `npm run verify` with 0 errors and 0 new warnings.
 
-The validation-consolidation track (PB-196 through PB-204) is now fully complete. The sub-record performance track (PB-205) is also resolved. All remaining recommendations below are carried-over P4 items with no urgent priority. The codebase is in a clean, consistent state.
+With PB-208 and PB-209 done, the parallelization-and-batching track on the primary write paths is effectively complete. The codebase is in a clean, consistent state. All remaining items below are carry-over P4 hygiene/perf improvements or newly-surfaced minor opportunities.
 
 ## Recommended Next Improvements
 
-### DE-REC-074: Batch FK validation in driver POST nested records (carried over)
+### DE-REC-079: Parallelize FK checks inside `validateForeignKeys`
 
-- **Title:** Collect unique FK IDs per field and validate in bulk
-- **Problem:** `POST /api/drivers` loops over nested `employmentRecords`, `functionRecords`, and `rosterAssignments` and pushes one `validateOptionalForeignKey` promise per record per FK field. A driver with 10 function records generates 20 FK count queries. They run in parallel via `Promise.all()` so it's not an N+1 over network, but it does flood the DB with identical per-id count calls when 3-5 batched queries would suffice.
-- **Proposed improvement:** Collect unique IDs per model into sets, then call `validateForeignKeys([...])` once per FK-typed field instead of once per record.
-- **Expected product/technical value:** Fewer DB round trips on driver bulk creation. Cleaner code.
+- **Title:** Run batched FK checks concurrently inside the helper
+- **Problem:** After PB-209, a driver create with employment + function + roster records can push 3–5 entries into the `fkChecks` Promise array. The outer `Promise.all(fkChecks)` runs these entries in parallel, but `validateForeignKeys([...])` itself still iterates its internal `checks` array sequentially with `for ... await`. So if the caller passes multiple check specs in one call (as `drivers/[id]/route.ts` already does for skills, and would naturally do for combined FK specs), each count query adds a serial round trip.
+- **Proposed improvement:** Replace the `for` loop in `validateForeignKeys` with `Promise.all(checks.map(...))`. Keep the "first non-null wins" semantics by using `.find()` on the resolved results. Return the same Dutch error messages.
+- **Expected product/technical value:** One round trip regardless of how many check specs are passed. Future callers can bundle checks without paying a serial cost. Tiny, self-contained refactor.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Straightforward optimization on the driver creation path. Low risk, clear payoff.
+- **Why now:** Natural close-out of the PB-208/PB-209 parallelization work — if the batched helper is going to be the standard, it should be internally parallel.
+
+### DE-REC-074: Carry forward — apply same batching to driver PUT path
+
+- **Title:** Extend unique-ID batching to driver update path if nested FK writes are added
+- **Problem:** The PUT handler in `src/app/api/drivers/[id]/route.ts` currently only validates `skillIds` via `validateForeignKeys`. It does not touch employment/function/roster records directly (those use dedicated sub-record routes), so no fix is needed today. But if the update path is ever extended to accept nested record changes in one call, the same `collectUnique()` pattern should be applied.
+- **Proposed improvement:** Documentation reminder only — no code change now. If scope changes in a future item, copy the `collectUnique()` helper (or promote it to `api-route-utils.ts`) before extending the PUT payload.
+- **Priority:** P4 Low (documentation/reminder)
+- **Effort:** None (monitor only)
+- **Risk:** N/A
+- **Dependencies:** Depends on future scope change
+- **Suggested owner:** Delivery Agent
+- **Why now:** Keeping the parallelization rationale visible so it isn't lost when future features touch driver writes.
 
 ### DE-REC-070: Align client-side `TARGET_ENTITIES` with server-side `VALID_TARGET_ENTITIES` (carried over)
 
 - **Title:** Deduplicate entity list between frontend and backend
-- **Problem:** `ImportSourceManager.tsx` defines its own `TARGET_ENTITIES` array while `api-import-helpers.ts` exports `VALID_TARGET_ENTITIES` separately. Silent drift risk.
-- **Proposed improvement:** Export a typed `TARGET_ENTITY_OPTIONS` (value + Dutch label) from a shared location and have both sides consume it, or at minimum add a code comment + runtime assertion.
+- **Problem:** `ImportSourceManager.tsx` defines its own `TARGET_ENTITIES` array while `api-import-helpers.ts` exports `VALID_TARGET_ENTITIES` separately. Silent drift risk — adding a new target entity on one side won't surface on the other until runtime.
+- **Proposed improvement:** Export a typed `TARGET_ENTITY_OPTIONS` (value + Dutch label) from a shared `src/domain/` location and have both sides consume it. Alternatively, keep `VALID_TARGET_ENTITIES` as the single source and have the UI derive labels from a small `labels.ts` map.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Low-effort shared constant extraction. Same spirit as PB-200.
-
-### DE-REC-078: Parallelize independent FK validations in planning POST/bulk routes
-
-- **Title:** Use `Promise.all()` for independent FK checks in planning write routes
-- **Problem:** `POST /api/planning` and `POST /api/planning/bulk` await `getAllowedDepartmentIds()`, then sequentially validate scenarioId and leaveTypeId foreign keys. These FK checks are independent of each other.
-- **Proposed improvement:** Wrap the independent FK validation calls in `Promise.all()` within both planning POST and bulk POST handlers.
-- **Expected product/technical value:** Saves one DB round trip per planning entry creation. Same pattern as PB-205.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Same pattern as the just-completed PB-205. Trivial to apply consistently.
+- **Why now:** Low-effort shared constant extraction, same spirit as PB-200. Closes a latent drift risk before a new target entity is added.
 
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route (carried over)
 
 - **Title:** Use `Promise.all()` for independent queries in execute handler
-- **Problem:** `/api/import-sources/[id]/execute/route.ts` performs independent sequential queries that could run concurrently.
-- **Proposed improvement:** Use `Promise.all()` for independent queries.
+- **Problem:** `/api/import-sources/[id]/execute/route.ts` performs several sequential reads on independent tables at the top of the handler (source lookup, allowed department resolution, pre-existing row counts for diff logic). Each awaited call is one round trip on Neon.
+- **Proposed improvement:** Identify which reads are genuinely independent (the `source` read must happen first because subsequent logic branches on its shape) and wrap the rest in `Promise.all()`.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Quick optimization but not user-facing.
+- **Why now:** Same parallelization pattern as PB-205/PB-208. ADMIN-only endpoint, so the user-visible impact is narrow — but it keeps the codebase consistent.
 
 ### DE-REC-030: Centralize magic numbers in `API_LIMITS` (carried over)
 
 - **Title:** Consolidate remaining numeric limits into a shared object
 - **Problem:** `MAX_FILE_SIZE`, `MAX_ROW_COUNT`, and several other numeric limits are duplicated or inline across routes. PB-200 addressed `MAX_NOTES_LENGTH`; other limits remain scattered.
-- **Proposed improvement:** `API_LIMITS` object in `src/domain/constants.ts`.
+- **Proposed improvement:** `API_LIMITS` object in `src/domain/constants.ts` or `src/lib/api-route-utils.ts`.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Natural extension of the consolidation work already done.
+- **Why now:** Natural extension of the consolidation work already done. Pick up after 1-2 more limits drift.
 
 ### DE-REC-065: API response data path configuration for import sources (carried over)
 
 - **Title:** Make API response wrapper key detection configurable
-- **Problem:** Hardcoded wrapper key list in execute handler.
+- **Problem:** Hardcoded wrapper key list in execute handler fails for non-standard API envelope shapes.
 - **Proposed improvement:** Optional `apiDataPath` field with dot-notation fallback.
 - **Priority:** P4 Low
 - **Effort:** Small
@@ -94,7 +93,7 @@ The validation-consolidation track (PB-196 through PB-204) is now fully complete
 
 - **Title:** Invoke perf event cleanup opportunistically
 - **Problem:** `cleanupOldEvents()` defined in `src/lib/perf.ts` but never called. Table grows unbounded.
-- **Proposed improvement:** Invoke it opportunistically at the end of `withPerfLogging` (e.g. with a small probability gate) or on a scheduled hook.
+- **Proposed improvement:** Invoke it opportunistically at the end of `withPerfLogging` (e.g. with a small probability gate like ~1%) or on a scheduled hook.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
@@ -115,6 +114,7 @@ The validation-consolidation track (PB-196 through PB-204) is now fully complete
 - **Skill duplicate check race condition:** The `findFirst` -> `create` pattern in `/api/settings/skills` POST can allow duplicate names under concurrent requests. Low likelihood at current traffic; a unique DB constraint would be more robust.
 - **Execute route internal duplication:** `executeApiImport` and `executeCsvImport` share significant flow. A shared `runImport(rows, source, mode)` helper would reduce ~80 lines, but the route is already flagged for careful handling.
 - **Roster assignment POST fetches `rosterProfile` inside the transaction:** The FK was already validated up front. Moving it out is a marginal optimization.
+- **`validateForeignKeys` iterates check specs sequentially:** After PB-209 this is still fast enough (typical batched call has ≤4 specs running inside `Promise.all(fkChecks)`), but if a caller bundles many specs in one call it pays serial cost. Addressed by DE-REC-079.
 
 ## Items Intentionally Not Recommended
 
@@ -158,10 +158,9 @@ The validation-consolidation track (PB-196 through PB-204) is now fully complete
 - Add error states to capacity/planning components (parents handle this).
 - Extract `useDebounce` (one consumer).
 - Add aria-labels to chart visualizations (Recharts manages).
-- Batch FK validation in driver creation - partially done (skillIds), see DE-REC-074 for the nested-record extension.
 - Move roster-assignment POST `rosterProfile` fetch outside the transaction (marginal; keeping the transaction self-contained has its own readability value).
 - Rename `MAX_NOTES_LENGTH` to a more generic constant (current name is correct for the use).
-- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205. Do not re-recommend.
+- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205/208/209. Do not re-recommend.
 - Preferences `key` field length cap (keys are hardcoded strings from the frontend).
 - `useApi` cache key uses `Function.toString()` (theoretically fragile under minification; different arrow functions produce different minified strings due to URL content).
 - Import logs route sequential queries (same category as DE-REC-059).
@@ -177,15 +176,17 @@ The validation-consolidation track (PB-196 through PB-204) is now fully complete
 - DE-REC-058 and DE-REC-073 closed in PB-196.
 - DE-REC-075, DE-REC-076, DE-REC-077 closed in PB-200/PB-201.
 - DE-REC-062 and DE-REC-063 closed in PB-204/PB-205.
+- DE-REC-078 closed in PB-208.
+- DE-REC-074 nested-record portion closed in PB-209 (only the PUT-path reminder remains, see above).
 - `ALL_PLANNING_STATUSES` vs `VALID_PLANNING_STATUSES` overlap (`constants.ts` vs `api-route-utils.ts`) — different type signatures serve different purposes: typed domain constant vs. untyped string array for request validation. Not worth merging.
 - `useApi` doFetch silently catches errors — by design; mutation invalidation is fire-and-forget to avoid blocking the UI. Failed refetches show stale data until next successful fetch.
-- Parallelize `getAllowedDepartmentIds` + FK checks in planning routes (see DE-REC-078, but getAllowedDepartmentIds result is needed before driver ownership check in some paths).
+- Parallelize `getAllowedDepartmentIds` + FK checks in planning routes — `getAllowedDepartmentIds` result is consumed by the driver ownership check which must run before the create path.
 
 ## Recommendation Rules
 
 - Recommendations are written by the Delivery Agent after reviewing the codebase and deployment behavior.
 - Each recommendation must include all required fields.
-- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-079.
+- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-080.
 - Approved recommendations are moved to `PRODUCT_BACKLOG.md` by the Product Owner Agent.
 - Rejected recommendations are moved to `Items Intentionally Not Recommended` with a brief reason.
 - This file is the only place the Delivery Agent writes recommendations. Do not scatter suggestions across other files.
