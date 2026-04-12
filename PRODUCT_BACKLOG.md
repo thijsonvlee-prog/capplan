@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. The codebase remains in a clean, consistent state. Last cycle shipped four P4 items (PB-206, PB-207, PB-208, PB-209). This cycle promotes two small close-out items: PB-210 (Experience — SubTable Actief-chip) as a natural follow-through on the PB-199/PB-207 sub-table and typography work, and PB-211 (Delivery — parallelize checks inside `validateForeignKeys`) as the internal close-out of the PB-208/PB-209 parallelization track. Both are trivial, low-risk, single-file edits. ESC-014 (desktop homescreen) remains unmarked and Deferred.
+**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. This cycle completed PB-211 (the final parallelization close-out). PB-210 (Experience — SubTable Actief chip) carries forward as a ready item. A new companion item PB-212 (Delivery — parallelize import-source logs) is promoted from DE-REC-080 to keep both agents productive with small, low-risk work. ESC-014 (desktop homescreen) remains Deferred and unmarked.
 
 ## Status Definitions
 
@@ -45,6 +45,24 @@ Items are ordered by priority within each section. Ties are broken by expected u
   - Release notes entry added to BOTH `src/domain/releases.ts` AND `RELEASE_NOTES.md` in the same commit.
 - **Implementation note:** Look at existing chip patterns (planning grid `status-chip-compact`, count badges) for letter-spacing and padding reference. Do not introduce a new shared chip component — inline classes are correct for a single call site.
 
+### PB-212: Parallelize independent queries in import-source logs route
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Source:** DE-REC-080
+- **Problem / opportunity:** `src/app/api/import-sources/[id]/logs/route.ts` performs two sequential independent queries: a `findUnique` for source existence (line ~20) and a `findMany` for logs (line ~28). Both use the same `id` parameter and share no data dependency.
+- **Why this matters now:** Same parallelization pattern applied across all other write paths (PB-205, PB-208, PB-209, PB-211). Keeps the codebase consistent. ADMIN-only endpoint, so user-visible impact is narrow.
+- **Scope notes:** Wrap both queries in `Promise.all()`. Apply the 404 guard after resolution. Preserve existing error semantics and Dutch error messages. Single-file edit.
+- **Dependencies:** None.
+- **Definition of done:**
+  - Both queries run concurrently via `Promise.all()`.
+  - 404 guard still fires when source does not exist.
+  - Same response shape and error messages.
+  - `npm run verify` passes with 0 errors and 0 new warnings.
+  - Release notes entry added to BOTH `src/domain/releases.ts` AND `RELEASE_NOTES.md` in the same commit.
+- **Implementation note:** Follow the exact pattern used in PB-208/PB-211. Destructure both results, check source for null, then map logs.
+
 ---
 
 ## In Progress
@@ -68,34 +86,6 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Completed:** 2026-04-12
 - **Summary:** Replaced the sequential `for ... await` loop in `validateForeignKeys` with `Promise.all(checks.map(...))`. All non-empty check specs now run their count queries concurrently. Error semantics preserved: declared-order spec wins via `.find()` on the results array. Same Dutch error messages. Closes the parallelization track started with PB-205/PB-208/PB-209.
 
-### PB-208: Parallelize independent FK validations in planning POST/bulk routes
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-11
-- **Summary:** Wrapped the independent `validateOptionalForeignKey` calls for `scenarioId` and `leaveTypeId` in `Promise.all()` in both `POST /api/planning` and `POST /api/planning/bulk` handlers. Saves one DB round trip per planning entry creation on Neon serverless. No behavioural change; the error branches still run in declared order so the same error is returned when multiple FKs are invalid.
-
-### PB-209: Batch FK validation in driver POST nested records
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-11
-- **Summary:** `POST /api/drivers` now collects unique FK IDs per field (employerId, locationId, departmentId, rosterProfileId) via a shared `collectUnique()` helper and runs a single `validateForeignKeys()` check per FK-typed field instead of one `validateOptionalForeignKey()` per nested record. A driver with 10 function records now issues at most 1 location + 1 department count query instead of 20. Labels were updated to plural forms (werkgevers, locaties, afdelingen, roosterprofielen) to fit the batched `validateForeignKeys` error template. The unused `validateOptionalForeignKey` import was removed from the route.
-
-### PB-206: Capacity chart — custom tooltip and axis styling
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-11
-- **Summary:** Replaced the default Recharts tooltip, axis, and grid styling on `CapacityChart.tsx` with a design-system-aligned rendering. Custom `CapacityChartTooltip` on `surface-primary` with `shadow-dropdown`, `border-border-subtle`, `text-caption` uppercase date label, and per-series colored-dot + name + right-aligned `tabular-nums` value rows. Custom `CapacityChartLegend` with tonal swatches replaces the stock Recharts legend. Axes use `#9ca3af` (`--color-text-tertiary`) tick fill, Y-axis line hidden, X-axis baseline soft, horizontal-only grid with `"2 4"` dash pattern in `#e2e5eb` (`--color-border-default`). Cursor hover dissolves into the grid at 25% opacity. All hex strings carry inline design-token comments per the CLAUDE.md Recharts exception rule.
-
-### PB-207: Extend Manrope to section titles and modal headers
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-11
-- **Summary:** Added `font-family: var(--font-display)` to both `.text-section-title` and `.settings-section-title` in `globals.css`. Aligned both classes at `0.9375rem / 600 / letter-spacing -0.01em` so modal headers (ConfirmDialog, ScenarioSelector, RosterAssigner, PlanningGrid bulk modal) and section titles on settings, capacity, drivers and planning screens now share a single Manrope-based section-title rhythm. Strengthens the three-step hierarchy (page title → section title → label) per DESIGN.md §5.2.
-
 ---
 
 ## Deferred
@@ -106,7 +96,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 10 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 11 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -208,7 +198,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-212.
+- Backlog IDs are sequential and never reused. Next available: PB-213.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
