@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-12 — Interne parallellisatie validateForeignKeys
+
+#### Prestaties
+
+- **validateForeignKeys intern geparallelliseerd (PB-211):** De helper die batched FK-referenties controleert voert nu alle count-queries gelijktijdig uit via `Promise.all()` in plaats van sequentieel. Foutgedrag en foutmeldingen zijn ongewijzigd — bij meerdere ongeldige referenties wordt de eerste check-spec in declaratievolgorde gerapporteerd. Sluit de parallellisatietrack af die begon met PB-205/PB-208/PB-209.
+
 ### 2026-04-11 — FK-validatie versneld op planning- en chauffeurroutes
 
 #### Prestaties

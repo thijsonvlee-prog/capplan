@@ -438,14 +438,16 @@ export function activeDriverWhereClause(referenceDate?: string) {
 export async function validateForeignKeys(
   checks: { ids: string[]; model: { count: (args: any) => Promise<number> }; label: string }[]
 ): Promise<string | null> {
-  for (const { ids, model, label } of checks) {
-    if (ids.length === 0) continue;
-    const count = await model.count({ where: { id: { in: ids } } });
-    if (count !== ids.length) {
-      return `Eén of meer opgegeven ${label} bestaan niet`;
-    }
-  }
-  return null;
+  const results = await Promise.all(
+    checks.map(async ({ ids, model, label }) => {
+      if (ids.length === 0) return null;
+      const count = await model.count({ where: { id: { in: ids } } });
+      return count !== ids.length
+        ? `Eén of meer opgegeven ${label} bestaan niet`
+        : null;
+    })
+  );
+  return results.find((r) => r !== null) ?? null;
 }
 
 /**

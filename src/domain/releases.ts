@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "12 april 2026",
+    title: "Interne parallellisatie validateForeignKeys",
+    groups: [
+      {
+        heading: "Prestaties",
+        items: [
+          "validateForeignKeys intern geparallelliseerd (PB-211): de helper die batched FK-referenties controleert voert nu alle count-queries gelijktijdig uit via Promise.all in plaats van sequentieel. Foutgedrag en foutmeldingen zijn ongewijzigd — bij meerdere ongeldige referenties wordt de eerste check-spec in declaratievolgorde gerapporteerd. Sluit de parallellisatietrack af die begon met PB-205/PB-208/PB-209.",
+        ],
+      },
+    ],
+  },
+  {
     date: "11 april 2026",
     title: "FK-validatie versneld op planning- en chauffeurroutes",
     groups: [

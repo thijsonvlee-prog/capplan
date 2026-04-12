@@ -45,25 +45,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
   - Release notes entry added to BOTH `src/domain/releases.ts` AND `RELEASE_NOTES.md` in the same commit.
 - **Implementation note:** Look at existing chip patterns (planning grid `status-chip-compact`, count badges) for letter-spacing and padding reference. Do not introduce a new shared chip component — inline classes are correct for a single call site.
 
-### PB-211: Parallelize FK checks inside `validateForeignKeys`
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Source:** DE-REC-079
-- **Problem / opportunity:** `validateForeignKeys` in `src/lib/api-route-utils.ts:438-449` iterates its `checks` array with a sequential `for ... await` loop. Callers that bundle multiple check specs in one call (e.g. after PB-209's batching work, and `drivers/[id]/route.ts` for skills) pay one serial round trip per spec. With the outer parallelization already done in PB-208/PB-209, the helper itself is the last sequential step left on the batched write path.
-- **Why this matters now:** Natural close-out of the PB-208/PB-209 parallelization track. If the batched helper is going to be the standard, it should be internally parallel as well. Future callers can then bundle arbitrary check specs without paying a serial cost.
-- **Scope notes:** Replace the `for` loop in `validateForeignKeys` with `Promise.all(checks.map(...))`. Preserve "first non-null wins" error semantics by running all count queries concurrently and returning the first non-null result via `.find()` on resolved results. Skip specs with `ids.length === 0` inside the mapped function (same as today). Keep the same Dutch error message template. Do not touch `validateOptionalForeignKey`.
-- **Dependencies:** None.
-- **Definition of done:**
-  - `validateForeignKeys` runs all non-empty check specs concurrently.
-  - Error message for invalid FK references is unchanged.
-  - Error ordering: the declared-order spec wins (first non-null result in the original `checks` array order), matching today's behaviour for the multi-failure case.
-  - All existing callers (drivers POST/PUT, sub-records, anywhere else) behave identically.
-  - `npm run verify` passes with 0 errors and 0 new warnings.
-  - Release notes entry added to BOTH `src/domain/releases.ts` AND `RELEASE_NOTES.md` in the same commit.
-- **Implementation note:** Pattern: `const results = await Promise.all(checks.map(async (c) => { if (!c.ids.length) return null; const count = await c.model.count({ where: { id: { in: c.ids } } }); return count !== c.ids.length ? \`Eén of meer opgegeven ${c.label} bestaan niet\` : null; })); return results.find((r) => r !== null) ?? null;`. Preserves declared-order error selection because `results` keeps the input order.
-
 ---
 
 ## In Progress
@@ -79,6 +60,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 ---
 
 ## Completed Recently
+
+### PB-211: Parallelize FK checks inside `validateForeignKeys`
+
+- **Status:** Completed
+- **Owner:** Delivery Agent
+- **Completed:** 2026-04-12
+- **Summary:** Replaced the sequential `for ... await` loop in `validateForeignKeys` with `Promise.all(checks.map(...))`. All non-empty check specs now run their count queries concurrently. Error semantics preserved: declared-order spec wins via `.find()` on the results array. Same Dutch error messages. Closes the parallelization track started with PB-205/PB-208/PB-209.
 
 ### PB-208: Parallelize independent FK validations in planning POST/bulk routes
 

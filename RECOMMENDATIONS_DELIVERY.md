@@ -6,41 +6,26 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle I executed the two Delivery items that were Ready in the backlog:
+This cycle I executed **PB-211 — Parallelize FK checks inside `validateForeignKeys`**. The `for ... await` loop in `validateForeignKeys` was replaced with `Promise.all(checks.map(...))`. All non-empty check specs now run their count queries concurrently. Declared-order error semantics preserved via `.find()` on the results array. Same Dutch error messages. `npm run verify` passes with 0 errors and 0 new warnings.
 
-- **PB-208 — Parallelize independent FK validations in planning POST/bulk routes.** Wrapped the `scenarioId` and `leaveTypeId` `validateOptionalForeignKey` calls in `Promise.all()` in both `POST /api/planning` and `POST /api/planning/bulk`. Same pattern as PB-205. Saves one DB round trip per planning entry creation on Neon serverless. Error branches still run in declared order, preserving the exact same error for multi-FK-failure cases.
-- **PB-209 — Batch FK validation in driver POST nested records.** `POST /api/drivers` now collects unique FK IDs per field via a small `collectUnique()` helper and runs one batched `validateForeignKeys()` per FK-typed field. A driver with 10 nested function records drops from 20 individual `count()` queries to 2 batched ones (plus whatever the other fields need). Labels switched to plural forms to fit the batched error template ("Eén of meer opgegeven locaties bestaan niet"). The unused `validateOptionalForeignKey` import was removed from `drivers/route.ts`.
+**This completes the parallelization track** started with PB-205 (sub-record `autoClose` + `getNextSeq` parallelization), extended through PB-208 (planning route FK parallelization) and PB-209 (driver POST batched FK validation), and now closed at the helper level with PB-211. All primary write paths now run independent DB calls concurrently.
 
-Both changes pass `npm run verify` with 0 errors and 0 new warnings.
-
-With PB-208 and PB-209 done, the parallelization-and-batching track on the primary write paths is effectively complete. The codebase is in a clean, consistent state. All remaining items below are carry-over P4 hygiene/perf improvements or newly-surfaced minor opportunities.
+A fresh scan confirmed the codebase is in a clean, consistent state. All remaining items below are carry-over P4 hygiene/perf improvements or minor new observations. No new P1-P3 issues were found.
 
 ## Recommended Next Improvements
 
-### DE-REC-079: Parallelize FK checks inside `validateForeignKeys`
+### DE-REC-080: Parallelize independent queries in import-source logs route
 
-- **Title:** Run batched FK checks concurrently inside the helper
-- **Problem:** After PB-209, a driver create with employment + function + roster records can push 3–5 entries into the `fkChecks` Promise array. The outer `Promise.all(fkChecks)` runs these entries in parallel, but `validateForeignKeys([...])` itself still iterates its internal `checks` array sequentially with `for ... await`. So if the caller passes multiple check specs in one call (as `drivers/[id]/route.ts` already does for skills, and would naturally do for combined FK specs), each count query adds a serial round trip.
-- **Proposed improvement:** Replace the `for` loop in `validateForeignKeys` with `Promise.all(checks.map(...))`. Keep the "first non-null wins" semantics by using `.find()` on the resolved results. Return the same Dutch error messages.
-- **Expected product/technical value:** One round trip regardless of how many check specs are passed. Future callers can bundle checks without paying a serial cost. Tiny, self-contained refactor.
+- **Title:** Run source existence check and log fetch concurrently
+- **Problem:** `src/app/api/import-sources/[id]/logs/route.ts` performs two sequential independent queries: a `findUnique` for source existence (line ~20) and a `findMany` for logs (line ~28). Both use the same `id` parameter and share no data dependency.
+- **Proposed improvement:** Wrap both in `Promise.all()`. Apply the 404 guard after resolution.
+- **Expected product/technical value:** Saves one DB round trip on Neon serverless per log page view. Consistent with the parallelization patterns applied across all other routes.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Natural close-out of the PB-208/PB-209 parallelization work — if the batched helper is going to be the standard, it should be internally parallel.
-
-### DE-REC-074: Carry forward — apply same batching to driver PUT path
-
-- **Title:** Extend unique-ID batching to driver update path if nested FK writes are added
-- **Problem:** The PUT handler in `src/app/api/drivers/[id]/route.ts` currently only validates `skillIds` via `validateForeignKeys`. It does not touch employment/function/roster records directly (those use dedicated sub-record routes), so no fix is needed today. But if the update path is ever extended to accept nested record changes in one call, the same `collectUnique()` pattern should be applied.
-- **Proposed improvement:** Documentation reminder only — no code change now. If scope changes in a future item, copy the `collectUnique()` helper (or promote it to `api-route-utils.ts`) before extending the PUT payload.
-- **Priority:** P4 Low (documentation/reminder)
-- **Effort:** None (monitor only)
-- **Risk:** N/A
-- **Dependencies:** Depends on future scope change
-- **Suggested owner:** Delivery Agent
-- **Why now:** Keeping the parallelization rationale visible so it isn't lost when future features touch driver writes.
+- **Why now:** Same pattern as PB-205/PB-208. ADMIN-only endpoint, so user-visible impact is narrow, but keeps the codebase consistent.
 
 ### DE-REC-070: Align client-side `TARGET_ENTITIES` with server-side `VALID_TARGET_ENTITIES` (carried over)
 
@@ -53,6 +38,18 @@ With PB-208 and PB-209 done, the parallelization-and-batching track on the prima
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Low-effort shared constant extraction, same spirit as PB-200. Closes a latent drift risk before a new target entity is added.
+
+### DE-REC-074: Carry forward — apply same batching to driver PUT path
+
+- **Title:** Extend unique-ID batching to driver update path if nested FK writes are added
+- **Problem:** The PUT handler in `src/app/api/drivers/[id]/route.ts` currently only validates `skillIds` via `validateForeignKeys`. It does not touch employment/function/roster records directly (those use dedicated sub-record routes), so no fix is needed today. But if the update path is ever extended to accept nested record changes in one call, the same `collectUnique()` pattern should be applied.
+- **Proposed improvement:** Documentation reminder only — no code change now. If scope changes in a future item, copy the `collectUnique()` helper (or promote it to `api-route-utils.ts`) before extending the PUT payload.
+- **Priority:** P4 Low (documentation/reminder)
+- **Effort:** None (monitor only)
+- **Risk:** N/A
+- **Dependencies:** Depends on future scope change
+- **Suggested owner:** Delivery Agent
+- **Why now:** Keeping the parallelization rationale visible so it isn't lost when future features touch driver writes.
 
 ### DE-REC-059: Parallelize sequential DB calls in import-source execute route (carried over)
 
@@ -114,7 +111,7 @@ With PB-208 and PB-209 done, the parallelization-and-batching track on the prima
 - **Skill duplicate check race condition:** The `findFirst` -> `create` pattern in `/api/settings/skills` POST can allow duplicate names under concurrent requests. Low likelihood at current traffic; a unique DB constraint would be more robust.
 - **Execute route internal duplication:** `executeApiImport` and `executeCsvImport` share significant flow. A shared `runImport(rows, source, mode)` helper would reduce ~80 lines, but the route is already flagged for careful handling.
 - **Roster assignment POST fetches `rosterProfile` inside the transaction:** The FK was already validated up front. Moving it out is a marginal optimization.
-- **`validateForeignKeys` iterates check specs sequentially:** After PB-209 this is still fast enough (typical batched call has ≤4 specs running inside `Promise.all(fkChecks)`), but if a caller bundles many specs in one call it pays serial cost. Addressed by DE-REC-079.
+- **N+1 in execute route upsert loops:** `importDrivers` and `importStamtabel` execute individual `update()` calls per row inside transactions. Prisma does not support batch updates with per-row data, so this is a structural limitation. Only relevant under upsert mode with large diffs.
 
 ## Items Intentionally Not Recommended
 
@@ -160,10 +157,10 @@ With PB-208 and PB-209 done, the parallelization-and-batching track on the prima
 - Add aria-labels to chart visualizations (Recharts manages).
 - Move roster-assignment POST `rosterProfile` fetch outside the transaction (marginal; keeping the transaction self-contained has its own readability value).
 - Rename `MAX_NOTES_LENGTH` to a more generic constant (current name is correct for the use).
-- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205/208/209. Do not re-recommend.
+- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205/208/209/211. Do not re-recommend.
 - Preferences `key` field length cap (keys are hardcoded strings from the frontend).
 - `useApi` cache key uses `Function.toString()` (theoretically fragile under minification; different arrow functions produce different minified strings due to URL content).
-- Import logs route sequential queries (same category as DE-REC-059).
+- Import logs route sequential queries (same category as DE-REC-059; promoted to DE-REC-080).
 - `autoCloseOpenRecords` UTC dependency (not a defect).
 - Department scope TOCTOU in bulk route (theoretical at current concurrency).
 - Rate limiting on import execute endpoint (ADMIN-only limits exposure).
@@ -178,15 +175,17 @@ With PB-208 and PB-209 done, the parallelization-and-batching track on the prima
 - DE-REC-062 and DE-REC-063 closed in PB-204/PB-205.
 - DE-REC-078 closed in PB-208.
 - DE-REC-074 nested-record portion closed in PB-209 (only the PUT-path reminder remains, see above).
+- DE-REC-079 closed in PB-211.
 - `ALL_PLANNING_STATUSES` vs `VALID_PLANNING_STATUSES` overlap (`constants.ts` vs `api-route-utils.ts`) — different type signatures serve different purposes: typed domain constant vs. untyped string array for request validation. Not worth merging.
 - `useApi` doFetch silently catches errors — by design; mutation invalidation is fire-and-forget to avoid blocking the UI. Failed refetches show stale data until next successful fetch.
 - Parallelize `getAllowedDepartmentIds` + FK checks in planning routes — `getAllowedDepartmentIds` result is consumed by the driver ownership check which must run before the create path.
+- Parallelize `findUnique` calls in `users/[id]/route.ts` PUT handler — ADMIN-only endpoint with 2 fast queries; minimal gain vs. code churn.
 
 ## Recommendation Rules
 
 - Recommendations are written by the Delivery Agent after reviewing the codebase and deployment behavior.
 - Each recommendation must include all required fields.
-- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-080.
+- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-081.
 - Approved recommendations are moved to `PRODUCT_BACKLOG.md` by the Product Owner Agent.
 - Rejected recommendations are moved to `Items Intentionally Not Recommended` with a brief reason.
 - This file is the only place the Delivery Agent writes recommendations. Do not scatter suggestions across other files.
