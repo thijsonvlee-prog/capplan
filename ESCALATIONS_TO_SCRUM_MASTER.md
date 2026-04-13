@@ -46,6 +46,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 - **PO note (2026-04-09):** 8 cycles unmarked. Item remains Deferred. No further PO notes will be added until the Scrum Master marks a choice.
 - **PO note (2026-04-11):** 10 cycles unmarked. Item remains Deferred. Keeping this note brief — the escalation will be revived the moment any option is marked with `(X)`.
 - **PO note (2026-04-12):** 11 cycles unmarked. No change.
+- **PO note (2026-04-13):** 12 cycles unmarked. No change.
 
 ---
 

@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. This cycle completed PB-210 (Experience — SubTable Actief chip). PB-212 (Delivery — parallelize import-source logs) remains Ready. ESC-014 (desktop homescreen) remains Deferred and unmarked.
+**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. PB-212 (Delivery — parallelize import-source logs) is the only Ready item. ESC-014 (desktop homescreen) remains Deferred and unmarked (12 cycles). All agent recommendations are already tracked — no new items to promote.
 
 ## Status Definitions
 
@@ -67,13 +67,6 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Owner:** Experience Agent
 - **Completed:** 2026-04-13
 - **Summary:** Replaced the plain green "Actief" text in the Einddatum column of driver sub-tables with a compact success-tone chip (`rounded-full`, `bg-success-100`, `text-success-700`, uppercase, tight tracking). The active row is now signaled both by tonal row highlight and by a chip in the same row. Single JSX edit in `SubTable.tsx`, no layout or behavior change. Release notes synced in both `src/domain/releases.ts` and `RELEASE_NOTES.md`.
-
-### PB-211: Parallelize FK checks inside `validateForeignKeys`
-
-- **Status:** Completed
-- **Owner:** Delivery Agent
-- **Completed:** 2026-04-12
-- **Summary:** Replaced the sequential `for ... await` loop in `validateForeignKeys` with `Promise.all(checks.map(...))`. All non-empty check specs now run their count queries concurrently. Error semantics preserved: declared-order spec wins via `.find()` on the results array. Same Dutch error messages. Closes the parallelization track started with PB-205/PB-208/PB-209.
 
 ---
 
