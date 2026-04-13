@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "13 april 2026",
+    title: "Actief-chip in subtabellen",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "Actief-chip in subtabellen (PB-210): de platte groene tekst \"Actief\" in de Einddatum-kolom van dienstverbanden, functies en roostertoewijzingen is vervangen door een compacte success-toon chip (afgerond, uppercase, bg-success-100/text-success-700). De actieve rij is nu sneller te scannen dankzij zowel de tonale rijhighlight als de chip in dezelfde rij. Geen layout- of gedragswijziging.",
+        ],
+      },
+    ],
+  },
+  {
     date: "12 april 2026",
     title: "Interne parallellisatie validateForeignKeys",
     groups: [

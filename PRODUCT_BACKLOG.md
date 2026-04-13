@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. This cycle completed PB-211 (the final parallelization close-out). PB-210 (Experience — SubTable Actief chip) carries forward as a ready item. A new companion item PB-212 (Delivery — parallelize import-source logs) is promoted from DE-REC-080 to keep both agents productive with small, low-risk work. ESC-014 (desktop homescreen) remains Deferred and unmarked.
+**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. This cycle completed PB-210 (Experience — SubTable Actief chip). PB-212 (Delivery — parallelize import-source logs) remains Ready. ESC-014 (desktop homescreen) remains Deferred and unmarked.
 
 ## Status Definitions
 
@@ -26,24 +26,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 ---
 
 ## Ready for Next Cycle
-
-### PB-210: SubTable "Actief" marker — chip treatment
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Source:** EX-REC-063
-- **Problem / opportunity:** `src/components/drivers/SubTable.tsx:93` renders the active-record indicator as plain `text-success-600 text-xs font-medium` text ("Actief") in the Einddatum column. After PB-199 (empty state + row alternation) and PB-207 (section-title hierarchy lift), this plain-text marker is the weakest visual element left in the driver form's sub-tables.
-- **Why this matters now:** Visible in every driver edit flow across all three sub-tables (dienstverbanden, functies, roostertoewijzingen). Tiny change, immediate scan improvement, natural follow-through on the recently polished sub-tables.
-- **Scope notes:** Wrap the "Actief" label in a compact success-tone chip — proposed classes: `inline-flex items-center px-1.5 py-0.5 rounded-full bg-success-100 text-success-700 text-[0.6875rem] font-medium uppercase tracking-wide`. Keep the existing `bg-success-50` row highlight unchanged. Single JSX edit in `SubTable.tsx`. No new tokens, no layout impact.
-- **Dependencies:** None.
-- **Definition of done:**
-  - Compact "Actief" chip replaces the plain success-tone text in the Einddatum column.
-  - No change to row highlight, column widths, or neighbouring cells.
-  - `npm run verify` passes with 0 errors and 0 new warnings.
-  - Visual check on all three driver sub-tables (employment, functions, roster assignments).
-  - Release notes entry added to BOTH `src/domain/releases.ts` AND `RELEASE_NOTES.md` in the same commit.
-- **Implementation note:** Look at existing chip patterns (planning grid `status-chip-compact`, count badges) for letter-spacing and padding reference. Do not introduce a new shared chip component — inline classes are correct for a single call site.
 
 ### PB-212: Parallelize independent queries in import-source logs route
 
@@ -78,6 +60,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 ---
 
 ## Completed Recently
+
+### PB-210: SubTable "Actief" marker — chip treatment
+
+- **Status:** Completed
+- **Owner:** Experience Agent
+- **Completed:** 2026-04-13
+- **Summary:** Replaced the plain green "Actief" text in the Einddatum column of driver sub-tables with a compact success-tone chip (`rounded-full`, `bg-success-100`, `text-success-700`, uppercase, tight tracking). The active row is now signaled both by tonal row highlight and by a chip in the same row. Single JSX edit in `SubTable.tsx`, no layout or behavior change. Release notes synced in both `src/domain/releases.ts` and `RELEASE_NOTES.md`.
 
 ### PB-211: Parallelize FK checks inside `validateForeignKeys`
 

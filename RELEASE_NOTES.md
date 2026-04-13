@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-13 — Actief-chip in subtabellen
+
+#### UX / design verbeteringen
+
+- **Actief-chip in subtabellen (PB-210):** De platte groene tekst "Actief" in de Einddatum-kolom van dienstverbanden, functies en roostertoewijzingen is vervangen door een compacte success-toon chip (afgerond, uppercase, bg-success-100/text-success-700). De actieve rij is nu sneller te scannen dankzij zowel de tonale rijhighlight als de chip in dezelfde rij. Geen layout- of gedragswijziging.
+
 ### 2026-04-12 — Interne parallellisatie validateForeignKeys
 
 #### Prestaties

@@ -2,42 +2,34 @@
 
 ## Summary
 
-**This cycle (2026-04-11):** Experience Agent run 21. Both Experience Agent items in the `Ready` section of `PRODUCT_BACKLOG.md` shipped: PB-206 (capacity chart custom tooltip + axis styling) and PB-207 (extend Manrope to section titles and modal headers). Fresh post-implementation UX scan done across the capacity page, settings, drivers, planning, and modal surfaces.
+**This cycle (2026-04-13):** Experience Agent run 22. PB-210 (SubTable "Actief" chip treatment) shipped. Fresh post-implementation UX scan done across the driver form sub-tables and adjacent driver edit flows.
 
 **What was improved this cycle:**
 
-- **PB-206 — Capaciteitsgrafiek volledig in de huisstijl.** Replaced Recharts' default Tooltip, Legend, axis, and grid rendering on `CapacityChart.tsx` with a design-system-aligned implementation:
-  - **Custom tooltip** (`CapacityChartTooltip`) on `surface-primary` with `shadow-dropdown`, `border-border-subtle`, a `text-caption` uppercase date label, and per-series rows combining a colored dot + series name in `text-text-secondary` + right-aligned `tabular-nums font-semibold` value in `text-text-primary`.
-  - **Custom legend** (`CapacityChartLegend`) with small rounded swatches and `text-text-secondary` labels, replacing the default Recharts legend bar.
-  - **Axes**: `tick={{ fill: "#9ca3af" /* --color-text-tertiary */ }}`, `tickLine={false}`, Y-axis `axisLine={false}`, X-axis baseline in `border-default`.
-  - **Grid**: horizontal-only with a `"2 4"` dash pattern in `border-default` — calmer than the stock `"3 3"` and aligned with DESIGN.md §6.1 ("restrained ambient … only where elevation is genuinely helpful").
-  - **Cursor**: soft `border-default` fill at 25% opacity instead of the default hard grey block, so the hover state dissolves into the grid.
-  - All hex strings carry inline design-token comments per the CLAUDE.md Recharts exception rule.
-- **PB-207 — Manrope uitgebreid naar sectie- en modaaltitels.** Added `font-family: var(--font-display)` to both `.text-section-title` and `.settings-section-title` in `globals.css`, and aligned both at `0.9375rem / 600 / letter-spacing: -0.01em`. Previously `.text-section-title` was `0.8125rem / 600` without Manrope, producing a weak mid-tier between the Manrope page title and the Inter label. The new tier strengthens the 3-step hierarchy (page title → section title → label) across all modals (ConfirmDialog, ScenarioSelector, RosterAssigner, the PlanningGrid bulk-status modal), the settings cards, the capacity page sections, the drivers page sub-sections, and the planning grid sub-section. No behavior change, typography only.
+- **PB-210 — Actief-chip in subtabellen.** The plain `text-success-600 text-xs font-medium` text "Actief" in the Einddatum column of all three driver sub-tables (dienstverbanden, functies, roostertoewijzingen) has been replaced with a compact success-tone chip: `inline-flex items-center px-1.5 py-0.5 rounded-full bg-success-100 text-success-700 text-[0.6875rem] font-medium uppercase tracking-wide`. The active row is now double-signaled — tonal `bg-success-50` row highlight plus a chip in the same row — making the active record instantly scannable. The existing row highlight, column widths, and layout are unchanged. Single JSX edit in `SubTable.tsx`.
 
 **Cross-check of adjacent areas after implementation:**
-- Swept all `.tsx` files for `from "recharts"` imports — `CapacityChart.tsx` is the only chart in the product, so PB-206's polish covers the entire chart surface. No other Recharts widget needs a second pass.
-- Swept `<h1-h6>` usages. `text-page-title`, `text-section-title`, and `settings-section-title` cover nearly all structural headings. A few inline-styled headings remain (login page brand label, sidebar brand label, mobile homescreen card titles, release note entry titles) — these are deliberately small/plain and are not candidates for Manrope. No unexpected inline section titles surfaced.
-- Verified the new `.text-section-title` size bump (13 → 15px) does not crowd adjacent content in any call site — all 16 usages are standalone h2/h3 elements or label-like div headers with their own vertical rhythm (mb-2 / mb-3). No layout regressions expected.
-- Checked that the capacity chart's `ResponsiveContainer` still operates inside its fixed `.mobile-capacity-chart-container` height (250px mobile, 350px desktop). The margin adjustment is within the existing container.
+- Verified the chip renders correctly alongside the `bg-success-50` row highlight — the `bg-success-100` chip sits naturally on the green-tinted row without clashing.
+- Verified that ended records (with a date string in the Einddatum column) are unaffected — the conditional rendering (`row.endDate || <chip>`) is unchanged in logic.
+- Checked that the `Pencil` import in SubTable.tsx is pre-existing and unused — not introduced by this change, and not flagged by ESLint. Not a UX concern.
+- The sub-table component is now fully polished: empty states (PB-199), row alternation (PB-199), section-title hierarchy (PB-207), and active-record chip (PB-210) are all at design-system standard.
 
 **Current design alignment with DESIGN.md:**
-- **Overall product quality: 8.5/10.** The capacity page is now fully design-system integrated end-to-end (KPIs → chart → table). Section-title typography is uniform. The remaining gaps are narrow and well-known.
-- **Planning grid:** Well-aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full aria-label coverage, shared tab system on DriverForm.
-- **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart tooltip/legend/axis/grid now use design tokens.
-- **Settings page:** Well-aligned (§2.5, §7.1). Section titles now Manrope.
-- **Drivers page:** Well-aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar.
-- **Modals:** Well-aligned (§7.3). All modal headers now use Manrope section-title typography.
+- **Overall product quality: 8.5/10.** The driver form sub-tables are now complete. The remaining gaps are narrow and well-known.
+- **Planning grid:** Well-aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full aria-label coverage.
+- **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart, KPIs, and table all use design tokens.
+- **Settings page:** Well-aligned (§2.5, §7.1). Section titles Manrope.
+- **Drivers page:** Fully aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar, Actief chip in place.
+- **Modals:** Well-aligned (§7.3). All modal headers use Manrope section-title typography.
 - **Sidebar:** Well-aligned (§7.8).
 - **Mobile:** Well-aligned.
 
 **Where design quality is still below target:**
 - RosterProfileEditor 28-day grid is still flat and mechanical (EX-REC-055, already in Deferred).
-- StamtabelManager card headers visually distinct from the new larger section-title tier — see EX-REC-063 below for a tiny follow-up scan.
 
 ## Recommended Next Improvements
 
-_EX-REC-049 and EX-REC-038 shipped this cycle as PB-206 and PB-207 and are recorded in the 11 april 2026 release notes entry._
+_EX-REC-063 shipped this cycle as PB-210 and is recorded in the 13 april 2026 release notes entry._
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -48,18 +40,7 @@ _EX-REC-049 and EX-REC-038 shipped this cycle as PB-206 and PB-207 and are recor
 - **Effort:** Small
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** With EX-REC-049 shipped, this is the most visible remaining screen-level gap against DESIGN.md. Low traffic but the last "generic admin table" surface in the product.
-
-### EX-REC-063: SubTable "Actief" marker — chip treatment instead of inline text (new)
-
-- **Problem:** `src/components/drivers/SubTable.tsx:93` renders the active record indicator as plain `text-success-600 text-xs font-medium` text ("Actief") in the Einddatum column. Now that PB-207 has lifted the section-title hierarchy and PB-199 has cleaned up the empty state and row layering, this plain-text marker is the weakest visual element left in the driver form's sub-tables. A small chip/badge would make the active row instantly scannable without over-coloring the table.
-- **Proposed improvement:** Wrap the "Actief" label in a compact success-tone chip (`inline-flex items-center px-1.5 py-0.5 rounded-full bg-success-100 text-success-700 text-[0.6875rem] font-medium uppercase tracking-wide`), and keep the `bg-success-50` row highlight unchanged. One visual change, zero layout impact.
-- **Expected user value:** Driver form sub-tables scan faster — the active row is signaled both by tonal row highlight and by a compact chip in the same row, matching the chip pattern already used in the planning grid.
-- **Priority:** P4 Low
-- **Effort:** Trivial (single JSX edit)
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Natural follow-through on the PB-199 SubTable cleanup. Visible in every driver edit flow. Low risk.
+- **Why now:** This is the most visible remaining screen-level gap against DESIGN.md. Low traffic but the last "generic admin table" surface in the product.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -129,7 +110,6 @@ _EX-REC-049 and EX-REC-038 shipped this cycle as PB-206 and PB-207 and are recor
 
 ## Risks / Watch-outs
 
-- **Section title size bump.** PB-207 lifted `.text-section-title` from 0.8125rem (13px) to 0.9375rem (15px). All 16 call sites were verified, but any future caller that embeds the class in a tight horizontal layout should double-check the extra height does not push adjacent content. Mitigation: the class comments in `globals.css` now document the intended hierarchy tier.
 - **Recharts hex coupling.** `CapacityChart.tsx` hardcodes four hex values (`#9ca3af`, `#4b5563`, `#e2e5eb`) that mirror design tokens. If any of `--color-text-tertiary`, `--color-text-secondary`, or `--color-border-default` changes in `globals.css`, the inline hex strings must be updated in the same commit. Inline comments document the token binding, but there is no automatic guard.
 - **Custom chart tooltip has no dark-mode story.** The tooltip uses `surface-primary` classes directly, which are currently defined as `#ffffff`. If dark mode is ever introduced, the tooltip will inherit automatically, but the Recharts-side hex strings will not. Out of scope for now.
 - **Mobile planning is read-only.** Monitor user demand for edit capability (EX-REC-052).
@@ -175,6 +155,7 @@ _EX-REC-049 and EX-REC-038 shipped this cycle as PB-206 and PB-207 and are recor
 - **SubTable default empty state:** Resolved (PB-199).
 - **StatusSelector danger color override:** Resolved (PB-198).
 - **Desktop duplicate page title:** Resolved (EX-REC-057, 2026-04-08).
+- **SubTable "Actief" plain text marker:** Resolved (PB-210, 2026-04-13).
 
 ## Recommendation Rules
 

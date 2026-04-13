@@ -90,7 +90,7 @@ export function SubTable<T extends { id: string; sequenceNumber: number; startDa
                   <td className="p-2 text-sm text-text-secondary">{row.sequenceNumber}</td>
                   <td className="p-2 text-sm text-text-secondary">{row.startDate}</td>
                   <td className="p-2 text-sm">
-                    {row.endDate || <span className="text-success-600 text-xs font-medium">Actief</span>}
+                    {row.endDate || <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-success-100 text-success-700 text-[0.6875rem] font-medium uppercase tracking-wide">Actief</span>}
                   </td>
                   {columns.map((col) => (
                     <td key={String(col.key)} className="p-2 text-sm text-text-secondary">
