@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. PB-212 (Delivery — parallelize import-source logs) is the only Ready item. ESC-014 (desktop homescreen) remains Deferred and unmarked (12 cycles). All agent recommendations are already tracked — no new items to promote.
+**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. PB-212 (Delivery — parallelize import-source logs) carries forward as the only Ready item. ESC-014 (desktop homescreen) remains Deferred and unmarked (13 cycles). No new recommendations from either agent this cycle — all surfaced items are already tracked in backlog or explicitly deferred.
 
 ## Status Definitions
 
@@ -61,12 +61,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 
 ## Completed Recently
 
-### PB-210: SubTable "Actief" marker — chip treatment
-
-- **Status:** Completed
-- **Owner:** Experience Agent
-- **Completed:** 2026-04-13
-- **Summary:** Replaced the plain green "Actief" text in the Einddatum column of driver sub-tables with a compact success-tone chip (`rounded-full`, `bg-success-100`, `text-success-700`, uppercase, tight tracking). The active row is now signaled both by tonal row highlight and by a chip in the same row. Single JSX edit in `SubTable.tsx`, no layout or behavior change. Release notes synced in both `src/domain/releases.ts` and `RELEASE_NOTES.md`.
+_No items completed in the most recent cycle. PB-210 (2026-04-13) has been rotated out after one cycle in this section per backlog hygiene rules._
 
 ---
 
