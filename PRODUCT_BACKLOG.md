@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. PB-212 (Delivery — parallelize import-source logs) carries forward as the only Ready item. ESC-014 (desktop homescreen) remains Deferred and unmarked (13 cycles). No new recommendations from either agent this cycle — all surfaced items are already tracked in backlog or explicitly deferred.
+**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. PB-212 (Delivery — parallelize import-source logs) carries forward again as the only Ready item; it has been the only Ready item for three consecutive cycles and remains available to be picked up. ESC-014 (desktop homescreen) remains Deferred and unmarked (14 cycles). No new recommendations from either agent this cycle — both recommendation files describe the same state as 2026-04-13/2026-04-12. Steady-state cycle.
 
 ## Status Definitions
 
