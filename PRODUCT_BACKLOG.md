@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. PB-212 (parallelize import-source logs) completed 2026-04-16, closing the last parallelization opportunity. All API routes now run independent DB calls concurrently. No Ready items remain. ESC-014 (desktop homescreen) remains Deferred and unmarked (14+ cycles). Fresh codebase scan found one new minor recommendation (DE-REC-081: centralize VALID_ROLES). The codebase is in a clean, consistent state.
+**Current direction (2026-04-16):** PB-212 (parallelize import-source logs) completed this cycle, closing the parallelization track. Three new items promoted from agent recommendations: PB-213 (column header keyboard accessibility, P3), PB-214 (centralize disabled .btn-icon, P4), PB-215 (centralize VALID_ROLES, P4). All are small, well-scoped, and ready for immediate pickup. ESC-014 (desktop homescreen) remains Deferred and unmarked (15 cycles).
 
 ## Status Definitions
 
@@ -27,7 +27,41 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-213: Planning grid sortable column headers — keyboard accessibility
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Source:** EX-REC-065
+- **Problem:** The `<th>` elements for "Chauffeur" and extra columns in `PlanningGrid.tsx` (lines ~490–517) have `onClick` handlers for sorting but no `role`, `tabIndex`, or `onKeyDown` handler. Keyboard-only users and screen readers cannot trigger sort actions. PB-202 resolved DayCell accessibility but did not cover column headers.
+- **Scope:** Add `role="columnheader"`, `aria-sort` reflecting current direction, `tabIndex={0}`, and `onKeyDown` (Enter/Space triggers sort) to the sortable `<th>` elements. Add `aria-label` with current sort direction. Small, focused edit in `PlanningGrid.tsx`.
+- **Dependencies:** None
+- **Definition of done:** Keyboard users can sort all sortable columns via Enter/Space. Screen readers announce sort state. `npm run verify` passes.
+- **Why this matters now:** Accessibility is a product quality baseline. DayCell was addressed (PB-202); column headers are the last remaining keyboard gap in the planning grid.
+
+### PB-214: Centralize disabled state on .btn-icon and improve opacity
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Source:** EX-REC-064
+- **Problem:** `.btn-icon` CSS class has no `:disabled` pseudo-class rule. All 16 pagination buttons across 4 components repeat `disabled:opacity-30 disabled:cursor-not-allowed` inline. The 30% opacity is too faint — disabled buttons nearly disappear.
+- **Scope:** Add `:disabled` rules to `.btn-icon` and `.btn-icon-danger` in `globals.css` (opacity: 0.4, cursor: not-allowed, pointer-events: none). Remove the 16 inline `disabled:opacity-30 disabled:cursor-not-allowed` declarations from `PlanningGrid.tsx`, `DriverList.tsx`, `MobilePlanningView.tsx`, and `AuditLogViewer.tsx`.
+- **Dependencies:** None
+- **Definition of done:** Disabled pagination buttons are visibly distinct at 40% opacity. No inline disabled styling remains. `npm run verify` passes.
+- **Why this matters now:** Pure consistency fix. Centralizes a pattern that's already established but scattered across 16 inline declarations.
+
+### PB-215: Centralize VALID_ROLES constant
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Source:** DE-REC-081
+- **Problem:** `src/app/api/users/[id]/route.ts` defines a local `VALID_ROLES = ["ADMIN", "PLANNER", "VIEWER"]` array. The `api-route-utils.ts` module already exports similar constants (`VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`). Inline definition creates drift risk if a new role is added to the enum but not updated in the route.
+- **Scope:** Export `VALID_ROLES` from `api-route-utils.ts` (derived from the `UserRole` enum in `enums.ts`). Import it in the users route. Single-file change plus one import update.
+- **Dependencies:** None
+- **Definition of done:** `VALID_ROLES` is exported from `api-route-utils.ts` and imported in users route. No inline role array remains. `npm run verify` passes.
+- **Why this matters now:** Same spirit as PB-200 (centralize validation constants). Closes the last known inline constant.
 
 ---
 
@@ -63,7 +97,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 11 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 15 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -165,7 +199,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-213.
+- Backlog IDs are sequential and never reused. Next available: PB-216.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
