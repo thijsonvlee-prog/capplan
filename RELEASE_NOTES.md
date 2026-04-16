@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-16 — Import-logboek queries geparallelliseerd
+
+#### Prestaties
+
+- **Import-logboek queries geparallelliseerd (PB-212):** De GET /api/import-sources/[id]/logs route voerde de bestaanscontrole van de importbron en het ophalen van logregels sequentieel uit. Beide queries draaien nu gelijktijdig via `Promise.all()`. Bespaart één DB-roundtrip per logpagina-weergave op Neon serverless. Zelfde response-shape en foutmeldingen.
+
 ### 2026-04-13 — Actief-chip in subtabellen
 
 #### UX / design verbeteringen

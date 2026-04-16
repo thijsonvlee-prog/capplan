@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction:** No P1/P2/P3 work outstanding. The codebase is at 8.5/10 design alignment and all primary write paths use concurrent DB calls. PB-212 (Delivery — parallelize import-source logs) carries forward again as the only Ready item; it has been the only Ready item for three consecutive cycles and remains available to be picked up. ESC-014 (desktop homescreen) remains Deferred and unmarked (14 cycles). No new recommendations from either agent this cycle — both recommendation files describe the same state as 2026-04-13/2026-04-12. Steady-state cycle.
+**Current direction:** No P1/P2/P3 work outstanding. PB-212 (parallelize import-source logs) completed 2026-04-16, closing the last parallelization opportunity. All API routes now run independent DB calls concurrently. No Ready items remain. ESC-014 (desktop homescreen) remains Deferred and unmarked (14+ cycles). Fresh codebase scan found one new minor recommendation (DE-REC-081: centralize VALID_ROLES). The codebase is in a clean, consistent state.
 
 ## Status Definitions
 
@@ -27,23 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-212: Parallelize independent queries in import-source logs route
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Source:** DE-REC-080
-- **Problem / opportunity:** `src/app/api/import-sources/[id]/logs/route.ts` performs two sequential independent queries: a `findUnique` for source existence (line ~20) and a `findMany` for logs (line ~28). Both use the same `id` parameter and share no data dependency.
-- **Why this matters now:** Same parallelization pattern applied across all other write paths (PB-205, PB-208, PB-209, PB-211). Keeps the codebase consistent. ADMIN-only endpoint, so user-visible impact is narrow.
-- **Scope notes:** Wrap both queries in `Promise.all()`. Apply the 404 guard after resolution. Preserve existing error semantics and Dutch error messages. Single-file edit.
-- **Dependencies:** None.
-- **Definition of done:**
-  - Both queries run concurrently via `Promise.all()`.
-  - 404 guard still fires when source does not exist.
-  - Same response shape and error messages.
-  - `npm run verify` passes with 0 errors and 0 new warnings.
-  - Release notes entry added to BOTH `src/domain/releases.ts` AND `RELEASE_NOTES.md` in the same commit.
-- **Implementation note:** Follow the exact pattern used in PB-208/PB-211. Destructure both results, check source for null, then map logs.
+_No items currently ready._
 
 ---
 
@@ -61,7 +45,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 
 ## Completed Recently
 
-_No items completed in the most recent cycle. PB-210 (2026-04-13) has been rotated out after one cycle in this section per backlog hygiene rules._
+### PB-212: Parallelize independent queries in import-source logs route
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Completed (2026-04-16)
+- **Source:** DE-REC-080
+- **Implementation note:** Wrapped `findUnique` (source existence) and `findMany` (logs) in `Promise.all()`. 404 guard applied after resolution. Same response shape, same Dutch error messages. `npm run verify` passes with 0 errors. Release notes added to both `src/domain/releases.ts` and `RELEASE_NOTES.md`. Completes the last remaining parallelization opportunity identified across all API routes.
 
 ---
 

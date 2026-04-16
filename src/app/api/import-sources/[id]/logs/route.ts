@@ -16,20 +16,21 @@ export async function GET(
 
     const { id } = await params;
 
-    // Verify import source exists
-    const source = await prisma.importSource.findUnique({ where: { id } });
+    const [source, logs] = await Promise.all([
+      prisma.importSource.findUnique({ where: { id } }),
+      prisma.importLog.findMany({
+        where: { importSourceId: id },
+        orderBy: { executedAt: "desc" },
+        take: 20,
+      }),
+    ]);
+
     if (!source) {
       return NextResponse.json(
         { error: "Importbron niet gevonden" },
         { status: 404 }
       );
     }
-
-    const logs = await prisma.importLog.findMany({
-      where: { importSourceId: id },
-      orderBy: { executedAt: "desc" },
-      take: 20,
-    });
 
     return NextResponse.json({
       data: logs.map((log) => ({

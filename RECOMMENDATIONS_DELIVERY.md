@@ -6,26 +6,26 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle I executed **PB-211 — Parallelize FK checks inside `validateForeignKeys`**. The `for ... await` loop in `validateForeignKeys` was replaced with `Promise.all(checks.map(...))`. All non-empty check specs now run their count queries concurrently. Declared-order error semantics preserved via `.find()` on the results array. Same Dutch error messages. `npm run verify` passes with 0 errors and 0 new warnings.
+This cycle I executed **PB-212 — Parallelize independent queries in import-source logs route**. The two sequential queries (`findUnique` for source existence + `findMany` for logs) now run concurrently via `Promise.all()`. The 404 guard fires after resolution. Same response shape and Dutch error messages. `npm run verify` passes with 0 errors and 0 new warnings.
 
-**This completes the parallelization track** started with PB-205 (sub-record `autoClose` + `getNextSeq` parallelization), extended through PB-208 (planning route FK parallelization) and PB-209 (driver POST batched FK validation), and now closed at the helper level with PB-211. All primary write paths now run independent DB calls concurrently.
+**This completes all identified parallelization opportunities across the entire API surface.** The systematic track started with PB-205 (sub-record autoClose + getNextSeq), continued through PB-208 (planning FK), PB-209 (driver POST batch FK), PB-211 (validateForeignKeys helper), and is now closed with PB-212 (import-source logs). Every route with independent sequential queries now uses `Promise.all()`.
 
-A fresh scan confirmed the codebase is in a clean, consistent state. All remaining items below are carry-over P4 hygiene/perf improvements or minor new observations. No new P1-P3 issues were found.
+A fresh codebase scan confirmed the codebase is in a clean, consistent state. One new minor finding (VALID_ROLES duplication) is added below. All remaining items are carry-over P4 hygiene improvements. No new P1-P3 issues were found.
 
 ## Recommended Next Improvements
 
-### DE-REC-080: Parallelize independent queries in import-source logs route
+### DE-REC-081: Centralize VALID_ROLES constant
 
-- **Title:** Run source existence check and log fetch concurrently
-- **Problem:** `src/app/api/import-sources/[id]/logs/route.ts` performs two sequential independent queries: a `findUnique` for source existence (line ~20) and a `findMany` for logs (line ~28). Both use the same `id` parameter and share no data dependency.
-- **Proposed improvement:** Wrap both in `Promise.all()`. Apply the 404 guard after resolution.
-- **Expected product/technical value:** Saves one DB round trip on Neon serverless per log page view. Consistent with the parallelization patterns applied across all other routes.
+- **Title:** Move VALID_ROLES to api-route-utils.ts
+- **Problem:** `src/app/api/users/[id]/route.ts` defines a local `VALID_ROLES = ["ADMIN", "PLANNER", "VIEWER"]` array (line 6). The `api-route-utils.ts` module already exports `VALID_PLANNING_STATUSES` and `VALID_EMPLOYMENT_TYPES` for the same purpose. Having VALID_ROLES inline creates a drift risk if a new role is added to the domain enum but not updated in the route.
+- **Proposed improvement:** Export `VALID_ROLES` from `api-route-utils.ts` (derived from the `UserRole` enum in `enums.ts`) and import it in the users route.
+- **Expected product/technical value:** Consistency with the existing centralization pattern. Eliminates one more inline constant.
 - **Priority:** P4 Low
 - **Effort:** Small
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Same pattern as PB-205/PB-208. ADMIN-only endpoint, so user-visible impact is narrow, but keeps the codebase consistent.
+- **Why now:** Same spirit as PB-200 (centralize validation constants). Single-file change plus one import update.
 
 ### DE-REC-070: Align client-side `TARGET_ENTITIES` with server-side `VALID_TARGET_ENTITIES` (carried over)
 
@@ -39,7 +39,7 @@ A fresh scan confirmed the codebase is in a clean, consistent state. All remaini
 - **Suggested owner:** Delivery Agent
 - **Why now:** Low-effort shared constant extraction, same spirit as PB-200. Closes a latent drift risk before a new target entity is added.
 
-### DE-REC-074: Carry forward — apply same batching to driver PUT path
+### DE-REC-074: Carry forward — apply same batching to driver PUT path if nested FK writes are added
 
 - **Title:** Extend unique-ID batching to driver update path if nested FK writes are added
 - **Problem:** The PUT handler in `src/app/api/drivers/[id]/route.ts` currently only validates `skillIds` via `validateForeignKeys`. It does not touch employment/function/roster records directly (those use dedicated sub-record routes), so no fix is needed today. But if the update path is ever extended to accept nested record changes in one call, the same `collectUnique()` pattern should be applied.
@@ -61,7 +61,7 @@ A fresh scan confirmed the codebase is in a clean, consistent state. All remaini
 - **Risk:** Low
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
-- **Why now:** Same parallelization pattern as PB-205/PB-208. ADMIN-only endpoint, so the user-visible impact is narrow — but it keeps the codebase consistent.
+- **Why now:** Same parallelization pattern as PB-205/PB-208/PB-212. ADMIN-only endpoint, so the user-visible impact is narrow — but it keeps the codebase consistent.
 
 ### DE-REC-030: Centralize magic numbers in `API_LIMITS` (carried over)
 
@@ -121,6 +121,7 @@ A fresh scan confirmed the codebase is in a clean, consistent state. All remaini
 - Splitting `ImportSourceManager.tsx` (~1477 lines).
 - Splitting `UserGroupManager.tsx` (~642 lines).
 - Splitting `DriverForm.tsx` (~475 lines).
+- Splitting `MobilePlanningView.tsx` (~503 lines).
 - Unique constraints on Driver/Scenario names (product decision).
 - Extending `withPerfLogging` to all routes.
 - Broad `any` type replacement.
@@ -157,10 +158,9 @@ A fresh scan confirmed the codebase is in a clean, consistent state. All remaini
 - Add aria-labels to chart visualizations (Recharts manages).
 - Move roster-assignment POST `rosterProfile` fetch outside the transaction (marginal; keeping the transaction self-contained has its own readability value).
 - Rename `MAX_NOTES_LENGTH` to a more generic constant (current name is correct for the use).
-- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205/208/209/211. Do not re-recommend.
+- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205/208/209/211/212. Do not re-recommend.
 - Preferences `key` field length cap (keys are hardcoded strings from the frontend).
 - `useApi` cache key uses `Function.toString()` (theoretically fragile under minification; different arrow functions produce different minified strings due to URL content).
-- Import logs route sequential queries (same category as DE-REC-059; promoted to DE-REC-080).
 - `autoCloseOpenRecords` UTC dependency (not a defect).
 - Department scope TOCTOU in bulk route (theoretical at current concurrency).
 - Rate limiting on import execute endpoint (ADMIN-only limits exposure).
@@ -176,16 +176,20 @@ A fresh scan confirmed the codebase is in a clean, consistent state. All remaini
 - DE-REC-078 closed in PB-208.
 - DE-REC-074 nested-record portion closed in PB-209 (only the PUT-path reminder remains, see above).
 - DE-REC-079 closed in PB-211.
+- DE-REC-080 closed in PB-212.
 - `ALL_PLANNING_STATUSES` vs `VALID_PLANNING_STATUSES` overlap (`constants.ts` vs `api-route-utils.ts`) — different type signatures serve different purposes: typed domain constant vs. untyped string array for request validation. Not worth merging.
 - `useApi` doFetch silently catches errors — by design; mutation invalidation is fire-and-forget to avoid blocking the UI. Failed refetches show stale data until next successful fetch.
 - Parallelize `getAllowedDepartmentIds` + FK checks in planning routes — `getAllowedDepartmentIds` result is consumed by the driver ownership check which must run before the create path.
 - Parallelize `findUnique` calls in `users/[id]/route.ts` PUT handler — ADMIN-only endpoint with 2 fast queries; minimal gain vs. code churn.
+- Roster-assignment PUT `validateOptionalForeignKey` guard on required field — functionally correct because `validateRequired` runs first; the conditional wrapper is stylistic, not a bug.
+- Empty-body validation on driver PUT — Prisma handles empty updates gracefully; adding a check would be a no-op guard.
+- Extract `importDrivers`/`importStamtabel` from execute route into a separate module — the functions are tightly coupled to the route's transaction and error semantics; extraction adds coupling without reducing complexity.
 
 ## Recommendation Rules
 
 - Recommendations are written by the Delivery Agent after reviewing the codebase and deployment behavior.
 - Each recommendation must include all required fields.
-- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-081.
+- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-082.
 - Approved recommendations are moved to `PRODUCT_BACKLOG.md` by the Product Owner Agent.
 - Rejected recommendations are moved to `Items Intentionally Not Recommended` with a brief reason.
 - This file is the only place the Delivery Agent writes recommendations. Do not scatter suggestions across other files.

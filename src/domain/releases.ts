@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "16 april 2026",
+    title: "Import-logboek queries geparallelliseerd",
+    groups: [
+      {
+        heading: "Prestaties",
+        items: [
+          "Import-logboek queries geparallelliseerd (PB-212): de GET /api/import-sources/[id]/logs route voerde de bestaanscontrole van de importbron en het ophalen van logregels sequentieel uit. Beide queries draaien nu gelijktijdig via Promise.all. Bespaart één DB-roundtrip per logpagina-weergave op Neon serverless. Zelfde response-shape en foutmeldingen.",
+        ],
+      },
+    ],
+  },
+  {
     date: "13 april 2026",
     title: "Actief-chip in subtabellen",
     groups: [
