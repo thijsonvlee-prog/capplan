@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-16):** PB-212 (parallelize import-source logs) completed this cycle, closing the parallelization track. Three new items promoted from agent recommendations: PB-213 (column header keyboard accessibility, P3), PB-214 (centralize disabled .btn-icon, P4), PB-215 (centralize VALID_ROLES, P4). All are small, well-scoped, and ready for immediate pickup. ESC-014 (desktop homescreen) remains Deferred and unmarked (15 cycles).
+**Current direction (2026-04-17):** Three items remain Ready for agent pickup: PB-213 (column header keyboard accessibility, P3, Experience Agent), PB-214 (centralize disabled .btn-icon, P4, Experience Agent), PB-215 (centralize VALID_ROLES, P4, Delivery Agent). No new SM input. No new agent recommendations. ESC-014 (desktop homescreen) remains Deferred and unmarked (16 cycles). PB-212 rotated out of Completed Recently.
 
 ## Status Definitions
 
@@ -79,13 +79,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 
 ## Completed Recently
 
-### PB-212: Parallelize independent queries in import-source logs route
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Completed (2026-04-16)
-- **Source:** DE-REC-080
-- **Implementation note:** Wrapped `findUnique` (source existence) and `findMany` (logs) in `Promise.all()`. 404 guard applied after resolution. Same response shape, same Dutch error messages. `npm run verify` passes with 0 errors. Release notes added to both `src/domain/releases.ts` and `RELEASE_NOTES.md`. Completes the last remaining parallelization opportunity identified across all API routes.
+_No items completed this cycle. PB-212 (parallelize import-source logs, 2026-04-16) rotated out._
 
 ---
 
