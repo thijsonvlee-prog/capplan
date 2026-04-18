@@ -6,26 +6,13 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle I executed **PB-212 — Parallelize independent queries in import-source logs route**. The two sequential queries (`findUnique` for source existence + `findMany` for logs) now run concurrently via `Promise.all()`. The 404 guard fires after resolution. Same response shape and Dutch error messages. `npm run verify` passes with 0 errors and 0 new warnings.
+This cycle I executed **PB-215 — Centralize VALID_ROLES constant**. The inline `VALID_ROLES` array in the users route has been replaced by a shared export from `api-route-utils.ts`, derived from the `UserRole` enum via `Object.values()`. The `UserRole` import was changed from type-only to a value import to enable this. `npm run verify` passes with 0 errors and 0 new warnings.
 
-**This completes all identified parallelization opportunities across the entire API surface.** The systematic track started with PB-205 (sub-record autoClose + getNextSeq), continued through PB-208 (planning FK), PB-209 (driver POST batch FK), PB-211 (validateForeignKeys helper), and is now closed with PB-212 (import-source logs). Every route with independent sequential queries now uses `Promise.all()`.
+**This completes the validation constant centralization track.** All known inline validation arrays (`VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, `VALID_ROLES`) are now exported from `api-route-utils.ts` and derived from their respective domain enums. No remaining inline constants of this type were found in the codebase scan.
 
-A fresh codebase scan confirmed the codebase is in a clean, consistent state. One new minor finding (VALID_ROLES duplication) is added below. All remaining items are carry-over P4 hygiene improvements. No new P1-P3 issues were found.
+A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean, consistent state. All remaining items are carry-over P4 hygiene improvements. One previously documented item (DE-REC-081) is now closed.
 
 ## Recommended Next Improvements
-
-### DE-REC-081: Centralize VALID_ROLES constant
-
-- **Title:** Move VALID_ROLES to api-route-utils.ts
-- **Problem:** `src/app/api/users/[id]/route.ts` defines a local `VALID_ROLES = ["ADMIN", "PLANNER", "VIEWER"]` array (line 6). The `api-route-utils.ts` module already exports `VALID_PLANNING_STATUSES` and `VALID_EMPLOYMENT_TYPES` for the same purpose. Having VALID_ROLES inline creates a drift risk if a new role is added to the domain enum but not updated in the route.
-- **Proposed improvement:** Export `VALID_ROLES` from `api-route-utils.ts` (derived from the `UserRole` enum in `enums.ts`) and import it in the users route.
-- **Expected product/technical value:** Consistency with the existing centralization pattern. Eliminates one more inline constant.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Same spirit as PB-200 (centralize validation constants). Single-file change plus one import update.
 
 ### DE-REC-070: Align client-side `TARGET_ENTITIES` with server-side `VALID_TARGET_ENTITIES` (carried over)
 
@@ -38,6 +25,18 @@ A fresh codebase scan confirmed the codebase is in a clean, consistent state. On
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Low-effort shared constant extraction, same spirit as PB-200. Closes a latent drift risk before a new target entity is added.
+
+### DE-REC-082: Centralize audit action validation constant
+
+- **Title:** Move VALID_AUDIT_ACTIONS to api-route-utils.ts
+- **Problem:** `src/app/api/audit-log/route.ts` defines a local `validActions = ["CREATE", "UPDATE", "DELETE"]` array (line ~43) for filtering. This follows the same pattern that was centralized for planning statuses, employment types, and user roles.
+- **Proposed improvement:** Export `VALID_AUDIT_ACTIONS` from `api-route-utils.ts` and import it in the audit log route. Consider deriving it from an enum if audit actions expand.
+- **Priority:** P4 Low
+- **Effort:** Small
+- **Risk:** Low
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Same centralization pattern. Single constant, single-file change.
 
 ### DE-REC-074: Carry forward — apply same batching to driver PUT path if nested FK writes are added
 
@@ -158,7 +157,7 @@ A fresh codebase scan confirmed the codebase is in a clean, consistent state. On
 - Add aria-labels to chart visualizations (Recharts manages).
 - Move roster-assignment POST `rosterProfile` fetch outside the transaction (marginal; keeping the transaction self-contained has its own readability value).
 - Rename `MAX_NOTES_LENGTH` to a more generic constant (current name is correct for the use).
-- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205/208/209/211/212. Do not re-recommend.
+- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205/208/209/211/212/215. Do not re-recommend.
 - Preferences `key` field length cap (keys are hardcoded strings from the frontend).
 - `useApi` cache key uses `Function.toString()` (theoretically fragile under minification; different arrow functions produce different minified strings due to URL content).
 - `autoCloseOpenRecords` UTC dependency (not a defect).
@@ -177,6 +176,7 @@ A fresh codebase scan confirmed the codebase is in a clean, consistent state. On
 - DE-REC-074 nested-record portion closed in PB-209 (only the PUT-path reminder remains, see above).
 - DE-REC-079 closed in PB-211.
 - DE-REC-080 closed in PB-212.
+- DE-REC-081 closed in PB-215.
 - `ALL_PLANNING_STATUSES` vs `VALID_PLANNING_STATUSES` overlap (`constants.ts` vs `api-route-utils.ts`) — different type signatures serve different purposes: typed domain constant vs. untyped string array for request validation. Not worth merging.
 - `useApi` doFetch silently catches errors — by design; mutation invalidation is fire-and-forget to avoid blocking the UI. Failed refetches show stale data until next successful fetch.
 - Parallelize `getAllowedDepartmentIds` + FK checks in planning routes — `getAllowedDepartmentIds` result is consumed by the driver ownership check which must run before the create path.
@@ -184,12 +184,13 @@ A fresh codebase scan confirmed the codebase is in a clean, consistent state. On
 - Roster-assignment PUT `validateOptionalForeignKey` guard on required field — functionally correct because `validateRequired` runs first; the conditional wrapper is stylistic, not a bug.
 - Empty-body validation on driver PUT — Prisma handles empty updates gracefully; adding a check would be a no-op guard.
 - Extract `importDrivers`/`importStamtabel` from execute route into a separate module — the functions are tightly coupled to the route's transaction and error semantics; extraction adds coupling without reducing complexity.
+- Capacity route inline status keys — these initialize an aggregation object, not a validation constant. Adding a status requires updating both the enum and the aggregation shape by design.
 
 ## Recommendation Rules
 
 - Recommendations are written by the Delivery Agent after reviewing the codebase and deployment behavior.
 - Each recommendation must include all required fields.
-- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-082.
+- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-083.
 - Approved recommendations are moved to `PRODUCT_BACKLOG.md` by the Product Owner Agent.
 - Rejected recommendations are moved to `Items Intentionally Not Recommended` with a brief reason.
 - This file is the only place the Delivery Agent writes recommendations. Do not scatter suggestions across other files.

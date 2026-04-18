@@ -55,13 +55,10 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
-- **Status:** Ready
+- **Status:** Completed
 - **Source:** DE-REC-081
-- **Problem:** `src/app/api/users/[id]/route.ts` defines a local `VALID_ROLES = ["ADMIN", "PLANNER", "VIEWER"]` array. The `api-route-utils.ts` module already exports similar constants (`VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`). Inline definition creates drift risk if a new role is added to the enum but not updated in the route.
-- **Scope:** Export `VALID_ROLES` from `api-route-utils.ts` (derived from the `UserRole` enum in `enums.ts`). Import it in the users route. Single-file change plus one import update.
-- **Dependencies:** None
-- **Definition of done:** `VALID_ROLES` is exported from `api-route-utils.ts` and imported in users route. No inline role array remains. `npm run verify` passes.
-- **Why this matters now:** Same spirit as PB-200 (centralize validation constants). Closes the last known inline constant.
+- **Completed:** 2026-04-18
+- **Implementation note:** Exported `VALID_ROLES = Object.values(UserRole)` from `api-route-utils.ts`. Changed `UserRole` from type-only to value import. Removed inline array from `users/[id]/route.ts` and imported shared constant. `npm run verify` passes with 0 errors.
 
 ---
 
@@ -79,7 +76,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 
 ## Completed Recently
 
-_No items completed this cycle. PB-212 (parallelize import-source logs, 2026-04-16) rotated out._
+### PB-215: Centralize VALID_ROLES constant
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Completed
+- **Completed:** 2026-04-18
+- **Implementation note:** Exported `VALID_ROLES = Object.values(UserRole)` from `api-route-utils.ts`. Changed `UserRole` from type-only to value import. Removed inline array from `users/[id]/route.ts` and imported shared constant. `npm run verify` passes with 0 errors.
 
 ---
 

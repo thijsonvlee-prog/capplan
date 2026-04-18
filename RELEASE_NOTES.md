@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-18 — VALID_ROLES gecentraliseerd
+
+#### Onderhoud
+
+- **VALID_ROLES gecentraliseerd (PB-215):** De inline `VALID_ROLES`-array in `src/app/api/users/[id]/route.ts` is vervangen door een gedeelde export uit `api-route-utils.ts`, afgeleid van de `UserRole`-enum via `Object.values()`. Zelfde patroon als `VALID_PLANNING_STATUSES` en `VALID_EMPLOYMENT_TYPES`. Sluit de laatste bekende inline validatieconstante. Geen gedragswijziging.
+
 ### 2026-04-16 — Import-logboek queries geparallelliseerd
 
 #### Prestaties

@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "18 april 2026",
+    title: "VALID_ROLES gecentraliseerd",
+    groups: [
+      {
+        heading: "Onderhoud",
+        items: [
+          "VALID_ROLES gecentraliseerd (PB-215): de inline VALID_ROLES-array in de gebruikersroute is vervangen door een gedeelde export uit api-route-utils.ts, afgeleid van de UserRole-enum. Zelfde patroon als VALID_PLANNING_STATUSES en VALID_EMPLOYMENT_TYPES. Sluit de laatste bekende inline validatieconstante.",
+        ],
+      },
+    ],
+  },
+  {
     date: "16 april 2026",
     title: "Import-logboek queries geparallelliseerd",
     groups: [

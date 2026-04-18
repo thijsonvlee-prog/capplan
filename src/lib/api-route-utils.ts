@@ -6,8 +6,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PlanningStatus, EmploymentType } from "@/domain/enums";
-import type { UserRole } from "@/domain/enums";
+import { PlanningStatus, EmploymentType, UserRole } from "@/domain/enums";
 
 // === User identity resolution ===
 
@@ -330,6 +329,9 @@ export const VALID_PLANNING_STATUSES = Object.values(PlanningStatus);
 
 /** Valid employment type values for request validation */
 export const VALID_EMPLOYMENT_TYPES = Object.values(EmploymentType);
+
+/** Valid user role values for request validation */
+export const VALID_ROLES = Object.values(UserRole);
 
 /** Maximum character length for planning entry notes */
 export const MAX_NOTES_LENGTH = 500;

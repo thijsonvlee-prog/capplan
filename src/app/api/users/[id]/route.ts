@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRole, parseJsonBody } from "@/lib/api-route-utils";
+import { requireRole, parseJsonBody, VALID_ROLES } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
-
-const VALID_ROLES = ["ADMIN", "PLANNER", "VIEWER"];
 
 export async function PUT(
   request: NextRequest,
