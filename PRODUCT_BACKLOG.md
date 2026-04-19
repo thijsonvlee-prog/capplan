@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-19):** PB-216 completed by Delivery Agent. Two items remain Ready: PB-213 (column header keyboard accessibility, P3, Experience Agent), PB-214 (centralize disabled .btn-icon, P4, Experience Agent). No new SM input. ESC-014 (desktop homescreen) remains Deferred and unmarked (18 cycles).
+**Current direction (2026-04-19):** PB-216 completed by Delivery Agent, rotated out. Two items remain Ready: PB-213 (column header keyboard accessibility, P3, Experience Agent), PB-214 (centralize disabled .btn-icon, P4, Experience Agent). No new SM input, no new agent recommendations. ESC-014 (desktop homescreen) remains Deferred and unmarked (18 cycles). The validation constant centralization track is fully complete. All active work is Experience Agent scope.
 
 ## Status Definitions
 
@@ -67,13 +67,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 
 ## Completed Recently
 
-### PB-216: Centralize VALID_AUDIT_ACTIONS constant
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Completed
-- **Completed:** 2026-04-19
-- **Implementation note:** Exported `VALID_AUDIT_ACTIONS = ["CREATE", "UPDATE", "DELETE"] as const` from `api-route-utils.ts`. Removed inline `validActions` array from `audit-log/route.ts` and imported the shared constant. Type-safe `includes()` check via `as typeof VALID_AUDIT_ACTIONS[number]`. `npm run verify` passes with 0 errors.
+_No items completed this cycle. PB-216 (VALID_AUDIT_ACTIONS centralization) rotated out after one-cycle retention._
 
 ---
 
