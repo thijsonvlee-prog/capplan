@@ -6,11 +6,11 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle I executed **PB-215 — Centralize VALID_ROLES constant**. The inline `VALID_ROLES` array in the users route has been replaced by a shared export from `api-route-utils.ts`, derived from the `UserRole` enum via `Object.values()`. The `UserRole` import was changed from type-only to a value import to enable this. `npm run verify` passes with 0 errors and 0 new warnings.
+This cycle I executed **PB-216 — Centralize VALID_AUDIT_ACTIONS constant**. The inline `validActions` array in the audit log route has been replaced by a shared `VALID_AUDIT_ACTIONS` export from `api-route-utils.ts`, using `as const` for type safety. `npm run verify` passes with 0 errors and 0 new warnings.
 
-**This completes the validation constant centralization track.** All known inline validation arrays (`VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, `VALID_ROLES`) are now exported from `api-route-utils.ts` and derived from their respective domain enums. No remaining inline constants of this type were found in the codebase scan.
+**The validation constant centralization track is now fully complete.** All known inline validation arrays (`VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, `VALID_ROLES`, `VALID_AUDIT_ACTIONS`) are exported from `api-route-utils.ts`. No remaining inline validation constants were found in the codebase scan.
 
-A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean, consistent state. All remaining items are carry-over P4 hygiene improvements. One previously documented item (DE-REC-081) is now closed.
+A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean, consistent state. All remaining items are carry-over P4 hygiene improvements. DE-REC-082 is now closed (executed as PB-216).
 
 ## Recommended Next Improvements
 
@@ -25,18 +25,6 @@ A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean,
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Low-effort shared constant extraction, same spirit as PB-200. Closes a latent drift risk before a new target entity is added.
-
-### DE-REC-082: Centralize audit action validation constant
-
-- **Title:** Move VALID_AUDIT_ACTIONS to api-route-utils.ts
-- **Problem:** `src/app/api/audit-log/route.ts` defines a local `validActions = ["CREATE", "UPDATE", "DELETE"]` array (line ~43) for filtering. This follows the same pattern that was centralized for planning statuses, employment types, and user roles.
-- **Proposed improvement:** Export `VALID_AUDIT_ACTIONS` from `api-route-utils.ts` and import it in the audit log route. Consider deriving it from an enum if audit actions expand.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Risk:** Low
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Same centralization pattern. Single constant, single-file change.
 
 ### DE-REC-074: Carry forward — apply same batching to driver PUT path if nested FK writes are added
 
@@ -177,6 +165,7 @@ A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean,
 - DE-REC-079 closed in PB-211.
 - DE-REC-080 closed in PB-212.
 - DE-REC-081 closed in PB-215.
+- DE-REC-082 closed in PB-216.
 - `ALL_PLANNING_STATUSES` vs `VALID_PLANNING_STATUSES` overlap (`constants.ts` vs `api-route-utils.ts`) — different type signatures serve different purposes: typed domain constant vs. untyped string array for request validation. Not worth merging.
 - `useApi` doFetch silently catches errors — by design; mutation invalidation is fire-and-forget to avoid blocking the UI. Failed refetches show stale data until next successful fetch.
 - Parallelize `getAllowedDepartmentIds` + FK checks in planning routes — `getAllowedDepartmentIds` result is consumed by the driver ownership check which must run before the create path.
@@ -190,7 +179,7 @@ A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean,
 
 - Recommendations are written by the Delivery Agent after reviewing the codebase and deployment behavior.
 - Each recommendation must include all required fields.
-- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-083.
+- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-083. (DE-REC-082 closed in PB-216.)
 - Approved recommendations are moved to `PRODUCT_BACKLOG.md` by the Product Owner Agent.
 - Rejected recommendations are moved to `Items Intentionally Not Recommended` with a brief reason.
 - This file is the only place the Delivery Agent writes recommendations. Do not scatter suggestions across other files.

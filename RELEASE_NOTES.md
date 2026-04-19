@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-19 — VALID_AUDIT_ACTIONS gecentraliseerd
+
+#### Onderhoud
+
+- **VALID_AUDIT_ACTIONS gecentraliseerd (PB-216):** De inline `validActions`-array in `src/app/api/audit-log/route.ts` is vervangen door een gedeelde export uit `api-route-utils.ts`. Zelfde centraliseringpatroon als `VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES` en `VALID_ROLES`. Geen gedragswijziging.
+
 ### 2026-04-18 — VALID_ROLES gecentraliseerd
 
 #### Onderhoud

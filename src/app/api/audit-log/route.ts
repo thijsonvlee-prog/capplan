@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/api-route-utils";
+import { requireRole, VALID_AUDIT_ACTIONS } from "@/lib/api-route-utils";
 
 /**
  * GET /api/audit-log
@@ -40,10 +40,9 @@ export async function GET(request: NextRequest) {
     }
 
     if (action) {
-      const validActions = ["CREATE", "UPDATE", "DELETE"];
-      if (!validActions.includes(action)) {
+      if (!VALID_AUDIT_ACTIONS.includes(action as typeof VALID_AUDIT_ACTIONS[number])) {
         return NextResponse.json(
-          { error: `Ongeldige actie: "${action}". Geldige acties: ${validActions.join(", ")}` },
+          { error: `Ongeldige actie: "${action}". Geldige acties: ${VALID_AUDIT_ACTIONS.join(", ")}` },
           { status: 400 }
         );
       }

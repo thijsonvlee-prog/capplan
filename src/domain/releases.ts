@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "19 april 2026",
+    title: "VALID_AUDIT_ACTIONS gecentraliseerd",
+    groups: [
+      {
+        heading: "Onderhoud",
+        items: [
+          "VALID_AUDIT_ACTIONS gecentraliseerd (PB-216): de inline validActions-array in de auditlog-route is vervangen door een gedeelde export uit api-route-utils.ts. Zelfde centraliseringpatroon als VALID_PLANNING_STATUSES, VALID_EMPLOYMENT_TYPES en VALID_ROLES. Geen gedragswijziging.",
+        ],
+      },
+    ],
+  },
+  {
     date: "18 april 2026",
     title: "VALID_ROLES gecentraliseerd",
     groups: [

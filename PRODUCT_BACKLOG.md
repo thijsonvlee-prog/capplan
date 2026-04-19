@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-18):** PB-215 completed by Delivery Agent. Three items remain Ready: PB-213 (column header keyboard accessibility, P3, Experience Agent), PB-214 (centralize disabled .btn-icon, P4, Experience Agent), PB-216 (centralize VALID_AUDIT_ACTIONS, P4, Delivery Agent — new, promoted from DE-REC-082). No new SM input. ESC-014 (desktop homescreen) remains Deferred and unmarked (17 cycles).
+**Current direction (2026-04-19):** PB-216 completed by Delivery Agent. Two items remain Ready: PB-213 (column header keyboard accessibility, P3, Experience Agent), PB-214 (centralize disabled .btn-icon, P4, Experience Agent). No new SM input. ESC-014 (desktop homescreen) remains Deferred and unmarked (18 cycles).
 
 ## Status Definitions
 
@@ -51,18 +51,6 @@ Items are ordered by priority within each section. Ties are broken by expected u
 - **Definition of done:** Disabled pagination buttons are visibly distinct at 40% opacity. No inline disabled styling remains. `npm run verify` passes.
 - **Why this matters now:** Pure consistency fix. Centralizes a pattern that's already established but scattered across 16 inline declarations.
 
-### PB-216: Centralize VALID_AUDIT_ACTIONS constant
-
-- **Owner:** Delivery Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Source:** DE-REC-082
-- **Problem:** `src/app/api/audit-log/route.ts` defines a local `validActions = ["CREATE", "UPDATE", "DELETE"]` array (line ~43) for filtering. This follows the same centralization pattern already applied to planning statuses, employment types, and user roles.
-- **Scope:** Export `VALID_AUDIT_ACTIONS` from `api-route-utils.ts`. Import it in the audit log route. Single constant, single-file change plus the shared module.
-- **Dependencies:** None
-- **Definition of done:** No inline action validation arrays remain in `audit-log/route.ts`. `VALID_AUDIT_ACTIONS` is exported from `api-route-utils.ts`. `npm run verify` passes.
-- **Why this matters now:** Same centralization pattern as PB-215. Small, clean, no risk. Keeps the codebase consistent.
-
 ---
 
 ## In Progress
@@ -79,13 +67,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 
 ## Completed Recently
 
-### PB-215: Centralize VALID_ROLES constant
+### PB-216: Centralize VALID_AUDIT_ACTIONS constant
 
 - **Owner:** Delivery Agent
 - **Priority:** P4 Low
 - **Status:** Completed
-- **Completed:** 2026-04-18
-- **Implementation note:** Exported `VALID_ROLES = Object.values(UserRole)` from `api-route-utils.ts`. Changed `UserRole` from type-only to value import. Removed inline array from `users/[id]/route.ts` and imported shared constant. `npm run verify` passes with 0 errors.
+- **Completed:** 2026-04-19
+- **Implementation note:** Exported `VALID_AUDIT_ACTIONS = ["CREATE", "UPDATE", "DELETE"] as const` from `api-route-utils.ts`. Removed inline `validActions` array from `audit-log/route.ts` and imported the shared constant. Type-safe `includes()` check via `as typeof VALID_AUDIT_ACTIONS[number]`. `npm run verify` passes with 0 errors.
 
 ---
 

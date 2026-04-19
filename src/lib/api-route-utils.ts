@@ -333,6 +333,9 @@ export const VALID_EMPLOYMENT_TYPES = Object.values(EmploymentType);
 /** Valid user role values for request validation */
 export const VALID_ROLES = Object.values(UserRole);
 
+/** Valid audit log action values for request validation */
+export const VALID_AUDIT_ACTIONS = ["CREATE", "UPDATE", "DELETE"] as const;
+
 /** Maximum character length for planning entry notes */
 export const MAX_NOTES_LENGTH = 500;
 
