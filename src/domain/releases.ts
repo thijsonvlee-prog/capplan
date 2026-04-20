@@ -21,6 +21,24 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "20 april 2026",
+    title: "Toegankelijkheid en visuele consistentie",
+    groups: [
+      {
+        heading: "Toegankelijkheid",
+        items: [
+          "Sorteerbare kolomkoppen in het planningsrooster zijn nu volledig toegankelijk via het toetsenbord (PB-213): Tab naar de kolomkop, druk op Enter of Spatie om te sorteren. Schermlezers melden de huidige sorteerrichting via aria-sort.",
+        ],
+      },
+      {
+        heading: "UX / design",
+        items: [
+          "Uitgeschakelde paginaknoppen zijn nu beter zichtbaar (PB-214): de opacity is verhoogd van 30% naar 40% en de styling is gecentraliseerd in de .btn-icon CSS-klasse. Inline herhalingen in 4 componenten (16 declaraties) zijn verwijderd.",
+        ],
+      },
+    ],
+  },
+  {
     date: "19 april 2026",
     title: "VALID_AUDIT_ACTIONS gecentraliseerd",
     groups: [

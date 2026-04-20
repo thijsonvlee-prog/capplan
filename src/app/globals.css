@@ -253,6 +253,12 @@ body {
   background-color: var(--color-brand-50);
 }
 
+.btn-icon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .btn-danger {
   display: inline-flex;
   align-items: center;
@@ -288,6 +294,12 @@ body {
 .btn-icon-danger:hover {
   color: var(--color-danger-600);
   background-color: var(--color-danger-50);
+}
+
+.btn-icon-danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* ===================================================================

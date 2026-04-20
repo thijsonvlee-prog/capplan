@@ -6,6 +6,16 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-20 — Toegankelijkheid en visuele consistentie
+
+#### Toegankelijkheid
+
+- **Sorteerbare kolomkoppen toetsenbordtoegankelijk (PB-213):** De kolomkoppen "Chauffeur" en extra kolommen in het planningsrooster hebben nu `role="columnheader"`, `aria-sort`, `tabIndex={0}` en `onKeyDown` (Enter/Spatie). Toetsenbordgebruikers kunnen nu sorteren zonder muis. Schermlezers melden de huidige sorteerrichting.
+
+#### UX / design
+
+- **Uitgeschakelde paginaknoppen gecentraliseerd en verbeterd (PB-214):** De `.btn-icon` en `.btn-icon-danger` CSS-klassen bevatten nu een `:disabled` regel (opacity 0.4, cursor not-allowed, pointer-events none). De 16 inline `disabled:opacity-30 disabled:cursor-not-allowed` declaraties in `PlanningGrid.tsx`, `DriverList.tsx`, `MobilePlanningView.tsx` en `AuditLogViewer.tsx` zijn verwijderd. Disabled buttons zijn nu duidelijker zichtbaar dan voorheen (40% vs 30% opacity).
+
 ### 2026-04-19 — VALID_AUDIT_ACTIONS gecentraliseerd
 
 #### Onderhoud

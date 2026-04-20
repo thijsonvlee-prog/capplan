@@ -274,7 +274,7 @@ export function DriverList() {
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="btn-icon"
                     aria-label="Vorige pagina"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -285,7 +285,7 @@ export function DriverList() {
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
-                    className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="btn-icon"
                     aria-label="Volgende pagina"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -425,7 +425,7 @@ export function DriverList() {
                   <button
                     onClick={() => setPage(1)}
                     disabled={page <= 1}
-                    className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="btn-icon"
                     title="Eerste pagina"
                     aria-label="Eerste pagina"
                   >
@@ -434,7 +434,7 @@ export function DriverList() {
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="btn-icon"
                     title="Vorige pagina"
                     aria-label="Vorige pagina"
                   >
@@ -446,7 +446,7 @@ export function DriverList() {
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
-                    className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="btn-icon"
                     title="Volgende pagina"
                     aria-label="Volgende pagina"
                   >
@@ -455,7 +455,7 @@ export function DriverList() {
                   <button
                     onClick={() => setPage(totalPages)}
                     disabled={page >= totalPages}
-                    className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="btn-icon"
                     title="Laatste pagina"
                     aria-label="Laatste pagina"
                   >

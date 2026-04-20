@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-19):** PB-216 completed by Delivery Agent, rotated out. Two items remain Ready: PB-213 (column header keyboard accessibility, P3, Experience Agent), PB-214 (centralize disabled .btn-icon, P4, Experience Agent). No new SM input, no new agent recommendations. ESC-014 (desktop homescreen) remains Deferred and unmarked (18 cycles). The validation constant centralization track is fully complete. All active work is Experience Agent scope.
+**Current direction (2026-04-20):** PB-213 and PB-214 completed by Experience Agent. No items remain in Ready. ESC-014 (desktop homescreen) remains Deferred and unmarked. All scheduled work is complete.
 
 ## Status Definitions
 
@@ -27,29 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-213: Planning grid sortable column headers — keyboard accessibility
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Source:** EX-REC-065
-- **Problem:** The `<th>` elements for "Chauffeur" and extra columns in `PlanningGrid.tsx` (lines ~490–517) have `onClick` handlers for sorting but no `role`, `tabIndex`, or `onKeyDown` handler. Keyboard-only users and screen readers cannot trigger sort actions. PB-202 resolved DayCell accessibility but did not cover column headers.
-- **Scope:** Add `role="columnheader"`, `aria-sort` reflecting current direction, `tabIndex={0}`, and `onKeyDown` (Enter/Space triggers sort) to the sortable `<th>` elements. Add `aria-label` with current sort direction. Small, focused edit in `PlanningGrid.tsx`.
-- **Dependencies:** None
-- **Definition of done:** Keyboard users can sort all sortable columns via Enter/Space. Screen readers announce sort state. `npm run verify` passes.
-- **Why this matters now:** Accessibility is a product quality baseline. DayCell was addressed (PB-202); column headers are the last remaining keyboard gap in the planning grid.
-
-### PB-214: Centralize disabled state on .btn-icon and improve opacity
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Source:** EX-REC-064
-- **Problem:** `.btn-icon` CSS class has no `:disabled` pseudo-class rule. All 16 pagination buttons across 4 components repeat `disabled:opacity-30 disabled:cursor-not-allowed` inline. The 30% opacity is too faint — disabled buttons nearly disappear.
-- **Scope:** Add `:disabled` rules to `.btn-icon` and `.btn-icon-danger` in `globals.css` (opacity: 0.4, cursor: not-allowed, pointer-events: none). Remove the 16 inline `disabled:opacity-30 disabled:cursor-not-allowed` declarations from `PlanningGrid.tsx`, `DriverList.tsx`, `MobilePlanningView.tsx`, and `AuditLogViewer.tsx`.
-- **Dependencies:** None
-- **Definition of done:** Disabled pagination buttons are visibly distinct at 40% opacity. No inline disabled styling remains. `npm run verify` passes.
-- **Why this matters now:** Pure consistency fix. Centralizes a pattern that's already established but scattered across 16 inline declarations.
+_No items currently in Ready status._
 
 ---
 
@@ -67,7 +45,19 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 
 ## Completed Recently
 
-_No items completed this cycle. PB-216 (VALID_AUDIT_ACTIONS centralization) rotated out after one-cycle retention._
+### PB-213: Planning grid sortable column headers — keyboard accessibility
+
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Completed (2026-04-20)
+- **Implementation note:** Added `role="columnheader"`, `aria-sort`, `tabIndex={0}`, and `onKeyDown` (Enter/Space triggers sort) plus Dutch `aria-label` to both the "Chauffeur" `<th>` and all extra column `<th>` elements in `PlanningGrid.tsx`. `npm run verify` passes.
+
+### PB-214: Centralize disabled state on .btn-icon and improve opacity
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Completed (2026-04-20)
+- **Implementation note:** Added `.btn-icon:disabled` and `.btn-icon-danger:disabled` rules in `globals.css` (opacity 0.4, cursor not-allowed, pointer-events none). Removed 16 inline `disabled:opacity-30 disabled:cursor-not-allowed` declarations from `PlanningGrid.tsx`, `DriverList.tsx`, `MobilePlanningView.tsx`, and `AuditLogViewer.tsx`. `npm run verify` passes.
 
 ---
 

@@ -494,7 +494,12 @@ export function PlanningGrid() {
                     extraColumns.length === 0 && "grid-sticky-edge"
                   )}
                   style={{ minWidth: driverColWidth }}
+                  role="columnheader"
+                  aria-sort={sortConfig?.key === "name" ? (sortConfig.direction === "asc" ? "ascending" : "descending") : "none"}
+                  tabIndex={0}
                   onClick={() => handleSort("name")}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSort("name"); } }}
+                  aria-label={`Chauffeur, sorteer ${sortConfig?.key === "name" ? (sortConfig.direction === "asc" ? "aflopend" : "geen sortering") : "oplopend"}`}
                 >
                   Chauffeur <SortIcon colKey="name" />
                 </th>
@@ -510,7 +515,12 @@ export function PlanningGrid() {
                         isLast && "grid-sticky-edge"
                       )}
                       style={{ left: driverColWidth + i * extraColWidth, minWidth: extraColWidth }}
+                      role="columnheader"
+                      aria-sort={sortConfig?.key === colKey ? (sortConfig.direction === "asc" ? "ascending" : "descending") : "none"}
+                      tabIndex={0}
                       onClick={() => handleSort(colKey)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSort(colKey); } }}
+                      aria-label={`${colDef.label}, sorteer ${sortConfig?.key === colKey ? (sortConfig.direction === "asc" ? "aflopend" : "geen sortering") : "oplopend"}`}
                     >
                       {colDef.label} <SortIcon colKey={colKey} />
                     </th>
@@ -707,7 +717,7 @@ export function PlanningGrid() {
             <button
               onClick={() => setPage(1)}
               disabled={page <= 1}
-              className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+              className="btn-icon"
               title="Eerste pagina"
               aria-label="Eerste pagina"
             >
@@ -716,7 +726,7 @@ export function PlanningGrid() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+              className="btn-icon"
               title="Vorige pagina"
               aria-label="Vorige pagina"
             >
@@ -728,7 +738,7 @@ export function PlanningGrid() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+              className="btn-icon"
               title="Volgende pagina"
               aria-label="Volgende pagina"
             >
@@ -737,7 +747,7 @@ export function PlanningGrid() {
             <button
               onClick={() => setPage(totalPages)}
               disabled={page >= totalPages}
-              className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+              className="btn-icon"
               title="Laatste pagina"
               aria-label="Laatste pagina"
             >

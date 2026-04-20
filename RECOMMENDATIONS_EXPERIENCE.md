@@ -2,22 +2,17 @@
 
 ## Summary
 
-**This cycle (2026-04-16):** Experience Agent run 23. No Ready tasks in backlog. Fresh full-application UX/design scan completed to identify new improvement opportunities.
+**This cycle (2026-04-20):** Experience Agent run 24. Both Ready tasks (PB-213, PB-214) executed successfully.
 
 **What was improved this cycle:**
 
-No implementation this cycle — no Experience Agent tasks were in Ready status.
+1. **PB-213 — Sortable column headers keyboard accessibility.** The "Chauffeur" and extra column `<th>` elements in the planning grid now have `role="columnheader"`, `aria-sort`, `tabIndex={0}`, `onKeyDown` (Enter/Space), and Dutch `aria-label` text. Keyboard-only users can now sort all sortable columns. Screen readers announce the current sort direction.
 
-**Fresh scan findings (2026-04-16):**
-Two genuinely new issues identified during the full-application design scan:
-
-1. **Disabled pagination button opacity (EX-REC-064).** The `.btn-icon` CSS class has no `:disabled` rule. All 16 pagination buttons across 4 components use inline `disabled:opacity-30 disabled:cursor-not-allowed` — the 30% opacity is too faint for a premium product. Centralizing this in the CSS class would improve visual clarity and eliminate inline repetition.
-
-2. **Sortable column headers lack keyboard accessibility (EX-REC-065).** The `<th>` elements in the planning grid have `onClick` handlers for sorting but no `role="button"`, `tabIndex`, or `onKeyDown`. Keyboard-only and screen reader users cannot sort columns. This was not previously flagged because DayCell accessibility (PB-202) focused on grid cells, not column headers.
+2. **PB-214 — Centralized disabled .btn-icon styling.** Added `:disabled` pseudo-class rules to `.btn-icon` and `.btn-icon-danger` in `globals.css` (opacity 0.4, cursor not-allowed, pointer-events none). Removed 16 inline `disabled:opacity-30 disabled:cursor-not-allowed` declarations from 4 component files. Disabled buttons are now more visible (40% vs 30% opacity) and styled from one place.
 
 **Current design alignment with DESIGN.md:**
-- **Overall product quality: 8.5/10.** Unchanged from previous cycle. The remaining gaps are narrow and well-documented.
-- **Planning grid:** Well-aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full DayCell aria-label coverage. Column header keyboard access is the one remaining a11y gap (EX-REC-065).
+- **Overall product quality: 8.5/10.** Unchanged. The remaining gaps are narrow and well-documented.
+- **Planning grid:** Fully aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full DayCell aria-label coverage, column header keyboard access now complete.
 - **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart, KPIs, and table all use design tokens.
 - **Settings page:** Well-aligned (§2.5, §7.1). Section titles Manrope.
 - **Drivers page:** Fully aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar, Actief chip in place.
@@ -26,35 +21,11 @@ Two genuinely new issues identified during the full-application design scan:
 - **Mobile:** Well-aligned.
 
 **Where design quality is still below target:**
-- RosterProfileEditor 28-day grid is still flat and mechanical (EX-REC-055, already in Deferred).
-- Disabled pagination buttons are too faint at 30% opacity (EX-REC-064, new).
-- Planning grid column headers are not keyboard-accessible (EX-REC-065, new).
+- RosterProfileEditor 28-day grid is still flat and mechanical (EX-REC-055, Deferred).
 
 ## Recommended Next Improvements
 
-_EX-REC-063 shipped as PB-210 (2026-04-13). EX-REC-064 and EX-REC-065 are new this cycle._
-
-### EX-REC-064: Centralize disabled state on .btn-icon and improve opacity
-
-- **Problem:** The `.btn-icon` CSS class has no `:disabled` pseudo-class rule. All 16 pagination buttons across `PlanningGrid.tsx`, `DriverList.tsx`, `MobilePlanningView.tsx`, and `AuditLogViewer.tsx` repeat `disabled:opacity-30 disabled:cursor-not-allowed` inline. The 30% opacity is too faint — disabled buttons nearly disappear, which weakens the interactive hierarchy (DESIGN.md §7.6: buttons must communicate priority clearly). The same pattern applies to `.btn-icon-danger`.
-- **Proposed improvement:** Add `:disabled` rules to `.btn-icon` and `.btn-icon-danger` in `globals.css`: `opacity: 0.4; cursor: not-allowed; pointer-events: none;`. Then remove the 16 inline `disabled:opacity-30 disabled:cursor-not-allowed` declarations. Single CSS edit + 4 component files cleanup.
-- **Expected user value:** Disabled buttons are visibly distinct but not invisible. Consistent styling maintained in one place.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Pure consistency fix. The pattern is already established but not centralized. Improves design token discipline (one place to adjust disabled state) and removes 16 inline repetitions.
-
-### EX-REC-065: Planning grid sortable column headers — keyboard accessibility
-
-- **Problem:** The `<th>` elements for "Chauffeur" and extra columns in `PlanningGrid.tsx` (lines 490–517) have `onClick` handlers for sorting but no `role="button"`, `tabIndex={0}`, or `onKeyDown` handler. Keyboard-only users and screen readers cannot trigger sort actions. PB-202 resolved DayCell accessibility but did not cover column headers.
-- **Proposed improvement:** Add `role="columnheader" aria-sort={...}` and `tabIndex={0}` plus `onKeyDown` (Enter/Space triggers sort) to the sortable `<th>` elements. Add `aria-label` with current sort direction. Small, focused edit in `PlanningGrid.tsx`.
-- **Expected user value:** Keyboard users can sort the planning grid without a mouse. Screen readers announce sort state.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** Accessibility is a product quality baseline, not optional polish. DayCell was addressed (PB-202); column headers are the remaining gap in the planning grid's interactive elements.
+_EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20)._
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -140,8 +111,6 @@ _EX-REC-063 shipped as PB-210 (2026-04-13). EX-REC-064 and EX-REC-065 are new th
 - **Mobile planning is read-only.** Monitor user demand for edit capability (EX-REC-052).
 - **RosterProfileEditor grid.** Flat, mechanical 28-day grid. See EX-REC-055.
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
-- **Planning grid column headers keyboard gap.** Sortable `<th>` elements lack keyboard handlers. Keyboard-only users cannot sort columns. See EX-REC-065.
-- **Disabled button visibility.** 30% opacity on disabled pagination buttons is too faint. See EX-REC-064.
 
 ## Items Intentionally Not Recommended
 
@@ -188,6 +157,8 @@ _EX-REC-063 shipped as PB-210 (2026-04-13). EX-REC-064 and EX-REC-065 are new th
 - **StatusSelector danger color override:** Resolved (PB-198).
 - **Desktop duplicate page title:** Resolved (EX-REC-057, 2026-04-08).
 - **SubTable "Actief" plain text marker:** Resolved (PB-210, 2026-04-13).
+- **Disabled pagination button opacity:** Resolved (PB-214, 2026-04-20).
+- **Column header keyboard accessibility:** Resolved (PB-213, 2026-04-20).
 
 ## Recommendation Rules
 

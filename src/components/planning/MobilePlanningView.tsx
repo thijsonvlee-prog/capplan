@@ -251,7 +251,7 @@ export function MobilePlanningView() {
               <button
                 onClick={() => setDriverPage((p) => Math.max(1, p - 1))}
                 disabled={driverPage <= 1}
-                className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                className="btn-icon"
                 aria-label="Vorige pagina"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -262,7 +262,7 @@ export function MobilePlanningView() {
               <button
                 onClick={() => setDriverPage((p) => Math.min(totalDriverPages, p + 1))}
                 disabled={driverPage >= totalDriverPages}
-                className="btn-icon disabled:opacity-30 disabled:cursor-not-allowed"
+                className="btn-icon"
                 aria-label="Volgende pagina"
               >
                 <ChevronRight className="w-4 h-4" />
