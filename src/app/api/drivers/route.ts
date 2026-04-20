@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateMaxLengths, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, activeDriverWhereClause, validateForeignKeys, validateMaxLengths, requireRole, requireRoleWithSession, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export const GET = withPerfLogging(
   "GET /api/drivers",
   async (request: NextRequest) => {
   try {
+    const { error: authError, session } = await requireRoleWithSession("VIEWER");
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     const isActive = searchParams.get("isActive");
     const search = searchParams.get("search");
@@ -22,7 +25,7 @@ export const GET = withPerfLogging(
     const where: any = {};
 
     // Apply user group department filter
-    const allowedDepts = await getAllowedDepartmentIds();
+    const allowedDepts = await getAllowedDepartmentIds(session);
     if (allowedDepts !== null) {
       Object.assign(where, driverDepartmentFilter(allowedDepts));
     }

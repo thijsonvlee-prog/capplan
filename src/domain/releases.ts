@@ -22,6 +22,18 @@ export interface Release {
 export const RELEASES: Release[] = [
   {
     date: "20 april 2026",
+    title: "Beveiligingsfix: ontbrekende VIEWER-controle op kern-GET-endpoints",
+    groups: [
+      {
+        heading: "Beveiliging",
+        items: [
+          "VIEWER-rolcontrole toegevoegd op 6 GET-endpoints die ten onrechte geen authenticatie vereisten: /api/drivers, /api/drivers/[id], /api/planning, /api/planning/for-range, /api/planning/capacity en /api/roster-profiles/[id]. Wanneer authenticatie is geconfigureerd, vereisen deze endpoints nu minimaal de VIEWER-rol. Geen gedragswijziging in omgevingen zonder authenticatie. Sessiehergebruik via requireRoleWithSession voorkomt dubbele DB-lookups op endpoints met afdelingsfiltering.",
+        ],
+      },
+    ],
+  },
+  {
+    date: "20 april 2026",
     title: "Toegankelijkheid en visuele consistentie",
     groups: [
       {

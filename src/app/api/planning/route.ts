@@ -7,6 +7,9 @@ export const GET = withPerfLogging(
   "GET /api/planning",
   async (request: NextRequest) => {
   try {
+    const { error: authError, session } = await requireRoleWithSession("VIEWER");
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     const scenarioId = searchParams.get("scenarioId");
     const dates = searchParams.get("dates");
@@ -38,7 +41,7 @@ export const GET = withPerfLogging(
 
     if (driverId) {
       // Verify the driver is within the user's allowed departments
-      const allowedDepts = await getAllowedDepartmentIds();
+      const allowedDepts = await getAllowedDepartmentIds(session);
       if (allowedDepts !== null) {
         const driverInScope = await prisma.driver.count({
           where: { id: driverId, ...driverDepartmentFilter(allowedDepts) },

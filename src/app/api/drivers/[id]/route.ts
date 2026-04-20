@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { transformDriver, driverInclude, validateForeignKeys, validateMaxLengths, requireRole, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { transformDriver, driverInclude, validateForeignKeys, validateMaxLengths, requireRole, requireRoleWithSession, parseJsonBody, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 import { logAudit, getAuditUserId } from "@/lib/audit";
 
 export async function GET(
@@ -8,10 +8,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { error: authError, session } = await requireRoleWithSession("VIEWER");
+    if (authError) return authError;
+
     const { id } = await params;
 
     // Apply user group department filter
-    const allowedDepts = await getAllowedDepartmentIds();
+    const allowedDepts = await getAllowedDepartmentIds(session);
     const where: any = { id };
     if (allowedDepts !== null) {
       Object.assign(where, driverDepartmentFilter(allowedDepts));

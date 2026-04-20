@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-20 — Beveiligingsfix: ontbrekende VIEWER-controle op kern-GET-endpoints
+
+#### Beveiliging
+
+- **VIEWER-rolcontrole toegevoegd op 6 GET-endpoints:** De endpoints `GET /api/drivers`, `GET /api/drivers/[id]`, `GET /api/planning`, `GET /api/planning/for-range`, `GET /api/planning/capacity` en `GET /api/roster-profiles/[id]` vereisten geen authenticatie wanneer `NEXTAUTH_SECRET` was geconfigureerd. `getAllowedDepartmentIds()` gaf `null` (onbeperkte toegang) terug voor niet-ingelogde gebruikers, waardoor alle chauffeur- en planningsgegevens toegankelijk waren zonder sessie. Alle 6 endpoints vereisen nu minimaal de VIEWER-rol via `requireRole`/`requireRoleWithSession`. Sessiehergebruik via `requireRoleWithSession` voorkomt dubbele DB-lookups op endpoints die ook afdelingsfiltering toepassen. Geen gedragswijziging in omgevingen zonder authenticatie.
+
 ### 2026-04-20 — Toegankelijkheid en visuele consistentie
 
 #### Toegankelijkheid

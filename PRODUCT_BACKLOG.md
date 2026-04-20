@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-20):** PB-213 and PB-214 completed by Experience Agent. No items remain in Ready. ESC-014 (desktop homescreen) remains Deferred and unmarked. All scheduled work is complete.
+**Current direction (2026-04-20):** PB-213 and PB-214 completed by Experience Agent. DE-FIX-001 (missing VIEWER role enforcement on 6 GET endpoints) discovered and fixed by Delivery Agent. No items remain in Ready. ESC-014 (desktop homescreen) remains Deferred and unmarked. All scheduled work is complete.
 
 ## Status Definitions
 
@@ -44,6 +44,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 ---
 
 ## Completed Recently
+
+### DE-FIX-001: Missing VIEWER role enforcement on 6 core GET endpoints
+
+- **Owner:** Delivery Agent
+- **Priority:** P2 High (security gap)
+- **Status:** Completed (2026-04-20)
+- **Implementation note:** Discovered during codebase scan that `GET /api/drivers`, `GET /api/drivers/[id]`, `GET /api/planning`, `GET /api/planning/for-range`, `GET /api/planning/capacity`, and `GET /api/roster-profiles/[id]` had no `requireRole()` check. When auth is configured, `getAllowedDepartmentIds()` returned `null` (unrestricted) for unauthenticated users, exposing all data. Added `requireRole("VIEWER")` / `requireRoleWithSession("VIEWER")` to all 6 endpoints with session reuse to avoid redundant DB lookups. `npm run verify` passes.
 
 ### PB-213: Planning grid sortable column headers — keyboard accessibility
 

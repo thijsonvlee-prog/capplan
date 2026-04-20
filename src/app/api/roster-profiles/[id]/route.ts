@@ -8,6 +8,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authError = await requireRole("VIEWER");
+    if (authError) return authError;
+
     const { id } = await params;
 
     const profile = await prisma.rosterProfile.findUnique({

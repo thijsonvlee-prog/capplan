@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withPerfLogging } from "@/lib/perf";
-import { resolveScenarioId, transformDriver, transformPlanningEntry, parseDateList, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
+import { resolveScenarioId, transformDriver, transformPlanningEntry, parseDateList, requireRoleWithSession, getAllowedDepartmentIds, driverDepartmentFilter } from "@/lib/api-route-utils";
 
 export const GET = withPerfLogging(
   "GET /api/planning/for-range",
   async (request: NextRequest) => {
     try {
+      const { error: authError, session } = await requireRoleWithSession("VIEWER");
+      if (authError) return authError;
+
       const { searchParams } = new URL(request.url);
       const dates = searchParams.get("dates");
       const scenarioId = searchParams.get("scenarioId");
@@ -45,7 +48,7 @@ export const GET = withPerfLogging(
       const driverWhere: any = {};
 
       // Apply user group department filter
-      const allowedDepts = await getAllowedDepartmentIds();
+      const allowedDepts = await getAllowedDepartmentIds(session);
       if (allowedDepts !== null) {
         Object.assign(driverWhere, driverDepartmentFilter(allowedDepts));
       }

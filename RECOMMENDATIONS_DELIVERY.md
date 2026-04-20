@@ -6,13 +6,24 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle I executed **PB-216 — Centralize VALID_AUDIT_ACTIONS constant**. The inline `validActions` array in the audit log route has been replaced by a shared `VALID_AUDIT_ACTIONS` export from `api-route-utils.ts`, using `as const` for type safety. `npm run verify` passes with 0 errors and 0 new warnings.
+This cycle I discovered and fixed a **P2 security gap**: 6 core GET endpoints (`/api/drivers`, `/api/drivers/[id]`, `/api/planning`, `/api/planning/for-range`, `/api/planning/capacity`, `/api/roster-profiles/[id]`) had no `requireRole("VIEWER")` enforcement. When auth was configured, unauthenticated requests could access all driver and planning data because `getAllowedDepartmentIds()` returns `null` (unrestricted) for sessions without a user. All 6 endpoints now enforce VIEWER minimum role, with session reuse to avoid redundant DB lookups. `npm run verify` passes with 0 errors.
 
-**The validation constant centralization track is now fully complete.** All known inline validation arrays (`VALID_PLANNING_STATUSES`, `VALID_EMPLOYMENT_TYPES`, `VALID_ROLES`, `VALID_AUDIT_ACTIONS`) are exported from `api-route-utils.ts`. No remaining inline validation constants were found in the codebase scan.
-
-A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean, consistent state. All remaining items are carry-over P4 hygiene improvements. DE-REC-082 is now closed (executed as PB-216).
+A fresh codebase scan identified one new P3 security recommendation (DE-REC-083: strip API credentials from import-sources list endpoint). All other carry-over items remain valid at P4. The codebase is in a clean, secure state.
 
 ## Recommended Next Improvements
+
+### DE-REC-083: Strip apiCredentials from import-sources list endpoint (NEW)
+
+- **Title:** Exclude API credentials from import-sources list response
+- **Problem:** `GET /api/import-sources` returns the full `apiCredentials` JSON field (which may contain passwords, API keys, bearer tokens) in its response. While the endpoint is ADMIN-only, returning credentials in list responses violates the principle of minimal data exposure. The UI (`ImportSourceManager.tsx` line 160) reads credentials from the list data to pre-fill edit forms, so simply adding a `select` clause would break the edit flow.
+- **Proposed improvement:** Two-step approach: (1) Exclude `apiCredentials` from the list GET response using Prisma `select`. (2) Modify `ImportSourceManager.tsx` to do a separate `GET /api/import-sources/[id]` fetch (which keeps credentials) when opening the edit form. This ensures credentials are only transferred when actively editing a specific source.
+- **Expected product/technical value:** Reduces credential exposure surface. Only ADMIN users editing a specific source will receive its credentials. List views, network logging, and browser caches will no longer contain credential data.
+- **Priority:** P3 Medium
+- **Effort:** Small
+- **Risk:** Low — ADMIN-only endpoint limits blast radius. The individual GET already returns full data.
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Discovered during security scan. Easy win that reduces credential exposure before real API keys are stored.
 
 ### DE-REC-070: Align client-side `TARGET_ENTITIES` with server-side `VALID_TARGET_ENTITIES` (carried over)
 
@@ -87,6 +98,7 @@ A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean,
 ## Risks / Watch-outs
 
 - **API credentials storage is plaintext JSON:** Adequate for Phase 1. Should be reviewed before real API keys are used in production.
+- **API credentials exposed in list endpoint:** `GET /api/import-sources` returns full `apiCredentials` in its response. See DE-REC-083.
 - **PerformanceEvent table growth:** Unbounded; `cleanupOldEvents()` exists but is never called.
 - **API import 30-second timeout:** May be insufficient for slow APIs. Vercel serverless function timeout is the binding constraint.
 - **API response size unbounded:** `MAX_ROW_COUNT` only applies after parse; no pre-parse body size cap.
@@ -141,11 +153,11 @@ A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean,
 - Centralize Map construction across components (shared hook adds coupling).
 - Scoped cache invalidation in `useApi` (current global invalidation is simple and reliable).
 - Add error states to capacity/planning components (parents handle this).
-- Extract `useDebounce` (one consumer).
+- Extract `useDebounce` (one consumer in DriverList; PlanningGrid and MobilePlanningView use ref-based debouncing which is intentionally different).
 - Add aria-labels to chart visualizations (Recharts manages).
 - Move roster-assignment POST `rosterProfile` fetch outside the transaction (marginal; keeping the transaction self-contained has its own readability value).
 - Rename `MAX_NOTES_LENGTH` to a more generic constant (current name is correct for the use).
-- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205/208/209/211/212/215. Do not re-recommend.
+- Completed items retained from past cycles: PB-176/177/178/183/184/185/186/187/188/189/190/192/193/194/195/196/197/200/201/204/205/208/209/211/212/215/216. Do not re-recommend.
 - Preferences `key` field length cap (keys are hardcoded strings from the frontend).
 - `useApi` cache key uses `Function.toString()` (theoretically fragile under minification; different arrow functions produce different minified strings due to URL content).
 - `autoCloseOpenRecords` UTC dependency (not a defect).
@@ -174,12 +186,18 @@ A fresh codebase scan confirmed no new P1-P3 issues. The codebase is in a clean,
 - Empty-body validation on driver PUT — Prisma handles empty updates gracefully; adding a check would be a no-op guard.
 - Extract `importDrivers`/`importStamtabel` from execute route into a separate module — the functions are tightly coupled to the route's transaction and error semantics; extraction adds coupling without reducing complexity.
 - Capacity route inline status keys — these initialize an aggregation object, not a validation constant. Adding a status requires updating both the enum and the aggregation shape by design.
+- Add HSTS header to next.config.mjs — Vercel automatically adds Strict-Transport-Security for deployments on its edge. Adding it in application headers could conflict or be redundant. Only revisit if deploying outside Vercel.
+- Add Content-Security-Policy header — CSP requires careful tuning for Next.js (inline scripts for hydration, style-src unsafe-inline for Tailwind). A misconfigured CSP would break the app. Defer until a dedicated security hardening cycle.
+- Add sourceSystem/externalId indexes to Prisma schema — only relevant for import sync operations which are ADMIN-only and infrequent. Not a bottleneck at current volumes.
+- Account model snake_case field naming — required by NextAuth.js Prisma adapter OAuth spec. Not a codebase issue.
+- Missing cascade on DriverRosterAssignment.rosterProfileId — Prisma FK constraint catches this at delete time. Adding cascade would silently delete assignments, which is not obviously the right behavior.
+- Extract roster-assignment planning entry generation into utility — complex business logic tightly coupled to transaction and route semantics; extraction adds indirection without reducing complexity.
 
 ## Recommendation Rules
 
 - Recommendations are written by the Delivery Agent after reviewing the codebase and deployment behavior.
 - Each recommendation must include all required fields.
-- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-083. (DE-REC-082 closed in PB-216.)
+- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-084.
 - Approved recommendations are moved to `PRODUCT_BACKLOG.md` by the Product Owner Agent.
 - Rejected recommendations are moved to `Items Intentionally Not Recommended` with a brief reason.
 - This file is the only place the Delivery Agent writes recommendations. Do not scatter suggestions across other files.
