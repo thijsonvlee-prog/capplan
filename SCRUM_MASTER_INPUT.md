@@ -46,6 +46,7 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **PO note (2026-04-17):** ESC-014 unmarked for 16 cycles. Item remains Deferred. PB-213, PB-214, PB-215 remain Ready — not yet picked up by agents. No new SM input, no new recommendations. Steady state.
 - **PO note (2026-04-18):** ESC-014 unmarked for 17 cycles. Item remains Deferred. PB-215 completed by Delivery Agent. New PB-216 (centralize VALID_AUDIT_ACTIONS, P4, Delivery Agent) promoted from DE-REC-082. PB-213 and PB-214 remain Ready. No new SM input.
 - **PO note (2026-04-19):** ESC-014 unmarked for 18 cycles. Item remains Deferred. PB-216 completed by Delivery Agent — validation constant centralization track is now fully complete. PB-213 and PB-214 remain Ready for Experience Agent. No new SM input, no new agent recommendations. Steady state.
+- **PO note (2026-04-20):** ESC-014 unmarked for 19 cycles. Item remains Deferred. PB-213 and PB-214 completed by Experience Agent. DE-FIX-001 (VIEWER role enforcement on 6 GET endpoints) completed by Delivery Agent. New PB-217 (strip apiCredentials from import-sources list, P3, Delivery Agent) promoted from DE-REC-083. No new SM input.
 
 ## Closed Inputs
 

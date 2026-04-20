@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-20):** PB-213 and PB-214 completed by Experience Agent. DE-FIX-001 (missing VIEWER role enforcement on 6 GET endpoints) discovered and fixed by Delivery Agent. No items remain in Ready. ESC-014 (desktop homescreen) remains Deferred and unmarked. All scheduled work is complete.
+**Current direction (2026-04-20):** PB-213 and PB-214 completed by Experience Agent. DE-FIX-001 (missing VIEWER role enforcement on 6 GET endpoints) discovered and fixed by Delivery Agent. New PB-217 (strip apiCredentials from import-sources list endpoint, P3, Delivery Agent) promoted from DE-REC-083. ESC-014 (desktop homescreen) remains Deferred and unmarked (19 cycles).
 
 ## Status Definitions
 
@@ -27,7 +27,17 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently in Ready status._
+### PB-217: Strip apiCredentials from import-sources list endpoint
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium (security hygiene)
+- **Status:** Ready
+- **Problem / opportunity:** `GET /api/import-sources` returns the full `apiCredentials` JSON field (which may contain passwords, API keys, bearer tokens) in its response. While the endpoint is ADMIN-only, returning credentials in list responses violates minimal data exposure principles. The UI reads credentials from the list data to pre-fill edit forms, so a simple `select` clause would break the edit flow.
+- **Why this matters now:** Easy security win that reduces credential exposure before real API keys are stored in production. Discovered during codebase security scan (DE-REC-083).
+- **Scope notes:** Two-step approach: (1) Exclude `apiCredentials` from the list GET response using Prisma `select`. (2) Modify `ImportSourceManager.tsx` to do a separate `GET /api/import-sources/[id]` fetch (which keeps credentials) when opening the edit form. This ensures credentials are only transferred when actively editing a specific source.
+- **Dependencies:** None.
+- **Definition of done:** List endpoint no longer returns `apiCredentials`. Edit form still pre-fills credentials by fetching from the individual GET endpoint. `npm run verify` passes.
+- **Implementation note:** The individual `GET /api/import-sources/[id]` already returns the full record including credentials. The frontend `ImportSourceManager.tsx` (line ~160) currently reads credentials from the list response — this must be changed to fetch on edit-open instead.
 
 ---
 
@@ -178,7 +188,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-217.
+- Backlog IDs are sequential and never reused. Next available: PB-218.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
