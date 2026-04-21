@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "21 april 2026",
+    title: "API-credentials verwijderd uit importbronnenlijst",
+    groups: [
+      {
+        heading: "Beveiliging",
+        items: [
+          "GET /api/import-sources retourneert geen apiCredentials meer in de response. Credentials (wachtwoorden, API-sleutels, bearer tokens) worden nu alleen opgehaald wanneer een beheerder een specifieke importbron opent voor bewerking, via het individuele GET /api/import-sources/[id] endpoint. Lijstweergaven, netwerkverkeer en browsercaches bevatten geen credential-data meer.",
+        ],
+      },
+    ],
+  },
+  {
     date: "20 april 2026",
     title: "Beveiligingsfix: ontbrekende VIEWER-controle op kern-GET-endpoints",
     groups: [

@@ -10,6 +10,20 @@ export async function GET() {
     if (authError) return authError;
 
     const sources = await prisma.importSource.findMany({
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        targetEntity: true,
+        fieldMappings: true,
+        description: true,
+        apiUrl: true,
+        apiMethod: true,
+        apiHeaders: true,
+        apiAuthType: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 

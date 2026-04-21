@@ -27,17 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-217: Strip apiCredentials from import-sources list endpoint
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium (security hygiene)
-- **Status:** Ready
-- **Problem / opportunity:** `GET /api/import-sources` returns the full `apiCredentials` JSON field (which may contain passwords, API keys, bearer tokens) in its response. While the endpoint is ADMIN-only, returning credentials in list responses violates minimal data exposure principles. The UI reads credentials from the list data to pre-fill edit forms, so a simple `select` clause would break the edit flow.
-- **Why this matters now:** Easy security win that reduces credential exposure before real API keys are stored in production. Discovered during codebase security scan (DE-REC-083).
-- **Scope notes:** Two-step approach: (1) Exclude `apiCredentials` from the list GET response using Prisma `select`. (2) Modify `ImportSourceManager.tsx` to do a separate `GET /api/import-sources/[id]` fetch (which keeps credentials) when opening the edit form. This ensures credentials are only transferred when actively editing a specific source.
-- **Dependencies:** None.
-- **Definition of done:** List endpoint no longer returns `apiCredentials`. Edit form still pre-fills credentials by fetching from the individual GET endpoint. `npm run verify` passes.
-- **Implementation note:** The individual `GET /api/import-sources/[id]` already returns the full record including credentials. The frontend `ImportSourceManager.tsx` (line ~160) currently reads credentials from the list response — this must be changed to fetch on edit-open instead.
+_No items currently ready._
 
 ---
 
@@ -54,6 +44,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 ---
 
 ## Completed Recently
+
+### PB-217: Strip apiCredentials from import-sources list endpoint
+
+- **Owner:** Delivery Agent
+- **Priority:** P3 Medium (security hygiene)
+- **Status:** Completed (2026-04-21)
+- **Implementation note:** Added explicit `select` clause to `GET /api/import-sources` that excludes `apiCredentials`. Modified `ImportSourceManager.tsx` `openEditForm` to fetch the full record (including credentials) from `GET /api/import-sources/[id]` when opening the edit form, with a loading spinner during fetch and error handling with Dutch toast message. List views, network logs, and browser caches no longer contain credential data. `npm run verify` passes.
 
 ### DE-FIX-001: Missing VIEWER role enforcement on 6 core GET endpoints
 

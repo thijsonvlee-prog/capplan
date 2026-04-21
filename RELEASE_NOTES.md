@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-21 — API-credentials verwijderd uit importbronnenlijst
+
+#### Beveiliging
+
+- **API-credentials niet meer in lijstweergave (PB-217):** `GET /api/import-sources` retourneert geen `apiCredentials` meer in de response. Credentials (wachtwoorden, API-sleutels, bearer tokens) worden nu alleen opgehaald wanneer een beheerder een specifieke importbron opent voor bewerking, via het individuele `GET /api/import-sources/[id]` endpoint. Lijstweergaven, netwerkverkeer en browsercaches bevatten geen credential-data meer. Het bewerkformulier toont een laadstatus tijdens het ophalen van brongegevens.
+
 ### 2026-04-20 — Beveiligingsfix: ontbrekende VIEWER-controle op kern-GET-endpoints
 
 #### Beveiliging

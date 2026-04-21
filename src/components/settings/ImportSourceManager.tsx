@@ -145,22 +145,34 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
     setShowForm(true);
   }
 
-  function openEditForm(source: ImportSource) {
-    setEditingId(source.id);
-    setForm({
-      name: source.name,
-      description: source.description || "",
-      sourceType: source.type || "CSV",
-      targetEntity: source.targetEntity,
-      mappings: recordToMappings(source.fieldMappings),
-      apiUrl: source.apiUrl || "",
-      apiMethod: source.apiMethod || "GET",
-      apiHeaders: headersToEntries(source.apiHeaders),
-      apiAuthType: source.apiAuthType || "NONE",
-      apiCredentials: (source.apiCredentials as Record<string, string>) || {},
-    });
+  const [formLoading, setFormLoading] = useState(false);
+
+  async function openEditForm(sourceId: string) {
+    setEditingId(sourceId);
+    setForm(EMPTY_FORM);
     setShowValidation(false);
     setShowForm(true);
+    setFormLoading(true);
+    try {
+      const source = await api.importSources.get(sourceId);
+      setForm({
+        name: source.name,
+        description: source.description || "",
+        sourceType: source.type || "CSV",
+        targetEntity: source.targetEntity,
+        mappings: recordToMappings(source.fieldMappings),
+        apiUrl: source.apiUrl || "",
+        apiMethod: source.apiMethod || "GET",
+        apiHeaders: headersToEntries(source.apiHeaders),
+        apiAuthType: source.apiAuthType || "NONE",
+        apiCredentials: (source.apiCredentials as Record<string, string>) || {},
+      });
+    } catch {
+      showToast("Kan importbron niet laden", "error");
+      closeForm();
+    } finally {
+      setFormLoading(false);
+    }
   }
 
   function closeForm() {
@@ -545,7 +557,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                               <Upload className="w-4 h-4" />
                             </button>
                           )}
-                          <button onClick={() => openEditForm(source)} className="btn-icon" aria-label="Bewerken">
+                          <button onClick={() => openEditForm(source.id)} className="btn-icon" aria-label="Bewerken">
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button onClick={() => setPendingDelete(source)} className="btn-icon-danger" aria-label="Verwijderen">
@@ -635,7 +647,9 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
               {editingId ? "Importbron bewerken" : "Nieuwe importbron"}
             </h3>
           </div>
-          <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {formLoading ? (
+            <div className="p-8 flex justify-center"><span className="spinner" /></div>
+          ) : <form onSubmit={handleSubmit} className="p-4 space-y-4">
             {/* Name and target entity */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -1076,7 +1090,7 @@ export function ImportSourceManager({ readOnly }: { readOnly?: boolean }) {
                 {editingId ? "Opslaan" : "Aanmaken"}
               </button>
             </div>
-          </form>
+          </form>}
         </div>
       )}
 

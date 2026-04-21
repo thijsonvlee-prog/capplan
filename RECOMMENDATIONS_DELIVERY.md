@@ -6,24 +6,11 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle I discovered and fixed a **P2 security gap**: 6 core GET endpoints (`/api/drivers`, `/api/drivers/[id]`, `/api/planning`, `/api/planning/for-range`, `/api/planning/capacity`, `/api/roster-profiles/[id]`) had no `requireRole("VIEWER")` enforcement. When auth was configured, unauthenticated requests could access all driver and planning data because `getAllowedDepartmentIds()` returns `null` (unrestricted) for sessions without a user. All 6 endpoints now enforce VIEWER minimum role, with session reuse to avoid redundant DB lookups. `npm run verify` passes with 0 errors.
+This cycle I completed **PB-217** (strip `apiCredentials` from import-sources list endpoint). The `GET /api/import-sources` list endpoint now uses an explicit `select` clause that excludes `apiCredentials`. The edit form in `ImportSourceManager.tsx` fetches the full record (including credentials) from the individual endpoint on demand. `npm run verify` passes with 0 errors.
 
-A fresh codebase scan identified one new P3 security recommendation (DE-REC-083: strip API credentials from import-sources list endpoint). All other carry-over items remain valid at P4. The codebase is in a clean, secure state.
+All carry-over items remain valid at P4. The codebase is in a clean, secure state with no outstanding P2/P3 recommendations.
 
 ## Recommended Next Improvements
-
-### DE-REC-083: Strip apiCredentials from import-sources list endpoint (NEW)
-
-- **Title:** Exclude API credentials from import-sources list response
-- **Problem:** `GET /api/import-sources` returns the full `apiCredentials` JSON field (which may contain passwords, API keys, bearer tokens) in its response. While the endpoint is ADMIN-only, returning credentials in list responses violates the principle of minimal data exposure. The UI (`ImportSourceManager.tsx` line 160) reads credentials from the list data to pre-fill edit forms, so simply adding a `select` clause would break the edit flow.
-- **Proposed improvement:** Two-step approach: (1) Exclude `apiCredentials` from the list GET response using Prisma `select`. (2) Modify `ImportSourceManager.tsx` to do a separate `GET /api/import-sources/[id]` fetch (which keeps credentials) when opening the edit form. This ensures credentials are only transferred when actively editing a specific source.
-- **Expected product/technical value:** Reduces credential exposure surface. Only ADMIN users editing a specific source will receive its credentials. List views, network logging, and browser caches will no longer contain credential data.
-- **Priority:** P3 Medium
-- **Effort:** Small
-- **Risk:** Low — ADMIN-only endpoint limits blast radius. The individual GET already returns full data.
-- **Dependencies:** None
-- **Suggested owner:** Delivery Agent
-- **Why now:** Discovered during security scan. Easy win that reduces credential exposure before real API keys are stored.
 
 ### DE-REC-070: Align client-side `TARGET_ENTITIES` with server-side `VALID_TARGET_ENTITIES` (carried over)
 
@@ -98,7 +85,6 @@ A fresh codebase scan identified one new P3 security recommendation (DE-REC-083:
 ## Risks / Watch-outs
 
 - **API credentials storage is plaintext JSON:** Adequate for Phase 1. Should be reviewed before real API keys are used in production.
-- **API credentials exposed in list endpoint:** `GET /api/import-sources` returns full `apiCredentials` in its response. See DE-REC-083.
 - **PerformanceEvent table growth:** Unbounded; `cleanupOldEvents()` exists but is never called.
 - **API import 30-second timeout:** May be insufficient for slow APIs. Vercel serverless function timeout is the binding constraint.
 - **API response size unbounded:** `MAX_ROW_COUNT` only applies after parse; no pre-parse body size cap.
@@ -178,6 +164,7 @@ A fresh codebase scan identified one new P3 security recommendation (DE-REC-083:
 - DE-REC-080 closed in PB-212.
 - DE-REC-081 closed in PB-215.
 - DE-REC-082 closed in PB-216.
+- DE-REC-083 closed in PB-217.
 - `ALL_PLANNING_STATUSES` vs `VALID_PLANNING_STATUSES` overlap (`constants.ts` vs `api-route-utils.ts`) — different type signatures serve different purposes: typed domain constant vs. untyped string array for request validation. Not worth merging.
 - `useApi` doFetch silently catches errors — by design; mutation invalidation is fire-and-forget to avoid blocking the UI. Failed refetches show stale data until next successful fetch.
 - Parallelize `getAllowedDepartmentIds` + FK checks in planning routes — `getAllowedDepartmentIds` result is consumed by the driver ownership check which must run before the create path.
