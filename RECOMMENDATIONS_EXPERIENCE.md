@@ -2,17 +2,15 @@
 
 ## Summary
 
-**This cycle (2026-04-20):** Experience Agent run 24. Both Ready tasks (PB-213, PB-214) executed successfully.
+**This cycle (2026-04-21):** Experience Agent run 25. No Ready tasks assigned — executed a full UX/design scan of the codebase. One new token hygiene issue discovered (EX-REC-066).
 
 **What was improved this cycle:**
 
-1. **PB-213 — Sortable column headers keyboard accessibility.** The "Chauffeur" and extra column `<th>` elements in the planning grid now have `role="columnheader"`, `aria-sort`, `tabIndex={0}`, `onKeyDown` (Enter/Space), and Dutch `aria-label` text. Keyboard-only users can now sort all sortable columns. Screen readers announce the current sort direction.
-
-2. **PB-214 — Centralized disabled .btn-icon styling.** Added `:disabled` pseudo-class rules to `.btn-icon` and `.btn-icon-danger` in `globals.css` (opacity 0.4, cursor not-allowed, pointer-events none). Removed 16 inline `disabled:opacity-30 disabled:cursor-not-allowed` declarations from 4 component files. Disabled buttons are now more visible (40% vs 30% opacity) and styled from one place.
+No implementation changes. Scan-only cycle.
 
 **Current design alignment with DESIGN.md:**
 - **Overall product quality: 8.5/10.** Unchanged. The remaining gaps are narrow and well-documented.
-- **Planning grid:** Fully aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full DayCell aria-label coverage, column header keyboard access now complete.
+- **Planning grid:** Fully aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full DayCell aria-label coverage, column header keyboard access complete.
 - **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart, KPIs, and table all use design tokens.
 - **Settings page:** Well-aligned (§2.5, §7.1). Section titles Manrope.
 - **Drivers page:** Fully aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar, Actief chip in place.
@@ -22,10 +20,22 @@
 
 **Where design quality is still below target:**
 - RosterProfileEditor 28-day grid is still flat and mechanical (EX-REC-055, Deferred).
+- ~18 instances of `text-white` and ~6 instances of `bg-black` bypass design tokens (EX-REC-066, new).
 
 ## Recommended Next Improvements
 
 _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20)._
+
+### EX-REC-066: Replace hardcoded `text-white` and `bg-black` with design tokens
+
+- **Problem:** The design system provides `--color-text-inverse` (#ffffff) for white text on dark/brand backgrounds and sidebar-specific tokens (`--color-sidebar-text`, `--color-sidebar-text-active`), but ~18 component instances still use raw `text-white` and ~6 use `bg-black/30` for modal overlays. Files affected: `Sidebar.tsx` (7×), `login/page.tsx` (4×), `MobileHomescreen.tsx` (4×), `Header.tsx` (1×), `DriverForm.tsx` (1×), `ZoomSelector.tsx` (1×) for `text-white`; `ConfirmDialog.tsx`, `PlanningGrid.tsx`, `RosterAssigner.tsx`, `ScenarioSelector.tsx`, `UserGroupManager.tsx` for `bg-black` overlays. The CLAUDE.md rule ("never use hardcoded Tailwind color classes in components") applies. If `--color-text-inverse` ever changes (e.g., dark mode), these would break.
+- **Proposed improvement:** (1) Replace all `text-white` on brand/dark surfaces with `text-text-inverse`. (2) In `Sidebar.tsx`, replace `text-white` with `text-sidebar-text-active` where appropriate, and `text-white/80`/`text-white/90` with opacity variants of the sidebar token. (3) Add a new overlay token `--color-overlay: rgba(0,0,0,0.3)` to `globals.css` and replace all `bg-black/30` / `bg-black/20` instances. (4) Replace `bg-black/5` in Toast with a surface-level token.
+- **Expected user value:** No visual change. Improves design system integrity, supports future theming, closes the last category of token bypass in the codebase.
+- **Priority:** P4 Low
+- **Effort:** Small (30 min — mechanical find-and-replace with verify)
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** The codebase has achieved strong design token coverage across all other surfaces. This is the last remaining systematic token bypass. Low effort, no risk.
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -108,6 +118,7 @@ _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-0
 
 - **Recharts hex coupling.** `CapacityChart.tsx` hardcodes four hex values (`#9ca3af`, `#4b5563`, `#e2e5eb`) that mirror design tokens. If any of `--color-text-tertiary`, `--color-text-secondary`, or `--color-border-default` changes in `globals.css`, the inline hex strings must be updated in the same commit. Inline comments document the token binding, but there is no automatic guard.
 - **Custom chart tooltip has no dark-mode story.** The tooltip uses `surface-primary` classes directly, which are currently defined as `#ffffff`. If dark mode is ever introduced, the tooltip will inherit automatically, but the Recharts-side hex strings will not. Out of scope for now.
+- **Hardcoded `text-white` / `bg-black` bypass design tokens.** ~24 instances across 11 files. No visual impact today, but would break under any theming/dark-mode expansion. See EX-REC-066.
 - **Mobile planning is read-only.** Monitor user demand for edit capability (EX-REC-052).
 - **RosterProfileEditor grid.** Flat, mechanical 28-day grid. See EX-REC-055.
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
@@ -159,6 +170,10 @@ _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-0
 - **SubTable "Actief" plain text marker:** Resolved (PB-210, 2026-04-13).
 - **Disabled pagination button opacity:** Resolved (PB-214, 2026-04-20).
 - **Column header keyboard accessibility:** Resolved (PB-213, 2026-04-20).
+- **Shared Badge component:** Multiple badge patterns exist (role, action, category, status) across UserManager, AuditLogViewer, documentatie page, and SubTable. However, each variant serves a distinct context with different sizing and color logic. A shared abstraction would add indirection without reducing complexity.
+- **Settings page semantic tab grouping:** Scan suggested splitting the 7 tabs into "Master Data" vs "System Admin" groups. The current flat tab approach works well — mobile already has a card-based section view with descriptions. Adding a grouping layer adds complexity without clear user value at this tab count.
+- **Documentatie page chevron rotation animation:** The expand/collapse chevron snaps between ChevronRight and ChevronDown. A CSS rotation transition would be marginally smoother but the current swap is functional and snappy.
+- **Header/Sidebar avatar background unification:** Header avatar uses `bg-brand-100` and sidebar uses `bg-white/[0.08]`. The difference is contextually correct — light surface in the header, dark-aware transparency in the sidebar. Unifying would require compromising one context.
 
 ## Recommendation Rules
 
