@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-20):** PB-213 and PB-214 completed by Experience Agent. DE-FIX-001 (missing VIEWER role enforcement on 6 GET endpoints) discovered and fixed by Delivery Agent. New PB-217 (strip apiCredentials from import-sources list endpoint, P3, Delivery Agent) promoted from DE-REC-083. ESC-014 (desktop homescreen) remains Deferred and unmarked (19 cycles).
+**Current direction (2026-04-21):** PB-217 completed by Delivery Agent. EX-REC-066 (replace hardcoded text-white/bg-black with design tokens) promoted as PB-218 for Experience Agent. ESC-014 (desktop homescreen) remains Deferred and unmarked (20 cycles). The codebase is in a clean, secure state with no outstanding P2/P3 recommendations. All remaining work is P4 polish.
 
 ## Status Definitions
 
@@ -27,7 +27,17 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items currently ready._
+### PB-218: Replace hardcoded `text-white` and `bg-black` with design tokens
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Ready
+- **Problem / opportunity:** ~18 instances of `text-white` and ~6 instances of `bg-black` bypass the design token system. CLAUDE.md rule: "never use hardcoded Tailwind color classes in components." Files affected: `Sidebar.tsx`, `login/page.tsx`, `MobileHomescreen.tsx`, `Header.tsx`, `DriverForm.tsx`, `ZoomSelector.tsx` for `text-white`; `ConfirmDialog.tsx`, `PlanningGrid.tsx`, `RosterAssigner.tsx`, `ScenarioSelector.tsx`, `UserGroupManager.tsx` for `bg-black` overlays. No visual change today, but would break under any theming/dark-mode expansion.
+- **Why this matters now:** This is the last remaining systematic token bypass in the codebase. Low effort, no risk, closes a CLAUDE.md compliance gap.
+- **Scope notes:** (1) Replace `text-white` on brand/dark surfaces with `text-text-inverse`. (2) In `Sidebar.tsx`, use `text-sidebar-text-active` where appropriate. (3) Add a new overlay token `--color-overlay` to `globals.css` and replace all `bg-black/30` / `bg-black/20` instances. (4) Replace `bg-black/5` in Toast with a surface-level token.
+- **Dependencies:** None.
+- **Definition of done:** All `text-white` and `bg-black` instances in `.tsx` files replaced with design tokens. `npm run verify` passes. No visual change.
+- **Implementation note:** Promoted from EX-REC-066.
 
 ---
 
@@ -52,27 +62,6 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Status:** Completed (2026-04-21)
 - **Implementation note:** Added explicit `select` clause to `GET /api/import-sources` that excludes `apiCredentials`. Modified `ImportSourceManager.tsx` `openEditForm` to fetch the full record (including credentials) from `GET /api/import-sources/[id]` when opening the edit form, with a loading spinner during fetch and error handling with Dutch toast message. List views, network logs, and browser caches no longer contain credential data. `npm run verify` passes.
 
-### DE-FIX-001: Missing VIEWER role enforcement on 6 core GET endpoints
-
-- **Owner:** Delivery Agent
-- **Priority:** P2 High (security gap)
-- **Status:** Completed (2026-04-20)
-- **Implementation note:** Discovered during codebase scan that `GET /api/drivers`, `GET /api/drivers/[id]`, `GET /api/planning`, `GET /api/planning/for-range`, `GET /api/planning/capacity`, and `GET /api/roster-profiles/[id]` had no `requireRole()` check. When auth is configured, `getAllowedDepartmentIds()` returned `null` (unrestricted) for unauthenticated users, exposing all data. Added `requireRole("VIEWER")` / `requireRoleWithSession("VIEWER")` to all 6 endpoints with session reuse to avoid redundant DB lookups. `npm run verify` passes.
-
-### PB-213: Planning grid sortable column headers — keyboard accessibility
-
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Completed (2026-04-20)
-- **Implementation note:** Added `role="columnheader"`, `aria-sort`, `tabIndex={0}`, and `onKeyDown` (Enter/Space triggers sort) plus Dutch `aria-label` to both the "Chauffeur" `<th>` and all extra column `<th>` elements in `PlanningGrid.tsx`. `npm run verify` passes.
-
-### PB-214: Centralize disabled state on .btn-icon and improve opacity
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Completed (2026-04-20)
-- **Implementation note:** Added `.btn-icon:disabled` and `.btn-icon-danger:disabled` rules in `globals.css` (opacity 0.4, cursor not-allowed, pointer-events none). Removed 16 inline `disabled:opacity-30 disabled:cursor-not-allowed` declarations from `PlanningGrid.tsx`, `DriverList.tsx`, `MobilePlanningView.tsx`, and `AuditLogViewer.tsx`. `npm run verify` passes.
-
 ---
 
 ## Deferred
@@ -83,7 +72,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 15 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 20 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -185,7 +174,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-218.
+- Backlog IDs are sequential and never reused. Next available: PB-219.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
