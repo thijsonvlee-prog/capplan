@@ -16,14 +16,14 @@ export function MobileHomescreen({ onNavigateToPlanning }: MobileHomescreenProps
         className="mobile-homescreen-card mobile-homescreen-card--hero text-left"
       >
         <div className="flex items-center gap-3">
-          <div className="mobile-homescreen-card-icon bg-white/20">
-            <CalendarDays className="w-5 h-5 text-white" />
+          <div className="mobile-homescreen-card-icon bg-text-inverse/20">
+            <CalendarDays className="w-5 h-5 text-text-inverse" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-white">Planning</h3>
-            <p className="text-xs text-white/70 mt-0.5">Dagelijkse inzet en roosters beheren</p>
+            <h3 className="text-sm font-semibold text-text-inverse">Planning</h3>
+            <p className="text-xs text-text-inverse/70 mt-0.5">Dagelijkse inzet en roosters beheren</p>
           </div>
-          <ChevronRight className="w-4 h-4 text-white/50 flex-shrink-0" />
+          <ChevronRight className="w-4 h-4 text-text-inverse/50 flex-shrink-0" />
         </div>
       </button>
 

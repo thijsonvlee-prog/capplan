@@ -76,7 +76,7 @@ export function ToastContainer() {
           <span>{toast.message}</span>
           <button
             onClick={() => removeToast(toast.id)}
-            className="ml-2 p-0.5 rounded hover:bg-black/5 shrink-0"
+            className="ml-2 p-0.5 rounded hover:bg-overlay-subtle shrink-0"
             aria-label="Melding sluiten"
           >
             <X className="w-3.5 h-3.5" />

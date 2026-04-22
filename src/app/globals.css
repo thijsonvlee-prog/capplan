@@ -44,6 +44,11 @@
   --color-sidebar-hover: #1a2540;
   --color-sidebar-active: var(--color-brand-600);
 
+  /* --- Overlays --- */
+  --color-overlay: rgba(0, 0, 0, 0.3);
+  --color-overlay-light: rgba(0, 0, 0, 0.2);
+  --color-overlay-subtle: rgba(0, 0, 0, 0.05);
+
   /* --- Functional Colors: Success --- */
   --color-success-50: #f0fdf4;
   --color-success-200: #bbf7d0;

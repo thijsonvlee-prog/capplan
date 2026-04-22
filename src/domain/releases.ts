@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "22 april 2026",
+    title: "Design tokens: hardcoded kleuren vervangen",
+    groups: [
+      {
+        heading: "Onderhoud",
+        items: [
+          "Alle hardcoded text-white en bg-black klassen in componenten zijn vervangen door design tokens (PB-218): ~18 text-white instanties vervangen door text-text-inverse of text-sidebar-text-active, ~6 bg-black overlay-instanties vervangen door nieuwe overlay-tokens (--color-overlay, --color-overlay-light, --color-overlay-subtle). Geen visuele wijziging. Verbetert de integriteit van het design-token-systeem en ondersteunt toekomstige theming.",
+        ],
+      },
+    ],
+  },
+  {
     date: "21 april 2026",
     title: "API-credentials verwijderd uit importbronnenlijst",
     groups: [

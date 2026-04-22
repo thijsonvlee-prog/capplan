@@ -169,7 +169,7 @@ export function DriverForm({ onSubmit, onCancel, initialData, saving }: Props) {
                   type="button"
                   onClick={() => toggleLicense(lt)}
                   className={`px-3 py-1 rounded-md text-sm border transition-colors ${
-                    licenseTypes.includes(lt) ? "bg-brand-600 text-white border-brand-600" : "bg-surface-primary text-text-primary border-border-default hover:bg-surface-secondary"
+                    licenseTypes.includes(lt) ? "bg-brand-600 text-text-inverse border-brand-600" : "bg-surface-primary text-text-primary border-border-default hover:bg-surface-secondary"
                   }`}
                 >
                   {lt}

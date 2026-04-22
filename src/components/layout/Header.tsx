@@ -66,7 +66,7 @@ export function Header() {
           {!showMobileBack ? (
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
-                <span className="text-white font-bold text-xs tracking-tight">CP</span>
+                <span className="text-text-inverse font-bold text-xs tracking-tight">CP</span>
               </div>
               <span className="text-[0.9375rem] font-semibold text-text-primary font-display">
                 CapPlan

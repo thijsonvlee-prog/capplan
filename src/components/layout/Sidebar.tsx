@@ -32,10 +32,10 @@ export function Sidebar() {
       {/* Brand mark */}
       <div className="px-5 pt-6 pb-8 flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-          <span className="text-white font-bold text-sm tracking-tight">CP</span>
+          <span className="text-text-inverse font-bold text-sm tracking-tight">CP</span>
         </div>
         <div>
-          <h1 className="text-[0.9375rem] font-semibold text-white leading-tight tracking-tight">CapPlan</h1>
+          <h1 className="text-[0.9375rem] font-semibold text-sidebar-text-active leading-tight tracking-tight">CapPlan</h1>
           <p className="text-[0.6875rem] text-sidebar-text leading-tight">Chauffeurplanning</p>
         </div>
       </div>
@@ -50,11 +50,11 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-[0.8125rem] font-medium transition-colors",
                 isActive
-                  ? "bg-brand-600 text-white shadow-xs"
-                  : "text-sidebar-text hover:bg-sidebar-hover hover:text-white"
+                  ? "bg-brand-600 text-sidebar-text-active shadow-xs"
+                  : "text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-text-active"
               )}
             >
-              <item.icon className={cn("w-[1.125rem] h-[1.125rem]", isActive ? "text-white" : "text-sidebar-text")} />
+              <item.icon className={cn("w-[1.125rem] h-[1.125rem]", isActive ? "text-sidebar-text-active" : "text-sidebar-text")} />
               {item.label}
             </Link>
           );
@@ -62,16 +62,16 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section — user identity + version */}
-      <div className="px-4 py-4 border-t border-white/[0.06]">
+      <div className="px-4 py-4 border-t border-sidebar-text-active/[0.06]">
         {user ? (
           <div className="flex items-center gap-2.5 mb-2.5">
-            <div className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center flex-shrink-0">
-              <span className="text-[0.6875rem] font-semibold text-white/80">
+            <div className="w-8 h-8 rounded-full bg-sidebar-text-active/[0.08] flex items-center justify-center flex-shrink-0">
+              <span className="text-[0.6875rem] font-semibold text-sidebar-text-active/80">
                 {(user.name ?? user.email ?? "?").charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[0.75rem] font-medium text-white/90 truncate leading-tight">
+              <p className="text-[0.75rem] font-medium text-sidebar-text-active/90 truncate leading-tight">
                 {user.name ?? user.email}
               </p>
               {roleConfig && (

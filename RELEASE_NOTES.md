@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-22 — Design tokens: hardcoded kleuren vervangen
+
+#### Onderhoud
+
+- **Hardcoded text-white en bg-black vervangen door design tokens (PB-218):** Alle ~18 `text-white` instanties in componenten zijn vervangen door `text-text-inverse` (op brand/donkere achtergronden) of `text-sidebar-text-active` (in de sidebar). Alle ~6 `bg-black` overlay-instanties zijn vervangen door drie nieuwe overlay-tokens (`--color-overlay`, `--color-overlay-light`, `--color-overlay-subtle`) in `globals.css`. De `hover:bg-black/5` in Toast is vervangen door `hover:bg-overlay-subtle`. Geen visuele wijziging. Sluit de laatste categorie van token-bypass in de codebase en ondersteunt toekomstige theming.
+
 ### 2026-04-21 — API-credentials verwijderd uit importbronnenlijst
 
 #### Beveiliging

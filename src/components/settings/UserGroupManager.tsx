@@ -368,7 +368,7 @@ function GroupEditor({
 
   return (
     <div
-      className="fixed inset-0 bg-black/30 flex items-start justify-center z-50 overflow-y-auto py-8"
+      className="fixed inset-0 bg-overlay flex items-start justify-center z-50 overflow-y-auto py-8"
       role="dialog"
       aria-modal="true"
       aria-label={isNew ? "Nieuwe gebruikersgroep" : "Gebruikersgroep bewerken"}

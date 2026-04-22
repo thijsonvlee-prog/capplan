@@ -27,7 +27,7 @@ export function ZoomSelector({ value, onChange }: Props) {
           className={cn(
             "px-3 py-1.5 text-xs font-medium transition-colors",
             value === opt.value
-              ? "bg-brand-600 text-white"
+              ? "bg-brand-600 text-text-inverse"
               : "bg-surface-primary text-text-secondary hover:bg-surface-secondary"
           )}
         >

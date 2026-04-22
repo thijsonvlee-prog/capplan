@@ -56,7 +56,7 @@ export function RosterAssigner({ driverId, driverName, onClose }: Props) {
   const pendingLabel = pendingRecord ? `${pendingRecord.profileName} vanaf ${pendingRecord.startDate}` : "dit roosterrecord";
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Roosterprofiel toewijzen aan ${driverName}`} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}>
+    <div className="fixed inset-0 bg-overlay flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Roosterprofiel toewijzen aan ${driverName}`} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}>
       <div ref={focusTrapRef} className="bg-surface-primary rounded-lg shadow-modal p-6 w-[520px] space-y-4 max-h-[80vh] overflow-y-auto">
         <h3 className="text-section-title">Roosterprofiel — {driverName}</h3>
 

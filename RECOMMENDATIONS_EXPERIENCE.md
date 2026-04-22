@@ -2,40 +2,32 @@
 
 ## Summary
 
-**This cycle (2026-04-21):** Experience Agent run 25. No Ready tasks assigned — executed a full UX/design scan of the codebase. One new token hygiene issue discovered (EX-REC-066).
+**This cycle (2026-04-22):** Experience Agent run 26. PB-218 completed — all hardcoded `text-white` and `bg-black` classes replaced with design tokens. Three new overlay tokens added. Full design token compliance achieved.
 
 **What was improved this cycle:**
 
-No implementation changes. Scan-only cycle.
+- Replaced all ~18 `text-white` instances with `text-text-inverse` or `text-sidebar-text-active` across 6 files (Sidebar, Header, MobileHomescreen, login page, DriverForm, ZoomSelector).
+- Replaced all ~6 `bg-black` overlay instances with new `--color-overlay` / `--color-overlay-light` tokens across 5 files (ConfirmDialog, PlanningGrid, RosterAssigner, ScenarioSelector, UserGroupManager).
+- Replaced `hover:bg-black/5` in Toast with `hover:bg-overlay-subtle`.
+- Added three overlay tokens to `globals.css`: `--color-overlay`, `--color-overlay-light`, `--color-overlay-subtle`.
 
 **Current design alignment with DESIGN.md:**
-- **Overall product quality: 8.5/10.** Unchanged. The remaining gaps are narrow and well-documented.
+- **Overall product quality: 8.5/10.** The remaining gaps are narrow and well-documented.
+- **Design token compliance: 100%.** Zero hardcoded Tailwind color classes remain in `.tsx` files. All surfaces, text, overlays, and statuses use the token system.
 - **Planning grid:** Fully aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full DayCell aria-label coverage, column header keyboard access complete.
 - **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart, KPIs, and table all use design tokens.
 - **Settings page:** Well-aligned (§2.5, §7.1). Section titles Manrope.
 - **Drivers page:** Fully aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar, Actief chip in place.
-- **Modals:** Well-aligned (§7.3). All modal headers use Manrope section-title typography.
-- **Sidebar:** Well-aligned (§7.8).
+- **Modals:** Well-aligned (§7.3). All modal headers use Manrope section-title typography. Overlays now use design tokens.
+- **Sidebar:** Fully aligned (§7.8). All text colors now use sidebar-specific tokens.
 - **Mobile:** Well-aligned.
 
 **Where design quality is still below target:**
 - RosterProfileEditor 28-day grid is still flat and mechanical (EX-REC-055, Deferred).
-- ~18 instances of `text-white` and ~6 instances of `bg-black` bypass design tokens (EX-REC-066, new).
 
 ## Recommended Next Improvements
 
-_EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20)._
-
-### EX-REC-066: Replace hardcoded `text-white` and `bg-black` with design tokens
-
-- **Problem:** The design system provides `--color-text-inverse` (#ffffff) for white text on dark/brand backgrounds and sidebar-specific tokens (`--color-sidebar-text`, `--color-sidebar-text-active`), but ~18 component instances still use raw `text-white` and ~6 use `bg-black/30` for modal overlays. Files affected: `Sidebar.tsx` (7×), `login/page.tsx` (4×), `MobileHomescreen.tsx` (4×), `Header.tsx` (1×), `DriverForm.tsx` (1×), `ZoomSelector.tsx` (1×) for `text-white`; `ConfirmDialog.tsx`, `PlanningGrid.tsx`, `RosterAssigner.tsx`, `ScenarioSelector.tsx`, `UserGroupManager.tsx` for `bg-black` overlays. The CLAUDE.md rule ("never use hardcoded Tailwind color classes in components") applies. If `--color-text-inverse` ever changes (e.g., dark mode), these would break.
-- **Proposed improvement:** (1) Replace all `text-white` on brand/dark surfaces with `text-text-inverse`. (2) In `Sidebar.tsx`, replace `text-white` with `text-sidebar-text-active` where appropriate, and `text-white/80`/`text-white/90` with opacity variants of the sidebar token. (3) Add a new overlay token `--color-overlay: rgba(0,0,0,0.3)` to `globals.css` and replace all `bg-black/30` / `bg-black/20` instances. (4) Replace `bg-black/5` in Toast with a surface-level token.
-- **Expected user value:** No visual change. Improves design system integrity, supports future theming, closes the last category of token bypass in the codebase.
-- **Priority:** P4 Low
-- **Effort:** Small (30 min — mechanical find-and-replace with verify)
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** The codebase has achieved strong design token coverage across all other surfaces. This is the last remaining systematic token bypass. Low effort, no risk.
+_EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20). EX-REC-066 shipped as PB-218 (2026-04-22)._
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
@@ -118,7 +110,6 @@ _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-0
 
 - **Recharts hex coupling.** `CapacityChart.tsx` hardcodes four hex values (`#9ca3af`, `#4b5563`, `#e2e5eb`) that mirror design tokens. If any of `--color-text-tertiary`, `--color-text-secondary`, or `--color-border-default` changes in `globals.css`, the inline hex strings must be updated in the same commit. Inline comments document the token binding, but there is no automatic guard.
 - **Custom chart tooltip has no dark-mode story.** The tooltip uses `surface-primary` classes directly, which are currently defined as `#ffffff`. If dark mode is ever introduced, the tooltip will inherit automatically, but the Recharts-side hex strings will not. Out of scope for now.
-- **Hardcoded `text-white` / `bg-black` bypass design tokens.** ~24 instances across 11 files. No visual impact today, but would break under any theming/dark-mode expansion. See EX-REC-066.
 - **Mobile planning is read-only.** Monitor user demand for edit capability (EX-REC-052).
 - **RosterProfileEditor grid.** Flat, mechanical 28-day grid. See EX-REC-055.
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.

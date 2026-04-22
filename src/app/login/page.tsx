@@ -40,16 +40,16 @@ function LoginContent() {
         <div>
           <div className="flex items-center gap-3 mb-16">
             <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center">
-              <span className="text-white font-bold text-base tracking-tight">CP</span>
+              <span className="text-text-inverse font-bold text-base tracking-tight">CP</span>
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-white leading-tight tracking-tight">CapPlan</h1>
+              <h1 className="text-lg font-semibold text-text-inverse leading-tight tracking-tight">CapPlan</h1>
               <p className="text-[0.75rem] text-sidebar-text leading-tight">Chauffeurplanning</p>
             </div>
           </div>
 
           <div className="space-y-6">
-            <h2 className="font-display text-[2rem] font-bold text-white leading-[1.2] tracking-tight">
+            <h2 className="font-display text-[2rem] font-bold text-text-inverse leading-[1.2] tracking-tight">
               Capaciteitsplanning<br />
               op <span className="text-brand-400">orde.</span>
             </h2>
@@ -70,7 +70,7 @@ function LoginContent() {
           {/* Mobile brand mark */}
           <div className="lg:hidden flex items-center gap-2.5 mb-12">
             <div className="w-9 h-9 rounded-lg bg-brand-500 flex items-center justify-center">
-              <span className="text-white font-bold text-sm tracking-tight">CP</span>
+              <span className="text-text-inverse font-bold text-sm tracking-tight">CP</span>
             </div>
             <div>
               <h1 className="text-[0.9375rem] font-semibold text-text-primary leading-tight tracking-tight">CapPlan</h1>

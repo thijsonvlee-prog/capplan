@@ -759,7 +759,7 @@ export function PlanningGrid() {
 
       {/* Bulk status selector after drag */}
       {showBulkSelector && dragState && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Status instellen voor ${dragState.dates.length} dagen`} onKeyDown={(e) => { if (e.key === "Escape") { setShowBulkSelector(false); setDragState(null); } }}>
+        <div className="fixed inset-0 bg-overlay-light flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label={`Status instellen voor ${dragState.dates.length} dagen`} onKeyDown={(e) => { if (e.key === "Escape") { setShowBulkSelector(false); setDragState(null); } }}>
           <div ref={bulkSelectorFocusTrapRef} className="bg-surface-primary rounded-lg shadow-modal p-4 min-w-[280px]">
             <div className="text-section-title mb-2">
               Status instellen voor {dragState.dates.length} dagen

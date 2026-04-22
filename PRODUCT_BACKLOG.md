@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-21):** PB-217 completed by Delivery Agent. EX-REC-066 (replace hardcoded text-white/bg-black with design tokens) promoted as PB-218 for Experience Agent. ESC-014 (desktop homescreen) remains Deferred and unmarked (20 cycles). The codebase is in a clean, secure state with no outstanding P2/P3 recommendations. All remaining work is P4 polish.
+**Current direction (2026-04-22):** PB-218 completed by Experience Agent. ESC-014 (desktop homescreen) remains Deferred and unmarked (20+ cycles). The codebase is in a clean, secure state with no outstanding P2/P3 recommendations. All remaining work is P4 polish. Full design token compliance achieved — zero hardcoded color classes remain in components.
 
 ## Status Definitions
 
@@ -27,17 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-218: Replace hardcoded `text-white` and `bg-black` with design tokens
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Ready
-- **Problem / opportunity:** ~18 instances of `text-white` and ~6 instances of `bg-black` bypass the design token system. CLAUDE.md rule: "never use hardcoded Tailwind color classes in components." Files affected: `Sidebar.tsx`, `login/page.tsx`, `MobileHomescreen.tsx`, `Header.tsx`, `DriverForm.tsx`, `ZoomSelector.tsx` for `text-white`; `ConfirmDialog.tsx`, `PlanningGrid.tsx`, `RosterAssigner.tsx`, `ScenarioSelector.tsx`, `UserGroupManager.tsx` for `bg-black` overlays. No visual change today, but would break under any theming/dark-mode expansion.
-- **Why this matters now:** This is the last remaining systematic token bypass in the codebase. Low effort, no risk, closes a CLAUDE.md compliance gap.
-- **Scope notes:** (1) Replace `text-white` on brand/dark surfaces with `text-text-inverse`. (2) In `Sidebar.tsx`, use `text-sidebar-text-active` where appropriate. (3) Add a new overlay token `--color-overlay` to `globals.css` and replace all `bg-black/30` / `bg-black/20` instances. (4) Replace `bg-black/5` in Toast with a surface-level token.
-- **Dependencies:** None.
-- **Definition of done:** All `text-white` and `bg-black` instances in `.tsx` files replaced with design tokens. `npm run verify` passes. No visual change.
-- **Implementation note:** Promoted from EX-REC-066.
+_No items ready for next cycle._
 
 ---
 
@@ -54,6 +44,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 ---
 
 ## Completed Recently
+
+### PB-218: Replace hardcoded `text-white` and `bg-black` with design tokens
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Completed (2026-04-22)
+- **Implementation note:** Added three overlay tokens (`--color-overlay`, `--color-overlay-light`, `--color-overlay-subtle`) to `globals.css`. Replaced all ~18 `text-white` instances across 6 files with `text-text-inverse` or `text-sidebar-text-active`. Replaced all ~6 `bg-black` overlay instances across 5 files with overlay tokens. Replaced `hover:bg-black/5` in Toast with `hover:bg-overlay-subtle`. Also replaced 3 remaining `border-white`/`bg-white` opacity variants in Sidebar and MobileHomescreen with token equivalents. Zero hardcoded color classes remain in `.tsx` files. No visual change. `npm run verify` passes.
 
 ### PB-217: Strip apiCredentials from import-sources list endpoint
 
