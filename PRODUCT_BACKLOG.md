@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-22):** PB-218 completed by Experience Agent. ESC-014 (desktop homescreen) remains Deferred and unmarked (20+ cycles). The codebase is in a clean, secure state with no outstanding P2/P3 recommendations. All remaining work is P4 polish. Full design token compliance achieved — zero hardcoded color classes remain in components.
+**Current direction (2026-04-22):** Codebase is in a clean, stable state. Full design token compliance achieved (PB-218). All security items delivered (PB-217, DE-FIX-001). No outstanding P1/P2/P3 recommendations from either agent. All remaining work is P4 polish in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (21 cycles). The active backlog is empty — both agents are in steady state.
 
 ## Status Definitions
 
@@ -50,14 +50,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
 - **Status:** Completed (2026-04-22)
-- **Implementation note:** Added three overlay tokens (`--color-overlay`, `--color-overlay-light`, `--color-overlay-subtle`) to `globals.css`. Replaced all ~18 `text-white` instances across 6 files with `text-text-inverse` or `text-sidebar-text-active`. Replaced all ~6 `bg-black` overlay instances across 5 files with overlay tokens. Replaced `hover:bg-black/5` in Toast with `hover:bg-overlay-subtle`. Also replaced 3 remaining `border-white`/`bg-white` opacity variants in Sidebar and MobileHomescreen with token equivalents. Zero hardcoded color classes remain in `.tsx` files. No visual change. `npm run verify` passes.
-
-### PB-217: Strip apiCredentials from import-sources list endpoint
-
-- **Owner:** Delivery Agent
-- **Priority:** P3 Medium (security hygiene)
-- **Status:** Completed (2026-04-21)
-- **Implementation note:** Added explicit `select` clause to `GET /api/import-sources` that excludes `apiCredentials`. Modified `ImportSourceManager.tsx` `openEditForm` to fetch the full record (including credentials) from `GET /api/import-sources/[id]` when opening the edit form, with a loading spinner during fetch and error handling with Dutch toast message. List views, network logs, and browser caches no longer contain credential data. `npm run verify` passes.
+- **Implementation note:** Added three overlay tokens (`--color-overlay`, `--color-overlay-light`, `--color-overlay-subtle`) to `globals.css`. Replaced all ~18 `text-white` instances across 6 files with `text-text-inverse` or `text-sidebar-text-active`. Replaced all ~6 `bg-black` overlay instances across 5 files with overlay tokens. Replaced `hover:bg-black/5` in Toast with `hover:bg-overlay-subtle`. Also replaced 3 remaining `border-white`/`bg-white` opacity variants in Sidebar and MobileHomescreen with token equivalents. Zero hardcoded color classes remain in `.tsx` files. No visual change. `npm run verify` passes. Validated by PO: `grep` confirms zero hardcoded color classes in `.tsx` files.
 
 ---
 
@@ -69,7 +62,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred — see Deferred
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 20 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 21 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
 
