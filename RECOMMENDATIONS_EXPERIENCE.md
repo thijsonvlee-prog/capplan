@@ -2,43 +2,29 @@
 
 ## Summary
 
-**This cycle (2026-04-22):** Experience Agent run 26. PB-218 completed — all hardcoded `text-white` and `bg-black` classes replaced with design tokens. Three new overlay tokens added. Full design token compliance achieved.
+**This cycle (2026-04-24):** Experience Agent run 27. EX-REC-055 completed — RosterProfileEditor grid upgraded with tonal layering, weekend differentiation, larger cells, and contained surface treatment. This was the last identified screen-level design gap against DESIGN.md.
 
 **What was improved this cycle:**
 
-- Replaced all ~18 `text-white` instances with `text-text-inverse` or `text-sidebar-text-active` across 6 files (Sidebar, Header, MobileHomescreen, login page, DriverForm, ZoomSelector).
-- Replaced all ~6 `bg-black` overlay instances with new `--color-overlay` / `--color-overlay-light` tokens across 5 files (ConfirmDialog, PlanningGrid, RosterAssigner, ScenarioSelector, UserGroupManager).
-- Replaced `hover:bg-black/5` in Toast with `hover:bg-overlay-subtle`.
-- Added three overlay tokens to `globals.css`: `--color-overlay`, `--color-overlay-light`, `--color-overlay-subtle`.
+- RosterProfileEditor 4-week grid: added alternating week-row tonal layering (surface-tertiary on odd weeks), weekend column dimming (Za/Zo headers in text-tertiary, empty weekend cells with reduced opacity), cell size increased from 32px to 36px, week number labels styled as inset pills, grid container rounded with surface-secondary background.
 
 **Current design alignment with DESIGN.md:**
-- **Overall product quality: 8.5/10.** The remaining gaps are narrow and well-documented.
-- **Design token compliance: 100%.** Zero hardcoded Tailwind color classes remain in `.tsx` files. All surfaces, text, overlays, and statuses use the token system.
+- **Overall product quality: 9/10.** All identified screen-level gaps have been addressed. Remaining recommendations are P3-P4 enhancements for mobile and edge cases.
+- **Design token compliance: 100%.** Zero hardcoded Tailwind color classes remain in `.tsx` files.
 - **Planning grid:** Fully aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full DayCell aria-label coverage, column header keyboard access complete.
 - **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart, KPIs, and table all use design tokens.
-- **Settings page:** Well-aligned (§2.5, §7.1). Section titles Manrope.
+- **Settings page:** Fully aligned (§2.5, §7.1, §7.4). Section titles Manrope. RosterProfileEditor now has tonal layering and visual rhythm.
 - **Drivers page:** Fully aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar, Actief chip in place.
-- **Modals:** Well-aligned (§7.3). All modal headers use Manrope section-title typography. Overlays now use design tokens.
-- **Sidebar:** Fully aligned (§7.8). All text colors now use sidebar-specific tokens.
+- **Modals:** Well-aligned (§7.3). All modal headers use Manrope section-title typography. Overlays use design tokens.
+- **Sidebar:** Fully aligned (§7.8). All text colors use sidebar-specific tokens.
 - **Mobile:** Well-aligned.
 
 **Where design quality is still below target:**
-- RosterProfileEditor 28-day grid is still flat and mechanical (EX-REC-055, Deferred).
+- No screen-level gaps remain. All remaining items are P3-P4 enhancements (mobile edit capability, mobile personalization, toolbar responsiveness, mapping builder enhancement).
 
 ## Recommended Next Improvements
 
-_EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20). EX-REC-066 shipped as PB-218 (2026-04-22)._
-
-### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
-
-- **Problem:** The 28-day roster profile grid uses a plain HTML table with minimal styling. All days look identical regardless of weekday/weekend. No tonal contrast between weeks. Status cells are small (32px) with no visual rhythm. The grid feels flat and mechanical compared to the rest of the settings page, which uses tonal layering and hover elevation. Below DESIGN.md §7.4 standard (avoid harsh grid-line visuals, use spacing and tonal contrast).
-- **Proposed improvement:** Add alternating week-row tonal layering (surface-secondary for even weeks). Visually distinguish weekend columns (Za/Zo) with a subtle background tint. Slightly increase cell size for touch friendliness. Add subtle rounded corners to the grid container.
-- **Expected user value:** The roster profile editor feels intentionally designed rather than a raw grid. Weekday/weekend distinction helps planners quickly validate patterns.
-- **Priority:** P4 Low
-- **Effort:** Small
-- **Dependencies:** None.
-- **Suggested owner:** Experience Agent
-- **Why now:** This is the most visible remaining screen-level gap against DESIGN.md. Low traffic but the last "generic admin table" surface in the product.
+_EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20). EX-REC-066 shipped as PB-218 (2026-04-22). EX-REC-055 shipped (2026-04-24)._
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -111,14 +97,15 @@ _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-0
 - **Recharts hex coupling.** `CapacityChart.tsx` hardcodes four hex values (`#9ca3af`, `#4b5563`, `#e2e5eb`) that mirror design tokens. If any of `--color-text-tertiary`, `--color-text-secondary`, or `--color-border-default` changes in `globals.css`, the inline hex strings must be updated in the same commit. Inline comments document the token binding, but there is no automatic guard.
 - **Custom chart tooltip has no dark-mode story.** The tooltip uses `surface-primary` classes directly, which are currently defined as `#ffffff`. If dark mode is ever introduced, the tooltip will inherit automatically, but the Recharts-side hex strings will not. Out of scope for now.
 - **Mobile planning is read-only.** Monitor user demand for edit capability (EX-REC-052).
-- **RosterProfileEditor grid.** Flat, mechanical 28-day grid. See EX-REC-055.
+- **RosterProfileEditor grid.** Resolved (EX-REC-055, 2026-04-24).
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
 
 ## Items Intentionally Not Recommended
 
 - **Dark mode support:** No user demand. Token system supports it structurally but effort is significant.
 - **Drag-and-drop in tables:** Current sort/filter approach works well.
-- **Redesign of RosterProfileEditor grid interaction:** Click-to-cycle is unconventional but functional. Grid visual refinement could be a future polish item but is low priority.
+- **Redesign of RosterProfileEditor grid interaction:** Click-to-cycle is unconventional but functional. Visual refinement completed (EX-REC-055, 2026-04-24).
+- **RosterProfileEditor grid visual refinement:** Resolved (EX-REC-055, 2026-04-24). Tonal layering, weekend differentiation, and contained surface treatment now in place.
 - **Custom calendar popup replacement:** ESC-004 decided Option B (styled wrapper). Browser native is functional.
 - **Settings tab URL persistence:** Low-frequency page. Low impact.
 - **Driver detail page / route-based navigation:** Current inline edit pattern works for the data volume.

@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-24 — Roosterprofiel-editor visuele verbetering
+
+#### UX / design
+
+- **Roosterprofiel-editor tonale lagen en weekendonderscheid (EX-REC-055):** Het 4-wekenrooster in de roosterprofiel-editor gebruikte een platte HTML-tabel zonder visueel ritme — alle weken en alle dagen zagen er identiek uit. De editor heeft nu: afwisselende weekrijtonen (oneven weken surface-tertiary), weekendkolommen (Za/Zo) visueel gedimpt in de koptekst en bij lege cellen, grotere cellen (36px i.p.v. 32px) voor betere leesbaarheid, weeknummers in een afgerond label met achtergrondkleur, en een afgeronde container met surface-secondary achtergrond. Het rooster sluit nu visueel aan bij de rest van de instellingenpagina.
+
 ### 2026-04-22 — Design tokens: hardcoded kleuren vervangen
 
 #### Onderhoud

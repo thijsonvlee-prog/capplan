@@ -119,20 +119,25 @@ export function RosterProfileEditor({ readOnly }: { readOnly?: boolean }) {
             )}
           </div>
           <div className="text-caption mb-1">Klik op een cel om de status te wisselen: Roostervrij → Basisrooster → Aanvullend beschikbaar</div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg bg-surface-secondary p-2">
             <table className="border-collapse text-xs">
               <thead>
                 <tr>
-                  <th className="p-1 text-text-secondary font-medium">Week</th>
-                  {DAY_LABELS.map((d) => (
-                    <th key={d} className="p-1 text-center text-text-secondary font-medium min-w-[32px]">{d}</th>
+                  <th className="px-1.5 py-1.5 text-text-tertiary font-medium text-[0.625rem] uppercase tracking-wide" />
+                  {DAY_LABELS.map((d, i) => (
+                    <th key={d} className={cn(
+                      "px-1 py-1.5 text-center font-medium text-[0.625rem] uppercase tracking-wide min-w-[36px]",
+                      i >= 5 ? "text-text-tertiary" : "text-text-secondary"
+                    )}>{d}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {[0, 1, 2, 3].map((weekIdx) => (
-                  <tr key={weekIdx}>
-                    <td className="p-1 text-text-tertiary font-medium">{weekIdx + 1}</td>
+                  <tr key={weekIdx} className={weekIdx % 2 === 1 ? "bg-surface-tertiary rounded" : ""}>
+                    <td className="px-1.5 py-1 text-text-tertiary font-medium text-center">
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded text-[0.625rem] bg-surface-inset">{weekIdx + 1}</span>
+                    </td>
                     {Array.from({ length: 7 }, (_, dayIdx) => {
                       const offset = weekIdx * 7 + dayIdx;
                       const entry = grid[offset];
@@ -142,8 +147,8 @@ export function RosterProfileEditor({ readOnly }: { readOnly?: boolean }) {
                             type="button"
                             onClick={() => cycleStatus(offset)}
                             className={cn(
-                              "w-8 h-8 rounded text-xs font-bold flex items-center justify-center gap-0.5 transition-colors",
-                              STATUS_COLORS[entry.status]
+                              "w-9 h-9 rounded-md text-xs font-bold flex items-center justify-center gap-0.5 transition-colors",
+                              dayIdx >= 5 && entry.status === "ROSTER_FREE" ? "bg-surface-inset/70 text-text-tertiary" : STATUS_COLORS[entry.status]
                             )}
                           >
                             <span className={cn("status-dot", STATUS_DOT_COLORS[entry.status])} aria-hidden="true" />

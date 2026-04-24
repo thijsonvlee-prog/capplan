@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "24 april 2026",
+    title: "Roosterprofiel-editor visuele verbetering",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "Het 4-wekenrooster in de roosterprofiel-editor heeft nu tonale laagscheiding, weekendonderscheid en grotere cellen (EX-REC-055): oneven weken krijgen een lichtere achtergrond (surface-tertiary), weekendkolommen (Za/Zo) zijn visueel gedimpt in de koptekst en bij lege cellen, cellen zijn vergroot van 32px naar 36px, weeknummers staan in een afgerond label, en het hele rooster heeft een afgeronde container met achtergrondkleur. Het rooster voelt nu ontworpen en ritmisch in plaats van vlak en mechanisch.",
+        ],
+      },
+    ],
+  },
+  {
     date: "22 april 2026",
     title: "Design tokens: hardcoded kleuren vervangen",
     groups: [

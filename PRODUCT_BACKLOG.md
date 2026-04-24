@@ -45,7 +45,12 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (22 cycles unmar
 
 ## Completed Recently
 
-_No items completed this cycle. PB-218 (design token compliance) was the last completed item (2026-04-22)._
+### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Completed (2026-04-24)
+- **Implementation note:** Added alternating week-row tonal layering (surface-tertiary on odd weeks), weekend column visual dimming in headers and empty cells, increased cell size from 32px to 36px, week number labels with inset pill, and rounded grid container with surface-secondary background. All design tokens used. No new CSS classes needed.
 
 ---
 
@@ -63,8 +68,8 @@ _No items completed this cycle. PB-218 (design token compliance) was the last co
 
 - **Owner:** Experience Agent
 - **Priority:** P4 Low
-- **Status:** Deferred
-- **Reason:** Low-traffic screen. All other settings sections are at design-system standard. Pick up when capacity allows.
+- **Status:** Completed (2026-04-24)
+- **Reason:** Picked up from Deferred with available capacity.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
