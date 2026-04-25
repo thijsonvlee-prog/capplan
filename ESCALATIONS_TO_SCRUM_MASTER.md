@@ -58,6 +58,7 @@ This file is **not** a generic issue list or scratchpad. Every entry must be a c
 - **PO note (2026-04-22):** 21 cycles unmarked. No change.
 - **PO note (2026-04-23):** 22 cycles unmarked. No change.
 - **PO note (2026-04-24):** 23 cycles unmarked. No change.
+- **PO note (2026-04-25):** 24 cycles unmarked. No change.
 
 ---
 

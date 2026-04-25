@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-24):** Codebase is in a clean, stable state. Full design token compliance achieved (PB-218). All screen-level design gaps closed (EX-REC-055). All security items delivered (PB-217, DE-FIX-001). No outstanding P1/P2/P3 recommendations from either agent. All remaining work is P4 polish in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (23 cycles). The active backlog is empty — both agents are in steady state.
+**Current direction (2026-04-25):** Codebase is in a clean, stable state. Full design token compliance achieved (PB-218). All screen-level design gaps closed (EX-REC-055). All security items delivered (PB-217, DE-FIX-001). No outstanding P1/P2/P3 recommendations from either agent. All remaining work is P4 polish in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (24 cycles). The active backlog is empty — both agents are in steady state.
 
 ## Status Definitions
 
@@ -39,18 +39,13 @@ _No items currently in progress._
 
 ## Blocked / Needs Decision
 
-_No items currently blocked. SMI-026 / ESC-014 remains Deferred (23 cycles unmarked) — see Deferred section._
+_No items currently blocked. SMI-026 / ESC-014 remains Deferred (24 cycles unmarked) — see Deferred section._
 
 ---
 
 ## Completed Recently
 
-### EX-REC-055: RosterProfileEditor — tonal layering and weekend differentiation
-
-- **Owner:** Experience Agent
-- **Priority:** P4 Low
-- **Status:** Completed (2026-04-24)
-- **Implementation note:** Added alternating week-row tonal layering (surface-tertiary on odd weeks), weekend column visual dimming in headers and empty cells, increased cell size from 32px to 36px, week number labels with inset pill, and rounded grid container with surface-secondary background. All design tokens used. No new CSS classes needed.
+_No recently completed items._
 
 ---
 
@@ -62,7 +57,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (23 cycles unmar
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 23 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 24 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
