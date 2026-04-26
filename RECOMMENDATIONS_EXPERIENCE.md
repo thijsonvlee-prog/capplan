@@ -2,11 +2,11 @@
 
 ## Summary
 
-**This cycle (2026-04-25):** Experience Agent run 28. No assigned tasks in the backlog. Fresh UX/design scan completed across all key screens (Planning, Capacity, Drivers, Settings, Documentatie, Sidebar, Header, Mobile Homescreen, Login, ConfirmDialog, Toast). Confirmed: zero hardcoded Tailwind color classes, 100% design token compliance, consistent Manrope typography on all titles/section headers, strong accessibility coverage, and proper responsive behavior. No new screen-level design gaps identified.
+**This cycle (2026-04-26):** Experience Agent run 29. No assigned tasks in the backlog. Fresh UX/design scan completed across all key screens and components (PlanningGrid, Capacity, Drivers, Settings, Documentatie, Sidebar, Header, ConfirmDialog, Toast, StamtabelManager, SkillManager, RosterProfileEditor, DriverForm, ImportSourceManager). Confirmed: zero hardcoded Tailwind color classes, 100% design token compliance, consistent Manrope typography, strong accessibility coverage. One new finding: ConfirmDialog uses fixed `w-[400px]` which overflows on mobile viewports narrower than 400px (e.g., iPhone SE at 375px). Filed as EX-REC-067.
 
 **What was improved this cycle:**
 
-- No code changes. Steady-state confirmation scan only.
+- No code changes. Scan-only cycle with one new recommendation (EX-REC-067).
 
 **Current design alignment with DESIGN.md:**
 - **Overall product quality: 9/10.** All identified screen-level gaps have been addressed. Remaining recommendations are P3-P4 enhancements for mobile and edge cases.
@@ -15,16 +15,28 @@
 - **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart, KPIs, and table all use design tokens.
 - **Settings page:** Fully aligned (§2.5, §7.1, §7.4). Section titles Manrope. RosterProfileEditor now has tonal layering and visual rhythm.
 - **Drivers page:** Fully aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar, Actief chip in place.
-- **Modals:** Well-aligned (§7.3). All modal headers use Manrope section-title typography. Overlays use design tokens.
+- **Modals:** Well-aligned (§7.3). All modal headers use Manrope section-title typography. Overlays use design tokens. **One gap:** ConfirmDialog fixed width overflows on small mobile viewports (EX-REC-067).
 - **Sidebar:** Fully aligned (§7.8). All text colors use sidebar-specific tokens.
-- **Mobile:** Well-aligned.
+- **Mobile:** Well-aligned overall. ConfirmDialog mobile overflow is the only identified regression path.
 
 **Where design quality is still below target:**
-- No screen-level gaps remain. All remaining items are P3-P4 enhancements (mobile edit capability, mobile personalization, toolbar responsiveness, mapping builder enhancement).
+- ConfirmDialog mobile overflow on viewports < 400px (EX-REC-067, P3).
+- All other remaining items are P3-P4 enhancements (mobile edit capability, mobile personalization, toolbar responsiveness, mapping builder enhancement).
 
 ## Recommended Next Improvements
 
 _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20). EX-REC-066 shipped as PB-218 (2026-04-22). EX-REC-055 shipped (2026-04-24)._
+
+### EX-REC-067: ConfirmDialog responsive width for mobile viewports
+
+- **Problem:** The `ConfirmDialog` component uses a fixed `w-[400px]` width. On mobile viewports narrower than 400px (e.g., iPhone SE at 375px, older Android devices at 360px), the dialog overflows horizontally. Users may not be able to see or tap the confirm/cancel buttons. The dialog is used in 10+ components (StamtabelManager, SkillManager, UserManager, UserGroupManager, SubTable, ImportSourceManager, RosterProfileEditor, ScenarioSelector, RosterAssigner) — many of which are accessible on mobile via the settings and drivers screens.
+- **Proposed improvement:** Change the dialog panel from `w-[400px]` to `w-full max-w-[400px] mx-4`. This preserves the 400px maximum on desktop while adding responsive behavior on small viewports. The `mx-4` ensures 16px horizontal padding on each side.
+- **Expected user value:** Confirm/delete dialogs display correctly on all mobile devices. Users can always see and interact with both buttons.
+- **Priority:** P3 Medium
+- **Effort:** Small (single CSS class change in one file)
+- **Dependencies:** None.
+- **Suggested owner:** Experience Agent
+- **Why now:** Small fix with broad impact — every destructive action across mobile-accessible screens benefits. No risk, no side effects.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
