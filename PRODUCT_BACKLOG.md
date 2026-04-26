@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-25):** Codebase is in a clean, stable state. Full design token compliance achieved (PB-218). All screen-level design gaps closed (EX-REC-055). All security items delivered (PB-217, DE-FIX-001). No outstanding P1/P2/P3 recommendations from either agent. All remaining work is P4 polish in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (24 cycles). The active backlog is empty — both agents are in steady state.
+**Current direction (2026-04-26):** Codebase is in a clean, stable state. Full design token compliance achieved (PB-218). All screen-level design gaps closed (EX-REC-055). All security items delivered (PB-217, DE-FIX-001). One new P3 item promoted this cycle: PB-219 (ConfirmDialog mobile overflow fix, Experience Agent). All remaining Delivery Agent work is P4 polish in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (25 cycles).
 
 ## Status Definitions
 
@@ -27,7 +27,19 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-_No items ready for next cycle._
+### PB-219: ConfirmDialog responsieve breedte voor mobiele viewports
+
+- **ID:** PB-219
+- **Title:** ConfirmDialog responsieve breedte voor mobiele viewports
+- **Problem / opportunity:** De `ConfirmDialog` component gebruikt een vaste `w-[400px]` breedte. Op mobiele viewports smaller dan 400px (bijv. iPhone SE op 375px, oudere Android-apparaten op 360px) loopt de dialoog horizontaal over. Gebruikers kunnen de bevestig-/annuleerknopen mogelijk niet zien of bereiken. De dialoog wordt in 10+ componenten gebruikt — veel daarvan zijn toegankelijk op mobiel via instellingen en chauffeurs.
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Ready
+- **Why this matters now:** Kleine CSS-wijziging met breed effect — elke destructieve actie op mobiel-toegankelijke schermen profiteert. Geen risico, geen neveneffecten.
+- **Scope notes:** Wijzig het dialoogpaneel van `w-[400px]` naar `w-full max-w-[400px] mx-4`. Dit behoudt het 400px maximum op desktop en voegt responsief gedrag toe op kleine viewports. De `mx-4` zorgt voor 16px horizontale padding aan weerszijden.
+- **Dependencies:** Geen.
+- **Definition of done:** ConfirmDialog is bruikbaar op viewports van 320px tot desktop. Beide knoppen zijn zichtbaar en aantikbaar. `npm run verify` slaagt.
+- **Implementation note:** Eén CSS-klassewijziging in `src/components/ui/ConfirmDialog.tsx`. Bron: EX-REC-067.
 
 ---
 
@@ -39,7 +51,7 @@ _No items currently in progress._
 
 ## Blocked / Needs Decision
 
-_No items currently blocked. SMI-026 / ESC-014 remains Deferred (24 cycles unmarked) — see Deferred section._
+_No items currently blocked. SMI-026 / ESC-014 remains Deferred (25 cycles unmarked) — see Deferred section._
 
 ---
 
@@ -57,7 +69,7 @@ _No recently completed items._
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 24 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 25 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -152,7 +164,7 @@ _No recently completed items._
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-219.
+- Backlog IDs are sequential and never reused. Next available: PB-220.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
