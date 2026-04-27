@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "27 april 2026",
+    title: "ConfirmDialog responsief op mobiel",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "De bevestigingsdialoog (ConfirmDialog) gebruikte een vaste breedte van 400px en liep daardoor horizontaal over op mobiele schermen smaller dan 400px (bijv. iPhone SE op 375px, oudere Android-apparaten op 360px). De dialoog past zich nu aan het schermformaat aan met een maximum van 400px en 16px marge aan weerszijden. Beide knoppen (bevestigen en annuleren) zijn altijd zichtbaar en aantikbaar. Dit verbetert alle verwijder- en bevestigingsacties op mobiel-toegankelijke schermen (instellingen, chauffeurs, roostertoewijzingen).",
+        ],
+      },
+    ],
+  },
+  {
     date: "24 april 2026",
     title: "Roosterprofiel-editor visuele verbetering",
     groups: [

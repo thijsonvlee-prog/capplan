@@ -2,11 +2,11 @@
 
 ## Summary
 
-**This cycle (2026-04-26):** Experience Agent run 29. No assigned tasks in the backlog. Fresh UX/design scan completed across all key screens and components (PlanningGrid, Capacity, Drivers, Settings, Documentatie, Sidebar, Header, ConfirmDialog, Toast, StamtabelManager, SkillManager, RosterProfileEditor, DriverForm, ImportSourceManager). Confirmed: zero hardcoded Tailwind color classes, 100% design token compliance, consistent Manrope typography, strong accessibility coverage. One new finding: ConfirmDialog uses fixed `w-[400px]` which overflows on mobile viewports narrower than 400px (e.g., iPhone SE at 375px). Filed as EX-REC-067.
+**This cycle (2026-04-27):** Experience Agent run 30. Executed PB-219 (ConfirmDialog responsive width). Fresh UX/design scan completed across all modal surfaces and key screens. One new finding: ScenarioSelector create modal uses fixed `w-96` (384px) which overflows on 360px viewports; RosterAssigner modal uses fixed `w-[520px]` which overflows on anything narrower. Both are desktop-oriented workflows but noted for completeness (EX-REC-068).
 
 **What was improved this cycle:**
 
-- No code changes. Scan-only cycle with one new recommendation (EX-REC-067).
+- ConfirmDialog responsive width (PB-219): Changed from fixed `w-[400px]` to `w-full max-w-[400px] mx-4`. All 10 consumer components (StamtabelManager, SkillManager, UserManager, UserGroupManager, SubTable, ImportSourceManager, RosterProfileEditor, ScenarioSelector, RosterAssigner, plus planning grid bulk delete) now display correctly on viewports from 320px to desktop.
 
 **Current design alignment with DESIGN.md:**
 - **Overall product quality: 9/10.** All identified screen-level gaps have been addressed. Remaining recommendations are P3-P4 enhancements for mobile and edge cases.
@@ -15,28 +15,28 @@
 - **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart, KPIs, and table all use design tokens.
 - **Settings page:** Fully aligned (§2.5, §7.1, §7.4). Section titles Manrope. RosterProfileEditor now has tonal layering and visual rhythm.
 - **Drivers page:** Fully aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar, Actief chip in place.
-- **Modals:** Well-aligned (§7.3). All modal headers use Manrope section-title typography. Overlays use design tokens. **One gap:** ConfirmDialog fixed width overflows on small mobile viewports (EX-REC-067).
+- **Modals:** Fully aligned (§7.3). All modal headers use Manrope section-title typography. Overlays use design tokens. ConfirmDialog responsive on all viewports (PB-219). Two remaining fixed-width modals (ScenarioSelector, RosterAssigner) are desktop-only workflows.
 - **Sidebar:** Fully aligned (§7.8). All text colors use sidebar-specific tokens.
-- **Mobile:** Well-aligned overall. ConfirmDialog mobile overflow is the only identified regression path.
+- **Mobile:** Well-aligned overall. ConfirmDialog mobile overflow resolved (PB-219). Two desktop-only modals remain fixed-width (EX-REC-068, P4).
 
 **Where design quality is still below target:**
-- ConfirmDialog mobile overflow on viewports < 400px (EX-REC-067, P3).
+- ScenarioSelector and RosterAssigner modals use fixed widths that would overflow on very narrow viewports, but these are desktop-only workflows (EX-REC-068, P4).
 - All other remaining items are P3-P4 enhancements (mobile edit capability, mobile personalization, toolbar responsiveness, mapping builder enhancement).
 
 ## Recommended Next Improvements
 
-_EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20). EX-REC-066 shipped as PB-218 (2026-04-22). EX-REC-055 shipped (2026-04-24)._
+_EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20). EX-REC-066 shipped as PB-218 (2026-04-22). EX-REC-055 shipped (2026-04-24). EX-REC-067 shipped as PB-219 (2026-04-27)._
 
-### EX-REC-067: ConfirmDialog responsive width for mobile viewports
+### EX-REC-068: ScenarioSelector and RosterAssigner modal responsive width
 
-- **Problem:** The `ConfirmDialog` component uses a fixed `w-[400px]` width. On mobile viewports narrower than 400px (e.g., iPhone SE at 375px, older Android devices at 360px), the dialog overflows horizontally. Users may not be able to see or tap the confirm/cancel buttons. The dialog is used in 10+ components (StamtabelManager, SkillManager, UserManager, UserGroupManager, SubTable, ImportSourceManager, RosterProfileEditor, ScenarioSelector, RosterAssigner) — many of which are accessible on mobile via the settings and drivers screens.
-- **Proposed improvement:** Change the dialog panel from `w-[400px]` to `w-full max-w-[400px] mx-4`. This preserves the 400px maximum on desktop while adding responsive behavior on small viewports. The `mx-4` ensures 16px horizontal padding on each side.
-- **Expected user value:** Confirm/delete dialogs display correctly on all mobile devices. Users can always see and interact with both buttons.
-- **Priority:** P3 Medium
-- **Effort:** Small (single CSS class change in one file)
+- **Problem:** The ScenarioSelector create modal uses `w-96` (384px) and the RosterAssigner modal uses `w-[520px]`. Both would overflow on viewports narrower than their fixed width. However, both modals are accessed exclusively from the planning grid toolbar, which is a desktop-only workflow — the mobile planning view uses a different calendar interface.
+- **Proposed improvement:** Apply the same responsive pattern as ConfirmDialog: `w-full max-w-[384px] mx-4` for ScenarioSelector and `w-full max-w-[520px] mx-4` for RosterAssigner. This ensures consistent modal behavior across the application and future-proofs against any mobile access paths.
+- **Expected user value:** Consistent modal behavior. Low direct impact since these workflows are desktop-only today.
+- **Priority:** P4 Low
+- **Effort:** Small (two CSS class changes)
 - **Dependencies:** None.
 - **Suggested owner:** Experience Agent
-- **Why now:** Small fix with broad impact — every destructive action across mobile-accessible screens benefits. No risk, no side effects.
+- **Why now:** Very low effort, completes the responsive modal pattern across all modal surfaces in the application. Not urgent since workflows are desktop-only.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -109,7 +109,6 @@ _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-0
 - **Recharts hex coupling.** `CapacityChart.tsx` hardcodes four hex values (`#9ca3af`, `#4b5563`, `#e2e5eb`) that mirror design tokens. If any of `--color-text-tertiary`, `--color-text-secondary`, or `--color-border-default` changes in `globals.css`, the inline hex strings must be updated in the same commit. Inline comments document the token binding, but there is no automatic guard.
 - **Custom chart tooltip has no dark-mode story.** The tooltip uses `surface-primary` classes directly, which are currently defined as `#ffffff`. If dark mode is ever introduced, the tooltip will inherit automatically, but the Recharts-side hex strings will not. Out of scope for now.
 - **Mobile planning is read-only.** Monitor user demand for edit capability (EX-REC-052).
-- **RosterProfileEditor grid.** Resolved (EX-REC-055, 2026-04-24).
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
 
 ## Items Intentionally Not Recommended
@@ -164,6 +163,7 @@ _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-0
 - **Settings page semantic tab grouping:** Scan suggested splitting the 7 tabs into "Master Data" vs "System Admin" groups. The current flat tab approach works well — mobile already has a card-based section view with descriptions. Adding a grouping layer adds complexity without clear user value at this tab count.
 - **Documentatie page chevron rotation animation:** The expand/collapse chevron snaps between ChevronRight and ChevronDown. A CSS rotation transition would be marginally smoother but the current swap is functional and snappy.
 - **Header/Sidebar avatar background unification:** Header avatar uses `bg-brand-100` and sidebar uses `bg-white/[0.08]`. The difference is contextually correct — light surface in the header, dark-aware transparency in the sidebar. Unifying would require compromising one context.
+- **ConfirmDialog mobile overflow:** Resolved (PB-219, 2026-04-27).
 
 ## Recommendation Rules
 

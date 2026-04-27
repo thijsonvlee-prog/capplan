@@ -43,7 +43,7 @@ export function ConfirmDialog({
     >
       <div
         ref={focusTrapRef}
-        className="bg-surface-primary rounded-lg shadow-modal p-6 w-[400px] space-y-4"
+        className="bg-surface-primary rounded-lg shadow-modal p-6 w-full max-w-[400px] mx-4 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3">

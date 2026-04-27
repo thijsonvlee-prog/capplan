@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-26):** Codebase is in a clean, stable state. Full design token compliance achieved (PB-218). All screen-level design gaps closed (EX-REC-055). All security items delivered (PB-217, DE-FIX-001). One new P3 item promoted this cycle: PB-219 (ConfirmDialog mobile overflow fix, Experience Agent). All remaining Delivery Agent work is P4 polish in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (25 cycles).
+**Current direction (2026-04-27):** PB-219 (ConfirmDialog mobile responsive width) completed. Codebase remains clean and stable. Full design token compliance. All screen-level design gaps closed. All remaining work is P3-P4 in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (26 cycles).
 
 ## Status Definitions
 
@@ -27,19 +27,7 @@ Items are ordered by priority within each section. Ties are broken by expected u
 
 ## Ready for Next Cycle
 
-### PB-219: ConfirmDialog responsieve breedte voor mobiele viewports
-
-- **ID:** PB-219
-- **Title:** ConfirmDialog responsieve breedte voor mobiele viewports
-- **Problem / opportunity:** De `ConfirmDialog` component gebruikt een vaste `w-[400px]` breedte. Op mobiele viewports smaller dan 400px (bijv. iPhone SE op 375px, oudere Android-apparaten op 360px) loopt de dialoog horizontaal over. Gebruikers kunnen de bevestig-/annuleerknopen mogelijk niet zien of bereiken. De dialoog wordt in 10+ componenten gebruikt — veel daarvan zijn toegankelijk op mobiel via instellingen en chauffeurs.
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Ready
-- **Why this matters now:** Kleine CSS-wijziging met breed effect — elke destructieve actie op mobiel-toegankelijke schermen profiteert. Geen risico, geen neveneffecten.
-- **Scope notes:** Wijzig het dialoogpaneel van `w-[400px]` naar `w-full max-w-[400px] mx-4`. Dit behoudt het 400px maximum op desktop en voegt responsief gedrag toe op kleine viewports. De `mx-4` zorgt voor 16px horizontale padding aan weerszijden.
-- **Dependencies:** Geen.
-- **Definition of done:** ConfirmDialog is bruikbaar op viewports van 320px tot desktop. Beide knoppen zijn zichtbaar en aantikbaar. `npm run verify` slaagt.
-- **Implementation note:** Eén CSS-klassewijziging in `src/components/ui/ConfirmDialog.tsx`. Bron: EX-REC-067.
+_No items ready for next cycle._
 
 ---
 
@@ -57,7 +45,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (25 cycles unmar
 
 ## Completed Recently
 
-_No recently completed items._
+### PB-219: ConfirmDialog responsieve breedte voor mobiele viewports
+
+- **ID:** PB-219
+- **Owner:** Experience Agent
+- **Priority:** P3 Medium
+- **Status:** Completed
+- **Implementation note:** Changed dialog panel from `w-[400px]` to `w-full max-w-[400px] mx-4` in `src/components/ui/ConfirmDialog.tsx`. Preserves 400px max on desktop, adds responsive behavior with 16px margin on mobile viewports. All 10 consumer components benefit automatically. `npm run verify` passes.
 
 ---
 

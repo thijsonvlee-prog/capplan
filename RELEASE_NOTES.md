@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-27 — ConfirmDialog responsief op mobiel
+
+#### UX / design
+
+- **ConfirmDialog responsieve breedte (PB-219):** De bevestigingsdialoog gebruikte een vaste breedte van 400px en liep daardoor horizontaal over op mobiele schermen smaller dan 400px (bijv. iPhone SE op 375px, oudere Android-apparaten op 360px). De dialoog past zich nu aan het schermformaat aan met een maximum van 400px en 16px marge aan weerszijden. Beide knoppen zijn altijd zichtbaar en aantikbaar. Verbetert alle verwijder- en bevestigingsacties op mobiel-toegankelijke schermen (instellingen, chauffeurs, roostertoewijzingen).
+
 ### 2026-04-24 — Roosterprofiel-editor visuele verbetering
 
 #### UX / design
