@@ -53,6 +53,7 @@ This file is **not** the execution backlog. Nothing here should be executed dire
 - **PO note (2026-04-24):** ESC-014 unmarked for 23 cycles. Item remains Deferred. EX-REC-055 (RosterProfileEditor tonal layering) completed by Experience Agent — validated. No new SM input, no new agent recommendations. Active backlog empty — steady state continues.
 - **PO note (2026-04-25):** ESC-014 unmarked for 24 cycles. Item remains Deferred. No new SM input, no new agent recommendations. Active backlog empty — steady state continues.
 - **PO note (2026-04-26):** ESC-014 unmarked for 25 cycles. Item remains Deferred. One new P3 item promoted: PB-219 (ConfirmDialog mobile overflow fix, Experience Agent) from EX-REC-067. No new SM input.
+- **PO note (2026-04-27):** ESC-014 unmarked for 26 cycles. Item remains Deferred. PB-219 completed and validated. EX-REC-068 (ScenarioSelector/RosterAssigner modal responsive width, P4) added to Deferred. No new SM input. Active backlog empty — steady state continues.
 
 ## Closed Inputs
 

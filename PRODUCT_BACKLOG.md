@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-27):** PB-219 (ConfirmDialog mobile responsive width) completed. Codebase remains clean and stable. Full design token compliance. All screen-level design gaps closed. All remaining work is P3-P4 in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (26 cycles).
+**Current direction (2026-04-27):** PB-219 (ConfirmDialog mobile responsive width) completed and validated. Codebase clean — typecheck and lint pass. Full design token compliance. All screen-level design gaps closed. All remaining work is P3-P4 in the Deferred section. EX-REC-068 (ScenarioSelector/RosterAssigner modal responsive width) added to Deferred as P4. ESC-014 (desktop homescreen) remains Deferred and unmarked (26 cycles). No new Scrum Master input. Steady state continues.
 
 ## Status Definitions
 
@@ -39,7 +39,7 @@ _No items currently in progress._
 
 ## Blocked / Needs Decision
 
-_No items currently blocked. SMI-026 / ESC-014 remains Deferred (25 cycles unmarked) — see Deferred section._
+_No items currently blocked. SMI-026 / ESC-014 remains Deferred (26 cycles unmarked) — see Deferred section._
 
 ---
 
@@ -63,7 +63,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (25 cycles unmar
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 25 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 26 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
@@ -71,6 +71,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (25 cycles unmar
 - **Priority:** P3 Medium
 - **Status:** Deferred
 - **Reason:** Natural next step after the mobile initiative is complete. The read-only planning flow should be validated with user feedback first.
+
+### EX-REC-068: ScenarioSelector en RosterAssigner modal responsieve breedte
+
+- **Owner:** Experience Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Both modals are accessed exclusively from the planning grid toolbar, which is a desktop-only workflow. Very low effort (two CSS class changes) but no direct user impact today. Completes the responsive modal pattern across all modal surfaces if picked up.
 
 ### EX-REC-053: Mobile homescreen — greeting and scenario context
 
@@ -159,6 +166,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (25 cycles unmar
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
 - Backlog IDs are sequential and never reused. Next available: PB-220.
+- EX-REC-068 added to Deferred on 2026-04-27 without a PB-ID since it goes directly to Deferred at P4.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
