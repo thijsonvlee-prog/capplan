@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-27):** PB-219 (ConfirmDialog mobile responsive width) completed and validated. Codebase clean — typecheck and lint pass. Full design token compliance. All screen-level design gaps closed. All remaining work is P3-P4 in the Deferred section. EX-REC-068 (ScenarioSelector/RosterAssigner modal responsive width) added to Deferred as P4. ESC-014 (desktop homescreen) remains Deferred and unmarked (26 cycles). No new Scrum Master input. Steady state continues.
+**Current direction (2026-04-28):** PB-220 (Inter font loading) completed by Experience Agent — found during design audit that Inter body font was defined in design tokens but never loaded. Codebase clean — typecheck and lint pass. Full design token compliance. All remaining work is P3-P4 in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (27 cycles). Steady state continues.
 
 ## Status Definitions
 
@@ -39,11 +39,19 @@ _No items currently in progress._
 
 ## Blocked / Needs Decision
 
-_No items currently blocked. SMI-026 / ESC-014 remains Deferred (26 cycles unmarked) — see Deferred section._
+_No items currently blocked. SMI-026 / ESC-014 remains Deferred (27 cycles unmarked) — see Deferred section._
 
 ---
 
 ## Completed Recently
+
+### PB-220: Inter lettertype laden via Next.js font loading
+
+- **ID:** PB-220
+- **Owner:** Experience Agent
+- **Priority:** P2 High
+- **Status:** Completed
+- **Implementation note:** Design audit revealed Inter was defined as body font (`--font-sans`) in `globals.css` but never loaded via `next/font/google`. Added Inter font loading with weights 400/500/600 in `src/app/layout.tsx`, matching the existing Manrope pattern. Self-hosted font ensures consistent rendering on all platforms instead of falling back to system fonts. `npm run verify` passes.
 
 ### PB-219: ConfirmDialog responsieve breedte voor mobiele viewports
 
@@ -165,7 +173,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (26 cycles unmar
 - Blocked items must reference their blocking dependency.
 - New items must originate from `RECOMMENDATIONS_EXPERIENCE.md` or `RECOMMENDATIONS_DELIVERY.md`, or be directly added by the Scrum Master.
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
-- Backlog IDs are sequential and never reused. Next available: PB-220.
+- Backlog IDs are sequential and never reused. Next available: PB-221.
 - EX-REC-068 added to Deferred on 2026-04-27 without a PB-ID since it goes directly to Deferred at P4.
 
 - Do not let the active backlog grow indefinitely.

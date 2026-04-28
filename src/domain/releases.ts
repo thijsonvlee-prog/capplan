@@ -21,6 +21,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    date: "28 april 2026",
+    title: "Inter lettertype geladen voor body-tekst",
+    groups: [
+      {
+        heading: "UX / design",
+        items: [
+          "Het Inter-lettertype is nu correct geladen via Next.js font loading. De design-tokens definieerden Inter als body-lettertype (--font-sans), maar het lettertype werd niet daadwerkelijk geladen — de app viel terug op systeemlettertypen (SF Pro op macOS, Segoe UI op Windows). Inter wordt nu zelf gehost en geladen in drie gewichten (400, 500, 600) via hetzelfde mechanisme als Manrope. Alle body-tekst, labels, formuliervelden en data-presentatie gebruiken nu het bedoelde lettertype consistent op alle platformen.",
+        ],
+      },
+    ],
+  },
+  {
     date: "27 april 2026",
     title: "ConfirmDialog responsief op mobiel",
     groups: [

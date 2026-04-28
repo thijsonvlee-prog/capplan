@@ -2,22 +2,23 @@
 
 ## Summary
 
-**This cycle (2026-04-27):** Experience Agent run 30. Executed PB-219 (ConfirmDialog responsive width). Fresh UX/design scan completed across all modal surfaces and key screens. One new finding: ScenarioSelector create modal uses fixed `w-96` (384px) which overflows on 360px viewports; RosterAssigner modal uses fixed `w-[520px]` which overflows on anything narrower. Both are desktop-oriented workflows but noted for completeness (EX-REC-068).
+**This cycle (2026-04-28):** Experience Agent run 31. Design audit revealed Inter body font was defined in design tokens but never loaded — the app fell back to system fonts. Fixed by adding Inter via `next/font/google` (PB-220). No new screen-level issues found. Fresh UX/design scan confirms high product quality across all key screens.
 
 **What was improved this cycle:**
 
-- ConfirmDialog responsive width (PB-219): Changed from fixed `w-[400px]` to `w-full max-w-[400px] mx-4`. All 10 consumer components (StamtabelManager, SkillManager, UserManager, UserGroupManager, SubTable, ImportSourceManager, RosterProfileEditor, ScenarioSelector, RosterAssigner, plus planning grid bulk delete) now display correctly on viewports from 320px to desktop.
+- Inter font loading (PB-220): Added Inter font loading with weights 400/500/600 via `next/font/google` in `src/app/layout.tsx`. The design system defined Inter as body font (`--font-sans`) but it was never loaded, causing fallback to system fonts. All body text, labels, form fields, and data presentation now render in the intended typeface consistently across all platforms.
 
 **Current design alignment with DESIGN.md:**
-- **Overall product quality: 9/10.** All identified screen-level gaps have been addressed. Remaining recommendations are P3-P4 enhancements for mobile and edge cases.
+- **Overall product quality: 9/10.** All identified screen-level gaps have been addressed. Typography now fully matches DESIGN.md §5.1 (Inter for body, Manrope for display). Remaining recommendations are P3-P4 enhancements.
 - **Design token compliance: 100%.** Zero hardcoded Tailwind color classes remain in `.tsx` files.
+- **Typography system: Fully aligned (§5).** Both Inter (body/labels/data) and Manrope (display/headings) are loaded and applied correctly. Three-tier hierarchy (page title → section title → label) is clearly distinguishable.
 - **Planning grid:** Fully aligned (§7.4, §9). Four-zone toolbar, tonal row striping, full DayCell aria-label coverage, column header keyboard access complete.
 - **Capacity page:** Fully aligned (§7.1, §7.3, §8.3, §6.1). Chart, KPIs, and table all use design tokens.
-- **Settings page:** Fully aligned (§2.5, §7.1, §7.4). Section titles Manrope. RosterProfileEditor now has tonal layering and visual rhythm.
+- **Settings page:** Fully aligned (§2.5, §7.1, §7.4). Section titles Manrope. RosterProfileEditor has tonal layering and visual rhythm.
 - **Drivers page:** Fully aligned (§3.2, §7.3). Sub-table empty states actionable, row alternation clean, shared tab bar, Actief chip in place.
-- **Modals:** Fully aligned (§7.3). All modal headers use Manrope section-title typography. Overlays use design tokens. ConfirmDialog responsive on all viewports (PB-219). Two remaining fixed-width modals (ScenarioSelector, RosterAssigner) are desktop-only workflows.
+- **Modals:** Fully aligned (§7.3). All modal headers use Manrope section-title typography. Overlays use design tokens. ConfirmDialog responsive on all viewports. Two remaining fixed-width modals (ScenarioSelector, RosterAssigner) are desktop-only workflows.
 - **Sidebar:** Fully aligned (§7.8). All text colors use sidebar-specific tokens.
-- **Mobile:** Well-aligned overall. ConfirmDialog mobile overflow resolved (PB-219). Two desktop-only modals remain fixed-width (EX-REC-068, P4).
+- **Mobile:** Well-aligned overall. Two desktop-only modals remain fixed-width (EX-REC-068, P4).
 
 **Where design quality is still below target:**
 - ScenarioSelector and RosterAssigner modals use fixed widths that would overflow on very narrow viewports, but these are desktop-only workflows (EX-REC-068, P4).
@@ -25,7 +26,7 @@
 
 ## Recommended Next Improvements
 
-_EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20). EX-REC-066 shipped as PB-218 (2026-04-22). EX-REC-055 shipped (2026-04-24). EX-REC-067 shipped as PB-219 (2026-04-27)._
+_EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-04-20). EX-REC-066 shipped as PB-218 (2026-04-22). EX-REC-055 shipped (2026-04-24). EX-REC-067 shipped as PB-219 (2026-04-27). Inter font fix shipped as PB-220 (2026-04-28)._
 
 ### EX-REC-068: ScenarioSelector and RosterAssigner modal responsive width
 
@@ -108,6 +109,7 @@ _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-0
 
 - **Recharts hex coupling.** `CapacityChart.tsx` hardcodes four hex values (`#9ca3af`, `#4b5563`, `#e2e5eb`) that mirror design tokens. If any of `--color-text-tertiary`, `--color-text-secondary`, or `--color-border-default` changes in `globals.css`, the inline hex strings must be updated in the same commit. Inline comments document the token binding, but there is no automatic guard.
 - **Custom chart tooltip has no dark-mode story.** The tooltip uses `surface-primary` classes directly, which are currently defined as `#ffffff`. If dark mode is ever introduced, the tooltip will inherit automatically, but the Recharts-side hex strings will not. Out of scope for now.
+- **Inter font weight coverage.** Inter is loaded with weights 400, 500, 600. If `font-bold` (700) or `font-light` (300) is needed for Inter body text in the future, the weight set in `layout.tsx` must be extended. Currently no component uses Inter at weight 700 (bold headings use Manrope).
 - **Mobile planning is read-only.** Monitor user demand for edit capability (EX-REC-052).
 - **Settings tab count growth.** The desktop settings page has 7 tabs. Adding more may need a different navigation pattern.
 
@@ -164,6 +166,9 @@ _EX-REC-064 shipped as PB-214 (2026-04-20). EX-REC-065 shipped as PB-213 (2026-0
 - **Documentatie page chevron rotation animation:** The expand/collapse chevron snaps between ChevronRight and ChevronDown. A CSS rotation transition would be marginally smoother but the current swap is functional and snappy.
 - **Header/Sidebar avatar background unification:** Header avatar uses `bg-brand-100` and sidebar uses `bg-white/[0.08]`. The difference is contextually correct — light surface in the header, dark-aware transparency in the sidebar. Unifying would require compromising one context.
 - **ConfirmDialog mobile overflow:** Resolved (PB-219, 2026-04-27).
+- **Inter font not loaded:** Resolved (PB-220, 2026-04-28). Inter is now self-hosted via `next/font/google`.
+- **Hardcoded arbitrary font sizes in Sidebar/Header:** Components like Sidebar and Header use `text-[0.9375rem]`, `text-[0.8125rem]` etc. These are intentional size choices that match the design scale and are not duplicated broadly. Extracting them to named classes would add abstraction without reducing duplication or improving maintainability at this component count.
+- **Expanded typography utility classes (text-body, text-body-sm):** The current four typography classes (page-title, section-title, label, caption) cover the structured levels. Body text varies too much in context to benefit from a single class. Standard Tailwind `text-sm`/`text-xs` is appropriate and clear.
 
 ## Recommendation Rules
 

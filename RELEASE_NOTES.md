@@ -6,6 +6,12 @@ This is the central release log for CapPlan. All user-facing and significant int
 
 ## Release History
 
+### 2026-04-28 — Inter lettertype geladen voor body-tekst
+
+#### UX / design
+
+- **Inter lettertype correct geladen:** Het Inter-lettertype was gedefinieerd als body-lettertype in het design-token-systeem (`--font-sans`) maar werd niet geladen via Next.js font loading. De app viel daardoor terug op systeemlettertypen (SF Pro op macOS, Segoe UI op Windows). Inter wordt nu zelf gehost en geladen in drie gewichten (400, 500, 600) via hetzelfde `next/font/google`-mechanisme als Manrope. Alle body-tekst, labels, formuliervelden en data-presentatie gebruiken nu het bedoelde lettertype consistent op alle platformen.
+
 ### 2026-04-27 — ConfirmDialog responsief op mobiel
 
 #### UX / design
