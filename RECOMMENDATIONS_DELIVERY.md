@@ -6,9 +6,11 @@ This file contains recommendations from the Delivery Agent for technical, perfor
 
 ## Summary
 
-This cycle I completed **PB-217** (strip `apiCredentials` from import-sources list endpoint). The `GET /api/import-sources` list endpoint now uses an explicit `select` clause that excludes `apiCredentials`. The edit form in `ImportSourceManager.tsx` fetches the full record (including credentials) from the individual endpoint on demand. `npm run verify` passes with 0 errors.
+This cycle (2026-04-28) no active backlog items were assigned — all Delivery Agent items are Deferred at P4. I performed a fresh full codebase scan covering all 36 API routes, key components (PlanningGrid, ImportSourceManager, DriverForm, DayCell), hooks, domain files, Prisma schema, and configuration files.
 
-All carry-over items remain valid at P4. The codebase is in a clean, secure state with no outstanding P2/P3 recommendations.
+**Scan results:** The codebase is in a clean, well-maintained state. `npm run verify` passes with 0 errors. No new P2/P3 issues were found. All previously identified items remain valid at their current priority levels. The scan re-confirmed that existing patterns (parallelized FK validation, batch operations, centralized helpers, design token compliance) are consistently applied.
+
+All carry-over recommendations remain valid at P4. No escalations required.
 
 ## Recommended Next Improvements
 
@@ -23,6 +25,18 @@ All carry-over items remain valid at P4. The codebase is in a clean, secure stat
 - **Dependencies:** None
 - **Suggested owner:** Delivery Agent
 - **Why now:** Low-effort shared constant extraction, same spirit as PB-200. Closes a latent drift risk before a new target entity is added.
+
+### DE-REC-084: Scope planning entries to fetched driverIds in for-range non-paginated path
+
+- **Title:** Always scope for-range entries query to fetched driver IDs
+- **Problem:** In `src/app/api/planning/for-range/route.ts` (line 83), the `planningEntry.findMany()` only adds `driverId: { in: driverIds }` when paginated. When not paginated, entries for ALL drivers in the scenario are fetched, even when user-group department filtering or search restricts the driver set. Excess entries are dropped during the join but the DB fetches unnecessary data. Currently zero impact because the only caller (`PlanningGrid.tsx`) always passes pagination params.
+- **Proposed improvement:** Apply `driverId: { in: driverIds }` unconditionally after the driver query completes, removing the `isPaginated` conditional on line 83. One-line change.
+- **Priority:** P4 Low
+- **Effort:** Small (one line)
+- **Risk:** Low — the paginated path already uses this exact pattern
+- **Dependencies:** None
+- **Suggested owner:** Delivery Agent
+- **Why now:** Prevents a latent efficiency issue if the non-paginated path is used by future callers or external API consumers with user-group filtering active.
 
 ### DE-REC-074: Carry forward — apply same batching to driver PUT path if nested FK writes are added
 
@@ -127,6 +141,11 @@ All carry-over items remain valid at P4. The codebase is in a clean, secure stat
 - Unsafe `context?: any` in dynamic route handlers (stylistic).
 - `useApi` console.error logging (intentional).
 - `for-range` order-by / driver include drift (minor, intentional optimizations).
+- `oldDriver` null check in driver PUT audit path — if driver doesn't exist, `prisma.driver.update` throws P2025 before `logAudit` is reached; audit path is unreachable with null oldDriver.
+- `import-sources/test` returns `{ data: { success, message } }` instead of `{ error }` — intentional; the test endpoint uses 200 status for all completed tests, wrapping success/failure in the data envelope. Not a CRUD endpoint.
+- mouseup listener re-registration on dragState change in PlanningGrid — listener add/remove is negligible cost; changing deps would require ref-based pattern that reduces code clarity for no measurable gain.
+- DayCell POPUP_WIDTH/POPUP_MAX_HEIGHT/VIEWPORT_PAD — component-internal layout constants, not design tokens; moving to shared config adds coupling without benefit.
+- Add `driverId+date` compound index to PlanningEntry — the unique constraint on `(driverId, scenarioId, date)` already covers this query pattern.
 - `csv-parser` escaped quote handling for non-comma separators.
 - Audit planning entries (excluded by design - PB-148).
 - P2025 handling on sub-record DELETE routes (low impact).
@@ -184,7 +203,7 @@ All carry-over items remain valid at P4. The codebase is in a clean, secure stat
 
 - Recommendations are written by the Delivery Agent after reviewing the codebase and deployment behavior.
 - Each recommendation must include all required fields.
-- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-084.
+- IDs are sequential (DE-REC-001, DE-REC-002, ...) and never reused. Next available: DE-REC-085.
 - Approved recommendations are moved to `PRODUCT_BACKLOG.md` by the Product Owner Agent.
 - Rejected recommendations are moved to `Items Intentionally Not Recommended` with a brief reason.
 - This file is the only place the Delivery Agent writes recommendations. Do not scatter suggestions across other files.
