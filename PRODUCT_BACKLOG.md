@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-28):** PB-220 (Inter font loading) completed by Experience Agent — found during design audit that Inter body font was defined in design tokens but never loaded. Codebase clean — typecheck and lint pass. Full design token compliance. All remaining work is P3-P4 in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (27 cycles). Steady state continues.
+**Current direction (2026-04-28):** PB-220 (Inter font loading) completed by Experience Agent this cycle. DE-REC-084 (scope for-range entries to fetched driverIds) added to Deferred at P4. Codebase clean — typecheck and lint pass. Full design token compliance. All remaining work is P3-P4 in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (27 cycles). Steady state continues.
 
 ## Status Definitions
 
@@ -52,14 +52,6 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (27 cycles unmar
 - **Priority:** P2 High
 - **Status:** Completed
 - **Implementation note:** Design audit revealed Inter was defined as body font (`--font-sans`) in `globals.css` but never loaded via `next/font/google`. Added Inter font loading with weights 400/500/600 in `src/app/layout.tsx`, matching the existing Manrope pattern. Self-hosted font ensures consistent rendering on all platforms instead of falling back to system fonts. `npm run verify` passes.
-
-### PB-219: ConfirmDialog responsieve breedte voor mobiele viewports
-
-- **ID:** PB-219
-- **Owner:** Experience Agent
-- **Priority:** P3 Medium
-- **Status:** Completed
-- **Implementation note:** Changed dialog panel from `w-[400px]` to `w-full max-w-[400px] mx-4` in `src/components/ui/ConfirmDialog.tsx`. Preserves 400px max on desktop, adds responsive behavior with 16px margin on mobile viewports. All 10 consumer components benefit automatically. `npm run verify` passes.
 
 ---
 
@@ -107,6 +99,13 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (27 cycles unmar
 - **Priority:** P4 Low
 - **Status:** Deferred
 - **Reason:** Current field mapping editor is functional. Desktop-only concern.
+
+### DE-REC-084: Scope for-range entries query to fetched driverIds
+
+- **Owner:** Delivery Agent
+- **Priority:** P4 Low
+- **Status:** Deferred
+- **Reason:** Non-paginated path in `for-range/route.ts` fetches entries for all drivers when user-group filtering is active. Currently no caller uses the non-paginated path. One-line fix, pick up when capacity allows or if external API consumers are added.
 
 ### DE-REC-070: Align client-side TARGET_ENTITIES with server-side constant
 
@@ -175,6 +174,7 @@ _No items currently blocked. SMI-026 / ESC-014 remains Deferred (27 cycles unmar
 - Each item must have all required fields filled in. Incomplete items are not considered ready.
 - Backlog IDs are sequential and never reused. Next available: PB-221.
 - EX-REC-068 added to Deferred on 2026-04-27 without a PB-ID since it goes directly to Deferred at P4.
+- DE-REC-084 added to Deferred on 2026-04-28 without a PB-ID since it goes directly to Deferred at P4.
 
 - Do not let the active backlog grow indefinitely.
 - Completed items should be moved out of active sections into `Completed Recently`.
