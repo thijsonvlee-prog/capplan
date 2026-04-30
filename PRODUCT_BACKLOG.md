@@ -13,7 +13,7 @@ This is the single source of truth for all planned work in CapPlan. The Product 
 
 Items are ordered by priority within each section. Ties are broken by expected user impact.
 
-**Current direction (2026-04-29):** No new work this cycle. PB-220 (Inter font loading) rotated out of Completed Recently after one cycle. Codebase clean — typecheck and lint pass. Full design token compliance. All remaining work is P3-P4 in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (28 cycles). Active backlog empty — steady state continues.
+**Current direction (2026-04-30):** No new work this cycle. Codebase clean — typecheck and lint pass. Full design token compliance. All remaining work is P3-P4 in the Deferred section. ESC-014 (desktop homescreen) remains Deferred and unmarked (29 cycles). Active backlog empty — steady state continues.
 
 ## Status Definitions
 
@@ -39,7 +39,7 @@ _No items currently in progress._
 
 ## Blocked / Needs Decision
 
-_No items currently blocked. SMI-026 / ESC-014 remains Deferred (28 cycles unmarked) — see Deferred section._
+_No items currently blocked. SMI-026 / ESC-014 remains Deferred (29 cycles unmarked) — see Deferred section._
 
 ---
 
@@ -57,7 +57,7 @@ _No recently completed items._
 - **Priority:** N/A (scope unresolved)
 - **Status:** Deferred
 - **Escalation:** ESC-014 (remains Open for future revisit)
-- **Reason:** ESC-014 has been Open and unmarked for 28 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
+- **Reason:** ESC-014 has been Open and unmarked for 29 consecutive cycles. The Scrum Master may reopen this at any time by placing `(X)` next to one of the four options in ESC-014, after which the Product Owner Agent will create concrete backlog items for the chosen scope.
 
 ### EX-REC-052: Mobile planning — edit capability (v2)
 
